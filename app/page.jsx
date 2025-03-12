@@ -31,7 +31,6 @@ export default async function Home() {
 
   return (
     <main>
-      <h1 className="sr-only">{pageData.title}</h1>
       <GlobalComponent data={pageData} />
     </main>
   )

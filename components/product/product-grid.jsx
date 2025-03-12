@@ -29,7 +29,14 @@ export default function ProductGrid({ product }) {
                             <p className="text-sm text-[#505050]">by {product?.author?.full_name || product?.author?.username}</p>
                         </div>
                     </div>
-                    <span className="text-[#0156d5] font-medium">${product?.price.toFixed(2)}</span>
+                    {
+                        product?.price && (
+                            <div>
+                                <span className="text-[#0156d5] font-medium">${product?.price?.sales_price?.toFixed(2)}</span><br/>
+                                <span className="text-[#acb0b4] font-medium text-sm line-through">${product?.price?.regular_price?.toFixed(2)}</span>
+                            </div>
+                        )
+                    }
                 </div>
             </div>
         </>
