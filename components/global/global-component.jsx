@@ -1,9 +1,11 @@
+import CategoryTagList from "../category-tag-list"
 import FAQSection from "../faq-section"
 import HeroSection from "../hero-section"
 import ProductsList from "../product/products-list"
 import ReviewSection from "../review-section"
 import { RichText } from "../rich-text"
 import ServiceSection from "../service-section"
+import SubscribeSection from "../subscribe-section"
 
 export default function GlobalComponent({ data }) {
     const renderComponent = (component, index) => {
@@ -20,6 +22,10 @@ export default function GlobalComponent({ data }) {
                 return <ProductsList key={index} {...component} />
             case "shared.rich-text":
                 return <RichText key={index} {...component} />
+            case "shared.subscribe-section":
+                return <SubscribeSection key={index} {...component} />
+            case "shared.category-tag-list":
+                return <CategoryTagList key={index} {...component} />
             default:
                 return null
         }
