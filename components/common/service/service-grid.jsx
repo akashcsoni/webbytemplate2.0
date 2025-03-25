@@ -21,7 +21,7 @@ const ServiceGrid = ({ category, link_button }) => {
                 </p>
 
                 <Link
-                    href={category?.slug}
+                    href={`/category${category?.slug}`}
                     className="text-[#0156d5] font-medium inline-flex items-center hover:underline"
                 >
                     {link_button?.label}

@@ -1,34 +1,20 @@
 import GlobalComponent from "@/components/global/global-component"
 
-// Server-side data fetching
-async function getPageData() {
+const getPageData = async () => {
   try {
-    // For the home page, use 'home' as the page name
-    const pageName = "home"
-
-    // Use a fixed API URL since we know the domain
-    const apiUrl = `https://studio.webbytemplate.com/api/pages/${pageName}`
-
-    const response = await fetch(apiUrl, {
-      cache: "no-store", // or { next: { revalidate: 60 } } for ISR
+    const response = await fetch('https://studio.webbytemplate.com/api/pages/home', {
+      cache: 'no-store'
     })
-
-    const result = await response.json()
-
-    if (result.result && result.data) {
-      return result.data
-    }
-    throw new Error("Failed to load page data")
+    const { result, data } = await response.json()
+    if (!result || !data) throw new Error('Failed to load page data')
+    return data
   } catch (error) {
-    // console.error("Error fetching page data:", error)
     throw error
   }
 }
 
 export default async function Home() {
-  // Fetch data on the server
   const pageData = await getPageData()
-
   return (
     <main>
       <GlobalComponent data={pageData} />

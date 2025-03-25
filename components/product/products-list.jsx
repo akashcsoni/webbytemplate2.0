@@ -25,17 +25,19 @@ export default function ProductsList(props) {
         title,
         description,
         section_layout,
-        page_size = 5,
-        filter = "top_download",
-        base = "blank",
-        category = false,
+        page_size,
+        filter,
+        base,
+        category,
         link,
-        categories_list = [],
+        categories_list,
     } = props
 
     const [products, setProducts] = useState([])
+    const [filteredProducts, setFilteredProducts] = useState([])
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState(null)
+    const [selectedCategory, setSelectedCategory] = useState(null)
 
     // Fetch products when component mounts or when filter/page_size changes
     useEffect(() => {
@@ -53,12 +55,15 @@ export default function ProductsList(props) {
                 // Make API request using our utility function
                 const response = await apiRequest("https://studio.webbytemplate.com/api/product/filter", "POST", formData)
 
-                setProducts(response.data || [])
+                const productsData = response.data || []
+                setProducts(productsData)
+                setFilteredProducts(productsData)
                 setError(null)
             } catch (err) {
                 console.error("Error fetching products:", err)
                 setError("Failed to load products. Please try again later.")
                 setProducts([])
+                setFilteredProducts([])
             } finally {
                 setLoading(false)
             }
@@ -66,6 +71,24 @@ export default function ProductsList(props) {
 
         fetchProductData()
     }, [filter, page_size, base, category])
+
+    // Filter products when selected category changes
+    useEffect(() => {
+        if (!selectedCategory) {
+            setFilteredProducts(products)
+            return
+        }
+
+        const filtered = products.filter(
+            (product) => product.categories && product.categories.some((cat) => cat.slug === selectedCategory),
+        )
+        setFilteredProducts(filtered)
+    }, [selectedCategory, products])
+
+    // Handle category selection
+    const handleCategoryClick = (slug) => {
+        setSelectedCategory(selectedCategory === slug ? null : slug)
+    }
 
     // Determine background class based on section_layout
     const bgClass = section_layout === "with_bg" ? "bg-gray-50" : ""
@@ -81,24 +104,36 @@ export default function ProductsList(props) {
                     <Link href={link?.link} className="text-[#0156d5] font-medium flex items-center hover:underline">
                         {link?.label}
                         {link?.image ? (
-                            <Image src={link?.image} alt="" width={16} height={16} className="ml-1" />
+                            <Image src={link?.image || "/placeholder.svg"} alt="" width={16} height={16} className="ml-1" />
                         ) : (
                             <span className="ml-1">→</span>
                         )}
                     </Link>
                 )}
             </div>
-           
+
             {categories_list && categories_list?.length > 0 && (
                 <div className="flex gap-4 mb-6 overflow-x-auto pb-2">
-                    {categories_list?.map((category,index) => (
-                        <Link
+                    <button
+                        onClick={() => setSelectedCategory(null)}
+                        className={`px-4 py-2 border rounded-full text-sm whitespace-nowrap transition-colors ${selectedCategory === null
+                            ? "bg-[#0156d5] text-white border-[#0156d5]"
+                            : "bg-white border-gray-200 hover:bg-gray-50"
+                            }`}
+                    >
+                        All
+                    </button>
+                    {categories_list?.map((category, index) => (
+                        <button
                             key={index}
-                            href={`/category/${category?.slug}`}
-                            className="px-4 py-2 bg-white border border-gray-200 rounded-full text-sm whitespace-nowrap hover:bg-gray-50"
+                            onClick={() => handleCategoryClick(category?.slug)}
+                            className={`px-4 py-2 border rounded-full text-sm whitespace-nowrap transition-colors ${selectedCategory === category?.slug
+                                ? "bg-[#0156d5] text-white border-[#0156d5]"
+                                : "bg-white border-gray-200 hover:bg-gray-50"
+                                }`}
                         >
                             {category?.title || category?.name}
-                        </Link>
+                        </button>
                     ))}
                 </div>
             )}
@@ -133,10 +168,12 @@ export default function ProductsList(props) {
                         Try Again
                     </button>
                 </div>
+            ) : filteredProducts.length === 0 ? (
+                (<div>No Products Found in selected category</div>)
             ) : (
                 // Products grid
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
-                    {products.map((product, index) => (
+                    {filteredProducts.map((product, index) => (
                         <ProductGrid key={index} product={product} />
                     ))}
                 </div>

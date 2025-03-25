@@ -1,11 +1,12 @@
 import GlobalComponent from "@/components/global/global-component"
 import Link from "next/link"
+import { notFound } from "next/navigation"
 
 // Server-side data fetching
-async function getPageData() {
+async function getPageData(parentcategory) {
     try {
         // Use a fixed API URL since we know the domain
-        const apiUrl = `https://studio.webbytemplate.com/api/categories/html-templates`
+        const apiUrl = `https://studio.webbytemplate.com/api/categories/${parentcategory}`
 
         const response = await fetch(apiUrl, {
             cache: "no-store", // or { next: { revalidate: 60 } } for ISR
@@ -16,7 +17,9 @@ async function getPageData() {
         if (result.result && result.data) {
             return result.data
         }
-        throw new Error("Failed to load page data")
+        // If no data is found, trigger 404
+        return notFound()
+
     } catch (error) {
         // console.error("Error fetching page data:", error)
         throw error
@@ -25,9 +28,9 @@ async function getPageData() {
 
 export default async function parentCategoryPage({ params }) {
     const { parentcategory } = await params
-    console.log(parentcategory)
+
     // Fetch data on the server
-    const pageData = await getPageData()
+    const pageData = await getPageData(parentcategory)
 
     return (
         <main className="py-12 px-4 md:px-6 container mx-auto">
@@ -37,15 +40,11 @@ export default async function parentCategoryPage({ params }) {
                     Home
                 </Link>
                 <span className="mx-2 text-[#505050]">›</span>
-                <Link href="/categories" className="text-[#0156d5] hover:underline">
-                    Categories
-                </Link>
-                <span className="mx-2 text-[#505050]">›</span>
-                <span className="text-[#505050]">HTML Templates</span>
+                <span className="text-[#505050]">{pageData?.title}</span>
             </nav>
 
             {/* Page Heading */}
-            <h1 className="text-3xl font-bold text-[#000000] mb-6">HTML Templates</h1>
+            <h1 className="text-3xl font-bold text-[#000000] mb-6">{pageData?.title}</h1>
 
             {/* Search Bar */}
             <div className="relative flex items-center mb-8">
@@ -75,9 +74,7 @@ export default async function parentCategoryPage({ params }) {
 
             {/* Description Text */}
             <p className="text-[#505050] leading-relaxed">
-                Our HTML Templates are the perfect starting point for clean, well-structured websites that reflect your brand.
-                Each Template uses HTML5 and CSS3 to create beautiful, mobile-friendly designs that&apos;ll look great on all
-                platforms.
+                {pageData?.short_description}
             </p>
             <GlobalComponent data={pageData} />
         </main>
