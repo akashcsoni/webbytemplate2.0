@@ -243,7 +243,6 @@ export default async function ProductSinglePage({ params }) {
                             <span className="text-[#969ba3] font-medium text-sm line-through">${pageData?.price?.regular_price}</span>
                         </div>
                     </div>
-                    {console.log(pageData)}
                     {/* Add to Cart Button */}
                     <div className="py-4">
                         <button className="w-full bg-[#0156d5] text-white py-3 rounded flex items-center justify-center">
