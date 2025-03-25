@@ -1,10 +1,9 @@
-"use client"
-
-import { useState, useEffect } from "react"
-import Image from "next/image"
-import Link from "next/link"
-import { apiRequest } from "@/lib/api-utils"
-import ProductGrid from "./product-grid"
+'use client'
+import { useState, useEffect } from "react";
+import Image from "next/image";
+import Link from "next/link";
+import { apiRequest } from "@/lib/api-utils";
+import ProductGrid from "./product-grid";
 
 /**
  * Products List Component
@@ -15,7 +14,6 @@ import ProductGrid from "./product-grid"
  * @param {string} props.section_layout - Layout type ("with_bg" or "without_bg")
  * @param {number} props.page_size - Number of products to display
  * @param {string} props.filter - Filter type for products
- * @param {string} props.base - Base type
  * @param {boolean} props.category - Whether to show category
  * @param {Object} props.link - Link object
  * @param {Array} props.categories_list - List of categories
@@ -27,71 +25,59 @@ export default function ProductsList(props) {
         section_layout,
         page_size,
         filter,
-        base,
         category,
         link,
         categories_list,
-    } = props
+    } = props;
 
-    const [products, setProducts] = useState([])
-    const [filteredProducts, setFilteredProducts] = useState([])
-    const [loading, setLoading] = useState(true)
-    const [error, setError] = useState(null)
-    const [selectedCategory, setSelectedCategory] = useState(null)
+    const [products, setProducts] = useState([]);
+    const [filteredProducts, setFilteredProducts] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+    const [selectedCategory, setSelectedCategory] = useState(null);
 
-    // Fetch products when component mounts or when filter/page_size changes
+    // Fetch products when component mounts or when filter/page_size/selectedCategory changes
     useEffect(() => {
         const fetchProductData = async () => {
             try {
-                setLoading(true)
+                setLoading(true);
 
                 // Create form data for the POST request
-                const formData = new FormData()
-                formData.append("page_size", page_size.toString())
-                formData.append("filter", filter)
-                formData.append("base", base)
-                formData.append("category", category.toString())
+                const formData = new FormData();
+                formData.append("page_size", page_size.toString());
+                formData.append("filter", filter);
+                if (selectedCategory) {
+                    formData.append("base", selectedCategory);
+                }
+                formData.append("category", category.toString());
 
                 // Make API request using our utility function
-                const response = await apiRequest("https://studio.webbytemplate.com/api/product/filter", "POST", formData)
+                const response = await apiRequest("https://studio.webbytemplate.com/api/product/filter", "POST", formData);
 
-                const productsData = response.data || []
-                setProducts(productsData)
-                setFilteredProducts(productsData)
-                setError(null)
+                const productsData = response.data || [];
+                setProducts(productsData);
+                setFilteredProducts(productsData);
+                setError(null);
             } catch (err) {
-                console.error("Error fetching products:", err)
-                setError("Failed to load products. Please try again later.")
-                setProducts([])
-                setFilteredProducts([])
+                console.error("Error fetching products:", err);
+                setError("Failed to load products. Please try again later.");
+                setProducts([]);
+                setFilteredProducts([]);
             } finally {
-                setLoading(false)
+                setLoading(false);
             }
-        }
+        };
 
-        fetchProductData()
-    }, [filter, page_size, base, category])
-
-    // Filter products when selected category changes
-    useEffect(() => {
-        if (!selectedCategory) {
-            setFilteredProducts(products)
-            return
-        }
-
-        const filtered = products.filter(
-            (product) => product.categories && product.categories.some((cat) => cat.slug === selectedCategory),
-        )
-        setFilteredProducts(filtered)
-    }, [selectedCategory, products])
+        fetchProductData();
+    }, [filter, page_size, selectedCategory, category]);
 
     // Handle category selection
     const handleCategoryClick = (slug) => {
-        setSelectedCategory(selectedCategory === slug ? null : slug)
-    }
+        setSelectedCategory(slug);
+    };
 
     // Determine background class based on section_layout
-    const bgClass = section_layout === "with_bg" ? "bg-gray-50" : ""
+    const bgClass = section_layout === "with_bg" ? "bg-gray-50" : "";
 
     return (
         <section className={`py-12 px-4 md:px-6 container mx-auto ${bgClass}`}>
@@ -139,7 +125,6 @@ export default function ProductsList(props) {
             )}
 
             {loading ? (
-                // Loading state
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
                     {[...Array(page_size)].map((_, index) => (
                         <div key={index} className="animate-pulse">
@@ -156,28 +141,22 @@ export default function ProductsList(props) {
                             </div>
                         </div>
                     ))}
-                </div>
-            ) : error ? (
-                // Error state
-                <div className="text-center py-10">
-                    <p className="text-red-500">{error}</p>
-                    <button
-                        onClick={() => window.location.reload()}
-                        className="mt-4 px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/90"
-                    >
-                        Try Again
-                    </button>
-                </div>
-            ) : filteredProducts.length === 0 ? (
-                (<div>No Products Found in selected category</div>)
-            ) : (
-                // Products grid
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
-                    {filteredProducts.map((product, index) => (
-                        <ProductGrid key={index} product={product} />
-                    ))}
+                </div>) : error ? (
+                    <div className="text-center py-10">
+                        <p className="text-red-500">{error}</p>
+                        <button
+                            onClick={() => window.location.reload()}
+                            className="mt-4 px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/90"
+                        >
+                            Try Again
+                        </button>
+                    </div>
+                ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">{filteredProducts.map((product, index) => (
+                    <ProductGrid key={index} product={product} />
+                ))}
                 </div>
             )}
         </section>
-    )
+    );
 }
