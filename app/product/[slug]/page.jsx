@@ -326,7 +326,10 @@ export default async function ProductSinglePage({ params }) {
                 </div>
 
                 <div className='w-full'>
-
+                    {/* discription */}
+                    <div
+                        dangerouslySetInnerHTML={{ __html: pageData?.description }}
+                    />
                 </div>
             </div>
         </div>
