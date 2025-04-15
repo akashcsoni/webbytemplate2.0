@@ -80,83 +80,85 @@ export default function ProductsList(props) {
     const bgClass = section_layout === "with_bg" ? "bg-gray-50" : "";
 
     return (
-        <section className={`py-12 px-4 md:px-6 container mx-auto ${bgClass}`}>
-            <div className="flex justify-between items-center mb-6">
-                <div>
-                    <h2 className="text-3xl font-bold text-[#000000]">{title}</h2>
-                    <p className="text-[#505050] mt-1">{description}</p>
+        <section className={`py-12 px-4 md:px-6 ${bgClass}`}>
+            <div className="container mx-auto">
+                <div className="flex justify-between items-center mb-6">
+                    <div>
+                        <h2 className="text-3xl font-bold text-[#000000]">{title}</h2>
+                        <p className="text-[#505050] mt-1">{description}</p>
+                    </div>
+                    {link && (
+                        <Link href={link?.link} className="text-[#0156d5] font-medium flex items-center hover:underline">
+                            {link?.label}
+                            {link?.image ? (
+                                <Image src={link?.image || "/placeholder.svg"} alt="" width={16} height={16} className="ml-1" />
+                            ) : (
+                                <span className="ml-1">→</span>
+                            )}
+                        </Link>
+                    )}
                 </div>
-                {link && (
-                    <Link href={link?.link} className="text-[#0156d5] font-medium flex items-center hover:underline">
-                        {link?.label}
-                        {link?.image ? (
-                            <Image src={link?.image || "/placeholder.svg"} alt="" width={16} height={16} className="ml-1" />
-                        ) : (
-                            <span className="ml-1">→</span>
-                        )}
-                    </Link>
-                )}
-            </div>
 
-            {categories_list && categories_list?.length > 0 && (
-                <div className="flex gap-4 mb-6 overflow-x-auto pb-2">
-                    <button
-                        onClick={() => setSelectedCategory(null)}
-                        className={`px-4 py-2 border rounded-full text-sm whitespace-nowrap transition-colors ${selectedCategory === null
-                            ? "bg-[#0156d5] text-white border-[#0156d5]"
-                            : "bg-white border-gray-200 hover:bg-gray-50"
-                            }`}
-                    >
-                        All
-                    </button>
-                    {categories_list?.map((category, index) => (
+                {categories_list && categories_list?.length > 0 && (
+                    <div className="flex gap-4 mb-6 overflow-x-auto pb-2">
                         <button
-                            key={index}
-                            onClick={() => handleCategoryClick(category?.slug)}
-                            className={`px-4 py-2 border rounded-full text-sm whitespace-nowrap transition-colors ${selectedCategory === category?.slug
+                            onClick={() => setSelectedCategory(null)}
+                            className={`px-4 py-2 border rounded-full text-sm whitespace-nowrap transition-colors ${selectedCategory === null
                                 ? "bg-[#0156d5] text-white border-[#0156d5]"
                                 : "bg-white border-gray-200 hover:bg-gray-50"
                                 }`}
                         >
-                            {category?.title || category?.name}
+                            All
                         </button>
-                    ))}
-                </div>
-            )}
-
-            {loading ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
-                    {[...Array(page_size)].map((_, index) => (
-                        <div key={index} className="animate-pulse">
-                            <div className="bg-gray-200 rounded-lg h-[340px] mb-4"></div>
-                            <div className="flex items-center justify-between">
-                                <div className="flex items-center">
-                                    <div className="bg-gray-200 rounded-full w-8 h-8 mr-3"></div>
-                                    <div>
-                                        <div className="bg-gray-200 h-4 w-24 rounded mb-2"></div>
-                                        <div className="bg-gray-200 h-3 w-16 rounded"></div>
-                                    </div>
-                                </div>
-                                <div className="bg-gray-200 h-4 w-16 rounded"></div>
-                            </div>
-                        </div>
-                    ))}
-                </div>) : error ? (
-                    <div className="text-center py-10">
-                        <p className="text-red-500">{error}</p>
-                        <button
-                            onClick={() => window.location.reload()}
-                            className="mt-4 px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/90"
-                        >
-                            Try Again
-                        </button>
+                        {categories_list?.map((category, index) => (
+                            <button
+                                key={index}
+                                onClick={() => handleCategoryClick(category?.slug)}
+                                className={`px-4 py-2 border rounded-full text-sm whitespace-nowrap transition-colors ${selectedCategory === category?.slug
+                                    ? "bg-[#0156d5] text-white border-[#0156d5]"
+                                    : "bg-white border-gray-200 hover:bg-gray-50"
+                                    }`}
+                            >
+                                {category?.title || category?.name}
+                            </button>
+                        ))}
                     </div>
-                ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">{filteredProducts.map((product, index) => (
-                    <ProductGrid key={index} product={product} />
-                ))}
-                </div>
-            )}
+                )}
+
+                {loading ? (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
+                        {[...Array(page_size)].map((_, index) => (
+                            <div key={index} className="animate-pulse">
+                                <div className="bg-gray-200 rounded-lg h-[340px] mb-4"></div>
+                                <div className="flex items-center justify-between">
+                                    <div className="flex items-center">
+                                        <div className="bg-gray-200 rounded-full w-8 h-8 mr-3"></div>
+                                        <div>
+                                            <div className="bg-gray-200 h-4 w-24 rounded mb-2"></div>
+                                            <div className="bg-gray-200 h-3 w-16 rounded"></div>
+                                        </div>
+                                    </div>
+                                    <div className="bg-gray-200 h-4 w-16 rounded"></div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>) : error ? (
+                        <div className="text-center py-10">
+                            <p className="text-red-500">{error}</p>
+                            <button
+                                onClick={() => window.location.reload()}
+                                className="mt-4 px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/90"
+                            >
+                                Try Again
+                            </button>
+                        </div>
+                    ) : (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">{filteredProducts.map((product, index) => (
+                        <ProductGrid key={index} product={product} />
+                    ))}
+                    </div>
+                )}
+            </div>
         </section>
     );
 }

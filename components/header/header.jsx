@@ -6,6 +6,15 @@ import Image from "next/image"
 import { cn } from "@/lib/utils"
 import CountdownTimer from "./countdown-timer"
 import MegaMenu from "./mega-menu"
+import {
+    Modal,
+    ModalContent,
+    ModalHeader,
+    ModalBody,
+    ModalFooter,
+    Button,
+    useDisclosure,
+} from "@heroui/react";
 
 const mainMenu = [
     {
@@ -137,6 +146,7 @@ const mainMenu = [
 ];
 
 const Menu = () => {
+
     const [activeCategory, setActiveCategory] = useState(null)
 
     // Handlers for mouse events
@@ -218,6 +228,9 @@ const Menu = () => {
 }
 
 export default function Header() {
+
+    const { isOpen, onOpen, onOpenChange } = useDisclosure();
+
     const [isMenuOpen, setIsMenuOpen] = useState(false)
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
 
@@ -297,12 +310,11 @@ export default function Header() {
                             <Link href="/schedule" className="hidden md:block text-blue-600 hover:text-blue-800 text-sm font-medium">
                                 Schedule Meeting
                             </Link>
-                            <Link
-                                href="/login"
+                            <Button onPress={onOpen}
                                 className="hidden md:block bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium"
                             >
                                 Login / Sign up
-                            </Link>
+                            </Button>
                             <Link href="/cart" className="relative">
                                 <svg width="18" height="21" viewBox="0 0 18 21" fill="none" xmlns="http://www.w3.org/2000/svg">
                                     <path d="M5.74935 7.75V4.5C5.74935 2.70507 7.20442 1.25 8.99935 1.25C10.7943 1.25 12.2493 2.70507 12.2493 4.5V7.75M2.49935 5.58333H15.4993L16.5827 19.6667H1.41602L2.49935 5.58333Z" stroke="black" strokeWidth="1.5" strokeLinecap="round" />
@@ -323,6 +335,42 @@ export default function Header() {
                                 </svg>
                             </button>
                         </div>
+                        <Modal isOpen={isOpen} onOpenChange={onOpenChange}>
+                            <ModalContent>
+                                {(onClose) => (
+                                    <>
+                                        <ModalHeader className="flex flex-col gap-1">Log in</ModalHeader>
+                                        <ModalBody>
+                                            <p>
+                                                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam pulvinar risus non
+                                                risus hendrerit venenatis. Pellentesque sit amet hendrerit risus, sed porttitor
+                                                quam.
+                                            </p>
+                                            <p>
+                                                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam pulvinar risus non
+                                                risus hendrerit venenatis. Pellentesque sit amet hendrerit risus, sed porttitor
+                                                quam.
+                                            </p>
+                                            <p>
+                                                Magna exercitation reprehenderit magna aute tempor cupidatat consequat elit dolor
+                                                adipisicing. Mollit dolor eiusmod sunt ex incididunt cillum quis. Velit duis sit
+                                                officia eiusmod Lorem aliqua enim laboris do dolor eiusmod. Et mollit incididunt
+                                                nisi consectetur esse laborum eiusmod pariatur proident Lorem eiusmod et. Culpa
+                                                deserunt nostrud ad veniam.
+                                            </p>
+                                        </ModalBody>
+                                        <ModalFooter>
+                                            <Button color="danger" variant="light" onPress={onClose}>
+                                                Close
+                                            </Button>
+                                            <Button color="primary" onPress={onClose}>
+                                                Action
+                                            </Button>
+                                        </ModalFooter>
+                                    </>
+                                )}
+                            </ModalContent>
+                        </Modal>
                     </div>
                 </div>
             </div>
@@ -367,7 +415,7 @@ export default function Header() {
                         <Link href="/schedule" className="block px-3 py-2 text-base font-medium text-gray-700 hover:text-blue-600">
                             Schedule Meeting
                         </Link>
-                        <Link href="/login" className="block px-3 py-2 text-base font-medium text-gray-700 hover:text-blue-600">
+                        <Link href={`/login`} className="block px-3 py-2 text-base font-medium text-gray-700 hover:text-blue-600">
                             Login / Sign up
                         </Link>
                     </div>
