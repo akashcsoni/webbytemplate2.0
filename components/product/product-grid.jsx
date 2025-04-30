@@ -24,19 +24,19 @@ export default function ProductGrid({ product }) {
                 </Link>
                 <div className="flex items-center justify-between">
                     <div className="flex items-center">
-                        <div className="bg-[#000000] text-white rounded-full w-8 h-8 flex items-center justify-center text-xs mr-3">
+                        <div className="bg-[#000000] text-white rounded-full w-7 h-7 flex items-center justify-center text-xs mr-[10px]">
                             {product?.rating || 5}
                         </div>
                         <div>
-                            <h3 className="font-medium text-[#000000] cursor-pointer">{product?.short_title || product?.title}</h3>
-                            <p className="text-sm text-[#505050]">by {product?.author?.full_name || product?.author?.username}</p>
+                            <h3 className="text-base !text-black cursor-pointer">{product?.short_title || product?.title}</h3>
+                            <p className="text-sm text-gray-200"><span className="text-gray-300">by </span>{product?.author?.full_name || product?.author?.username}</p>
                         </div>
                     </div>
                     {
                         product?.price && (
                             <div>
-                                <span className="text-[#0156d5] font-medium">${product?.price?.sales_price?.toFixed(2)}</span><br />
-                                <span className="text-[#acb0b4] font-medium text-sm line-through">${product?.price?.regular_price?.toFixed(2)}</span>
+                                <span className="p !text-primary">${product?.price?.sales_price?.toFixed(2)}</span><br />
+                                <span className="p2 !text-gray-300 text-sm line-through">${product?.price?.regular_price?.toFixed(2)}</span>
                             </div>
                         )
                     }

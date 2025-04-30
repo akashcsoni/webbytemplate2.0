@@ -39,7 +39,7 @@ export default function CountdownTimer() {
   }, [])
 
   return (
-    <span className="font-mono text-base">
+    <span className="p2 !text-white text-base">
       {String(time.hours).padStart(2, "0")}:{String(time.minutes).padStart(2, "0")}:
       {String(time.seconds).padStart(2, "0")}
     </span>
