@@ -22,22 +22,22 @@ export default function FAQSection({ title, label, button, list }) {
     }
 
     return (
-        <div className="px-4 py-16">
+        <section className="xl:py-[35px] sm:py-[30px] py-5">
             <div className="container mx-auto">
-                <div className="grid md:grid-cols-2 gap-12">
-                    <div>
-                        <h2 className="text-3xl font-bold text-[#000000] mb-4">{title}</h2>
-                        <p className="text-[#505050] mb-8">{label}</p>
+                <div className="flex justify-between lg:flex-row flex-col 2xl:gap-52 xl:gap-20 sm:gap-8 gap-[30px]">
+                    <div className="xl:w-[30%] lg:w-[36%] w-full">
+                        <h2 className="md:mb-4 mb-3">{title}</h2>
+                        <p className="lg:mb-6 mb-5">{label}</p>
                         <Link href={button.link}>
-                            <button className="bg-[#0156d5] text-white px-6 py-3 rounded-md font-medium hover:bg-[#00193e] transition-colors">
+                            <button className="btn btn-primary">
                                 {button.label}
                             </button>
                         </Link>
                     </div>
 
-                    <div className="space-y-4">
+                    <div className="xl:space-y-7 md:space-y-5 space-y-4 lg:w-[58%] w-full">
                         {list.map((item, index) => (
-                            <div key={item.id} className="border-b border-gray-200 pb-4">
+                            <div key={item.id} className="border-b border-primary/10 2xl:pb-7 xl:pb-6 md:pb-5 pb-4">
                                 <div
                                     role="button"
                                     tabIndex={0}
@@ -47,11 +47,11 @@ export default function FAQSection({ title, label, button, list }) {
                                     aria-expanded={openQuestion === item.id}
                                     aria-controls={`faq-content-${item.id}`}
                                 >
-                                    <div className="flex items-center gap-3">
-                                        <span className="text-[#0156d5] font-medium">Q{index + 1}.</span>
-                                        <h3 className="text-lg font-medium">{item.title}</h3>
+                                    <div className="flex items-center md:gap-6 sm:gap-4 gap-2">
+                                        <span className="h5 !font-normal text-primary">Q{index + 1}.</span>
+                                        <h5 className="font-normal">{item.title}</h5>
                                     </div>
-                                    <span className="text-gray-500 p-1" aria-hidden="true">
+                                    <span className="text-gray-200 p-1" aria-hidden="true">
                                         {openQuestion === item.id ? (
                                             <svg
                                                 xmlns="http://www.w3.org/2000/svg"
@@ -89,7 +89,7 @@ export default function FAQSection({ title, label, button, list }) {
                                 </div>
 
                                 {openQuestion === item.id && (
-                                    <div id={`faq-content-${item.id}`} className="mt-3 pl-8 pr-4 text-[#505050]">
+                                    <div id={`faq-content-${item.id}`} className="2xl:mt-5 xl:mt-4 sm:mt-3 mt-2 lg:pl-14 md:pl-[52px] sm:pl-10 pl-8 pr-4 pb-0.5">
                                         <p>{item.label}</p>
                                     </div>
                                 )}
@@ -98,6 +98,6 @@ export default function FAQSection({ title, label, button, list }) {
                     </div>
                 </div>
             </div>
-        </div>
+        </section>
     )
 }

@@ -2,3 +2,230 @@
 @tailwind components;
 @tailwind utilities;
 
+@font-face {
+  font-family: "Product Sans";
+  src: url("../public/assets/fonts/ProductSans-Bold.eot");
+  src:
+    url("../public/assets/fonts/ProductSans-Bold.eot?#iefix")
+      format("embedded-opentype"),
+    url("../public/assets/fonts/ProductSans-Bold.woff2") format("woff2"),
+    url("../public/assets/fonts/ProductSans-Bold.woff") format("woff"),
+    url("../public/assets/fonts/ProductSans-Bold.ttf") format("truetype");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Product Sans";
+  src: url("../public/assets/fonts/ProductSans-Regular.eot");
+  src:
+    url("../public/assets/fonts/ProductSans-Regular.eot?#iefix")
+      format("embedded-opentype"),
+    url("../public/assets/fonts/ProductSans-Regular.woff2") format("woff2"),
+    url("../public/assets/fonts/ProductSans-Regular.woff") format("woff"),
+    url("../public/assets/fonts/ProductSans-Regular.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Product Sans";
+  src: url("../public/assets/fonts/ProductSans-Medium.eot");
+  src:
+    url("../public/assets/fonts/ProductSans-Medium.eot?#iefix")
+      format("embedded-opentype"),
+    url("../public/assets/fonts/ProductSans-Medium.woff2") format("woff2"),
+    url("../public/assets/fonts/ProductSans-Medium.woff") format("woff"),
+    url("../public/assets/fonts/ProductSans-Medium.ttf") format("truetype");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+h1,
+.h1 {
+  @apply 2xl:text-5xl xl:text-4xl lg:text-[38px] md:text-[32px] text-[28px] font-medium 2xl:leading-[70px] leading-tight;
+}
+h2,
+.h2 {
+  @apply 2xl:text-3xl xl:text-[32px] lg:text-[30px] sm:text-[28px] text-2xl font-medium sm:leading-[45px] leading-8;
+}
+h3,
+.h3 {
+  @apply 2xl:text-2xl sm:text-[23px] text-xl font-medium leading-[35px];
+}
+h4,
+.h4 {
+  @apply text-[22px] font-medium leading-[45px];
+}
+h5,
+.h5 {
+  @apply 2xl:text-xl xl:text-[19px] md:text-lg sm:text-[17px] text-base font-medium sm:leading-[30px] leading-6;
+}
+p,
+.p {
+  @apply 2xl:text-lg 1xl:text-[17px] text-base 1xl:leading-[30px] lg:leading-7 leading-6 text-gray-200;
+}
+.p2 {
+  @apply 2xl:text-base sm:text-[15px] text-sm font-normal leading-5 text-gray-200;
+}
+.btn {
+  @apply 2xl:px-5 xl:px-[18px] px-4 py-[7px] rounded-[5px] 2xl:text-base text-[15px] sm:leading-[25px] leading-5 flex-shrink-0;
+}
+.all-btn {
+  @apply p !font-medium leading-[25px] !text-primary;
+}
+.new-btn {
+  @apply p font-bold px-[10px] rounded-full;
+}
+.btn-primary {
+  @apply bg-primary text-white border border-primary hover:text-primary focus:text-primary active:text-primary hover:bg-white focus:bg-white active:bg-white transition-all duration-400 ease-in-out;
+}
+.btn-primary-reverse {
+  @apply bg-white text-primary border border-white hover:text-white focus:text-white active:text-white hover:bg-primary focus:bg-primary active:bg-primary transition-all duration-400 ease-in-out;
+}
+.btn-secondary-reverse {
+  @apply bg-white text-primary hover:text-black focus:text-black active:text-black transition-all duration-400 ease-in-out;
+}
+.btn-secondary {
+  @apply bg-blue-300 text-primary border border-blue-300 hover:border-primary focus:border-primary active:border-primary hover:text-white focus:text-white active:text-white hover:bg-primary focus:bg-primary active:bg-primary transition-all duration-400 ease-in-out;
+}
+.full_bg {
+  @apply 2xl:h-[500px] h-[470px] w-full bg-blue-300 absolute z-0;
+}
+.box_bg {
+  @apply 2xl:h-[400px] lg:h-[350px] sm:h-[330px] h-[440px] 2xl:w-[1580px] 1xl:w-[1330px] xl:w-[1210px] lg:w-[1070px] md:w-[830px] w-[675px] max-w-full mx-auto rounded-[15px] bg-blue-300 absolute z-0 left-1/2 -translate-x-1/2;
+}
+
+.box_bg + .container .wc_box_bg_secton,
+.full_bg + .container .wc_full_bg_secton {
+  @apply 2xl:pt-[60px] lg:pt-[50px] pt-[30px];
+}
+
+/* navbar start */
+.main-logo {
+  @apply w-[265px];
+}
+.nav-logo {
+  @apply flex-shrink-0 xl:border-r border-primary/10 sm:pr-[35px] sm:py-2;
+}
+.links-content {
+  @apply hidden xl:flex space-x-5 px-[27px];
+}
+.button-content {
+  @apply flex items-center gap-2;
+}
+.links {
+  @apply hover:!text-primary p2 !font-medium px-2 py-1 !text-base;
+}
+.search {
+  @apply h-6 w-6;
+}
+.schedule {
+  @apply hidden 1xl:block btn btn-secondary-reverse mr-[3px] !px-5;
+}
+.login {
+  min-width: auto;
+}
+.badge {
+  @apply absolute -top-2 -right-2 bg-primary text-white text-xs rounded-full h-5 w-5 flex items-center justify-center;
+}
+
+@media (max-width: 1595px) {
+  .search-bar {
+    @apply w-[54%];
+  }
+}
+@media (max-width: 1670px) {
+  .search-bar {
+    @apply w-[56%];
+  }
+}
+@media (max-width: 1754px) {
+  .search-bar {
+    @apply w-[58%];
+  }
+}
+@media (max-width: 1846px) {
+  .search-bar {
+    @apply w-[60%];
+  }
+}
+@media (max-width: 1557px) {
+  .main-logo {
+    @apply w-[230px];
+  }
+  .nav-logo {
+    @apply sm:pr-2;
+  }
+  .links-content {
+    @apply space-x-0 px-4;
+  }
+  .button-content {
+    @apply gap-1;
+  }
+  .search {
+    @apply w-5 h-5;
+  }
+  .schedule {
+    @apply !px-3;
+  }
+  /* .login {
+    @apply mr-[10px];
+  } */
+}
+@media (max-width: 1300px) {
+  .main-logo {
+    @apply w-[200px];
+  }
+  .links {
+    @apply !text-[15px];
+  }
+  .schedule {
+    @apply !px-2;
+  }
+  /* .login {
+    @apply mr-[10px] px-4;
+  } */
+}
+@media (max-width: 1260px) {
+  .tab-btn {
+    @apply grid-cols-2;
+  }
+}
+@media (max-width: 560px) {
+  .tab-btn {
+    @apply grid-cols-2;
+  }
+}
+@media (max-width: 384px) {
+  .tab-btn {
+    @apply grid-cols-1;
+  }
+  .icon {
+    @apply w-[18px] h-[18px];
+  }
+  .nav-icons {
+    @apply space-x-0;
+  }
+  .main-logo {
+    @apply w-[160px];
+  }
+}
+/* navbar end */
+/* rich text stat */
+.rich-heading {
+  @apply xl:mb-[25px] mb-4;
+}
+.rich-subHeading {
+  @apply xl:mb-5 mb-3;
+}
+.rich-desc {
+  @apply xl:space-y-5 space-y-2 xl:mb-9 mb-4;
+}
+.rich-subDesc {
+  @apply xl:space-y-5 space-y-2 xl:mb-8 mb-4;
+}
+/* rich text end */

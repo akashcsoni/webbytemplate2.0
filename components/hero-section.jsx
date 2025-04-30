@@ -1,161 +1,215 @@
-"use client"
+"use client";
 
-import { useState, useRef, useEffect } from "react"
-import Image from "next/image"
+import { useState, useRef, useEffect } from "react";
+import Image from "next/image";
 
-export default function HeroSection({ title, description, tags = [], categories = [], isLoading = false }) {
-    const [isOpen, setIsOpen] = useState(false)
-    const [selectedCategory, setSelectedCategory] = useState("All Categories")
-    const dropdownRef = useRef(null)
+export default function HeroSection({
+  title,
+  description,
+  tags = [],
+  categories = [],
+  isLoading = false,
+}) {
+  const [isOpen, setIsOpen] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState("All Categories");
+  const dropdownRef = useRef(null);
 
-    // Close dropdown when clicking outside
-    useEffect(() => {
-        function handleClickOutside(event) {
-            if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-                setIsOpen(false)
-            }
-        }
-
-        document.addEventListener("mousedown", handleClickOutside)
-        return () => {
-            document.removeEventListener("mousedown", handleClickOutside)
-        }
-    }, [])
-
-    if (isLoading) {
-        return (
-            <div className="container mx-auto px-4 py-16 flex justify-center">
-                <div className="animate-pulse">
-                    <div className="h-10 bg-gray-200 rounded w-96 mb-4"></div>
-                    <div className="h-4 bg-gray-200 rounded w-80 mb-8"></div>
-                    <div className="h-12 bg-gray-200 rounded w-full max-w-4xl"></div>
-                </div>
-            </div>
-        )
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsOpen(false);
+      }
     }
 
-    if (!title || !description) {
-        return (
-            <div className="container mx-auto px-4 py-16 text-center">
-                <p>Failed to load hero data. Please try again later.</p>
-            </div>
-        )
-    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
+  if (isLoading) {
     return (
-        <section className="px-4 py-16 ">
-            <div className="container mx-auto max-w-6xl">
-                <div className="flex flex-col items-center text-center">
-                    {/* Main Heading */}
-                    <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-[#000000] max-w-5xl leading-tight mb-6">
-                        {title}
-                    </h1>
+      <div className="container mx-auto py-16 flex justify-center">
+        <div className="animate-pulse">
+          <div className="h-10 bg-gray-200 rounded w-96 mb-4"></div>
+          <div className="h-4 bg-gray-200 rounded w-80 mb-8"></div>
+          <div className="h-12 bg-gray-200 rounded w-full max-w-4xl"></div>
+        </div>
+      </div>
+    );
+  }
 
-                    {/* Subheading */}
-                    <p className="text-[#505050] max-w-4xl mb-10 text-base md:text-lg">{description}</p>
+  if (!title || !description) {
+    return (
+      <div className="container mx-auto px-4 py-16 text-center">
+        <p>Failed to load hero data. Please try again later.</p>
+      </div>
+    );
+  }
 
-                    {/* Search Bar */}
-                    <div className="w-full max-w-4xl mb-8">
-                        <div className="flex flex-col md:flex-row gap-2 p-2 bg-white rounded-lg shadow-md">
-                            {/* Categories Dropdown */}
-                            <div className="relative min-w-[180px]" ref={dropdownRef}>
-                                <button
-                                    className="flex items-center justify-between w-full px-4 py-3 text-[#000000] bg-white rounded-md border border-[#d9dde2] hover:border-[#0156d5] transition-colors"
-                                    onClick={() => setIsOpen(!isOpen)}
-                                    aria-expanded={isOpen}
-                                    aria-haspopup="true"
-                                >
-                                    <span className="font-medium">{selectedCategory}</span>
-                                    <svg
-                                        xmlns="http://www.w3.org/2000/svg"
-                                        width="20"
-                                        height="20"
-                                        viewBox="0 0 24 24"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        strokeWidth="2"
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        className={`text-[#505050] transition-transform duration-200 ${isOpen ? "transform rotate-180" : ""}`}
-                                    >
-                                        <path d="m6 9 6 6 6-6" />
-                                    </svg>
-                                </button>
+  return (
+    <section className="xl:pb-[35px] pb-[30px] 2xl:pt-20 1xl:pt-16 lg:pt-14 sm:pt-12 pt-8">
+      <div className="container mx-auto">
+        <div className="flex flex-col items-center text-center">
+          {/* Main Heading */}
+          <h1 className="mb-[22px]">{title}</h1>
 
-                                {/* Dropdown Menu */}
-                                {isOpen && (
-                                    <div className="absolute z-10 w-full mt-1 bg-white border border-[#d9dde2] rounded-md shadow-lg">
-                                        <ul className="py-1 max-h-60 overflow-auto" role="menu" aria-orientation="vertical">
-                                            <li>
-                                                <button
-                                                    className={`w-full text-left px-4 py-2 hover:bg-[#e6effb] ${selectedCategory === "All Categories" ? "bg-[#e6effb] text-[#0156d5]" : "text-[#505050]"}`}
-                                                    onClick={() => {
-                                                        setSelectedCategory("All Categories")
-                                                        setIsOpen(false)
-                                                    }}
-                                                    role="menuitem"
-                                                >
-                                                    All Categories
-                                                </button>
-                                            </li>
-                                            {categories.map((category) => (
-                                                <li key={category.id}>
-                                                    <button
-                                                        className={`w-full text-left px-4 py-2 hover:bg-[#e6effb] ${selectedCategory === category.title ? "bg-[#e6effb] text-[#0156d5]" : "text-[#505050]"}`}
-                                                        onClick={() => {
-                                                            setSelectedCategory(category.title)
-                                                            setIsOpen(false)
-                                                        }}
-                                                        role="menuitem"
-                                                        title={category.short_description}
-                                                    >
-                                                        {category.title}
-                                                    </button>
-                                                </li>
-                                            ))}
-                                        </ul>
-                                    </div>
-                                )}
-                            </div>
+          {/* Subheading */}
+          <p className="xl:max-w-5xl max-w-[49rem] mb-5 md:mb-9 2xl:text-lg lg:text-[17px] md:text-base">
+            {description}
+          </p>
 
-                            {/* Search Input */}
-                            <div className="flex-1">
-                                <input
-                                    type="text"
-                                    placeholder="Search for mockups, Web Templates and More....."
-                                    className="w-full px-4 py-3 text-[#505050] bg-white border border-[#d9dde2] rounded-md focus:outline-none focus:ring-2 focus:ring-[#0156d5] focus:border-transparent"
-                                />
-                            </div>
+          {/* Search Bar */}
+          <div className="w-full 2xl:max-w-[53rem] max-w-3xl mb-[35px] z-30">
+            <div className="flex gap-2 2xl:p-3.5 md:p-2.5 p-1.5 bg-white rounded-lg drop-shadow-primary border border-primary/10">
+              {/* Categories Dropdown */}
+              <div
+                className="relative 1xl:w-[180px] lg:w-[175px] md:w-[170px] sm:w-[165px] w-[27%] flex"
+                ref={dropdownRef}
+              >
+                <button
+                  className="flex items-center justify-between w-full sm:px-4 px-2 text-[#000000] bg-white border-r border-[#d9dde2] transition-colors"
+                  onClick={() => setIsOpen(!isOpen)}
+                  aria-expanded={isOpen}
+                  aria-haspopup="true"
+                >
+                  <p className="text-black truncate max-w-[100px] sm:max-w-none whitespace-nowrap overflow-hidden text-ellipsis">
+                    {selectedCategory}
+                  </p>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className={`text-[#505050] flex-shrink-0 transition-transform duration-200 ${isOpen ? "transform rotate-180" : ""}`}
+                  >
+                    <path d="m6 9 6 6 6-6" />
+                  </svg>
+                </button>
 
-                            {/* Search Button */}
-                            <button className="px-6 py-3 bg-[#0156d5] text-white font-medium rounded-md hover:bg-[#00193e] transition-colors">
-                                Search
-                            </button>
-                        </div>
-                    </div>
+                {isOpen && (
+                  <div className="absolute w-full mt-[55px] bg-white border border-[#d9dde2] rounded-md shadow-lg overflow-hidden">
+                    <ul
+                      className="py-1 max-h-60 overflow-auto"
+                      role="menu"
+                      aria-orientation="vertical"
+                    >
+                      <li>
+                        <button
+                          className={`w-full text-left px-4 py-2 hover:bg-blue-300 ${
+                            selectedCategory === "All Categories"
+                              ? "bg-blue-300 text-primary"
+                              : "text-gray-200"
+                          }`}
+                          onClick={() => {
+                            setSelectedCategory("All Categories");
+                            setIsOpen(false);
+                          }}
+                          role="menuitem"
+                        >
+                          All Categories
+                        </button>
+                      </li>
+                      {categories.map((category) => (
+                        <li key={category.id}>
+                          <button
+                            className={`w-full text-left px-4 py-2 hover:bg-blue-300 ${
+                              selectedCategory === category.title
+                                ? "bg-blue-300 text-primary"
+                                : "text-gray-200"
+                            }`}
+                            onClick={() => {
+                              setSelectedCategory(category.title);
+                              setIsOpen(false);
+                            }}
+                            role="menuitem"
+                            title={category.short_description}
+                          >
+                            {category.title}
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
 
-                    {/* Category Pills */}
-                    <div className="flex flex-wrap justify-center gap-4">
-                        {tags.map((tag) => (
-                            <CategoryPill key={tag.id} icon={tag.image} label={tag.label} link={tag.link} />
-                        ))}
-                    </div>
-                </div>
+              {/* Search Input */}
+              <div className="flex-1 flex">
+                <input
+                  type="text"
+                  placeholder="Search for mockups, Web Templates and More....."
+                  className="w-full sm:px-4 px-2 p2 text-[#505050] bg-white focus:outline-none"
+                />
+              </div>
+
+              {/* Search Button */}
+              <button className="btn btn-primary tracking-wide drop-shadow-primary">
+                <span className="sm:block hidden">Search</span>
+                <svg
+                  className="stroke-white group-hover:stroke-primary group-active:stroke-primary group-focus:stroke-primary sm:hidden block"
+                  width="18"
+                  height="18"
+                  viewBox="0 0 22 22"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M15.1667 15.1667L18.9472 18.9675M3.5 10.1667C3.5 11.9348 4.20238 13.6305 5.45262 14.8807C6.70286 16.131 8.39856 16.8333 10.1667 16.8333C11.9348 16.8333 13.6305 16.131 14.8807 14.8807C16.131 13.6305 16.8333 11.9348 16.8333 10.1667C16.8333 8.39856 16.131 6.70286 14.8807 5.45262C13.6305 4.20238 11.9348 3.5 10.1667 3.5C8.39856 3.5 6.70286 4.20238 5.45262 5.45262C4.20238 6.70286 3.5 8.39856 3.5 10.1667Z"
+                    strokeWidth="1.6"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  ></path>
+                </svg>
+              </button>
             </div>
-        </section>
-    )
+          </div>
+
+          {/* Category Pills */}
+          <div className="flex flex-wrap justify-center gap-4">
+            {tags.map((tag) => (
+              <CategoryPill
+                key={tag.id}
+                icon={tag.image}
+                label={tag.label}
+                link={tag.link}
+              />
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
 }
 
 function CategoryPill({ icon, label, link }) {
-    return (
-        <a
-            href={link || "#"}
-            className="flex items-center gap-2 px-4 py-2 bg-[#e6effb] text-[#0156d5] rounded-md hover:bg-[#d9e5f7] transition-colors"
+  return (
+    <a
+      href={link || "#"}
+      className="flex items-center gap-2 btn btn-secondary xl:!px-[18px] sm:px-4 !px-[14px sm!:py-[7px] !py-[5px]"
+    >
+      <div className="w-5 h-5 relative">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width={19}
+          height={19}
+          viewBox="0 0 256 256"
         >
-            <div className="w-5 h-5 relative">
-                <Image src={icon || "/placeholder.svg"} alt="" width={20} height={20} className="object-contain" />
-            </div>
-            <span className="font-medium">{label}</span>
-        </a>
-    )
+          <path
+            fill="currentColor"
+            d="M225.86 102.82c-3.77-3.94-7.67-8-9.14-11.57c-1.36-3.27-1.44-8.69-1.52-13.94c-.15-9.76-.31-20.82-8-28.51s-18.75-7.85-28.51-8c-5.25-.08-10.67-.16-13.94-1.52c-3.56-1.47-7.63-5.37-11.57-9.14C146.28 23.51 138.44 16 128 16s-18.27 7.51-25.18 14.14c-3.94 3.77-8 7.67-11.57 9.14c-3.25 1.36-8.69 1.44-13.94 1.52c-9.76.15-20.82.31-28.51 8s-7.8 18.75-8 28.51c-.08 5.25-.16 10.67-1.52 13.94c-1.47 3.56-5.37 7.63-9.14 11.57C23.51 109.72 16 117.56 16 128s7.51 18.27 14.14 25.18c3.77 3.94 7.67 8 9.14 11.57c1.36 3.27 1.44 8.69 1.52 13.94c.15 9.76.31 20.82 8 28.51s18.75 7.85 28.51 8c5.25.08 10.67.16 13.94 1.52c3.56 1.47 7.63 5.37 11.57 9.14c6.9 6.63 14.74 14.14 25.18 14.14s18.27-7.51 25.18-14.14c3.94-3.77 8-7.67 11.57-9.14c3.27-1.36 8.69-1.44 13.94-1.52c9.76-.15 20.82-.31 28.51-8s7.85-18.75 8-28.51c.08-5.25.16-10.67 1.52-13.94c1.47-3.56 5.37-7.63 9.14-11.57c6.63-6.9 14.14-14.74 14.14-25.18s-7.51-18.27-14.14-25.18m-52.2 6.84l-56 56a8 8 0 0 1-11.32 0l-24-24a8 8 0 0 1 11.32-11.32L112 148.69l50.34-50.35a8 8 0 0 1 11.32 11.32"
+            strokeWidth={0}
+            stroke="currentColor"
+          ></path>
+        </svg>
+      </div>
+      <span className="text-base">{label}</span>
+    </a>
+  );
 }
