@@ -1,5 +1,5 @@
 export const siteConfig = {
-  name: "Next.js + HeroUI",
+  name: "WebbyTemplate@2.0",
   description: "Make beautiful websites regardless of your design experience.",
   navItems: [
     {

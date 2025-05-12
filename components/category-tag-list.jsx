@@ -9,11 +9,11 @@ const CategoryTagList = ({ title, description, categories }) => {
     }
 
     return (
-        <div className="bg-[#e6effb] py-16">
-            <div className="container mx-auto px-4 max-w-6xl">
-                <h1 className="text-3xl font-bold text-[#000000] mb-2">{title}</h1>
-                <p className="text-[#505050] mb-8">{description}</p>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+        <div className="bg-blue-300 md:py-[50px] sm:py-9 py-6">
+            <div className="container">
+                <h1 className="h2 mb-[10px]">{title}</h1>
+                <p className="sm:mb-[30px] mb-5">{description}</p>
+                <div className="grid grid-cols-2 lg:grid-cols-4 sm:gap-4 gap-3 mb-4 html-categories">
                     {categories.map((category, index) => (
                         <CategoryTagCard key={index} category={category} />
                     ))}
