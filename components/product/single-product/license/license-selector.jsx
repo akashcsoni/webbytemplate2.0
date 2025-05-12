@@ -31,14 +31,14 @@ export default function LicenseSelector({ licenses }) {
     }, {})
 
     return (
-        <div className="space-y-6">
+        <div className="lg:space-y-6 space-y-4">
             {Object.entries(licensesByType).map(([type, typeLicenses]) => (
-                <div key={type} className="space-y-4">
-                    <h3 className="text-sm font-medium text-muted-foreground uppercase">
+                <div key={type} className="lg:space-y-4 space-y-2">
+                    <h5 className='text-black !font-medium 2xl:!text-xl xl:!text-lg lg:!text-[17px] !text-lg'>
                         {type === 'choose_a_license' ? 'License Options' : 'Get Services from UI Website Templates Experts'}
-                    </h3>
+                    </h5>
 
-                    <div className="space-y-3">
+                    <div className="space-y-[14px]">
                         {typeLicenses.map(license => (
                             <div key={license.id} className="flex items-center justify-between">
                                 <div className="flex items-center gap-2">
@@ -61,7 +61,7 @@ export default function LicenseSelector({ licenses }) {
                                                 onChange={() => handleAddonChange(license.id)}
                                             />
                                         )}
-                                        <label htmlFor={`license-${license.id}`} className="ml-2 text-[#000000]">
+                                        <label htmlFor={`license-${license.id}`} className="p2 ml-[10px]">
                                             {license.license.title}
                                         </label>
                                         <div className="relative group">
@@ -73,7 +73,7 @@ export default function LicenseSelector({ licenses }) {
                                                 strokeWidth="2"
                                                 strokeLinecap="round"
                                                 strokeLinejoin="round"
-                                                className="w-4 h-4 text-[#808080] ml-1 cursor-help"
+                                                className="w-[18px] h-[18px] text-[#808080] ml-1 cursor-help"
                                             >
                                                 <circle cx="12" cy="12" r="10" />
                                                 <line x1="12" y1="16" x2="12" y2="12" />
@@ -86,7 +86,7 @@ export default function LicenseSelector({ licenses }) {
                                         </div>
                                     </div>
                                 </div>
-                                <span className={`font-medium ${license.contact_sale ? 'text-[#505050] italic' : ''}`}>
+                                <span className={`font-medium p2 !text-black ${license.contact_sale ? 'text-[#505050] italic' : ''}`}>
                                     {license.contact_sale ? 'Full Access' : `$${license.sales_price.toFixed(2)}`}
                                 </span>
                             </div>

@@ -28,6 +28,7 @@ module.exports = {
     extend: {
       fontFamily: {
         sans: ["Product Sans"],
+        Space_Mono: ["Space Mono"],
       },
       colors: {
         black: "#000000",
@@ -55,6 +56,12 @@ module.exports = {
       dropShadow: {
         primary: "0px 6px 20px #0156D51A",
         category: "0px 2px 3px 0px #0000001F",
+      },
+    
+      boxShadow: {
+        'gray': '0px -2px 15px 0px #00000014',
+        'dropDown': '0px 3px 20px 0px #00000024',
+         'gray-inset': '0px 2px 1px 0px #FFFFFF inset',
       },
       fontSize: {
         "5xl": "3.75rem",

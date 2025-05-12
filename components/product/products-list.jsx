@@ -93,9 +93,7 @@ export default function ProductsList(props) {
             <div className="flex justify-between sm:items-center items-start sm:flex-row flex-col sm:mb-[30px] mb-6">
               <div>
                 <h2>{title}</h2>
-                <p className="mt-2 lg:max-w-full max-w-[369px]">
-                  {description}
-                </p>
+                <p className=" 2xl:text-lg 1xl:text-[17px] lg:text-base text-[15px] mt-2 2xl:w-[926px] lg:w-[775px] md:w-[550px] sm:w-[445px] max-w-full">{description}</p>
               </div>
               {link && (
                 <Link
@@ -125,10 +123,10 @@ export default function ProductsList(props) {
               )}
             </div>
             {categories_list && categories_list?.length > 0 && (
-              <div className="grid 1xl:grid-cols-7 xl:grid-cols-6 lg:grid-cols-5 md:grid-cols-4 grid-cols-3 lg:gap-4 gap-3 mb-6 overflow-x-auto pb-2 tab-btn">
+              <div className="grid 1xl:grid-cols-7 xl:grid-cols-6 md:grid-cols-4 sm:grid-cols-3 grid-cols-2 lg:gap-4 gap-3 mb-10 overflow-x-auto pb-2 tab-btn">
                 <button
                   onClick={() => setSelectedCategory(null)}
-                  className={`btn btn-primary whitespace-nowrap p-0 ${
+                  className={`btn whitespace-nowrap px-0 !py-2.5 !h-auto ${
                     selectedCategory === null
                       ? "bg-primary text-white border-primary"
                       : "bg-white border-gray-200 hover:bg-gray-50"
@@ -136,11 +134,12 @@ export default function ProductsList(props) {
                 >
                   All
                 </button>
+
                 {categories_list?.map((category, index) => (
                   <button
                     key={index}
                     onClick={() => handleCategoryClick(category?.slug)}
-                    className={`btn btn-primary-reverse whitespace-nowrap p-0 ${
+                    className={`btn whitespace-nowrap px-0 !py-[9px] !h-auto ${
                       selectedCategory === category?.slug
                         ? "bg-primary text-white border-primary"
                         : "bg-white border-gray-200 hover:bg-gray-50 hover:text-primary hover:border-primary"

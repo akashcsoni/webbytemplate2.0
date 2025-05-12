@@ -11,7 +11,7 @@ export default function ReviewSection({ title, label, link, list }) {
         <div className="flex justify-between sm:items-center items-start sm:flex-row flex-col sm:mb-[30px] mb-6">
           <div>
             <h2>{title}</h2>
-            <p className="mt-2 lg:max-w-full max-w-[369px]">{label}</p>
+            <p className="mt-3  lg:max-w-full max-w-[926px]">{label}</p>
           </div>
           <Link
             href={link?.link}

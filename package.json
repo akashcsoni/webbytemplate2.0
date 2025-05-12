@@ -9,6 +9,7 @@
   "lint": "eslint . --ext .ts,.tsx -c .eslintrc.json --fix"
  },
  "dependencies": {
+  "@headlessui/react": "^2.2.2",
   "@heroui/button": "2.2.13",
   "@heroui/code": "2.2.10",
   "@heroui/input": "2.4.13",
@@ -21,15 +22,20 @@
   "@heroui/switch": "2.2.12",
   "@heroui/system": "2.4.10",
   "@heroui/theme": "2.4.9",
+  "@nextui-org/react": "^2.6.11",
   "@react-aria/ssr": "3.9.7",
   "@react-aria/visually-hidden": "3.8.19",
-  "clsx": "2.1.1",
+  "clsx": "^2.1.1",
   "framer-motion": "^11.13.1",
   "intl-messageformat": "^10.5.0",
+  "lucide-react": "^0.507.0",
   "next": "^15.2.1",
   "next-themes": "^0.4.4",
   "react": "18.3.1",
-  "react-dom": "18.3.1"
+  "react-dom": "18.3.1",
+  "react-tabulator": "^0.21.0",
+  "recharts": "^2.15.3",
+  "swiper": "^11.2.6"
  },
  "devDependencies": {
   "@next/eslint-plugin-next": "15.0.4",
@@ -39,7 +45,7 @@
   "@types/react-dom": "18.3.0",
   "@typescript-eslint/eslint-plugin": "8.11.0",
   "@typescript-eslint/parser": "8.11.0",
-  "autoprefixer": "10.4.19",
+  "autoprefixer": "^10.4.19",
   "eslint": "^8.57.0",
   "eslint-config-next": "15.0.4",
   "eslint-config-prettier": "9.1.0",
@@ -50,10 +56,10 @@
   "eslint-plugin-react": "^7.23.2",
   "eslint-plugin-react-hooks": "^4.6.0",
   "eslint-plugin-unused-imports": "4.1.4",
-  "postcss": "8.4.49",
+  "postcss": "^8.4.49",
   "prettier": "3.3.3",
   "tailwind-variants": "0.3.0",
-  "tailwindcss": "3.4.16",
+  "tailwindcss": "^3.4.16",
   "typescript": "5.6.3"
  }
 }

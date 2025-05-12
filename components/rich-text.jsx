@@ -8,6 +8,7 @@ export function RichText({ body, read_more}) {
     const [showToggle, setShowToggle] = useState(false);
     const [characterLimit, setCharacterLimit] = useState(2000);
 
+  console.log(displayContent);
 
       // Determine limit based on screen size
   const calculateCharacterLimit = () => {
