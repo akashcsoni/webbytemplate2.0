@@ -194,7 +194,7 @@ export async function FooterFooterContainer() {
 
         return <Footer footerMenu={menuData} footerSettings={settingsData} />;
     } catch (error) {
-        console.error("Error in Footer component:", error);
+        console.error("Error in Footer component:", error)
         // Return fallback component in case of error
         return <Footer footerMenu={fallbackMenuData.data.menu} footerSettings={fallbackSettingsData.data[0]} />;
     }
