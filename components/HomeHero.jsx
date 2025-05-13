@@ -1,9 +1,8 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import Image from "next/image";
 
-export default function HeroSection({
+export default function HomeHero({
   title,
   description,
   tags = [],

@@ -1,9 +1,8 @@
 "use client";
 
 import React, { useState } from "react";
-import FaqSection from "@/components/faq-section";
-import FAQSection from "@/components/faq-section";
 import { Button } from "@heroui/react";
+import FaqSection from "./FaqSection";
 
 const tabs = [
   { key: "overview", title: "Overview" },
@@ -65,11 +64,10 @@ const SinglePageTab = ({ data }) => {
           <button
             key={tab.key}
             onClick={() => setActiveTab(tab.key)}
-            className={`px-4 py-2 p transition-all duration-200 border-b-2 ${
-              activeTab === tab.key
+            className={`px-4 py-2 p transition-all duration-200 border-b-2 ${activeTab === tab.key
                 ? "border-blue-600 !text-blue-600"
                 : "text-gray-600 hover:text-blue-600 border-transparent"
-            } bg-transparent`}
+              } bg-transparent`}
           >
             {tab.title}
           </button>
@@ -101,9 +99,8 @@ const SinglePageTab = ({ data }) => {
                 >
                   {selected}
                   <svg
-                    className={`ml-2 h-4 w-4 transition-transform duration-300 ease-in-out ${
-                      open ? "rotate-180" : "rotate-0"
-                    }`}
+                    className={`ml-2 h-4 w-4 transition-transform duration-300 ease-in-out ${open ? "rotate-180" : "rotate-0"
+                      }`}
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -248,7 +245,7 @@ const SinglePageTab = ({ data }) => {
         )}
 
         {/* faq Tab */}
-        {activeTab === "faq" && <FAQSection list={data?.faq} type="full"/>}
+        {activeTab === "faq" && <FaqSection list={data?.faq} type="full" />}
       </div>
     </div>
   );

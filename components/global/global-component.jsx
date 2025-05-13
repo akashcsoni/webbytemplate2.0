@@ -1,35 +1,51 @@
-import CategoryTagList from "../category-tag-list"
-import FAQSection from "../faq-section"
-import HeroSection from "../hero-section"
-import ProductsList from "../product/products-list"
-import ReviewSection from "../review-section"
-import { RichText } from "../rich-text"
-import ServiceSection from "../service-section"
-import SubscribeSection from "../subscribe-section"
+'use client';
+
+import { useEffect, useState } from 'react';
 
 export default function GlobalComponent({ data }) {
+    const [components, setComponents] = useState({});
+
+    useEffect(() => {
+        // Dynamically load components based on `__component` names
+        const loadComponents = async () => {
+            const componentMap = {};
+
+            // Loop through each component in the data
+            for (const component of data.components) {
+                const componentName = component.__component.split('.')[1]; // Get the part after "shared."
+                const pascalCaseName = convertToPascalCase(componentName);
+
+                // Dynamically import component
+                try {
+                    const { default: DynamicComponent } = await import(`../${pascalCaseName}`);
+                    componentMap[pascalCaseName] = DynamicComponent;
+                } catch (err) {
+                    console.error(`Error loading component ${pascalCaseName}:`, err);
+                }
+            }
+
+            setComponents(componentMap);
+        };
+
+        loadComponents();
+    }, [data.components]);
+
+    // Convert component name to PascalCase
+    const convertToPascalCase = (str) => {
+        return str
+            .replace(/(^[a-z])|(-[a-z])/g, (match) => match.toUpperCase())
+            .replace(/-/g, ''); // Remove the hyphens
+    };
+
+    // Render the component dynamically based on the data
     const renderComponent = (component, index) => {
-        switch (component.__component) {
-            case "shared.home-hero":
-                return <HeroSection key={index} {...component} />
-            case "shared.service-section":
-                return <ServiceSection key={index} {...component} />
-            case "shared.review":
-                return <ReviewSection key={index} {...component} />
-            case "shared.faq-section":
-                return <FAQSection key={index} {...component} />
-            case "shared.products-list":
-                return <ProductsList key={index} {...component} />
-            case "shared.rich-text":
-                return <RichText key={index} {...component} />
-            case "shared.subscribe-section":
-                return <SubscribeSection key={index} {...component} />
-            case "shared.category-tag-list":
-                return <CategoryTagList key={index} {...component} />
-            default:
-                return null
-        }
-    }
+        const componentName = component.__component.split('.')[1]; // Get part after "shared."
+        const pascalCase = convertToPascalCase(componentName);
+        const DynamicComponent = components[pascalCase];
+        if (!DynamicComponent) return null;
+
+        return <DynamicComponent key={index} {...component} />;
+    };
 
     return (
         <div className="global-component">
@@ -37,3 +53,4 @@ export default function GlobalComponent({ data }) {
         </div>
     );
 }
+

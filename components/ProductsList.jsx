@@ -1,9 +1,8 @@
 "use client";
 import { useState, useEffect } from "react";
-import Image from "next/image";
 import Link from "next/link";
 import { apiRequest } from "@/lib/api-utils";
-import ProductGrid from "./product-grid";
+import ProductGrid from "./product/product-grid";
 
 /**
  * Products List Component
@@ -30,7 +29,6 @@ export default function ProductsList(props) {
     categories_list,
   } = props;
 
-  const [products, setProducts] = useState([]);
   const [filteredProducts, setFilteredProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -60,13 +58,11 @@ export default function ProductsList(props) {
 
         const productsData = response.data || [];
 
-        setProducts(productsData);
         setFilteredProducts(productsData);
         setError(null);
       } catch (err) {
         console.error("Error fetching products:", err);
         setError("Failed to load products. Please try again later.");
-        setProducts([]);
         setFilteredProducts([]);
       } finally {
         setLoading(false);
