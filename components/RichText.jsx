@@ -2,13 +2,12 @@
 
 import { useState, useEffect } from "react";
 
-export function RichText({ body, read_more }) {
+export default function RichText({ body, read_more }) {
+
     const [isExpanded, setIsExpanded] = useState(false);
     const [displayContent, setDisplayContent] = useState(body);
     const [showToggle, setShowToggle] = useState(false);
     const [characterLimit, setCharacterLimit] = useState(2000);
-
-    console.log(displayContent);
 
     // Determine limit based on screen size
     const calculateCharacterLimit = () => {
@@ -109,7 +108,7 @@ export function RichText({ body, read_more }) {
     }, [body, read_more, characterLimit, isExpanded]);
 
     return (
-        <section className="xl:py-[35px] sm:py-[30px] py-5">
+        <section className="xl:py-[35px] sm:py-[30px] py-5 RichText">
             <div className="bg-blue-300">
                 <div className="rich-text container xl:py-[60px] sm:py-[45px] py-10">
                     <div
