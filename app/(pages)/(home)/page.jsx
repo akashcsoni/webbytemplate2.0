@@ -1,22 +1,22 @@
+import ErrorPage from "@/components/common/error/ErrorPage";
 import GlobalComponent from "@/components/global/global-component";
+import { themeConfig } from "@/config/theamConfig";
+import { strapiGet } from "@/lib/api/strapiClient";
 
-const getPageData = async () => {
+export default async function HomePage() {
   try {
-    const response = await fetch(
-      "https://studio.webbytemplate.com/api/pages/home",
-      {
-        cache: "no-store",
-      },
-    );
-    const { result, data } = await response.json();
-    if (!result || !data) throw new Error("Failed to load page data");
-    return data;
-  } catch (error) {
-    throw error;
-  }
-};
+    // Pass the token to the strapiGet function
+    const pageData = await strapiGet("pages/home", {
+      params: { populate: "*" },
+      token : themeConfig.TOKEN, // Passing token here
+    });
 
-export default async function Home() {
-  const pageData = await getPageData();
-  return <GlobalComponent data={pageData} />;
+    if (!pageData || !pageData.data || Object.keys(pageData.data).length === 0) {
+      throw new Error("Page data is empty");
+    }
+
+    return <GlobalComponent data={pageData.data} />;
+  } catch (error) {
+    return <ErrorPage error={error} />; // Show dynamic error
+  }
 }

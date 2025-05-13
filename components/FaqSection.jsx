@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 
-export default function FAQSection({
+export default function FaqSection({
   title,
   label,
   button,

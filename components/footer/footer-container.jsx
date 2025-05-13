@@ -1,4 +1,6 @@
+import { strapiGet } from "@/lib/api/strapiClient";
 import { Footer } from "./footer"
+import { themeConfig, URL } from "@/config/theamConfig";
 
 // Fallback data for footer menu
 const fallbackMenuData = {
@@ -155,69 +157,46 @@ const fallbackSettingsData = {
 
 export async function FooterFooterContainer() {
     try {
-        // Fetch both APIs in parallel
+        // Fetch both APIs in parallel using strapiGet
         const [menuResponse, settingsResponse] = await Promise.all([
-            fetch("https://studio.webbytemplate.com/api/footer-menu", {
-                next: { revalidate: 3600 }, // Revalidate every hour
-            }),
-            fetch("https://studio.webbytemplate.com/api/footer-setting", {
-                next: { revalidate: 3600 }, // Revalidate every hour
-            }),
-        ])
+            strapiGet("footer-menu", { params: { populate: "*" }, token: themeConfig.TOKEN }),
+            strapiGet("footer-setting", { params: { populate: "*" }, token: themeConfig.TOKEN }),
+        ]);
 
-        // Process menu response
-        let menuData
-        if (!menuResponse.ok) {
-            console.error("Failed to fetch footer menu data:", menuResponse.statusText)
-            menuData = fallbackMenuData.data.menu
-        } else {
-            const menuJson = await menuResponse.json()
-            menuData = menuJson?.data?.menu || fallbackMenuData.data.menu
-        }
+        // Process menu response with fallback
+        let menuData = menuResponse?.data?.menu || fallbackMenuData.data.menu;
 
-        // Process settings response
-        let settingsData
-        if (!settingsResponse.ok) {
-            console.error("Failed to fetch footer settings data:", settingsResponse.statusText)
-            settingsData = fallbackSettingsData.data[0]
-        } else {
-            const settingsJson = await settingsResponse.json()
-            settingsData = settingsJson?.data?.[0] || fallbackSettingsData.data[0]
-        }
+        // Process settings response with fallback
+        let settingsData = settingsResponse?.data?.[0] || fallbackSettingsData.data[0];
 
-        // Prepare the base URL for images
-        const baseUrl = "https://studio.webbytemplate.com"
-
-        // Format the logo URL if it exists
+        // Format logo, social media images, and button images
         if (settingsData.logo && settingsData.logo.url && !settingsData.logo.url.startsWith("http")) {
-            settingsData.logo.url = `${baseUrl}${settingsData.logo.url}`
+            settingsData.logo.url = `${URL}${settingsData.logo.url}`;
         }
 
-        // Format social media image URLs
         if (settingsData.social_media) {
-            settingsData.social_media = settingsData.social_media.map((social) => {
+            settingsData.social_media = settingsData.social_media.map(social => {
                 if (social.image && !social.image.startsWith("http")) {
-                    social.image = `${baseUrl}${social.image}`
+                    social.image = `${URL}${social.image}`;
                 }
-                return social
-            })
+                return social;
+            });
         }
 
-        // Format button image URLs
         if (settingsData.button) {
-            settingsData.button = settingsData.button.map((btn) => {
+            settingsData.button = settingsData.button.map(btn => {
                 if (btn.image && !btn.image.startsWith("http")) {
-                    btn.image = `${baseUrl}${btn.image}`
+                    btn.image = `${URL}${btn.image}`;
                 }
-                return btn
-            })
+                return btn;
+            });
         }
 
-        return <Footer footerMenu={menuData} footerSettings={settingsData} />
+        return <Footer footerMenu={menuData} footerSettings={settingsData} />;
     } catch (error) {
-        console.error("Error in Footer component:", error)
-        // Return the client component with fallback data
-        return <Footer footerMenu={fallbackMenuData.data.menu} footerSettings={fallbackSettingsData.data[0]} />
+        console.error("Error in Footer component:", error);
+        // Return fallback component in case of error
+        return <Footer footerMenu={fallbackMenuData.data.menu} footerSettings={fallbackSettingsData.data[0]} />;
     }
 }
 
