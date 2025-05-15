@@ -1,8 +1,9 @@
 "use client";
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { apiRequest } from "@/lib/api-utils";
 import ProductGrid from "./product/product-grid";
+import { strapiPost } from "@/lib/api/strapiClient";
+import { themeConfig } from "@/config/theamConfig";
 
 /**
  * Products List Component
@@ -40,28 +41,29 @@ export default function ProductsList(props) {
       try {
         setLoading(true);
 
-        // Create form data for the POST request
-        const formData = new FormData();
-        formData.append("page_size", page_size.toString());
-        formData.append("filter", filter);
-        if (selectedCategory) {
-          formData.append("base", selectedCategory);
-        }
-        formData.append("category", category.toString());
+        // Prepare the payload as JSON
+        const payload = {
+          page_size: page_size,
+          filter: filter,
+          category: category.toString(),
+        };
 
-        // Make API request using our utility function
-        const response = await apiRequest(
-          "https://studio.webbytemplate.com/api/product/filter",
-          "POST",
-          formData,
+        if (selectedCategory) {
+          payload.base = selectedCategory;
+        }
+
+        // Call the API using the utility function
+        const response = await strapiPost(
+          "/product/filter",
+          { data: payload },
+          themeConfig.TOKEN
         );
 
         const productsData = response.data || [];
-
         setFilteredProducts(productsData);
         setError(null);
       } catch (err) {
-        console.error("Error fetching products:", err);
+        // console.error("Error fetching products:", err);
         setError("Failed to load products. Please try again later.");
         setFilteredProducts([]);
       } finally {
@@ -122,11 +124,10 @@ export default function ProductsList(props) {
               <div className="grid 1xl:grid-cols-7 xl:grid-cols-6 md:grid-cols-4 sm:grid-cols-3 grid-cols-2 lg:gap-4 gap-3 mb-10 overflow-x-auto pb-2 tab-btn">
                 <button
                   onClick={() => setSelectedCategory(null)}
-                  className={`btn whitespace-nowrap px-0 !py-2.5 !h-auto ${
-                    selectedCategory === null
-                      ? "bg-primary text-white border-primary"
-                      : "bg-white border-gray-200 hover:bg-gray-50"
-                  }`}
+                  className={`btn whitespace-nowrap px-0 !py-2.5 !h-auto ${selectedCategory === null
+                    ? "bg-primary text-white border-primary"
+                    : "bg-white border-gray-200 hover:bg-gray-50"
+                    }`}
                 >
                   All
                 </button>
@@ -135,11 +136,10 @@ export default function ProductsList(props) {
                   <button
                     key={index}
                     onClick={() => handleCategoryClick(category?.slug)}
-                    className={`btn whitespace-nowrap px-0 !py-[9px] !h-auto ${
-                      selectedCategory === category?.slug
-                        ? "bg-primary text-white border-primary"
-                        : "bg-white border-gray-200 hover:bg-gray-50 hover:text-primary hover:border-primary"
-                    }`}
+                    className={`btn whitespace-nowrap px-0 !py-[9px] !h-auto ${selectedCategory === category?.slug
+                      ? "bg-primary text-white border-primary"
+                      : "bg-white border-gray-200 hover:bg-gray-50 hover:text-primary hover:border-primary"
+                      }`}
                   >
                     {category?.title || category?.name}
                   </button>

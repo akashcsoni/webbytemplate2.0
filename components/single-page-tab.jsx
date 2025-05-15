@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState } from "react";
-import { Button } from "@heroui/react";
 import FaqSection from "./FaqSection";
 
 const tabs = [
@@ -52,9 +51,6 @@ const changelog = [
 
 const SinglePageTab = ({ data }) => {
   const [activeTab, setActiveTab] = useState("overview");
-  const [selected, setSelected] = useState("Sort by");
-  const [open, setOpen] = useState(false);
-  const options = ["Best Seller", "Newest", "Best Rated", "Tranding", "Price"];
 
   return (
     <div className="w-full flex flex-col">
@@ -92,7 +88,8 @@ const SinglePageTab = ({ data }) => {
               <h3>4 Reviews of this product</h3>
 
               {/* Sort Dropdown */}
-              <div className="relative inline-block text-left">
+
+              {/* <div className="relative inline-block text-left">
                 <Button
                   onPress={() => setOpen(!open)}
                   className="inline-flex items-center px-[15px] py-[7px] border border-primary/10 rounded-md text-sm font-medium text-black bg-white hover:bg-gray-50 focus:outline-none"
@@ -130,7 +127,8 @@ const SinglePageTab = ({ data }) => {
                     ))}
                   </div>
                 )}
-              </div>
+              </div> */}
+
             </div>
 
             {/* Reviews List */}

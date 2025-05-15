@@ -25,9 +25,7 @@ export function TechnologySelector({ all_technology }) {
   return (
     <div>
       {/* Dynamic Heading and Description */}
-      <h2 className="p !text-black mb-[3px] lg:pt-5 pt-2 !text-lg">
-        Technology
-      </h2>
+      <h2 className="p !text-black mb-[3px] lg:pt-5 pt-2 !text-lg">Technology</h2>
       <p className="p2 mb-4">
         <span className="text-black">
           {currentTech?.title || "No title available"}
@@ -42,59 +40,69 @@ export function TechnologySelector({ all_technology }) {
         {all_technology.map((tech, index) => {
           const isFirst = index === 0;
           const safeImages = Array.isArray(tech?.image) ? tech.image : [];
+          const title = tech?.title || "Untitled";
+          const slug = tech?.slug || null;
+
+          const regularPrice = tech?.price?.regular_price ?? "--";
+          const salesPrice =
+            tech?.price?.sales_price != null
+              ? tech.price.sales_price
+              : regularPrice;
 
           const cardContent = (
             <div
               onMouseEnter={() => setHoveredTech(tech)}
               onMouseLeave={() => setHoveredTech(null)}
-              className={`
-                                border ${isFirst ? "border-[#0156d5]" : "border-[#d9dde2]"}
-                                ${isFirst ? "bg-[#e6effb]" : "bg-white"}
-                                 rounded-md p-3 flex flex-col items-center justify-center text-center  
-                                cursor-pointer transition-colors
-                                hover:border-[#0156d5] hover:bg-[#e6effb]
-                            `}
+              className={`border ${isFirst ? "border-[#0156d5]" : "border-[#d9dde2]"
+                } ${isFirst ? "bg-[#e6effb]" : "bg-white"} 
+                rounded-md p-3 flex flex-col items-center justify-center text-center  
+                cursor-pointer transition-colors
+                hover:border-[#0156d5] hover:bg-[#e6effb]`}
             >
-              {/* Image(s) */}
-              <div className="   flex items-center justify-center mb-2">
-                {safeImages.map((image, idx) => (
-                  <div className="relative" key={idx}>
-                    {image?.url ? (
-                      <Image
-                        src={`https://studio.webbytemplate.com${image.url}`}
-                        alt={tech?.title || `Technology ${idx + 1}`}
-                        width={image?.width || 46}
-                        height={image?.height || 46}
-                        className="2xl:h-[46px] xl:h-9 h-[35px] w-full"
-                      />
-                    ) : (
-                      <div className="w-8 h-8 bg-gray-100 rounded" />
-                    )}
-                  </div>
-                ))}
+              {/* Images */}
+              <div className="flex items-center justify-center mb-2">
+                {safeImages.length > 0 ? (
+                  safeImages.map((image, idx) => (
+                    <div className="relative" key={idx}>
+                      {image?.url ? (
+                        <Image
+                          src={`https://studio.webbytemplate.com${image.url}`}
+                          alt={title}
+                          width={image?.width || 46}
+                          height={image?.height || 46}
+                          className="2xl:h-[46px] xl:h-9 h-[35px] w-full"
+                        />
+                      ) : (
+                        <div className="w-8 h-8 bg-gray-100 rounded" />
+                      )}
+                    </div>
+                  ))
+                ) : (
+                  <div className="w-8 h-8 bg-gray-100 rounded" />
+                )}
               </div>
 
               {/* Title and Price */}
               <div className="p2 2xl:!text-base !text-sm !text-black">
-                {tech?.title || "Untitled"}
+                {title}
               </div>
               <div className="!text-primary p2">
-                ${tech?.price?.sales_price}
+                ${typeof salesPrice === "number" ? salesPrice.toFixed(2) : salesPrice}
               </div>
-              {/* <div className="text-[#969ba3] font-medium text-sm line-through">
-                ${tech?.price?.regular_price} 
-              </div>*/}
+              <div className="text-[#969ba3] font-medium text-sm line-through">
+                ${typeof regularPrice === "number" ? regularPrice.toFixed(2) : regularPrice}
+              </div>
             </div>
           );
 
-          return isFirst ? (
+          return isFirst || !slug ? (
             <div key={tech?.id ?? `tech-${index}`}>{cardContent}</div>
           ) : (
             <Link
-              href={`/product/${tech?.slug || "#"}`}
+              href={`/product/${slug}`}
               key={tech?.id ?? `tech-${index}`}
               onClick={(e) => {
-                if (!tech?.slug) e.preventDefault();
+                if (!slug) e.preventDefault();
               }}
             >
               {cardContent}
