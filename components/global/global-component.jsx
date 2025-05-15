@@ -1,56 +1,76 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
+
+const componentCache = {}; // Optional: shared cache to prevent redundant imports
 
 export default function GlobalComponent({ data }) {
     const [components, setComponents] = useState({});
 
+    const componentList = useMemo(() => {
+        return Array.isArray(data?.components) ? data.components : [];
+    }, [JSON.stringify(data?.components)]); // Prevent unnecessary re-runs
+
+    // Converts kebab-case or snake_case to PascalCase
+    const convertToPascalCase = (str) => {
+        return str
+            .split(/[-_]/g)
+            .map((s) => s.charAt(0).toUpperCase() + s.slice(1))
+            .join('');
+    };
+
     useEffect(() => {
-        // Dynamically load components based on `__component` names
+        if (!componentList.length) return;
+
+        let isMounted = true;
+
         const loadComponents = async () => {
             const componentMap = {};
 
-            // Loop through each component in the data
-            for (const component of data.components) {
-                const componentName = component.__component.split('.')[1]; // Get the part after "shared."
-                const pascalCaseName = convertToPascalCase(componentName);
+            for (const component of componentList) {
+                const rawName = component.__component?.split('.')[1];
+                if (!rawName) continue;
 
-                // Dynamically import component
+                const pascalCaseName = convertToPascalCase(rawName);
+
                 try {
-                    const { default: DynamicComponent } = await import(`../${pascalCaseName}`);
-                    componentMap[pascalCaseName] = DynamicComponent;
+                    // Use cached component if already imported
+                    if (!componentCache[pascalCaseName]) {
+                        const { default: DynamicComponent } = await import(`../${pascalCaseName}`);
+                        componentCache[pascalCaseName] = DynamicComponent;
+                    }
+                    componentMap[pascalCaseName] = componentCache[pascalCaseName];
                 } catch (err) {
-                    console.error(`Error loading component ${pascalCaseName}:`, err);
+                    console.error(`Error loading component "${pascalCaseName}":`, err);
                 }
             }
 
-            setComponents(componentMap);
+            if (isMounted) {
+                setComponents(componentMap);
+            }
         };
 
         loadComponents();
-    }, [data.components]);
+        return () => {
+            isMounted = false;
+        };
+    }, [componentList]);
 
-    // Convert component name to PascalCase
-    const convertToPascalCase = (str) => {
-        return str
-            .replace(/(^[a-z])|(-[a-z])/g, (match) => match.toUpperCase())
-            .replace(/-/g, ''); // Remove the hyphens
-    };
-
-    // Render the component dynamically based on the data
     const renderComponent = (component, index) => {
-        const componentName = component.__component.split('.')[1]; // Get part after "shared."
-        const pascalCase = convertToPascalCase(componentName);
-        const DynamicComponent = components[pascalCase];
-        if (!DynamicComponent) return null;
+        const rawName = component.__component?.split('.')[1];
+        if (!rawName) return null;
 
-        return <DynamicComponent key={index} {...component} />;
+        const pascalCaseName = convertToPascalCase(rawName);
+        const DynamicComponent = components[pascalCaseName];
+
+        return DynamicComponent ? (
+            <DynamicComponent key={index} {...component} />
+        ) : null;
     };
 
     return (
         <div className="global-component">
-            {data.components.map((component, index) => renderComponent(component, index))}
+            {componentList.map((component, index) => renderComponent(component, index))}
         </div>
     );
 }
-

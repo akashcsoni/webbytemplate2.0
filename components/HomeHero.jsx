@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import DynamicIcon from "./ui/DynamicIcon";
+import Link from "next/link";
 
 export default function HomeHero({
   title,
@@ -68,10 +70,11 @@ export default function HomeHero({
                 ref={dropdownRef}
               >
                 <button
-                  className="flex items-center justify-between w-full sm:px-4 px-2 text-[#000000] bg-white border-r border-[#d9dde2] transition-colors"
+                  className="flex items-center justify-between w-full sm:px-4 px-2 text-[#000000] bg-white border-r border-[#d9dde2]"
                   onClick={() => setIsOpen(!isOpen)}
                   aria-expanded={isOpen}
-                  aria-haspopup="true"
+                  aria-haspopup="listbox"
+                  type="button"
                 >
                   <p className="text-black truncate max-w-[100px] sm:max-w-none whitespace-nowrap overflow-hidden text-ellipsis">
                     {selectedCategory}
@@ -86,31 +89,31 @@ export default function HomeHero({
                     strokeWidth="2"
                     strokeLinecap="round"
                     strokeLinejoin="round"
-                    className={`text-[#505050] flex-shrink-0 transition-transform duration-200 ${isOpen ? "transform rotate-180" : ""}`}
+                    className={`text-[#505050] flex-shrink-0 transition-transform duration-200 ${isOpen ? "rotate-180" : ""
+                      }`}
                   >
                     <path d="m6 9 6 6 6-6" />
                   </svg>
                 </button>
 
                 {isOpen && (
-                  <div className="absolute w-full mt-[55px] bg-white border border-[#d9dde2] rounded-md shadow-lg overflow-hidden">
+                  <div className="absolute w-full mt-[55px] bg-white border border-[#d9dde2] rounded-md shadow-lg z-50">
                     <ul
                       className="py-1 max-h-60 overflow-auto"
-                      role="menu"
-                      aria-orientation="vertical"
+                      role="listbox"
+                      aria-label="Category List"
                     >
                       <li>
                         <button
-                          className={`w-full text-left px-4 py-2 hover:bg-blue-300 ${
-                            selectedCategory === "All Categories"
-                              ? "bg-blue-300 text-primary"
-                              : "text-gray-200"
-                          }`}
+                          className={`w-full text-left px-4 py-2 hover:bg-blue-100 ${selectedCategory === "All Categories"
+                            ? "bg-blue-100 text-primary"
+                            : "text-black"
+                            }`}
                           onClick={() => {
                             setSelectedCategory("All Categories");
                             setIsOpen(false);
                           }}
-                          role="menuitem"
+                          role="option"
                         >
                           All Categories
                         </button>
@@ -118,16 +121,15 @@ export default function HomeHero({
                       {categories.map((category) => (
                         <li key={category.id}>
                           <button
-                            className={`w-full text-left px-4 py-2 hover:bg-blue-300 ${
-                              selectedCategory === category.title
-                                ? "bg-blue-300 text-primary"
-                                : "text-gray-200"
-                            }`}
+                            className={`w-full text-left px-4 py-2 hover:bg-blue-100 ${selectedCategory === category.title
+                              ? "bg-blue-100 text-primary"
+                              : "text-black"
+                              }`}
                             onClick={() => {
                               setSelectedCategory(category.title);
                               setIsOpen(false);
                             }}
-                            role="menuitem"
+                            role="option"
                             title={category.short_description}
                           >
                             {category.title}
@@ -144,7 +146,7 @@ export default function HomeHero({
                 <input
                   type="text"
                   placeholder="Search for mockups, Web Templates and More....."
-                  className="w-full sm:px-4 px-2 p2 text-[#505050] bg-white focus:outline-none"
+                  className="w-full sm:px-4 px-2 text-[#505050] bg-white focus:outline-none"
                 />
               </div>
 
@@ -152,7 +154,7 @@ export default function HomeHero({
               <button className="btn btn-primary tracking-wide drop-shadow-primary">
                 <span className="sm:block hidden">Search</span>
                 <svg
-                  className="stroke-white group-hover:stroke-primary group-active:stroke-primary group-focus:stroke-primary sm:hidden block"
+                  className="stroke-white sm:hidden block"
                   width="18"
                   height="18"
                   viewBox="0 0 22 22"
@@ -175,7 +177,7 @@ export default function HomeHero({
             {tags.map((tag) => (
               <CategoryPill
                 key={tag.id}
-                icon={tag.image}
+                icon={tag.icon}
                 label={tag.label}
                 link={tag.link}
               />
@@ -189,26 +191,12 @@ export default function HomeHero({
 
 function CategoryPill({ icon, label, link }) {
   return (
-    <a
+    <Link
       href={link || "#"}
-      className="flex items-center gap-2 btn btn-secondary xl:!px-[18px] sm:px-4 !px-[14px sm!:py-[7px] !py-[5px]"
+      className="flex items-center gap-2 btn btn-secondary xl:px-[18px] sm:px-4 px-[14px] sm:py-[7px] py-[5px]"
     >
-      <div className="w-5 h-5 relative">
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width={19}
-          height={19}
-          viewBox="0 0 256 256"
-        >
-          <path
-            fill="currentColor"
-            d="M225.86 102.82c-3.77-3.94-7.67-8-9.14-11.57c-1.36-3.27-1.44-8.69-1.52-13.94c-.15-9.76-.31-20.82-8-28.51s-18.75-7.85-28.51-8c-5.25-.08-10.67-.16-13.94-1.52c-3.56-1.47-7.63-5.37-11.57-9.14C146.28 23.51 138.44 16 128 16s-18.27 7.51-25.18 14.14c-3.94 3.77-8 7.67-11.57 9.14c-3.25 1.36-8.69 1.44-13.94 1.52c-9.76.15-20.82.31-28.51 8s-7.8 18.75-8 28.51c-.08 5.25-.16 10.67-1.52 13.94c-1.47 3.56-5.37 7.63-9.14 11.57C23.51 109.72 16 117.56 16 128s7.51 18.27 14.14 25.18c3.77 3.94 7.67 8 9.14 11.57c1.36 3.27 1.44 8.69 1.52 13.94c.15 9.76.31 20.82 8 28.51s18.75 7.85 28.51 8c5.25.08 10.67.16 13.94 1.52c3.56 1.47 7.63 5.37 11.57 9.14c6.9 6.63 14.74 14.14 25.18 14.14s18.27-7.51 25.18-14.14c3.94-3.77 8-7.67 11.57-9.14c3.27-1.36 8.69-1.44 13.94-1.52c9.76-.15 20.82-.31 28.51-8s7.85-18.75 8-28.51c.08-5.25.16-10.67 1.52-13.94c1.47-3.56 5.37-7.63 9.14-11.57c6.63-6.9 14.14-14.74 14.14-25.18s-7.51-18.27-14.14-25.18m-52.2 6.84l-56 56a8 8 0 0 1-11.32 0l-24-24a8 8 0 0 1 11.32-11.32L112 148.69l50.34-50.35a8 8 0 0 1 11.32 11.32"
-            strokeWidth={0}
-            stroke="currentColor"
-          ></path>
-        </svg>
-      </div>
-      <span className="text-base">{label}</span>
-    </a>
+      <DynamicIcon icon={icon} />
+      <span>{label}</span>
+    </Link>
   );
 }
