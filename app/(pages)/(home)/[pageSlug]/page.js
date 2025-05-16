@@ -4,7 +4,7 @@ import { themeConfig } from "@/config/theamConfig";
 import { strapiGet } from "@/lib/api/strapiClient";
 
 export default async function DynamicPage({ params }) {
-    const { pageSlug } = params;
+    const { pageSlug } = await params;
 
     try {
         const pageData = await strapiGet(`pages/${pageSlug}`, {

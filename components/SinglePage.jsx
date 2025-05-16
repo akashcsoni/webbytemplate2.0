@@ -211,51 +211,63 @@ export default function SinglePage({ pageData }) {
                                             ))
                                         )
                                     }
-                                    
+
                                 </div>
                             </div>
                             <div className="flex gap-3 min-w-fit lg:hidden flex-wrap">
-                                <button className="2xl:!px-5 xl:!px-[18px] lg:!px-4 lg:!py-[7px] !py-1.5 !px-2 gap-2 flex items-center justify-center rounded-md btn btn-primary transition-colors">
-                                    <svg
-                                        xmlns="http://www.w3.org/2000/svg"
-                                        width="20"
-                                        height="21"
-                                        viewBox="0 0 20 21"
-                                        fill="none"
-                                        className="md:w-[20px] md:h-[21px] w-[17px] h-[17px]"
-                                    >
-                                        <path
-                                            d="M2.06925 13.4961C1.29652 12.4925 0.910156 11.9898 0.910156 10.4998C0.910156 9.00887 1.29652 8.50796 2.06925 7.50341C3.61197 5.49978 6.19925 3.22705 10.0011 3.22705C13.8029 3.22705 16.3902 5.49978 17.9329 7.50341C18.7056 8.50887 19.092 9.00978 19.092 10.4998C19.092 11.9907 18.7056 12.4916 17.9329 13.4961C16.3902 15.4998 13.8029 17.7725 10.0011 17.7725C6.19925 17.7725 3.61197 15.4998 2.06925 13.4961Z"
-                                            stroke="currentColor"
-                                            strokeWidth="1.5"
-                                        />
-                                        <path
-                                            d="M12.728 10.4997C12.728 11.2231 12.4406 11.9167 11.9292 12.4282C11.4177 12.9397 10.724 13.227 10.0007 13.227C9.27739 13.227 8.5837 12.9397 8.07224 12.4282C7.56077 11.9167 7.27344 11.2231 7.27344 10.4997C7.27344 9.77642 7.56077 9.08272 8.07224 8.57126C8.5837 8.0598 9.27739 7.77246 10.0007 7.77246C10.724 7.77246 11.4177 8.0598 11.9292 8.57126C12.4406 9.08272 12.728 9.77642 12.728 10.4997Z"
-                                            stroke="currentColor"
-                                            strokeWidth="1.5"
-                                        />
-                                    </svg>
-                                    Live Preview
-                                </button>
 
-                                <button className="2xl:!px-5 xl:!px-[18px] lg:!px-4 lg:!py-[7px] !py-1.5 !px-2 gap-2 inline-flex items-center justify-center rounded-md btn text-primary border border-gray-100 hover:border-primary focus:border-primary active:border-primary transition-colors">
-                                    <svg
-                                        xmlns="http://www.w3.org/2000/svg"
-                                        width="22"
-                                        height="22"
-                                        viewBox="0 0 22 22"
-                                        fill="none"
-                                    >
-                                        <path
-                                            d="M5.64365 11.0056V7.48067C5.65412 6.78779 5.8012 6.10379 6.07648 5.46785C6.35175 4.83192 6.7498 4.25655 7.24782 3.77471C7.74584 3.29288 8.33405 2.91404 8.97873 2.65993C9.62341 2.40581 10.3119 2.28139 11.0047 2.29382C11.6976 2.28139 12.3861 2.40581 13.0308 2.65993C13.6754 2.91404 14.2636 3.29288 14.7617 3.77471C15.2597 4.25655 15.6577 4.83192 15.933 5.46785C16.2083 6.10379 16.3554 6.78779 16.3658 7.48067V11.0056M13.6853 18.042C14.3962 18.042 15.078 17.7596 15.5807 17.2569C16.0834 16.7542 16.3658 16.0724 16.3658 15.3615V12.3459M13.6853 18.042C13.6853 18.4864 13.5088 18.9125 13.1946 19.2267C12.8804 19.5409 12.4543 19.7174 12.0099 19.7174H9.99954C9.55521 19.7174 9.12908 19.5409 8.81489 19.2267C8.50071 18.9125 8.3242 18.4864 8.3242 18.042C8.3242 17.5977 8.50071 17.1716 8.81489 16.8574C9.12908 16.5432 9.55521 16.3667 9.99954 16.3667H12.0099C12.4543 16.3667 12.8804 16.5432 13.1946 16.8574C13.5088 17.1716 13.6853 17.5977 13.6853 18.042ZM3.63324 8.99518H4.97352C5.15125 8.99518 5.3217 9.06578 5.44737 9.19146C5.57305 9.31713 5.64365 9.48759 5.64365 9.66532V13.6861C5.64365 13.8639 5.57305 14.0343 5.44737 14.16C5.3217 14.2857 5.15125 14.3563 4.97352 14.3563H3.63324C3.27778 14.3563 2.93688 14.2151 2.68553 13.9637C2.43418 13.7124 2.29297 13.3715 2.29297 13.016V10.3355C2.29297 9.97999 2.43418 9.63909 2.68553 9.38774C2.93688 9.13639 3.27778 8.99518 3.63324 8.99518ZM18.3762 14.3563H17.036C16.8582 14.3563 16.6878 14.2857 16.5621 14.16C16.4364 14.0343 16.3658 13.8639 16.3658 13.6861V9.66532C16.3658 9.48759 16.4364 9.31713 16.5621 9.19146C16.6878 9.06578 16.8582 8.99518 17.036 8.99518H18.3762C18.7317 8.99518 19.0726 9.13639 19.324 9.38774C19.5753 9.63909 19.7165 9.97999 19.7165 10.3355V13.016C19.7165 13.3715 19.5753 13.7124 19.324 13.9637C19.0726 14.2151 18.7317 14.3563 18.3762 14.3563Z"
-                                            stroke="currentColor"
-                                            strokeWidth="1.37561"
-                                            strokeLinecap="round"
-                                            strokeLinejoin="round"
-                                        />
-                                    </svg>
-                                    Schedule Meeting
-                                </button>
+                                {
+                                    (pageData?.preview_link && pageData?.preview_link !== '') && (
+                                        <Link href={pageData?.preview_link}>
+                                            <button className="2xl:!px-5 xl:!px-[18px] lg:!px-4 lg:!py-[7px] !py-1.5 !px-2 gap-2 flex items-center justify-center rounded-md btn btn-primary transition-colors">
+                                                <svg
+                                                    xmlns="http://www.w3.org/2000/svg"
+                                                    width="20"
+                                                    height="21"
+                                                    viewBox="0 0 20 21"
+                                                    fill="none"
+                                                    className="md:w-[20px] md:h-[21px] w-[17px] h-[17px]"
+                                                >
+                                                    <path
+                                                        d="M2.06925 13.4961C1.29652 12.4925 0.910156 11.9898 0.910156 10.4998C0.910156 9.00887 1.29652 8.50796 2.06925 7.50341C3.61197 5.49978 6.19925 3.22705 10.0011 3.22705C13.8029 3.22705 16.3902 5.49978 17.9329 7.50341C18.7056 8.50887 19.092 9.00978 19.092 10.4998C19.092 11.9907 18.7056 12.4916 17.9329 13.4961C16.3902 15.4998 13.8029 17.7725 10.0011 17.7725C6.19925 17.7725 3.61197 15.4998 2.06925 13.4961Z"
+                                                        stroke="currentColor"
+                                                        strokeWidth="1.5"
+                                                    />
+                                                    <path
+                                                        d="M12.728 10.4997C12.728 11.2231 12.4406 11.9167 11.9292 12.4282C11.4177 12.9397 10.724 13.227 10.0007 13.227C9.27739 13.227 8.5837 12.9397 8.07224 12.4282C7.56077 11.9167 7.27344 11.2231 7.27344 10.4997C7.27344 9.77642 7.56077 9.08272 8.07224 8.57126C8.5837 8.0598 9.27739 7.77246 10.0007 7.77246C10.724 7.77246 11.4177 8.0598 11.9292 8.57126C12.4406 9.08272 12.728 9.77642 12.728 10.4997Z"
+                                                        stroke="currentColor"
+                                                        strokeWidth="1.5"
+                                                    />
+                                                </svg>
+                                                Live Preview
+                                            </button>
+                                        </Link>
+                                    )
+                                }
+
+                                {
+                                    pageData?.schedule_meeting && (
+                                        <button className="2xl:!px-5 xl:!px-[18px] lg:!px-4 lg:!py-[7px] !py-1.5 !px-2 gap-2 inline-flex items-center justify-center rounded-md btn text-primary border border-gray-100 hover:border-primary focus:border-primary active:border-primary transition-colors">
+                                            <svg
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                width="22"
+                                                height="22"
+                                                viewBox="0 0 22 22"
+                                                fill="none"
+                                            >
+                                                <path
+                                                    d="M5.64365 11.0056V7.48067C5.65412 6.78779 5.8012 6.10379 6.07648 5.46785C6.35175 4.83192 6.7498 4.25655 7.24782 3.77471C7.74584 3.29288 8.33405 2.91404 8.97873 2.65993C9.62341 2.40581 10.3119 2.28139 11.0047 2.29382C11.6976 2.28139 12.3861 2.40581 13.0308 2.65993C13.6754 2.91404 14.2636 3.29288 14.7617 3.77471C15.2597 4.25655 15.6577 4.83192 15.933 5.46785C16.2083 6.10379 16.3554 6.78779 16.3658 7.48067V11.0056M13.6853 18.042C14.3962 18.042 15.078 17.7596 15.5807 17.2569C16.0834 16.7542 16.3658 16.0724 16.3658 15.3615V12.3459M13.6853 18.042C13.6853 18.4864 13.5088 18.9125 13.1946 19.2267C12.8804 19.5409 12.4543 19.7174 12.0099 19.7174H9.99954C9.55521 19.7174 9.12908 19.5409 8.81489 19.2267C8.50071 18.9125 8.3242 18.4864 8.3242 18.042C8.3242 17.5977 8.50071 17.1716 8.81489 16.8574C9.12908 16.5432 9.55521 16.3667 9.99954 16.3667H12.0099C12.4543 16.3667 12.8804 16.5432 13.1946 16.8574C13.5088 17.1716 13.6853 17.5977 13.6853 18.042ZM3.63324 8.99518H4.97352C5.15125 8.99518 5.3217 9.06578 5.44737 9.19146C5.57305 9.31713 5.64365 9.48759 5.64365 9.66532V13.6861C5.64365 13.8639 5.57305 14.0343 5.44737 14.16C5.3217 14.2857 5.15125 14.3563 4.97352 14.3563H3.63324C3.27778 14.3563 2.93688 14.2151 2.68553 13.9637C2.43418 13.7124 2.29297 13.3715 2.29297 13.016V10.3355C2.29297 9.97999 2.43418 9.63909 2.68553 9.38774C2.93688 9.13639 3.27778 8.99518 3.63324 8.99518ZM18.3762 14.3563H17.036C16.8582 14.3563 16.6878 14.2857 16.5621 14.16C16.4364 14.0343 16.3658 13.8639 16.3658 13.6861V9.66532C16.3658 9.48759 16.4364 9.31713 16.5621 9.19146C16.6878 9.06578 16.8582 8.99518 17.036 8.99518H18.3762C18.7317 8.99518 19.0726 9.13639 19.324 9.38774C19.5753 9.63909 19.7165 9.97999 19.7165 10.3355V13.016C19.7165 13.3715 19.5753 13.7124 19.324 13.9637C19.0726 14.2151 18.7317 14.3563 18.3762 14.3563Z"
+                                                    stroke="currentColor"
+                                                    strokeWidth="1.37561"
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                />
+                                            </svg>
+                                            Schedule Meeting
+                                        </button>
+                                    )
+                                }
+
                             </div>
                         </div>
                     </div>
@@ -318,7 +330,11 @@ export default function SinglePage({ pageData }) {
                 </div>
 
                 <div className="lg:hidden block">
-                    <SinglePageSwiper />
+                    {
+                        (pageData?.gallery_image && pageData?.gallery_image.length > 0) && (
+                            <SinglePageSwiper gallery_images={pageData?.gallery_image} />
+                        )
+                    }
                 </div>
 
                 <div className="lg:flex gap-[60px] w-full bg-white pb-8">
@@ -345,6 +361,7 @@ export default function SinglePage({ pageData }) {
                         }
 
                         {/* Lifetime */}
+
                         <div className="border-b border-[#d9dde2] lg:py-[15px] py-3 flex justify-between items-center">
                             <h2 className="text-[#000000] text-lg font-semibold">Lifetime</h2>
                             <div>
@@ -361,6 +378,7 @@ export default function SinglePage({ pageData }) {
                         {/* Add to Cart Button */}
                         <div className="!mt-0">
                             <div className="lg:py-5 py-4 grid gap-5">
+
                                 <button className="w-full btn btn-primary flex items-center justify-center">
                                     <svg
                                         xmlns="http://www.w3.org/2000/svg"
@@ -378,8 +396,11 @@ export default function SinglePage({ pageData }) {
                                     </svg>
                                     Add to Cart
                                 </button>
+
                                 {/* contact sales */}
+
                                 <SinglePageModal />
+
                             </div>
 
                             {/* Related Topics */}
@@ -407,6 +428,7 @@ export default function SinglePage({ pageData }) {
                                         <span className="!text-black">Updated :</span> {formatDate(pageData?.createdAt)}
                                     </p>
                                 </div>
+
                             </div>
                         </div>
 
@@ -478,45 +500,22 @@ export default function SinglePage({ pageData }) {
                     <div className="lg:w-[60%] relative">
                         {/* discription */}
                         <>
+
                             <div className="lg:block hidden">
-                                <SinglePageSwiper />
+                                {
+                                    (pageData?.gallery_image && pageData?.gallery_image.length > 0) && (
+                                        <SinglePageSwiper gallery_images={pageData?.gallery_image} />
+                                    )
+                                }
                             </div>
+
+                            {
+                                pageData?.description && (
+                                    <span className="sm:space-y-5 space-y-2 sm:mb-[50px] mb-4" dangerouslySetInnerHTML={{ __html: pageData?.description }} />
+                                )
+                            }
+
                             <hr className="border border-primary/10 xl:my-[25px] sm:my-5 my-2" />
-                            <div className="sm:space-y-5 space-y-2 sm:mb-[50px] mb-4">
-                                <p>
-                                    Diazelo is a modern and stylish Adobe XD template designed
-                                    specifically for fashion and clothing{" "}
-                                    <Link href="javascript:;" className="!text-primary p2">
-                                        eCommerce{" "}
-                                    </Link>{" "}
-                                    businesses. With its sleek design and user-friendly interface,
-                                    Diazelo provides an excellent foundation for creating a
-                                    high-performing online store. It offers a visually stunning
-                                    experience that enhances brand appeal and engages customers
-                                    effectively.
-                                </p>
-                                <p>
-                                    Template is crafted with a pixel-perfect layout, ensuring a
-                                    seamless browsing experience for users. Diazelo features a
-                                    clean and contemporary aesthetic, making it suitable for
-                                    various fashion brands, including apparel, footwear,
-                                    accessories, and more. Its well-structured design allows
-                                    businesses to showcase their products in an appealing and
-                                    organized manner.
-                                </p>
-                                <p>
-                                    This{" "}
-                                    <Link href="javascript:;" className="!text-primary p2">
-                                        {" "}
-                                        XD template{" "}
-                                    </Link>{" "}
-                                    offers various pre-designed inner pages, including product
-                                    pages, category pages, shopping cart, checkout, and customer
-                                    account sections. These pages are carefully designed to
-                                    maintain consistency in style and usability, enhancing the
-                                    overall user journey from browsing to purchase.
-                                </p>
-                            </div>
 
                             <SinglePageTab data={pageData} />
                         </>
