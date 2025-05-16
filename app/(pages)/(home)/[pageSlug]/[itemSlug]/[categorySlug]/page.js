@@ -1,5 +1,5 @@
 export default async function DynamicPage({ params }) {
-    const { pageSlug, itemSlug, categorySlug } = params;
+    const { pageSlug, itemSlug, categorySlug } = await params;
     return (
         <>
             <div>
