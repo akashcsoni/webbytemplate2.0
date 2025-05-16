@@ -6,6 +6,8 @@ import { Navigation, Mousewheel, Keyboard } from "swiper/modules"
 import "swiper/css"
 import "swiper/css/navigation"
 import { cn } from "@/lib/utils"
+import { URL } from "@/config/theamConfig"
+import { containsTargetURL } from "@/lib/containsTargetURL"
 
 const SinglePageSwiper = ({
   gallery_images = [],
@@ -118,16 +120,11 @@ const SinglePageSwiper = ({
               <SwiperSlide key={i}>
                 <div className="relative w-full h-full">
                   <Image
-                    src={img?.url || "/placeholder.svg?height=560&width=440&query=product"}
-                    alt={img?.alt || `Product ${i + 1}`}
+                    src={containsTargetURL(img?.url) ? img?.url : `${URL}${img?.url}`}
+                    alt={`Product ${i + 1}`}
                     width={imageWidth}
                     height={imageHeight}
                     className="flex-shrink-0 object-cover w-full h-full"
-                    onError={(e) => {
-                      // Replace with placeholder on error
-                      const target = e.target
-                      target.src = "/diverse-products-still-life.png"
-                    }}
                   />
                 </div>
               </SwiperSlide>
