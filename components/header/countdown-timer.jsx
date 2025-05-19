@@ -39,10 +39,16 @@ export default function CountdownTimer() {
   }, [])
 
   return (
-    <span className="p2 !text-white text-base">
-      {String(time.hours).padStart(2, "0")}:{String(time.minutes).padStart(2, "0")}:
-      {String(time.seconds).padStart(2, "0")}
-    </span>
+    <>
+      <span className="p2 !text-white text-base">
+        {String(time.hours).padStart(2, "0")}:{String(time.minutes).padStart(2, "0")}:
+        {String(time.seconds).padStart(2, "0")}
+      </span>
+      <span className="ml-2 2xl:text-base text-[15px]">
+        Exclusive 10% OFF! Up to $10 Hurry Before Time Runs Out! Use Code:
+        <span className="font-bold text-orange-100 border-b border-orange-100 text-base ml-0.5">WEBBY10</span>
+      </span>
+    </>
   )
 }
 
