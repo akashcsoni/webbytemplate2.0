@@ -152,8 +152,8 @@ export default function Header() {
   // Add this inside the Header component, before the useDisclosure hook
   const [apiMenu, setApiMenu] = useState(mainMenu)
   const [activeCategory, setActiveCategory] = useState(null)
-  const { openAuth } = useAuth()
-  const { toggleCart } = useCart()
+  const { openAuth, authLoading, isAuthenticated, logout } = useAuth()
+  const { toggleCart, cartItems } = useCart()
 
   useEffect(() => {
     const fetchMenuData = async () => {
@@ -550,25 +550,53 @@ export default function Header() {
               </svg>
             </Link>
 
-            <button onClick={() => openAuth("login")} className="login">
-              <span className="btn btn-primary 1xl:block hidden">Login / Sign up</span>
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width={20}
-                height={20}
-                viewBox="0 0 20 20"
-                fill="none"
-                className="sm:w-[22px] sm:h-[22px] w-5 h-5 1xl:hidden block"
-              >
-                <path
-                  d="M16.3442 17.7023C16.3442 14.7013 12.9983 12.2618 9.99732 12.2618C6.99631 12.2618 3.65039 14.7013 3.65039 17.7023M9.99732 9.54245C10.9592 9.54245 11.8816 9.16036 12.5618 8.48022C13.2419 7.80008 13.624 6.87762 13.624 5.91576C13.624 4.9539 13.2419 4.03143 12.5618 3.3513C11.8816 2.67116 10.9592 2.28906 9.99732 2.28906C9.03546 2.28906 8.11299 2.67116 7.43286 3.3513C6.75272 4.03143 6.37062 4.9539 6.37062 5.91576C6.37062 6.87762 6.75272 7.80008 7.43286 8.48022C8.11299 9.16036 9.03546 9.54245 9.99732 9.54245Z"
-                  stroke="black"
-                  strokeWidth="1.25028"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-            </button>
+            {
+              !authLoading ? (
+                isAuthenticated ? (
+                  <button onClick={() => logout()} className="login">
+                    <span className="btn btn-primary 1xl:block hidden">Logout</span>
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width={20}
+                      height={20}
+                      viewBox="0 0 20 20"
+                      fill="none"
+                      className="sm:w-[22px] sm:h-[22px] w-5 h-5 1xl:hidden block"
+                    >
+                      <path
+                        d="M16.3442 17.7023C16.3442 14.7013 12.9983 12.2618 9.99732 12.2618C6.99631 12.2618 3.65039 14.7013 3.65039 17.7023M9.99732 9.54245C10.9592 9.54245 11.8816 9.16036 12.5618 8.48022C13.2419 7.80008 13.624 6.87762 13.624 5.91576C13.624 4.9539 13.2419 4.03143 12.5618 3.3513C11.8816 2.67116 10.9592 2.28906 9.99732 2.28906C9.03546 2.28906 8.11299 2.67116 7.43286 3.3513C6.75272 4.03143 6.37062 4.9539 6.37062 5.91576C6.37062 6.87762 6.75272 7.80008 7.43286 8.48022C8.11299 9.16036 9.03546 9.54245 9.99732 9.54245Z"
+                        stroke="black"
+                        strokeWidth="1.25028"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                  </button>
+                ) : (
+                  <button onClick={() => openAuth("login")} className="login">
+                    <span className="btn btn-primary 1xl:block hidden">Login / Sign up</span>
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width={20}
+                      height={20}
+                      viewBox="0 0 20 20"
+                      fill="none"
+                      className="sm:w-[22px] sm:h-[22px] w-5 h-5 1xl:hidden block"
+                    >
+                      <path
+                        d="M16.3442 17.7023C16.3442 14.7013 12.9983 12.2618 9.99732 12.2618C6.99631 12.2618 3.65039 14.7013 3.65039 17.7023M9.99732 9.54245C10.9592 9.54245 11.8816 9.16036 12.5618 8.48022C13.2419 7.80008 13.624 6.87762 13.624 5.91576C13.624 4.9539 13.2419 4.03143 12.5618 3.3513C11.8816 2.67116 10.9592 2.28906 9.99732 2.28906C9.03546 2.28906 8.11299 2.67116 7.43286 3.3513C6.75272 4.03143 6.37062 4.9539 6.37062 5.91576C6.37062 6.87762 6.75272 7.80008 7.43286 8.48022C8.11299 9.16036 9.03546 9.54245 9.99732 9.54245Z"
+                        stroke="black"
+                        strokeWidth="1.25028"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                  </button>
+                )
+              ) : (
+                <div className="login-skeleton animate-pulse rounded-md bg-gray-300 h-[40px] w-[160px] 1xl:h-[48px] 1xl:w-[200px]" />
+              )
+            }
 
             <div className="right-last-icon">
               <Link className="heart 1xl:block hidden" href="/wishlist">
@@ -608,7 +636,7 @@ export default function Header() {
                     strokeLinecap="round"
                   />
                 </svg>
-                <span className="badge">0</span>
+                <span className="badge">{cartItems?.length || 0}</span>
               </button>
             </div>
           </div>

@@ -1,43 +1,44 @@
 "use client"
 
 import { createContext, useContext, useState, useEffect } from "react"
-import Cookies from "js-cookie"
 
 const AuthContext = createContext(undefined)
 
-// Cookie options
-const COOKIE_OPTIONS = {
-    expires: 7, // 7 days
-    path: "/",
-    sameSite: "strict",
-}
-
 export function AuthProvider({ children }) {
+
     const [isAuthOpen, setIsAuthOpen] = useState(false)
     const [authMode, setAuthMode] = useState("login") // "login" or "otp"
     const [isAuthenticated, setIsAuthenticated] = useState(false)
-    const [user, setUser] = useState(null)
-    const [loading, setLoading] = useState(true)
+    const [authUser, setauthUser] = useState(null)
+    const [authToken, setauthToken] = useState(null)
+    const [authLoading, setAuthLoading] = useState(true)
     const [identifier, setIdentifier] = useState("") // Store email/phone for OTP verification
 
-    // Check if user is already logged in on mount
-    useEffect(() => {
-        const token = Cookies.get("auth_token")
-        const userData = Cookies.get("user_data")
+    // Check if user is already logged in by hitting a secure API route
 
-        if (token && userData) {
-            try {
-                setUser(JSON.parse(userData))
-                setIsAuthenticated(true)
-            } catch (error) {
-                console.error("Error parsing user data:", error)
-                // Clear invalid data
-                Cookies.remove("auth_token")
-                Cookies.remove("user_data")
+    const fetchSession = async () => {
+        try {
+            const res = await fetch("/api/auth/session", {
+                method: "GET",
+            }) // Adjust to your endpoint
+            if (res.ok) {
+                const data = await res.json()
+                if (data.authUser && data.authToken) {
+                    setauthUser(data.authUser)
+                    setauthToken(data.authToken)
+                    setIsAuthenticated(true)
+                    closeAuth();
+                }
             }
+        } catch (error) {
+            console.error("Failed to fetch session:", error)
+        } finally {
+            setAuthLoading(false)
         }
+    }
 
-        setLoading(false)
+    useEffect(() => {
+        fetchSession()
     }, [])
 
     const openAuth = (mode = "login") => {
@@ -47,7 +48,6 @@ export function AuthProvider({ children }) {
 
     const closeAuth = () => {
         setIsAuthOpen(false)
-        // Reset state when modal is closed
         setAuthMode("login")
         setIdentifier("")
     }
@@ -57,29 +57,31 @@ export function AuthProvider({ children }) {
         setIdentifier(email)
     }
 
-    // Login function
-    const login = (userData, token) => {
-        // Store token in cookie
-        Cookies.set("auth_token", token, COOKIE_OPTIONS)
-
-        // Store user data in cookie (as JSON string)
-        Cookies.set("user_data", JSON.stringify(userData), COOKIE_OPTIONS)
-
-        // Update state
-        setUser(userData)
+    const login = () => {
+        fetchSession();
         setIsAuthenticated(true)
-        closeAuth()
     }
 
-    // Logout function
-    const logout = () => {
-        // Remove cookies
-        Cookies.remove("auth_token")
-        Cookies.remove("user_data")
+    const logout = async () => {
+        try {
+            const res = await fetch("/api/auth/logout", {
+                method: "POST",
+            })
 
-        // Update state
-        setUser(null)
+            if (!res.ok) throw new Error("Logout failed")
+
+            const data = await res.json()
+            if (!data.success) throw new Error(data.message || "Logout failed")
+        } catch (error) {
+            console.error("Error during logout:", error)
+        }
+
+        setauthUser(null)
+        setauthToken(null)
         setIsAuthenticated(false)
+        setTimeout(() => {
+            window.location.reload();
+        }, 500);
     }
 
     return (
@@ -88,8 +90,9 @@ export function AuthProvider({ children }) {
                 isAuthOpen,
                 authMode,
                 isAuthenticated,
-                user,
-                loading,
+                authUser,
+                authToken,
+                authLoading,
                 identifier,
                 openAuth,
                 closeAuth,

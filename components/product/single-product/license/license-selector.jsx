@@ -1,10 +1,10 @@
-'use client'
+"use client"
 
-import { useState } from 'react'
+import { useState, useEffect } from "react"
 
-export default function LicenseSelector({ licenses }) {
+export default function LicenseSelector({ licenses, onPriceChange }) {
     const [selectedLicense, setSelectedLicense] = useState(
-        licenses.find(license => license.license_type === 'choose_a_license')?.id || null
+        licenses.find((license) => license.license_type === "choose_a_license")?.id || null,
     )
     const [selectedAddons, setSelectedAddons] = useState([])
 
@@ -13,12 +13,32 @@ export default function LicenseSelector({ licenses }) {
     }
 
     const handleAddonChange = (id) => {
-        setSelectedAddons(prev =>
-            prev.includes(id)
-                ? prev.filter(addonId => addonId !== id)
-                : [...prev, id]
-        )
+        setSelectedAddons((prev) => (prev.includes(id) ? prev.filter((addonId) => addonId !== id) : [...prev, id]))
     }
+
+    // Calculate total price based on selected license and addons
+    useEffect(() => {
+        const selectedLicenseObj = licenses.find((license) => license.id === selectedLicense)
+        const selectedAddonObjs = licenses.filter((license) => selectedAddons.includes(license.id))
+
+        let totalPrice = 0
+        let isWhiteLabel = false
+
+        if (selectedLicenseObj) {
+            totalPrice += selectedLicenseObj.sales_price || 0
+            // Check if the license title contains "white label" (case insensitive)
+            isWhiteLabel = selectedLicenseObj.license.title.toLowerCase().includes("white label")
+        }
+
+        selectedAddonObjs.forEach((addon) => {
+            if (!addon.contact_sale) {
+                totalPrice += addon.sales_price || 0
+            }
+        })
+
+        // Pass the selected license ID and addon IDs along with the price and white label status
+        onPriceChange(totalPrice, isWhiteLabel, selectedLicense, selectedAddons)
+    }, [selectedLicense, selectedAddons, licenses, onPriceChange])
 
     // Group licenses by type
     const licensesByType = licenses.reduce((groups, license) => {
@@ -34,16 +54,16 @@ export default function LicenseSelector({ licenses }) {
         <div className="lg:space-y-6 space-y-4">
             {Object.entries(licensesByType).map(([type, typeLicenses]) => (
                 <div key={type} className="lg:space-y-4 space-y-2">
-                    <h5 className='text-black !font-medium 2xl:!text-xl xl:!text-lg lg:!text-[17px] !text-lg'>
-                        {type === 'choose_a_license' ? 'License Options' : 'Get Services from UI Website Templates Experts'}
+                    <h5 className="text-black !font-medium 2xl:!text-xl xl:!text-lg lg:!text-[17px] !text-lg">
+                        {type === "choose_a_license" ? "License Options" : "Get Services from UI Website Templates Experts"}
                     </h5>
 
                     <div className="space-y-[14px]">
-                        {typeLicenses.map(license => (
+                        {typeLicenses.map((license) => (
                             <div key={license.id} className="flex items-center justify-between">
                                 <div className="flex items-center gap-2">
                                     <div className="relative flex items-center">
-                                        {license.license_type === 'choose_a_license' ? (
+                                        {license.license_type === "choose_a_license" ? (
                                             <input
                                                 type="radio"
                                                 id={`license-${license.id}`}
@@ -86,8 +106,8 @@ export default function LicenseSelector({ licenses }) {
                                         </div>
                                     </div>
                                 </div>
-                                <span className={`font-medium p2 !text-black ${license.contact_sale ? 'text-[#505050] italic' : ''}`}>
-                                    {license.contact_sale ? 'Full Access' : `$${license.sales_price.toFixed(2)}`}
+                                <span className={`font-medium p2 !text-black ${license.contact_sale ? "text-[#505050] italic" : ""}`}>
+                                    {license.contact_sale ? "Full Access" : `$${license.sales_price.toFixed(2)}`}
                                 </span>
                             </div>
                         ))}
