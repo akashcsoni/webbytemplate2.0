@@ -3,90 +3,63 @@
 import { Modal, ModalContent, ModalHeader, ModalBody } from "@heroui/react"
 import Link from "next/link"
 import { useState, useRef, useEffect } from "react"
-import axios from "axios"
 import { themeConfig } from "@/config/theamConfig"
 import { useAuth } from "@/contexts/AuthContext"
+import { strapiPost } from "@/lib/api/strapiClient"
 
 export default function AuthModal() {
-    
+
     const { isAuthOpen, closeAuth, authMode, switchToOtp } = useAuth()
+
     const [inputValue, setInputValue] = useState("")
     const [error, setError] = useState("")
     const [isSubmitting, setIsSubmitting] = useState(false)
-    const [userId, setUserId] = useState(null) // Store userId from API response
+    const [successMessage, setSuccessMessage] = useState("")
 
-    // Validation functions
-    const isValidEmail = (email) => {
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-        return emailRegex.test(email)
-    }
-
-    const isValidIndianMobile = (mobile) => {
-        // Remove any spaces, dashes, or parentheses
-        const cleanedMobile = mobile.replace(/[\s\-()]/g, "")
-
-        // Check if it's a valid Indian mobile number (with or without +91)
-        // Indian mobile numbers are 10 digits and typically start with 6, 7, 8, or 9
-        const mobileRegex = /^(\+91)?[6-9]\d{9}$/
-        return mobileRegex.test(cleanedMobile)
-    }
+    const isValidEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
+    const isValidIndianMobile = (mobile) => /^(\+91)?[6-9]\d{9}$/.test(mobile.replace(/[\s\-()]/g, ""))
 
     const handleInputChange = (e) => {
         setInputValue(e.target.value)
-        // Clear error when user starts typing
         if (error) setError("")
     }
 
     const handleSubmit = async () => {
-        // Check if field is empty
         if (!inputValue.trim()) {
             setError("Enter your email or mobile phone number")
             return
         }
 
-        // Check if it's a valid email or Indian mobile number
         if (!isValidEmail(inputValue) && !isValidIndianMobile(inputValue)) {
             setError("Wrong or Invalid email address or mobile phone number. Please correct and try again.")
             return
         }
 
-        // If validation passes, proceed with submission
         setIsSubmitting(true)
 
         try {
-            // Create form data for API request
-            const formData = new FormData()
-            formData.append("email", inputValue)
+            const response = await strapiPost("login-register-user", { email: inputValue }, themeConfig.TOKEN)
 
-            // Call login API
-            const response = await axios({
-                method: "post",
-                url: "https://studio.webbytemplate.com/api/login-register-user",
-                headers: {
-                    Authorization: themeConfig.TOKEN, // Replace with your actual authorization token
-                },
-                data: formData,
-            })
+            if (response && response.message) {
+                setSuccessMessage("OTP has been sent. Please check your email or phone.")
 
-            // Handle successful response
-            if (response.data && response.data.message) {
-                // Store userId for OTP verification
-                setUserId(response.data.userId)
-                // Move to OTP screen
-                switchToOtp(inputValue)
+                setTimeout(() => {
+                    switchToOtp(inputValue)
+                    setSuccessMessage("")
+                }, 1500)
             } else {
                 setError("Something went wrong. Please try again.")
             }
         } catch (error) {
             console.error("Login error:", error)
-            setError(error.response?.data?.message || "An error occurred. Please try again later.")
+            setError(error?.response?.data?.message || "An error occurred. Please try again later.")
         } finally {
             setIsSubmitting(false)
         }
     }
 
     if (authMode === "otp") {
-        return <OtpModal isOpen={isAuthOpen} onClose={closeAuth} identifier={inputValue} userId={userId} />
+        return <OtpModal isOpen={isAuthOpen} onClose={closeAuth} identifier={inputValue} />
     }
 
     return (
@@ -94,40 +67,21 @@ export default function AuthModal() {
             hideCloseButton={true}
             isOpen={isAuthOpen}
             onOpenChange={(open) => !open && closeAuth()}
-            classNames={{
-                backdrop: "bg-black/50",
-            }}
+            classNames={{ backdrop: "bg-black/50" }}
         >
             <ModalContent className="sm:p-[30px] p-5 xl:max-w-[510px] sm:max-w-[474px] w-full">
                 {(onClose) => (
                     <>
                         <ModalHeader className="p-0 h2 gap-1 flex items-center justify-between w-full mb-[10px]">
                             Sign in or create account
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                width="22"
-                                height="22"
-                                viewBox="0 0 22 22"
-                                fill="none"
-                                className="cursor-pointer"
-                                onClick={onClose}
-                            >
-                                <path
-                                    d="M17 5L5 17M5 5L17 17"
-                                    stroke="black"
-                                    strokeWidth="1.6"
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                />
+                            <svg onClick={onClose} className="cursor-pointer" xmlns="http://www.w3.org/2000/svg" width="22" height="22">
+                                <path d="M17 5L5 17M5 5L17 17" stroke="black" strokeWidth="1.6" strokeLinecap="round" />
                             </svg>
                         </ModalHeader>
                         <ModalBody className="p-0 gap-0">
                             <p className="p2 sm:mb-[30px] mb-5">Seamless shopping starts with a simple sign in or create account.</p>
 
-                            {/* Input Field */}
-                            <div
-                                className={`flex items-center border ${error ? "border-red-500" : "border-gray-100"} rounded-md overflow-hidden py-[11px] px-2`}
-                            >
+                            <div className={`flex items-center border ${error ? "border-red-500" : "border-gray-100"} rounded-md overflow-hidden py-[11px] px-2`}>
                                 <input
                                     type="text"
                                     placeholder="Enter mobile number or email"
@@ -137,23 +91,15 @@ export default function AuthModal() {
                                 />
                             </div>
 
-                            {/* Error Message */}
                             {error && <div className="mt-2 text-red-500 text-sm">{error}</div>}
+                            {successMessage && <div className="mt-2 text-green-600 text-sm">{successMessage}</div>}
 
-                            {/* Terms */}
                             <p className="p2 my-[22px]">
                                 By continuing, you agree to WebbyTemplate's{" "}
-                                <Link href="#" className="text-blue-600 underline">
-                                    Conditions of Use
-                                </Link>{" "}
-                                and{" "}
-                                <Link href="#" className="text-blue-600 underline">
-                                    Privacy Notice
-                                </Link>
-                                .
+                                <Link href="#" className="text-blue-600 underline">Conditions of Use</Link> and{" "}
+                                <Link href="#" className="text-blue-600 underline">Privacy Notice</Link>.
                             </p>
 
-                            {/* Action Button */}
                             <button className="w-full btn btn-primary" onClick={handleSubmit} disabled={isSubmitting}>
                                 {isSubmitting ? "Processing..." : "Continue"}
                             </button>
@@ -165,34 +111,45 @@ export default function AuthModal() {
     )
 }
 
-function OtpModal({ isOpen, onClose, identifier, userId }) {
+function OtpModal({ isOpen, onClose, identifier }) {
+
     const { login } = useAuth()
+
     const [otpValues, setOtpValues] = useState(["", "", "", "", "", ""])
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [otpError, setOtpError] = useState("")
+    const [resendMessage, setResendMessage] = useState("")
+    const [resendCooldown, setResendCooldown] = useState(0)
     const firstInputRef = useRef(null)
 
-    // Focus first input when modal opens
     useEffect(() => {
         if (isOpen && firstInputRef.current) {
-            setTimeout(() => {
-                firstInputRef.current.focus()
-            }, 100)
+            setTimeout(() => firstInputRef.current.focus(), 100)
         }
     }, [isOpen])
 
-    const handleOtpChange = (index, value) => {
-        // Only allow numbers
-        if (value && !/^\d*$/.test(value)) return
+    useEffect(() => {
+        if (resendCooldown === 0) return
 
+        const timer = setInterval(() => {
+            setResendCooldown((prev) => {
+                if (prev <= 1) {
+                    clearInterval(timer)
+                    return 0
+                }
+                return prev - 1
+            })
+        }, 1000)
+
+        return () => clearInterval(timer)
+    }, [resendCooldown])
+
+    const handleOtpChange = (index, value) => {
+        if (value && !/^\d*$/.test(value)) return
         const newOtpValues = [...otpValues]
         newOtpValues[index] = value
         setOtpValues(newOtpValues)
-
-        // Clear error when user types
         if (otpError) setOtpError("")
-
-        // Auto-focus next input if current input is filled
         if (value && index < 5) {
             const nextInput = document.querySelector(`input[name=otp-${index + 1}]`)
             if (nextInput) nextInput.focus()
@@ -200,7 +157,6 @@ function OtpModal({ isOpen, onClose, identifier, userId }) {
     }
 
     const handleKeyDown = (index, e) => {
-        // Move to previous input on backspace if current input is empty
         if (e.key === "Backspace" && !otpValues[index] && index > 0) {
             const prevInput = document.querySelector(`input[name=otp-${index - 1}]`)
             if (prevInput) prevInput.focus()
@@ -209,163 +165,113 @@ function OtpModal({ isOpen, onClose, identifier, userId }) {
 
     const handlePaste = (e) => {
         e.preventDefault()
-        const pastedData = e.clipboardData.getData("text/plain").trim()
-
-        // Extract only numbers from pasted content
-        const numbersOnly = pastedData.replace(/\D/g, "")
-
-        // Fill in OTP fields with pasted numbers
+        const numbersOnly = e.clipboardData.getData("text/plain").trim().replace(/\D/g, "")
         const newOtpValues = [...otpValues]
         for (let i = 0; i < Math.min(numbersOnly.length, 6); i++) {
             newOtpValues[i] = numbersOnly[i]
         }
-
         setOtpValues(newOtpValues)
-
-        // Focus on the next empty field or the last field
         const nextEmptyIndex = newOtpValues.findIndex((val) => !val)
-        if (nextEmptyIndex !== -1 && nextEmptyIndex < 6) {
-            const nextInput = document.querySelector(`input[name=otp-${nextEmptyIndex}]`)
-            if (nextInput) nextInput.focus()
-        } else {
-            const lastInput = document.querySelector(`input[name=otp-5]`)
-            if (lastInput) lastInput.focus()
-        }
+        const target = document.querySelector(`input[name=otp-${nextEmptyIndex !== -1 ? nextEmptyIndex : 5}]`)
+        if (target) target.focus()
     }
 
     const validateOtp = () => {
-        // Check if any field is empty
         if (otpValues.some((val) => !val)) {
             setOtpError("Please enter the complete 6-digit OTP")
             return false
         }
-
-        // Check if all values are numeric (should be redundant due to input validation)
         if (otpValues.some((val) => !/^\d$/.test(val))) {
             setOtpError("OTP must contain only numbers")
             return false
         }
-
         return true
     }
 
     const handleSubmit = async () => {
-        // Validate OTP
-        if (!validateOtp()) {
-            return
-        }
-
+        setResendMessage(null)
+        if (!validateOtp()) return
         setIsSubmitting(true)
-
         try {
-            // Combine OTP digits
-            const otpCode = otpValues.join("")
+            const response = await strapiPost("verify-otp", { email: identifier, otp: otpValues.join("") }, themeConfig.TOKEN)
 
-            // Create form data for API request
-            const formData = new FormData()
-            formData.append("email", identifier)
-            formData.append("otp", otpCode)
+            if (response && response.jwt) {
 
-            // Call API to verify OTP
-            const response = await axios({
-                method: "post",
-                url: "https://studio.webbytemplate.com/api/verify-otp",
-                headers: {
-                    Authorization: themeConfig.TOKEN, // Replace with your actual authorization token
-                },
-                data: formData,
-            })
+                const query = {
+                    token: response.jwt,
+                    user: JSON.stringify(response.user), // serialize the user object
+                };
 
-            // Handle successful response
-            if (response.data && response.data.jwt) {
-                // Call the login function from auth context to store user data and token
-                login(response.data.user, response.data.jwt)
-                // Close modal after successful verification
-                onClose()
+                const queryString = Object.entries(query)
+                    .filter(([_, value]) => value != null)
+                    .map(([key, value]) => `${key}=${encodeURIComponent(value)}`)
+                    .join('&');
+
+                const cookieResponse = await fetch(`/api/auth/login?${queryString}`);
+
+                if (cookieResponse.ok) {
+                    onClose()
+                    login()
+                    setTimeout(() => {
+                        window.location.reload()
+                    }, 1000);
+                } else {
+                    throw new Error("Failed to set authentication cookies")
+                }
             } else {
                 setOtpError("Invalid OTP. Please try again.")
             }
         } catch (error) {
-            console.error("OTP verification error:", error)
-            setOtpError(error.response?.data?.message || "An error occurred. Please try again later.")
+            setOtpError(error?.response?.data?.error?.message || "An error occurred. Please try again later.")
         } finally {
             setIsSubmitting(false)
         }
     }
 
     const handleResendOtp = async () => {
+        if (resendCooldown > 0) return // prevent spamming resend
+
+        setResendMessage(null)
+        setOtpValues(["", "", "", "", "", ""])
         try {
-            // Create form data for API request
-            const formData = new FormData()
-            formData.append("email", identifier)
-
-            // Call login API again to resend OTP
-            await axios({
-                method: "post",
-                url: "https://studio.webbytemplate.com/api/login-register-user",
-                headers: {
-                    Authorization: themeConfig.TOKEN, // Replace with your actual authorization token
-                },
-                data: formData,
-            })
-
-            // Show success message
-            alert("OTP has been resent to your email.")
+            await strapiPost("login-register-user", { email: identifier }, themeConfig.TOKEN)
+            setResendMessage("OTP has been resent successfully.")
+            setOtpError("")
+            setResendCooldown(15) // ⏱ Start cooldown
         } catch (error) {
             console.error("Resend OTP error:", error)
-            alert("Failed to resend OTP. Please try again.")
+            setOtpError("Failed to resend OTP. Please try again.")
+            setResendMessage("")
         }
+
+        setTimeout(() => {
+            setResendMessage(null)
+        }, 2000)
     }
 
     return (
-        <Modal
-            hideCloseButton={true}
-            isOpen={isOpen}
-            onOpenChange={(open) => !open && onClose()}
-            classNames={{
-                backdrop: "bg-black/50",
-            }}
-        >
+        <Modal hideCloseButton={true} isOpen={isOpen} onOpenChange={(open) => !open && onClose()} classNames={{ backdrop: "bg-black/50" }}>
             <ModalContent className="sm:p-[30px] p-5 xl:max-w-[510px] sm:max-w-[474px] w-full">
                 {(onClose) => (
                     <>
                         <ModalHeader className="p-0 h2 gap-1 flex items-center justify-between w-full mb-[10px]">
-                            Log in
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                width="22"
-                                height="22"
-                                viewBox="0 0 22 22"
-                                fill="none"
-                                className="cursor-pointer"
-                                onClick={onClose}
-                            >
-                                <path
-                                    d="M17 5L5 17M5 5L17 17"
-                                    stroke="black"
-                                    strokeWidth="1.6"
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                />
+                            OTP Verification
+                            <svg onClick={onClose} className="cursor-pointer" xmlns="http://www.w3.org/2000/svg" width="22" height="22">
+                                <path d="M17 5L5 17M5 5L17 17" stroke="black" strokeWidth="1.6" strokeLinecap="round" />
                             </svg>
                         </ModalHeader>
                         <ModalBody className="p-0 gap-0">
                             <p className="p2 sm:mb-[30px] mb-5">
                                 {identifier ? (
                                     <>
-                                        Enter the 6-digit code sent to{" "}
+                                        We have sent a code to{" "}
                                         <span className="font-medium">
-                                            {identifier.includes("@")
-                                                ? identifier
-                                                : identifier.replace(/(\d{2})(\d{6})(\d{2})/, "$1******$3")}
+                                            {identifier.includes("@") ? identifier : identifier.replace(/(\d{2})(\d{6})(\d{2})/, "$1******$3")}
                                         </span>
                                     </>
-                                ) : (
-                                    "Seamless shopping starts with a simple login."
-                                )}
+                                ) : "Seamless shopping starts with a simple login."}
                             </p>
 
-                            {/* Input */}
                             <div className="md:space-x-[18px] space-x-3 mb-[18px] otp-input">
                                 {otpValues.map((value, index) => (
                                     <input
@@ -383,35 +289,24 @@ function OtpModal({ isOpen, onClose, identifier, userId }) {
                                 ))}
                             </div>
 
-                            {/* Error Message */}
-                            {otpError && <div className="mt-2 text-red-500 text-sm mb-4">{otpError}</div>}
+                            {otpError && <div className="mt-2 text-red-500 text-sm mb-2">{otpError}</div>}
+                            {resendMessage && <div className="mt-2 text-green-600 text-sm mb-2">{resendMessage}</div>}
 
-                            {/* Resend OTP */}
                             <div className="text-center mb-5">
                                 <p className="text-sm text-gray-500">
                                     Didn't receive the code?{" "}
-                                    <button className="text-blue-600 font-medium hover:underline" onClick={handleResendOtp}>
-                                        Resend OTP
+                                    <button
+                                        className={`font-medium ${resendCooldown > 0 ? "text-gray-400 cursor-not-allowed" : "text-blue-600 hover:underline"}`}
+                                        onClick={handleResendOtp}
+                                        disabled={resendCooldown > 0}
+                                    >
+                                        {resendCooldown > 0 ? `Resend in ${resendCooldown}s` : "Resend OTP"}
                                     </button>
                                 </p>
                             </div>
 
-                            {/* Terms */}
-                            <p className="p2 mb-[22px]">
-                                By continuing, you acknowledge and agree to our{" "}
-                                <a href="#" className="text-blue-600 underline">
-                                    Terms of use
-                                </a>{" "}
-                                and{" "}
-                                <a href="#" className="text-blue-600 underline">
-                                    Privacy Policy
-                                </a>
-                                .
-                            </p>
-
-                            {/* Sign In Button */}
                             <button className="w-full btn btn-primary" onClick={handleSubmit} disabled={isSubmitting}>
-                                {isSubmitting ? "Verifying..." : "Sign in"}
+                                {isSubmitting ? "Verifying..." : "Verify OTP"}
                             </button>
                         </ModalBody>
                     </>
