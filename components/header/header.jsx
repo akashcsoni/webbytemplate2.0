@@ -402,7 +402,7 @@ export default function Header() {
                   src={
                     containsTargetURL(headerSettingData?.logo?.url)
                       ? headerSettingData?.logo?.url
-                      : `${URL}${headerSettingData?.logo?.url}`
+                      : `${headerSettingData?.logo?.url}`
                   }
                   alt={headerSettingData?.logo?.url ? headerSettingData?.logo?.name : "WebbyTemplate"}
                   width={180}

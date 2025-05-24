@@ -12,7 +12,7 @@ const ServiceGrid = ({ category = {}, link_button = {} }) => {
 
   // Build image URL only if image and url exist
   const imageUrl = image?.url
-    ? `${URL}${image.url}`
+    ? `${image.url}`
     : null;
 
   // Build link href safely

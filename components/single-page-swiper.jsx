@@ -120,7 +120,7 @@ const SinglePageSwiper = ({
               <SwiperSlide key={i}>
                 <div className="relative w-full h-full">
                   <Image
-                    src={containsTargetURL(img?.url) ? img?.url : `${URL}${img?.url}`}
+                    src={containsTargetURL(img?.url) ? img?.url : `${img?.url}`}
                     alt={`Product ${i + 1}`}
                     width={imageWidth}
                     height={imageHeight}

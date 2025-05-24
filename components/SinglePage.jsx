@@ -10,6 +10,7 @@ import { formatDate } from "@/lib/formatDate"
 import SinglePageModal from "@/single-page-modal"
 import Image from "next/image"
 import Link from "next/link"
+import { useCart } from "@/contexts/CartContext"
 
 function TagPill({ text, slug }) {
     return (
@@ -41,6 +42,9 @@ function FeatureItem({ text }) {
 }
 
 export default function SinglePage({ pageData }) {
+
+    const { addToCart } = useCart()
+
     // Function to extract technologies with custom slug and price
     function extractTechnologiesWithProductSlugs(data, defaultSlug = "", defaultPrice = null) {
         const technologies = []
@@ -148,9 +152,7 @@ export default function SinglePage({ pageData }) {
             console.error("Product ID is missing.");
             return;
         }
-
-        // Log the data to console
-        console.log(cartData);
+        addToCart(cartData);
     };
 
     // Add state to track selected license and addons
@@ -200,7 +202,7 @@ export default function SinglePage({ pageData }) {
                                         {pageData.author.image?.url ? (
                                             <div className="relative w-7 h-7 overflow-hidden rounded-full">
                                                 <Image
-                                                    src={`${URL || "/placeholder.svg"}${pageData.author.image.url}` || "/placeholder.svg"}
+                                                    src={`${pageData.author.image.url}` || "/placeholder.svg"}
                                                     alt={`${pageData.author.full_name}'s profile picture`}
                                                     fill
                                                     sizes="28px"
@@ -249,7 +251,7 @@ export default function SinglePage({ pageData }) {
                                             >
                                                 {badge?.image?.url && (
                                                     <Image
-                                                        src={`${URL}${badge.image.url}`}
+                                                        src={`${badge.image.url}`}
                                                         alt={badge?.title || "Badge Image"}
                                                         width={16}
                                                         height={16}

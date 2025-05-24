@@ -43,7 +43,7 @@ export default function SideCart() {
                     {Array.isArray(cartItems) && cartItems?.length > 0 ? (
                         cartItems?.map((item) => {
                             const imageUrl = item?.product?.grid_image?.url
-                                ? `${URL}${item.product.grid_image.url}`
+                                ? `${item.product.grid_image.url}`
                                 : "/placeholder.svg"
                             const title = item?.product?.title || "No title"
                             const price = item?.total?.toFixed(2) || "0.00"
