@@ -171,13 +171,13 @@ export async function FooterFooterContainer() {
 
         // Format logo, social media images, and button images
         if (settingsData.logo && settingsData.logo.url && !settingsData.logo.url.startsWith("http")) {
-            settingsData.logo.url = `${URL}${settingsData.logo.url}`;
+            settingsData.logo.url = `${settingsData.logo.url}`;
         }
 
         if (settingsData.social_media) {
             settingsData.social_media = settingsData.social_media.map(social => {
                 if (social.image && !social.image.startsWith("http")) {
-                    social.image = `${URL}${social.image}`;
+                    social.image = `${social.image}`;
                 }
                 return social;
             });
@@ -186,7 +186,7 @@ export async function FooterFooterContainer() {
         if (settingsData.button) {
             settingsData.button = settingsData.button.map(btn => {
                 if (btn.image && !btn.image.startsWith("http")) {
-                    btn.image = `${URL}${btn.image}`;
+                    btn.image = `${btn.image}`;
                 }
                 return btn;
             });

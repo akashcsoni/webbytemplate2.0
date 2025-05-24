@@ -10,12 +10,17 @@ const sanitizeText = (text) =>
     ? text.replace(/</g, "&lt;").replace(/>/g, "&gt;")
     : "";
 
-export default function ProductGrid({ product }) {
+export default function 
+
+
+
+
+({ product }) {
   const productSlug = product?.slug ?? "";
   const productTitle = sanitizeText(product?.short_title || product?.title);
   const authorName = sanitizeText(product?.author?.full_name || product?.author?.username);
-  const productImage = product?.grid_image?.url ? `${URL}${product.grid_image.url}` : NO_FOUND_PRODUCT_GRID_IMAGE;
-  const authorImage = product?.author?.image?.url ? `${URL}${product.author.image.url}` : NO_FOUND_PRODUCT_GRID_IMAGE;
+  const productImage = product?.grid_image?.url ? `${product.grid_image.url}` : NO_FOUND_PRODUCT_GRID_IMAGE;
+  const authorImage = product?.author?.image?.url ? `${product.author.image.url}` : NO_FOUND_PRODUCT_GRID_IMAGE;
   const regularPrice = product?.price?.regular_price ?? product?.price?.sales_price;
   const salesPrice = product?.price?.sales_price ?? product?.price?.regular_price;
 

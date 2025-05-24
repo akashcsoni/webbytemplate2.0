@@ -16,7 +16,7 @@ const CategoryTagCard = ({ category }) => {
           <Image
             src={
               imageUrl.startsWith("/")
-                ? `https://studio.webbytemplate.com${imageUrl}`
+                ? `${imageUrl}`
                 : imageUrl
             }
             alt={title}

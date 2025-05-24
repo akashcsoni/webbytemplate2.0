@@ -66,7 +66,7 @@ export function TechnologySelector({ all_technology }) {
                     <div className="relative" key={idx}>
                       {image?.url ? (
                         <Image
-                          src={`https://studio.webbytemplate.com${image.url}`}
+                          src={`${image.url}`}
                           alt={title}
                           width={image?.width || 46}
                           height={image?.height || 46}

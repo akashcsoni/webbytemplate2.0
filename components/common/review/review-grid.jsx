@@ -18,7 +18,7 @@ const ReviewGrid = ({ testimonial }) => {
         position = 'Not specified',
     } = user || {}
 
-    const imageUrl = image?.url ? `${URL}${image.url}` : NO_AVTAR_IMAGE // use fallback image if no URL
+    const imageUrl = image?.url ? `${image.url}` : NO_AVTAR_IMAGE // use fallback image if no URL
 
     // Ensure rating is a number between 0 and 5
     const validRating = Math.max(0, Math.min(5, Math.floor(Number(rating))))

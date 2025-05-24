@@ -1,7 +1,7 @@
 "use client"
 
 import { themeConfig } from "@/config/theamConfig"
-import { strapiDelete, strapiGet, strapiPost } from "@/lib/api/strapiClient"
+import { strapiDelete, strapiGet, strapiPost, strapiPut } from "@/lib/api/strapiClient"
 import { usePathname } from "next/navigation"
 import { createContext, useContext, useState, useEffect } from "react"
 
@@ -171,9 +171,26 @@ export function CartProvider({ children }) {
                 if (!currentId) return
                 await fetchCartById(currentId)
             }
+            const cartData = {
+                products: [product]
+            }
 
-            const res = await strapiPost(`carts/${currentId}/add-product`, product, authToken || themeConfig.TOKEN)
-            if (res?.products) setCartItems(res.products)
+            if (userId) {
+                cartData.user = userId
+            }
+
+            console.log(cartData, 'cartData')
+            console.log(cartItems, 'cartItems')
+
+            // const res = await strapiPut(`carts/${currentId}`, cartData, authToken || themeConfig.TOKEN)
+            // if (res?.data?.result && res?.data?.products) setCartItems(res.products)
+
+            // if (res?.data?.result && res?.data?.products) {
+            //     const { id, totalPrice, products } = res?.data
+            //     setCartId(id)
+            //     setTotalPrice(totalPrice || 0)
+            //     setCartItems(products || [])
+            // }
         } catch (err) {
             console.error("Error adding to cart:", err)
             setError("Failed to add item to cart")
