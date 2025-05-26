@@ -5,7 +5,6 @@ import LicenseSelector from "@/components/product/single-product/license/license
 import { TechnologySelector } from "@/components/product/technology-selector"
 import SinglePageSwiper from "@/components/single-page-swiper"
 import SinglePageTab from "@/components/single-page-tab"
-import { URL } from "@/config/theamConfig"
 import { formatDate } from "@/lib/formatDate"
 import SinglePageModal from "@/single-page-modal"
 import Image from "next/image"

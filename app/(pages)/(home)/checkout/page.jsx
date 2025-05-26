@@ -4,6 +4,8 @@ import React, { useState, useRef, useEffect } from "react";
 import { Listbox } from "@headlessui/react";
 import { Button } from "@heroui/button";
 import Image from "next/image";
+import { useCart } from "@/contexts/CartContext";
+import { useRouter } from "next/navigation";
 
 const countries = [
   { code: "in", flag: "/images/india-flag.png" },
@@ -12,6 +14,11 @@ const countries = [
 ];
 
 export default function CheckoutPage() {
+
+  const router = useRouter();
+
+  const { isLoading, cartItems = [], totalPrice = 0 } = useCart() || {}
+
   const [selected, setSelected] = useState(countries[0]);
   const [isCountry, setIsCountry] = useState(false);
   const [isState, setIsState] = useState(false);
@@ -112,6 +119,12 @@ export default function CheckoutPage() {
     setForm((prev) => ({ ...prev, [name]: value }));
     setErrors((prev) => ({ ...prev, [name]: undefined }));
   };
+
+  // useEffect(() => {
+  //   if (cartItems.length == 0) {
+  //     router.push('/')
+  //   }
+  // }, [cartItems, router])
 
   return (
     <div className="container px-4 py-8">
@@ -453,37 +466,26 @@ export default function CheckoutPage() {
         <div className="md:space-y-4 space-y-2 divide-y divide-primary/10">
           <h4>Your Cart Total</h4>
           <div className="text-sm text-gray-700 sm:space-y-4 space-y-2 mt-[18px] mb-[22px] pt-[18px]">
-            <div className="flex justify-between py-1 1xl:gap-20 xl:gap-12 gap-4">
-              <span className="p2">
-                Orion: Construction Company Figma UI Template Kit
-              </span>
-              <span className="p2 !text-black !font-medium">$129.00</span>
-            </div>
-            <div className="flex justify-between py-1 1xl:gap-20 xl:gap-12 gap-4">
-              <span className="p2">
-                Diazlex: Fashion & Clothing eCommerce XD Template
-              </span>
-              <span className="p2 !text-black !font-medium">$79.00</span>
-            </div>
-            <div className="flex justify-between py-1 1xl:gap-20 xl:gap-12 gap-4">
-              <span className="p2">
-                Syndicate: Business Consulting HTML Website Template
-              </span>
-              <span className="p2 !text-black !font-medium">$56.00</span>
-            </div>
-            <div className="flex justify-between py-1 1xl:gap-20 xl:gap-12 gap-4">
-              <span className="p2">
-                Journeyz: Travel Agency HTML Website Template
-              </span>
-              <span className="p2 !text-black !font-medium">$149.00</span>
-            </div>
-          </div>
-          <div className="flex justify-between sm:pt-3 pt-4 sm:pb-0 pb-2">
-            <span className="p2">Subtotal</span>
-            <span className="p2 !text-black !font-medium">$413.00</span>
+            {
+              cartItems?.map((item, index) => {
+                return (
+                  <div key={index} className="flex justify-between py-1 1xl:gap-20 xl:gap-12 gap-4">
+                    <span className="p2">
+                      {item?.product?.title}
+                    </span>
+                    <span className="p2 !text-black !font-medium">${item?.total?.toFixed(2)}</span>
+                  </div>
+                )
+              })
+            }
           </div>
 
-          <div className="xl:pt-[18px] pt-3 sm:pb-0 pb-2">
+          {/* <div className="flex justify-between sm:pt-3 pt-4 sm:pb-0 pb-2">
+            <span className="p2">Subtotal</span>
+            <span className="p2 !text-black !font-medium">$413.00</span>
+          </div> */}
+
+          {/* <div className="xl:pt-[18px] pt-3 sm:pb-0 pb-2">
             <label
               htmlFor="coupon"
               className="block font-medium xl:mb-3 mb-2 p !text-black"
@@ -501,12 +503,12 @@ export default function CheckoutPage() {
                 Apply
               </Button>
             </div>
-          </div>
+          </div> */}
 
           <div>
             <div className="flex justify-between py-2 font-semibold">
               <p className="font-medium !text-black">Total</p>
-              <p className="font-medium !text-black">$413.00</p>
+              <p className="font-medium !text-black">${totalPrice?.toFixed(2)}</p>
             </div>
             <div className="flex items-center gap-2 xl:mt-2">
               <svg
