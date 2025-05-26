@@ -1,7 +1,7 @@
 "use client"
 
 import { themeConfig } from "@/config/theamConfig"
-import { strapiDelete, strapiGet, strapiPost, strapiPut } from "@/lib/api/strapiClient"
+import { strapiGet, strapiPost, strapiPut } from "@/lib/api/strapiClient"
 import { usePathname } from "next/navigation"
 import { createContext, useContext, useState, useEffect } from "react"
 
@@ -18,7 +18,7 @@ export function CartProvider({ children }) {
     const [error, setError] = useState(null)
 
     const [authUser, setAuthUser] = useState(null)
-    const [authToken, setAuthToken] = useState(null)
+    // const [authToken, setAuthToken] = useState(null)
     const [isAuthenticated, setIsAuthenticated] = useState(false)
     const [authLoading, setAuthLoading] = useState(true)
 
@@ -33,7 +33,7 @@ export function CartProvider({ children }) {
                 const data = await res.json()
                 if (data.authUser && data.authToken) {
                     setAuthUser(data.authUser)
-                    setAuthToken(data.authToken)
+                    // setAuthToken(data.authToken)
                     setIsAuthenticated(true)
                 }
             }
@@ -74,7 +74,7 @@ export function CartProvider({ children }) {
     // Helper to fetch full cart details by ID
     const fetchCartById = async (id) => {
         try {
-            const token = authToken || themeConfig.TOKEN
+            const token = themeConfig.TOKEN
             const res = await strapiGet(`carts/${id}`, { token })
             if (res?.data) {
                 setCartId(res.data.id)
@@ -91,7 +91,7 @@ export function CartProvider({ children }) {
         setIsLoading(true)
         try {
             const existingCartId = await getCartIdFromCookie()
-            const token = authToken || themeConfig.TOKEN
+            const token = themeConfig.TOKEN
 
             if (isLoggedIn) {
                 try {
@@ -147,7 +147,7 @@ export function CartProvider({ children }) {
 
     const createNewCart = async (includeUser = false) => {
         try {
-            const token = authToken || themeConfig.TOKEN
+            const token = themeConfig.TOKEN
             const payload = { products: [] }
             if (includeUser && userId) payload.user = userId
 
@@ -165,46 +165,79 @@ export function CartProvider({ children }) {
 
     const addToCart = async (product) => {
         try {
-            let currentId = cartId
+            let currentId = cartId;
+
+            // Step 1: Create cart if it doesn't exist
             if (!currentId) {
-                currentId = await createNewCart(isLoggedIn)
-                if (!currentId) return
-                await fetchCartById(currentId)
+                currentId = await createNewCart(isLoggedIn);
+                if (!currentId) return;
+                await fetchCartById(currentId); // fetch and set cartItems
             }
+
+            if (!product) return;
+
+            // Step 2: Normalize current cartItems to flat format
+            const normalizedCart = cartItems.map(item => ({
+                product: item.product?.documentId,
+                extra_info: item.extra_info?.map(info => ({
+                    price: info.price,
+                    license: info.license?.documentId
+                })) || []
+            }));
+
+            // Step 3: Replace existing entry if same product already exists
+            const existingIndex = normalizedCart.findIndex(
+                item => item.product === product.product
+            );
+
+            if (existingIndex !== -1) {
+                normalizedCart[existingIndex] = product; // replace with new one
+            } else {
+                normalizedCart.push(product); // add new
+            }
+
             const cartData = {
-                products: [product]
+                products: normalizedCart,
+                ...(userId && { user: userId })
+            };
+
+            const res = await strapiPut(`carts/${currentId}`, cartData, themeConfig.TOKEN)
+            if (res?.result && res?.data?.products) {
+                const { id, totalPrice, products } = res?.data
+                setCartId(id)
+                setTotalPrice(totalPrice || 0)
+                setCartItems(products || [])
             }
 
-            if (userId) {
-                cartData.user = userId
-            }
-
-            console.log(cartData, 'cartData')
-            console.log(cartItems, 'cartItems')
-
-            // const res = await strapiPut(`carts/${currentId}`, cartData, authToken || themeConfig.TOKEN)
-            // if (res?.data?.result && res?.data?.products) setCartItems(res.products)
-
-            // if (res?.data?.result && res?.data?.products) {
-            //     const { id, totalPrice, products } = res?.data
-            //     setCartId(id)
-            //     setTotalPrice(totalPrice || 0)
-            //     setCartItems(products || [])
-            // }
         } catch (err) {
-            console.error("Error adding to cart:", err)
-            setError("Failed to add item to cart")
+            console.error("Error adding to cart:", err);
+            setError("Failed to add item to cart");
         }
-    }
+    };
 
     const removeFromCart = async (productId) => {
+
         if (!cartId) return
-        try {
-            const res = await strapiDelete(`carts/${cartId}/remove-product/${productId}`, authToken || themeConfig.TOKEN)
-            if (res?.products) setCartItems(res.products)
-        } catch (err) {
-            console.error("Error removing from cart:", err)
-            setError("Failed to remove item from cart")
+
+        if (productId) {
+            const productData = {
+                "productId": productId
+            }
+
+            try {
+                const res = await strapiPost(`/cart-item-remove/${cartId}`, productData, themeConfig.TOKEN)
+                if (res?.result && res?.data?.products) {
+                    const { id, totalPrice, products } = res?.data
+                    setCartId(id)
+                    setTotalPrice(totalPrice || 0)
+                    setCartItems(products || [])
+                }
+            } catch (err) {
+                console.error("Error removing from cart:", err)
+                setError("Failed to remove item from cart")
+            }
+        } else {
+            console.error("Product Document Id Missing");
         }
     }
 
@@ -215,7 +248,9 @@ export function CartProvider({ children }) {
     const openCart = () => setIsCartOpen(true)
     const closeCart = () => setIsCartOpen(false)
     const toggleCart = () => setIsCartOpen((prev) => !prev)
-
+    
+    // console.log(cartItems)
+    
     return (
         <CartContext.Provider
             value={{
