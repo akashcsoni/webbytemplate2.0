@@ -1,11 +1,12 @@
 'use client';
 
+import Link from 'next/link';
 import React, { useState } from 'react';
 
 const SubscribeSection = ({
     title = 'Stay Updated!',
     label = 'Subscribe to our newsletter for the latest updates.',
-    check_box = 'I accept the Terms of Service and <a href="/privacy-policy" class="underline">Privacy Policy</a>.',
+    check_box = 'I accept the Terms of Service and <a href="/privacy-policy" className="underline">Privacy Policy</a>.',
     email_input = true,
 }) => {
     const [email, setEmail] = useState('');
@@ -94,12 +95,9 @@ const SubscribeSection = ({
                                                 id="terms"
                                                 checked={checkboxChecked}
                                                 onChange={(e) => setCheckboxChecked(e.target.checked)}
-                                                className="1xl:w-5 1xl:h-5 w-4 h-4 rounded-full accent-primary/50 mt-[3px]"
+                                                className="1xl:w-5 1xl:h-5 w-4 h-4 rounded-full accent-white mt-[3px]"
                                             />
-                                            <div
-                                                className="p italic !text-white"
-                                                dangerouslySetInnerHTML={{ __html: check_box }}
-                                            />
+                                            <label htmlFor='terms' className="p italic !text-white cursor-pointer">I accept the <Link href="/terms-of-service" className="underline underline-offset-1">Terms of Service</Link> and <Link href="/privacy-policy" className="underline underline-offset-1">Privacy Policy</Link>.</label>
                                         </div>
                                     )}
                                     {checkboxError && (

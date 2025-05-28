@@ -260,7 +260,7 @@ export function Footer({ footerMenu, footerSettings }) {
         <ul className="lg:space-y-2 space-y-1">
           {subMenu.map((subItem, index) => (
             <li key={subItem.id || index}>
-              <Link href={subItem.slug || "#"} className="!text-gray-400 p2">
+              <Link href={subItem.slug || "#"} className="!text-gray-400 p2 hover:!text-white focus:!text-white active:!text-white">
                 {subItem.label}
               </Link>
             </li>

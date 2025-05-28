@@ -48,6 +48,12 @@ export function CartProvider({ children }) {
         fetchSession()
     }, [pathname])
 
+    useEffect(() => {
+        if (isCartOpen) {
+            setIsCartOpen(!isCartOpen)
+        }
+    }, [pathname])
+
     const getCartIdFromCookie = async () => {
         try {
             const res = await fetch("/api/cart-cookie")
@@ -248,9 +254,9 @@ export function CartProvider({ children }) {
     const openCart = () => setIsCartOpen(true)
     const closeCart = () => setIsCartOpen(false)
     const toggleCart = () => setIsCartOpen((prev) => !prev)
-    
+
     // console.log(cartItems)
-    
+
     return (
         <CartContext.Provider
             value={{

@@ -1,5 +1,5 @@
-import ErrorPage from "@/components/common/error/ErrorPage";
 import GlobalComponent from "@/components/global/global-component";
+import SomethingWrong from "@/components/somethingWrong/page";
 import { themeConfig } from "@/config/theamConfig";
 import { strapiGet } from "@/lib/api/strapiClient";
 
@@ -17,6 +17,6 @@ export default async function HomePage() {
 
     return <GlobalComponent data={pageData.data} />;
   } catch (error) {
-    return <ErrorPage error={error} />; // Show dynamic error
+    return <SomethingWrong error={error} />; // Show dynamic error
   }
 }

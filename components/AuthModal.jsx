@@ -6,6 +6,7 @@ import { useState, useRef, useEffect } from "react"
 import { themeConfig } from "@/config/theamConfig"
 import { useAuth } from "@/contexts/AuthContext"
 import { strapiPost } from "@/lib/api/strapiClient"
+import Cookies from "js-cookie"
 
 export default function AuthModal() {
 
@@ -192,8 +193,9 @@ function OtpModal({ isOpen, onClose, identifier }) {
         setResendMessage(null)
         if (!validateOtp()) return
         setIsSubmitting(true)
+        const cart_id = Cookies.get('cart_id');
         try {
-            const response = await strapiPost("verify-otp", { email: identifier, otp: otpValues.join("") }, themeConfig.TOKEN)
+            const response = await strapiPost("verify-otp", { email: identifier, otp: otpValues.join(""), cart_id: cart_id }, themeConfig.TOKEN)
 
             if (response && response.jwt) {
 

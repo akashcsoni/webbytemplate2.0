@@ -6,6 +6,7 @@ import { Button } from "@heroui/button";
 import { useCart } from "@/contexts/CartContext";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import EmptyCart from "@/components/emptycart/page";
 
 export default function Page() {
 
@@ -55,8 +56,16 @@ export default function Page() {
       <h1 className="h2 border-b border-primary/10 sm:pb-[30px] pb-4">
         Shopping Cart
       </h1>
+
       {isLoading ? (
-        <div className="text-center text-lg font-semibold text-gray-500">Loading...</div>
+        <div className="container px-4 py-8">
+          <div className="flex items-center justify-center min-h-[400px]">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+              <p className="text-gray-600">Loading cart...</p>
+            </div>
+          </div>
+        </div>
       ) : (
         cartItems?.length > 0 ? (
           <div className="flex flex-col lg:flex-row sm:gap-[46px] gap-0">
@@ -194,7 +203,7 @@ export default function Page() {
                   </p>
                 </div>
               </div>
-              
+
               {/* <div className="xl:pt-[18px] pt-3">
                 <label
                   htmlFor="coupon"
@@ -229,24 +238,7 @@ export default function Page() {
         )
           :
           (
-            <div className="flex flex-col items-center justify-center space-y-4 p-6 bg-gray-100 rounded-lg shadow-lg">
-              <div className="text-center text-xl font-semibold text-gray-800 rounded-md p-4">
-                Your Cart is Empty: Start Shopping Now
-              </div>
-
-              <button type="button" className="group relative flex items-center justify-center w-full md:w-auto px-6 py-3 bg-blue-600 text-white font-medium rounded-lg transition-all duration-300 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
-                <Link href="/" className="flex items-center gap-2">
-                  <span className="btn-arrow">
-                    <svg width="14" height="16" viewBox="0 0 16 16" fill="currentcolor" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M1.06479 7.2C0.782388 7.2 0.511556 7.28428 0.311871 7.43431C0.112185 7.58434 1.90735e-06 7.78782 0 8C1.90735e-06 8.21217 0.112185 8.41565 0.311871 8.56568C0.511556 8.71571 0.782388 8.8 1.06479 8.8H14.9352C15.2176 8.8 15.4884 8.71571 15.6881 8.56568C15.8878 8.41565 16 8.21217 16 8C16 7.78782 15.8878 7.58434 15.6881 7.43431C15.4884 7.28428 15.2176 7.2 14.9352 7.2H1.06479Z" />
-                      <path d="M0.478924 7.24945C0.348976 7.38652 0.280641 7.57135 0.288953 7.76327C0.297266 7.95519 0.381544 8.13848 0.523249 8.27282C0.664954 8.40715 0.852478 8.48154 1.04457 8.47961C1.23666 8.47767 1.41757 8.39958 1.54753 8.2625L7.93019 1.5299C8.06014 1.39282 8.12847 1.208 8.12016 1.01608C8.11185 0.824159 8.02757 0.640869 7.88586 0.506529C7.74416 0.37219 7.55663 0.297806 7.36454 0.29974C7.17246 0.301673 6.99154 0.379767 6.86159 0.51684L0.478924 7.24945Z" />
-                      <path d="M0.424237 8.69306C0.294288 8.55598 0.225954 8.37116 0.234266 8.17924C0.242578 7.98732 0.326857 7.80403 0.468561 7.66969C0.610267 7.53535 0.79779 7.46097 0.989879 7.4629C1.18197 7.46483 1.36289 7.54293 1.49284 7.68L7.8755 14.4126C8.00545 14.5497 8.07378 14.7345 8.06547 14.9264C8.05716 15.1183 7.97288 15.3016 7.83118 15.436C7.68947 15.5703 7.50195 15.6447 7.30986 15.6428C7.11777 15.6408 6.93685 15.5627 6.8069 15.4257L0.424237 8.69306Z" />
-                    </svg>
-                  </span>
-                  <span className="text-lg">Return to Shop</span>
-                </Link>
-              </button>
-            </div>
+            <EmptyCart />
           )
       )}
     </div >
