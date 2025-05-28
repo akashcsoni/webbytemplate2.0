@@ -76,7 +76,7 @@ h1,
 }
 h2,
 .h2 {
-  @apply 2xl:text-3xl xl:text-[32px] lg:text-[30px] sm:text-[28px] text-2xl font-medium sm:leading-[45px] leading-8;
+  @apply 2xl:text-3xl xl:text-[32px] lg:text-[30px] sm:text-[28px] text-[22px] font-medium sm:leading-[45px] leading-8;
 }
 h3,
 .h3 {
@@ -133,7 +133,8 @@ p,
 }
 
 /* navbar start */
-.main-logo {
+.main-logo,
+.main-logo-skeleton {
   @apply w-[265px];
 }
 .nav-logo {
@@ -142,7 +143,9 @@ p,
 .links-content {
   @apply hidden xl:flex space-x-5 ps-[27px] w-[58%];
 }
-
+.navigation-links{
+  @apply flex gap-4;
+}
 .author-links-content {
   @apply hidden xl:flex space-x-5 ps-[27px] w-[60%];
 }
@@ -160,6 +163,9 @@ p,
 }
 .schedule {
   @apply hidden 1xl:block btn btn-secondary-reverse mr-[3px] !px-5;
+}
+.schedule-skeleton {
+  @apply w-[150px];
 }
 .login {
   min-width: auto;
@@ -241,6 +247,9 @@ p,
   .author-links-content {
     @apply w-[52%];
   }
+  .schedule-skeleton {
+    @apply w-[140px];
+  }
 }
 @media (max-width: 1607px) {
   .links-content {
@@ -249,7 +258,8 @@ p,
 }
 
 @media (max-width: 1592px) {
-  .main-logo {
+  .main-logo,
+  .main-logo-skeleton {
     @apply w-[230px];
   }
   .nav-logo {
@@ -307,13 +317,29 @@ p,
     @apply w-[51%];
   }
 }
+@media (max-width: 1409px) {
+  .main-logo,
+  .main-logo-skeleton {
+    @apply w-[225px];
+  }
+  .links-content {
+    @apply ps-2;
+  }
+  .author-links-content {
+    @apply w-[51%];
+  }
+}
 @media (max-width: 1376px) {
   .author-links-content {
     @apply w-[49%];
   }
+  .navigation-links{
+  @apply  gap-1;
+}
 }
 @media (max-width: 1338px) {
-  .main-logo {
+  .main-logo,
+  .main-logo-skeleton {
     @apply w-[200px];
   }
   .links {
@@ -335,6 +361,14 @@ p,
   .author-links-content {
     @apply w-[61%];
   }
+  .schedule-skeleton {
+  @apply w-6 rounded-full;
+}
+}
+@media (max-width: 640px) {
+    .schedule-skeleton {
+  @apply w-4;
+}
 }
 @media (max-width: 560px) {
   .tab-btn {
@@ -369,7 +403,8 @@ p,
   .nav-icons {
     @apply space-x-0;
   }
-  .main-logo {
+  .main-logo,
+  .main-logo-skeleton {
     @apply w-[160px];
   }
   .otp-input {
@@ -378,7 +413,7 @@ p,
   .otp-input input {
     @apply w-10 h-10;
   }
-}
+} 
 /* navbar end */
 /* rich text stat */
 .rich-heading {

@@ -26,7 +26,7 @@ export default function
 
   return (
     <div className="group">
-      <Link href={`/product/${encodeURIComponent(productSlug)}`}>
+      <Link prefetch={true} href={`/product/${encodeURIComponent(productSlug)}`}>
         <div className="cursor-pointer relative rounded-lg overflow-hidden mb-4 transition-transform duration-300 group-hover:shadow-lg">
           <Image
             src={productImage}

@@ -1,15 +1,16 @@
-"use client";
-import { useRef, useEffect, useState } from "react";
-import Image from "next/image";
-import { Swiper, SwiperSlide } from "swiper/react";
-import { Navigation, Mousewheel, Keyboard } from "swiper/modules";
-import "swiper/css";
-import "swiper/css/navigation";
+"use client"
+import { useRef, useEffect, useState } from "react"
+import Image from "next/image"
+import { Swiper, SwiperSlide } from "swiper/react"
+import { Navigation, Mousewheel, Keyboard } from "swiper/modules"
+import "swiper/css"
+import "swiper/css/navigation"
 // import { cn } from "@/lib/utils"
 // import { URL } from "@/config/theamConfig"
-import { containsTargetURL } from "@/lib/containsTargetURL";
+import { containsTargetURL } from "@/lib/containsTargetURL"
 
 const SinglePageSwiper = ({
+  
   gallery_images = [],
   className = "",
   imageWidth = 440,
@@ -17,13 +18,11 @@ const SinglePageSwiper = ({
   showSocialShare = true,
   breakpoints,
 }) => {
-  const prevRef = useRef(null);
-  const nextRef = useRef(null);
-  const swiperRef = useRef(null);
-  const [isBeginning, setIsBeginning] = useState(true);
-  const [isEnd, setIsEnd] = useState(false);
-
-  const [imagesLoaded, setImagesLoaded] = useState(false);
+  const prevRef = useRef(null)
+  const nextRef = useRef(null)
+  const swiperRef = useRef(null)
+  
+  const [imagesLoaded, setImagesLoaded] = useState(false)
 
   // Default breakpoints if not provided
   const defaultBreakpoints = {
@@ -39,21 +38,21 @@ const SinglePageSwiper = ({
       slidesPerView: 2.5,
       spaceBetween: 25,
     },
-  };
+  }
 
   // Check if gallery_images is valid and has items
-  const hasImages = Array.isArray(gallery_images) && gallery_images.length > 0;
+  const hasImages = Array.isArray(gallery_images) && gallery_images.length > 0
 
   useEffect(() => {
-    const swiper = swiperRef.current?.swiper;
+    const swiper = swiperRef.current?.swiper
     if (swiper && prevRef.current && nextRef.current) {
-      swiper.params.navigation.prevEl = prevRef.current;
-      swiper.params.navigation.nextEl = nextRef.current;
-      swiper.navigation.destroy();
-      swiper.navigation.init();
-      swiper.navigation.update();
+      swiper.params.navigation.prevEl = prevRef.current
+      swiper.params.navigation.nextEl = nextRef.current
+      swiper.navigation.destroy()
+      swiper.navigation.init()
+      swiper.navigation.update()
     }
-  }, [imagesLoaded]);
+  }, [imagesLoaded])
 
   // Social share buttons data
   const socialButtons = [
@@ -97,26 +96,13 @@ const SinglePageSwiper = ({
         <path d="M5.56768 3.75739C5.56745 4.23049 5.37928 4.68413 5.04458 5.01849C4.70987 5.35286 4.25605 5.54057 3.78295 5.54034C3.30984 5.5401 2.85621 5.35193 2.52184 5.01723C2.18748 4.68253 1.99976 4.22871 2 3.75561C2.00024 3.2825 2.1884 2.82887 2.52311 2.4945C2.85781 2.16013 3.31163 1.97242 3.78473 1.97266C4.25784 1.97289 4.71147 2.16106 5.04584 2.49576C5.3802 2.83046 5.56792 3.28428 5.56768 3.75739ZM5.6212 6.86127H2.05352V18.0281H5.6212V6.86127ZM11.2581 6.86127H7.70829V18.0281H11.2225V12.1682C11.2225 8.90377 15.4769 8.60052 15.4769 12.1682V18.0281H19V10.9552C19 5.45204 12.703 5.65718 11.2225 8.3597L11.2581 6.86127Z" />
       ),
     },
-  ];
+  ]
 
   return (
     <div className={("relative w-full pb-5", className)}>
       <div className="2xl:w-[59vw] lg:w-[68vw] w-[98vw] [@media(max-width:350px)]:w-full">
         {hasImages ? (
           <Swiper
-            onBeforeInit={(swiper) => {
-              swiper.params.navigation.prevEl = prevRef.current;
-              swiper.params.navigation.nextEl = nextRef.current;
-            }}
-            onSlideChange={(swiper) => {
-              setIsBeginning(swiper.isBeginning);
-              setIsEnd(swiper.isEnd);
-            }}
-            onSwiper={(swiper) => {
-              // Initialize the button disabled state on load
-              setIsBeginning(swiper.isBeginning);
-              setIsEnd(swiper.isEnd);
-            }}
             ref={swiperRef}
             slidesPerView="auto"
             spaceBetween={10}
@@ -183,21 +169,10 @@ const SinglePageSwiper = ({
           <div className="flex justify-end items-center xl:gap-6 gap-5">
             <button
               ref={prevRef}
+              className="xl:w-10 xl:h-10 sm:w-5 sm:h-5 w-[18px] h-[18px] rounded-full flex items-center justify-center transition"
               aria-label="Previous slide"
-              className={` ${
-                isBeginning
-                  ? "opacity-50 cursor-not-allowed"
-                  : "opacity-100"
-              }`}
-              disabled={isBeginning}
             >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="22"
-                height="20"
-                viewBox="0 0 20 20"
-                fill="none"
-              >
+              <svg xmlns="http://www.w3.org/2000/svg" width="22" height="20" viewBox="0 0 20 20" fill="none">
                 <path
                   d="M9.00305 2.12549L1.12891 9.99963M1.12891 9.99963L9.00305 17.8738M1.12891 9.99963L18.9401 9.99963"
                   stroke="black"
@@ -209,21 +184,10 @@ const SinglePageSwiper = ({
             </button>
             <button
               ref={nextRef}
+              className="xl:w-10 xl:h-10 sm:w-5 sm:h-5 w-[18px] h-[18px] rounded-full flex items-center justify-center transition"
               aria-label="Next slide"
-              className={` ${
-                isEnd
-                   ? "opacity-50 cursor-not-allowed"
-                  : "opacity-100"
-              }`}
-              disabled={isEnd}
             >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="22"
-                height="20"
-                viewBox="0 0 20 20"
-                fill="none"
-              >
+              <svg xmlns="http://www.w3.org/2000/svg" width="22" height="20" viewBox="0 0 20 20" fill="none">
                 <path
                   d="M10.9969 2.12549L18.8711 9.99963M18.8711 9.99963L10.9969 17.8738M18.8711 9.99963L1.0599 9.99963"
                   stroke="black"
@@ -237,7 +201,7 @@ const SinglePageSwiper = ({
         )}
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default SinglePageSwiper;
+export default SinglePageSwiper

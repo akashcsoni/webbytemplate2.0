@@ -48,6 +48,7 @@ const ServiceGrid = ({ category = {}, link_button = {} }) => {
 
         {slug && link_button?.label ? (
           <Link
+            prefetch={true}
             href={href}
             className="all-btn inline-flex items-center hover:underline underline-offset-4"
           >

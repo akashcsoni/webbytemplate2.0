@@ -81,7 +81,7 @@ export default function LicenseSelector({ licenses, onPriceChange }) {
                                                 onChange={() => handleAddonChange(license.id)}
                                             />
                                         )}
-                                        <label htmlFor={`license-${license.id}`} className="p2 ml-[10px]">
+                                        <label htmlFor={`license-${license.id}`} className="p2 ml-[10px] cursor-pointer">
                                             {license.license.title}
                                         </label>
                                         <div className="relative group">

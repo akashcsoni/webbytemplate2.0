@@ -13,7 +13,7 @@ import { useCart } from "@/contexts/CartContext"
 
 function TagPill({ text, slug }) {
     return (
-        <Link href={`/tag/${slug}`} className="p2 border py-1 sm:px-[18px] px-2 border-primary/10 rounded-[4px]">
+        <Link prefetch={true} href={`/search/${slug}`} className="p2 border py-1 sm:px-[18px] px-2 border-primary/10 rounded-[4px]">
             {text}
         </Link>
     )
@@ -42,7 +42,7 @@ function FeatureItem({ text }) {
 
 export default function SinglePage({ pageData }) {
 
-    const { addToCart } = useCart()
+    const { addToCart, openCart } = useCart()
 
     // Function to extract technologies with custom slug and price
     function extractTechnologiesWithProductSlugs(data, defaultSlug = "", defaultPrice = null) {
@@ -101,57 +101,120 @@ export default function SinglePage({ pageData }) {
     // Add a new function to handle the Add to Cart button click
     // Place this function inside the SinglePage component, before the return statement
 
-    const handleAddToCart = () => {
+    // const handleAddToCart = () => {
+    //     if (!pageData) {
+    //         console.error("Page data is missing.");
+    //         return;
+    //     }
+
+    //     const allLicenses = Array.isArray(pageData.all_license) ? pageData.all_license : [];
+
+    //     // Get the selected license object
+    //     const selectedLicenseObj = allLicenses.find(
+    //         (license) => license.id === selectedLicense
+    //     );
+
+    //     // Get all selected addon objects
+    //     const selectedAddonObjs = allLicenses.filter((license) =>
+    //         Array.isArray(selectedAddons) && selectedAddons.includes(license.id)
+    //     );
+
+    //     // Create the extra_info array with license IDs and prices
+    //     const extraInfo = [];
+
+    //     // Add the main license to extra_info
+    //     if (selectedLicenseObj && selectedLicenseObj.license?.documentId) {
+    //         extraInfo.push({
+    //             price: selectedLicenseObj.sales_price ?? 0,
+    //             license: selectedLicenseObj.license.documentId,
+    //         });
+    //     }
+
+    //     // Add all selected addons to extra_info
+    //     selectedAddonObjs.forEach((addon) => {
+    //         if (addon.license?.documentId) {
+    //             extraInfo.push({
+    //                 price: addon.sales_price ?? 0,
+    //                 license: addon.license.documentId,
+    //             });
+    //         }
+    //     });
+
+    //     // Create the final data structure
+    //     const cartData = {
+    //         product: pageData.documentId || pageData.id || null, // Ensure product ID is not undefined
+    //         extra_info: extraInfo,
+    //     };
+
+    //     // Final safeguard before logging or sending data
+    //     if (!cartData.product) {
+    //         console.error("Product ID is missing.");
+    //         return;
+    //     }
+    //     addToCart(cartData);
+    // };
+
+    const [loading, setLoading] = useState(false);
+
+    const handleAddToCart = async () => {
         if (!pageData) {
             console.error("Page data is missing.");
             return;
         }
 
-        const allLicenses = Array.isArray(pageData.all_license) ? pageData.all_license : [];
+        setLoading(true);  // START loader
 
-        // Get the selected license object
-        const selectedLicenseObj = allLicenses.find(
-            (license) => license.id === selectedLicense
-        );
+        try {
+            const allLicenses = Array.isArray(pageData.all_license) ? pageData.all_license : [];
 
-        // Get all selected addon objects
-        const selectedAddonObjs = allLicenses.filter((license) =>
-            Array.isArray(selectedAddons) && selectedAddons.includes(license.id)
-        );
+            // Get the selected license object
+            const selectedLicenseObj = allLicenses.find(
+                (license) => license.id === selectedLicense
+            );
 
-        // Create the extra_info array with license IDs and prices
-        const extraInfo = [];
+            // Get all selected addon objects
+            const selectedAddonObjs = allLicenses.filter((license) =>
+                Array.isArray(selectedAddons) && selectedAddons.includes(license.id)
+            );
 
-        // Add the main license to extra_info
-        if (selectedLicenseObj && selectedLicenseObj.license?.documentId) {
-            extraInfo.push({
-                price: selectedLicenseObj.sales_price ?? 0,
-                license: selectedLicenseObj.license.documentId,
-            });
-        }
+            // Create the extra_info array with license IDs and prices
+            const extraInfo = [];
 
-        // Add all selected addons to extra_info
-        selectedAddonObjs.forEach((addon) => {
-            if (addon.license?.documentId) {
+            if (selectedLicenseObj && selectedLicenseObj.license?.documentId) {
                 extraInfo.push({
-                    price: addon.sales_price ?? 0,
-                    license: addon.license.documentId,
+                    price: selectedLicenseObj.sales_price ?? 0,
+                    license: selectedLicenseObj.license.documentId,
                 });
             }
-        });
 
-        // Create the final data structure
-        const cartData = {
-            product: pageData.documentId || pageData.id || null, // Ensure product ID is not undefined
-            extra_info: extraInfo,
-        };
+            selectedAddonObjs.forEach((addon) => {
+                if (addon.license?.documentId) {
+                    extraInfo.push({
+                        price: addon.sales_price ?? 0,
+                        license: addon.license.documentId,
+                    });
+                }
+            });
 
-        // Final safeguard before logging or sending data
-        if (!cartData.product) {
-            console.error("Product ID is missing.");
-            return;
+            const cartData = {
+                product: pageData.documentId || pageData.id || null,
+                extra_info: extraInfo,
+            };
+
+            if (!cartData.product) {
+                console.error("Product ID is missing.");
+                return;
+            }
+
+            await addToCart(cartData);  // Wait for addToCart to finish
+
+        } catch (error) {
+            console.error("Add to cart failed:", error);
+        } finally {
+            setLoading(false); // STOP loader no matter success or failure
+            openCart(true);
+
         }
-        addToCart(cartData);
     };
 
     // Add state to track selected license and addons
@@ -366,7 +429,7 @@ export default function SinglePage({ pageData }) {
 
                         {allTechnologies && allTechnologies.length > 0 && (
                             <div className="border-b border-[#d9dde2] ">
-                                <TechnologySelector all_technology={allTechnologies} />
+                                <TechnologySelector pageName={pageData?.title} all_technology={allTechnologies} />
                             </div>
                         )}
 
@@ -405,13 +468,17 @@ export default function SinglePage({ pageData }) {
                                             <line x1="3" y1="6" x2="21" y2="6" />
                                             <path d="M16 10a4 4 0 0 1-8 0" />
                                         </svg>
-                                        Add to Cart
+                                        {loading ? "Adding to cart..." : "Add to Cart"}
                                     </button>
                                 )}
 
                                 {/* contact sales */}
+                                {
+                                    isWhiteLabel && (
+                                        <SinglePageModal />
+                                    )
 
-                                <SinglePageModal />
+                                }
                             </div>
 
                             {/* Related Topics */}
@@ -495,7 +562,7 @@ export default function SinglePage({ pageData }) {
                     <div className="lg:w-[60%] relative">
                         {/* discription */}
                         <>
-                            <div className="lg:block hidden">
+                            <div className="lg:block hidden mb-5">
                                 {pageData?.gallery_image && pageData?.gallery_image.length > 0 && (
                                     <SinglePageSwiper gallery_images={pageData?.gallery_image} />
                                 )}

@@ -4,9 +4,17 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 
-export function TechnologySelector({ all_technology }) {
+export function TechnologySelector({ all_technology, pageName }) {
+
   const [defaultTech, setDefaultTech] = useState(null);
   const [hoveredTech, setHoveredTech] = useState(null);
+
+  function extractBrandName(title) {
+    if (!title || typeof title !== "string") return title;
+  
+    const parts = title.split(":");
+    return parts.length > 1 ? parts[0].trim() : title;
+  }
 
   useEffect(() => {
     if (Array.isArray(all_technology) && all_technology.length > 0) {
@@ -28,7 +36,7 @@ export function TechnologySelector({ all_technology }) {
       <h2 className="p !text-black mb-[3px] lg:pt-5 pt-2 !text-lg">Technology</h2>
       <p className="p2 mb-4">
         <span className="text-black">
-          {currentTech?.title || "No title available"}
+          {extractBrandName(pageName) || "No title available"}
         </span>
         <span className="text-gray-200">
           {" : " + (currentTech?.description || "No description available")}
