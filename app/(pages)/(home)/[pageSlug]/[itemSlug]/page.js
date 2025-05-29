@@ -45,7 +45,6 @@ export default async function DynamicPage({ params }) {
                 </>
             );
         }
-
         return <GlobalComponent data={pageData.data} />;
     } catch (error) {
         return <SomethingWrong error={error} />;
