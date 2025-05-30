@@ -89,29 +89,84 @@ export default function CheckoutPage() {
   }, [selectedCountry, stateSearchTerm]) // Remove selectedState from dependencies to avoid infinite loops
 
   // Fetch user data when component mounts
+  // useEffect(() => {
+  //   const fetchLoginUserData = async () => {
+  //     const authToken = Cookies.get("authToken")
+  //     try {
+  //       const userData = await strapiGet("users/me", {
+  //         params: { populate: "*" },
+  //         token: authToken,
+  //       })
+
+  //       // If we have user data, update the form
+  //       if (userData) {
+  //         // First set the country and country code
+  //         if (userData.country) {
+  //           setSelectedCountry(userData.country)
+
+  //           // Set selected country code based on country name
+  //           const countryData = countries.find((c) => c.name === userData.country)
+  //           if (countryData) {
+  //             setSelectedCountryCode(countryData)
+  //           }
+  //         }
+
+  //         // Set form data from user data
+  //         setForm({
+  //           first_name: userData.first_name || "",
+  //           last_name: userData.last_name || "",
+  //           company_name: userData.company_name || "",
+  //           email: userData.email || "",
+  //           address: userData.address || "",
+  //           city: userData.city || "",
+  //           pincode: userData.pincode || "",
+  //           state: userData.state || "",
+  //           country: userData.country || "",
+  //           phone_no: userData.phone_no || "",
+  //           agreed: false, // Always start with unchecked for legal reasons
+  //         })
+
+  //         // Set the state after a small delay to ensure country is processed first
+  //         if (userData.state && userData.country) {
+  //           setTimeout(() => {
+  //             setSelectedState(userData.state)
+  //           }, 100)
+  //         }
+  //       }
+  //     } catch (error) {
+  //       console.error("Error fetching user data:", error)
+  //     } finally {
+  //       setUserDataLoading(false)
+  //     }
+  //   }
+
+  //   fetchLoginUserData()
+  // }, [])
+
   useEffect(() => {
     const fetchLoginUserData = async () => {
-      const authToken = Cookies.get("authToken")
+      const authToken = Cookies.get("authToken");
+      if (!authToken) {
+        setUserDataLoading(false);
+        return;
+      }
+
       try {
         const userData = await strapiGet("users/me", {
           params: { populate: "*" },
           token: authToken,
-        })
+        });
 
-        // If we have user data, update the form
         if (userData) {
-          // First set the country and country code
           if (userData.country) {
-            setSelectedCountry(userData.country)
+            setSelectedCountry(userData.country);
 
-            // Set selected country code based on country name
-            const countryData = countries.find((c) => c.name === userData.country)
+            const countryData = countries.find((c) => c.name === userData.country);
             if (countryData) {
-              setSelectedCountryCode(countryData)
+              setSelectedCountryCode(countryData);
             }
           }
 
-          // Set form data from user data
           setForm({
             first_name: userData.first_name || "",
             last_name: userData.last_name || "",
@@ -123,25 +178,30 @@ export default function CheckoutPage() {
             state: userData.state || "",
             country: userData.country || "",
             phone_no: userData.phone_no || "",
-            agreed: false, // Always start with unchecked for legal reasons
-          })
+            agreed: false,
+          });
 
-          // Set the state after a small delay to ensure country is processed first
           if (userData.state && userData.country) {
             setTimeout(() => {
-              setSelectedState(userData.state)
-            }, 100)
+              setSelectedState(userData.state);
+            }, 100);
           }
         }
       } catch (error) {
-        console.error("Error fetching user data:", error)
+        console.error("Error fetching user data:", error);
       } finally {
-        setUserDataLoading(false)
+        setUserDataLoading(false);
       }
-    }
+    };
 
-    fetchLoginUserData()
-  }, [])
+    const authToken = Cookies.get("authToken");
+    if (authToken) {
+      fetchLoginUserData();
+    } else {
+      setUserDataLoading(false);
+    }
+  }, []);
+
 
   const toggleCountryDropdown = () => setIsCountryDropdownOpen(!isCountryDropdownOpen)
   const toggleStateDropdown = (e) => {

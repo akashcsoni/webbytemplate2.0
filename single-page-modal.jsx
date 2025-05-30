@@ -1,29 +1,97 @@
-"use client";
-import React from "react";
-import {
-  Modal,
-  ModalContent,
-  ModalHeader,
-  ModalBody,
-  Button,
-  useDisclosure,
-} from "@heroui/react";
+"use client"
+import { useState } from "react"
+import { Modal, ModalContent, ModalHeader, ModalBody, Button, useDisclosure } from "@heroui/react"
 
-const SinglePageModal = () => {
-  const { isOpen, onOpen, onOpenChange } = useDisclosure();
+const SinglePageModal = ({ product_id }) => {
+  const { isOpen, onOpen, onOpenChange } = useDisclosure()
+
+  const [form, setForm] = useState({
+    email: "",
+    product_id: product_id,
+    description: "",
+    agreed: false,
+  })
+
+  const [errors, setErrors] = useState({})
+
+  const validateEmail = (email) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    return emailRegex.test(email)
+  }
+
+  const validateForm = () => {
+    const newErrors = {}
+
+    // Email validation
+    const email = form.email.trim()
+    if (!email) {
+      newErrors.email = "Email is required."
+    } else if (!validateEmail(email)) {
+      newErrors.email = "Please enter a valid email address."
+    }
+
+    // Description validation
+    const description = form.description.trim()
+    if (!description) {
+      newErrors.description = "Description is required."
+    }
+
+    // Terms agreement validation
+    if (!form.agreed) {
+      newErrors.agreed = "You must agree to the Terms of Service and Privacy Policy."
+    }
+
+    setErrors(newErrors)
+    return Object.keys(newErrors).length === 0
+  }
+
+  const handleChange = (name, value) => {
+    setForm((prev) => ({ ...prev, [name]: value }))
+    // Only clear the error for the field being changed
+    if (errors[name]) {
+      setErrors((prev) => ({ ...prev, [name]: undefined }))
+    }
+  }
+
+  const handleCheckboxChange = () => {
+    setForm((prev) => ({ ...prev, agreed: !prev.agreed }))
+    if (errors.agreed) {
+      setErrors((prev) => ({ ...prev, agreed: undefined }))
+    }
+  }
+
+  const contact_for_product = (event) => {
+    event.preventDefault()
+
+    const isInquiryValid = validateForm()
+
+    if (!isInquiryValid) {
+      console.warn("Product Inquiry form is invalid.")
+      return
+    } else {
+      console.log("Product Inquiry form data", form)
+      document.getElementById("ProductInquiry").reset()
+      setForm({
+        email: "",
+        product_id: product_id,
+        description: "",
+        agreed: false,
+      })
+      onOpenChange(false)
+    }
+  }
+
+  const inputClass = (name) =>
+    `p2 border ${errors[name] ? "border-red-500" : "border-gray-100"} text-gray-300 placeholder:text-gray-300 2xl:py-[11px] py-[10px] rounded-[5px] 1xl:px-5 px-3 w-full outline-none`
 
   return (
     <>
-      <Button
-        onPress={onOpen}
-        color="primary"
-        className="w-full btn btn-primary flex items-center justify-center"
-      >
+      <Button onPress={onOpen} color="primary" className="w-full btn btn-primary flex items-center justify-center">
         Contact Sales
       </Button>
       <Modal
         backdrop="opaque"
-        hideCloseButton="true"
+        hideCloseButton={true}
         scrollBehavior="outside"
         isOpen={isOpen}
         radius="lg"
@@ -36,21 +104,10 @@ const SinglePageModal = () => {
                 <div className="flex items-start justify-between w-full">
                   <div className="2xl:mb-10 1xl:mb-8 md:mb-6 mb-4">
                     <h2 className="2xl:mb-10 1xl:mb-8 md:mb-2">Contact Sales</h2>
-                    <p className="p2 font-normal">
-                      Seamless shopping starts with a simple login.
-                    </p>
+                    <p className="p2 font-normal">Seamless shopping starts with a simple login.</p>
                   </div>
-                  <button
-                    onClick={onClose}
-                    className="text-gray-500 hover:text-gray-700"
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="14"
-                      height="14"
-                      viewBox="0 0 14 14"
-                      fill="none"
-                    >
+                  <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 14 14" fill="none">
                       <path
                         d="M13 13L7 7M7 7L1 1M7 7L13 1M7 7L1 13"
                         stroke="black"
@@ -66,50 +123,57 @@ const SinglePageModal = () => {
                 <div className="single-page-modalbody">
                   {/* Left - Form */}
                   <div className="left-form">
-                    <form className="xl:space-y-4 space-y-3">
+                    <form id="ProductInquiry" onSubmit={contact_for_product} className="xl:space-y-4 space-y-3">
                       <div className="grid">
                         <label className="p2 !text-black">Company email</label>
                         <input
                           type="email"
+                          value={form.email}
+                          onChange={(e) => handleChange("email", e.target.value)}
                           placeholder="Email address"
-                          className="mt-1 w-full px-4 py-[11px] border border-gray-100 rounded outline-none focus:border-primary"
+                          className={inputClass("email")}
                         />
+                        {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
                       </div>
 
                       <div className="h-full">
-                        <label className="p2 !text-black">
-                          How can we help?
-                        </label>
+                        <label className="p2 !text-black">How can we help?</label>
                         <textarea
+                          value={form.description}
+                          onChange={(e) => handleChange("description", e.target.value)}
                           placeholder="Let's talk now..."
-                          className="mt-1 w-full px-4 py-2 border max-h-full h-[280px] border-gray-100 rounded outline-none focus:border-primary"
+                          className={inputClass("description")}
                         />
+                        {errors.description && <p className="text-red-500 text-xs mt-1">{errors.description}</p>}
                       </div>
 
-                      <p className="p2 md:pb-4 sm:pb-2 pb-1">
-                        By clicking "Talk to WebbyTemplate", I acknowledge that
-                        I have read and understood the{" "}
-                        <span className="text-blue-600 underline cursor-pointer">
-                          Privacy Notice.
-                        </span>
-                      </p>
+                      <div className="flex items-start gap-2">
+                        <input
+                          type="checkbox"
+                          id="agreed"
+                          checked={form.agreed}
+                          onChange={handleCheckboxChange}
+                          className="mt-1"
+                        />
+                        <label htmlFor="agreed" className="p2 md:pb-4 sm:pb-2 pb-1">
+                          By clicking "Talk to WebbyTemplate", I acknowledge that I have read and understood the{" "}
+                          <span className="text-blue-600 underline cursor-pointer">Privacy Notice.</span>
+                        </label>
+                      </div>
+                      {errors.agreed && <p className="text-red-500 text-xs mt-1">{errors.agreed}</p>}
 
-                      <Button className="btn btn-primary">
+                      <button type="submit" className="btn btn-primary">
                         Talk to WebbyTemplate
-                      </Button>
+                      </button>
                     </form>
                   </div>
 
                   {/* Right - Info */}
                   <div className="right-info">
-                    <h3 className="1xl:mb-4 sm:mb-2 mb-1">
-                      Let’s Create a Pricing for Your Unique Requirements
-                    </h3>
+                    <h3 className="1xl:mb-4 sm:mb-2 mb-1">Let's Create a Pricing for Your Unique Requirements</h3>
                     <p className="1xl:mb-[30px] xl:mb-[25px] lg:mb-[18px] md:mb-4 sm:mb-3 mb-2">
-                      Developing the right pricing strategy involves balancing
-                      profitability, customer value. By analyzing your market,
-                      costs, and competitive landscape, you can choose an
-                      approach.
+                      Developing the right pricing strategy involves balancing profitability, customer value. By
+                      analyzing your market, costs, and competitive landscape, you can choose an approach.
                     </p>
                     <div className="icon-info">
                       <div className="flex items-start sm:gap-[18px] gap-2">
@@ -130,8 +194,7 @@ const SinglePageModal = () => {
                         <div className="info">
                           <h4>Experience WebbyTemplate in Action</h4>
                           <p>
-                            Request a personalized demo and see how
-                            WebbyTemplate can transform your enterprise with
+                            Request a personalized demo and see how WebbyTemplate can transform your enterprise with
                             tailored plans and pricing.
                           </p>
                         </div>
@@ -156,8 +219,8 @@ const SinglePageModal = () => {
                         <div className="info">
                           <h4>Try WebbyTemplate Enterprise Free</h4>
                           <p>
-                            Get hands-on with WebbyTemplate Enterprise—boost
-                            your workflow and impact with a free trial today!
+                            Get hands-on with WebbyTemplate Enterprise—boost your workflow and impact with a free trial
+                            today!
                           </p>
                         </div>
                       </div>
@@ -170,7 +233,7 @@ const SinglePageModal = () => {
         </ModalContent>
       </Modal>
     </>
-  );
-};
+  )
+}
 
-export default SinglePageModal;
+export default SinglePageModal

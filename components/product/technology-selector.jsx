@@ -13,7 +13,7 @@ export function TechnologySelector({ all_technology, pageName }) {
     if (!title || typeof title !== "string") return title;
   
     const parts = title.split(":");
-    return parts.length > 1 ? parts[0].trim() : title;
+    return parts.length > 1 ? parts[1].trim() : title;
   }
 
   useEffect(() => {
@@ -36,10 +36,10 @@ export function TechnologySelector({ all_technology, pageName }) {
       <h2 className="p !text-black mb-[3px] lg:pt-5 pt-2 !text-lg">Technology</h2>
       <p className="p2 mb-4">
         <span className="text-black">
-          {extractBrandName(pageName) || "No title available"}
+          {currentTech?.title || "No title available"}
         </span>
         <span className="text-gray-200">
-          {" : " + (currentTech?.description || "No description available")}
+          {" : " + extractBrandName(pageName) || "No title available"}
         </span>
       </p>
 
