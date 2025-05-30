@@ -1,76 +1,93 @@
-'use client';
+"use client"
 
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo } from "react"
+import PageLoader from "../common/page-loader/PageLoader"
 
-const componentCache = {}; // Optional: shared cache to prevent redundant imports
+const componentCache = {} // Optional: shared cache to prevent redundant imports
 
 export default function GlobalComponent({ data }) {
-    const [components, setComponents] = useState({});
+    const [components, setComponents] = useState({})
+    const [loading, setLoading] = useState(true)
 
+    // Safely extract componentList from data
     const componentList = useMemo(() => {
-        return Array.isArray(data?.components) ? data.components : [];
-    }, [JSON.stringify(data?.components)]); // Prevent unnecessary re-runs
+        return Array.isArray(data?.components) ? data.components : []
+    }, [data?.components])
 
     // Converts kebab-case or snake_case to PascalCase
     const convertToPascalCase = (str) => {
         return str
             .split(/[-_]/g)
             .map((s) => s.charAt(0).toUpperCase() + s.slice(1))
-            .join('');
-    };
+            .join("")
+    }
 
     useEffect(() => {
-        if (!componentList.length) return;
-
-        let isMounted = true;
+        let isMounted = true
 
         const loadComponents = async () => {
-            const componentMap = {};
+            // Safety check - ensure componentList is an array
+            if (!Array.isArray(componentList)) {
+                console.error("componentList is not an array:", componentList)
+                if (isMounted) setLoading(false)
+                return
+            }
+
+            const componentMap = {}
 
             for (const component of componentList) {
-                const rawName = component.__component?.split('.')[1];
-                if (!rawName) continue;
+                if (!component || !component.__component) continue
 
-                const pascalCaseName = convertToPascalCase(rawName);
+                const rawName = component.__component?.split(".")[1]
+                if (!rawName) continue
+
+                const pascalCaseName = convertToPascalCase(rawName)
 
                 try {
                     // Use cached component if already imported
                     if (!componentCache[pascalCaseName]) {
-                        const { default: DynamicComponent } = await import(`../${pascalCaseName}`);
-                        componentCache[pascalCaseName] = DynamicComponent;
+                        const { default: DynamicComponent } = await import(`../${pascalCaseName}`)
+                        componentCache[pascalCaseName] = DynamicComponent
                     }
-                    componentMap[pascalCaseName] = componentCache[pascalCaseName];
+                    componentMap[pascalCaseName] = componentCache[pascalCaseName]
                 } catch (err) {
-                    console.error(`Error loading component "${pascalCaseName}":`, err);
+                    console.error(`Error loading component "${pascalCaseName}":`, err)
                 }
             }
 
             if (isMounted) {
-                setComponents(componentMap);
+                setComponents(componentMap)
+                setLoading(false)
             }
-        };
+        }
 
-        loadComponents();
+        // Set loading to true at the start
+        setLoading(true)
+        loadComponents()
+
         return () => {
-            isMounted = false;
-        };
-    }, [componentList]);
+            isMounted = false
+        }
+    }, [componentList])
 
     const renderComponent = (component, index) => {
-        const rawName = component.__component?.split('.')[1];
-        if (!rawName) return null;
+        if (!component || !component.__component) return null
 
-        const pascalCaseName = convertToPascalCase(rawName);
-        const DynamicComponent = components[pascalCaseName];
+        const rawName = component.__component?.split(".")[1]
+        if (!rawName) return null
 
-        return DynamicComponent ? (
-            <DynamicComponent key={index} {...component} />
-        ) : null;
-    };
+        const pascalCaseName = convertToPascalCase(rawName)
+        const DynamicComponent = components[pascalCaseName]
+        return DynamicComponent ? <DynamicComponent key={index} {...component} /> : null
+    }
 
     return (
         <div className="global-component">
-            {componentList.map((component, index) => renderComponent(component, index))}
+            {loading ? (
+                <PageLoader />
+            ) : (
+                Array.isArray(componentList) && componentList.map((component, index) => renderComponent(component, index))
+            )}
         </div>
-    );
+    )
 }

@@ -435,19 +435,21 @@ export default function SinglePage({ pageData }) {
 
                         {/* Lifetime */}
 
-                        <div className="border-b border-[#d9dde2] lg:py-[15px] py-3 flex justify-between items-center">
-                            <h2 className="text-[#000000] text-lg font-semibold">Lifetime</h2>
-                            <div>
-                                <span className="font-medium">${totalPrice.toFixed(2)}</span>
-                                <br />
-                                <span className="text-[#969ba3] font-medium text-sm line-through">
-                                    $
-                                    {pageData?.price?.regular_price === null
-                                        ? pageData?.price?.sales_price.toFixed(2)
-                                        : pageData?.price?.regular_price.toFixed(2)}
-                                </span>
+                        {!isWhiteLabel && (
+                            <div className="border-b border-[#d9dde2] lg:py-[15px] py-3 flex justify-between items-center">
+                                <h2 className="text-[#000000] text-lg font-semibold">Lifetime</h2>
+                                <div>
+                                    <span className="font-medium">${totalPrice.toFixed(2)}</span>
+                                    <br />
+                                    <span className="text-[#969ba3] font-medium text-sm line-through">
+                                        $
+                                        {pageData?.price?.regular_price === null
+                                            ? pageData?.price?.sales_price.toFixed(2)
+                                            : pageData?.price?.regular_price.toFixed(2)}
+                                    </span>
+                                </div>
                             </div>
-                        </div>
+                        )}
 
                         {/* Add to Cart Button */}
                         <div className="!mt-0">
@@ -475,7 +477,7 @@ export default function SinglePage({ pageData }) {
                                 {/* contact sales */}
                                 {
                                     isWhiteLabel && (
-                                        <SinglePageModal />
+                                        <SinglePageModal product_id={pageData?.id} />
                                     )
 
                                 }

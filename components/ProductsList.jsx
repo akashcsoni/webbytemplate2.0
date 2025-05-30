@@ -149,7 +149,7 @@ export default function ProductsList(props) {
 
             {loading ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-[26px]">
-                {[...Array(page_size)].map((_, index) => (
+                {[...Array(5)].map((_, index) => (
                   <div key={index} className="animate-pulse">
                     <div className="bg-gray-200 rounded-lg h-[340px] mb-4"></div>
                     <div className="flex items-center justify-between">

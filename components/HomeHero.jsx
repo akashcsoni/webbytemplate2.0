@@ -37,7 +37,7 @@ export default function HomeHero({
     if (trimmedTerm === '') return
 
     // Replace spaces with hyphens or encodeURIComponent for URL safety
-    const categorySlug = selectedCategory === 'All Categories' ? 'all' : selectedCategory.toLowerCase().replace(/\s+/g, '-')
+    const categorySlug = selectedCategory === 'All Categories' ? '' : selectedCategory.toLowerCase().replace(/\s+/g, '-')
     const querySlug = encodeURIComponent(trimmedTerm)
 
     // Redirect to /search/[category]/[query]

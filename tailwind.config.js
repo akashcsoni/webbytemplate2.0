@@ -8,6 +8,15 @@ module.exports = {
     "./node_modules/@heroui/theme/dist/**/*.{js,ts,jsx,tsx}",
   ],
   theme: {
+    keyframes: {
+      zoom: {
+        '0%, 100%': { transform: 'scale(1)' },
+        '50%': { transform: 'scale(1.2)' },
+      },
+    },
+    animation: {
+      zoom: 'zoom 2s ease-in-out infinite',
+    },
     container: {
       center: true,
       padding: "1rem",
@@ -57,11 +66,11 @@ module.exports = {
         primary: "0px 6px 20px #0156D51A",
         category: "0px 2px 3px 0px #0000001F",
       },
-    
+
       boxShadow: {
         'gray': '0px -2px 15px 0px #00000014',
         'dropDown': '0px 3px 20px 0px #00000024',
-         'gray-inset': '0px 2px 1px 0px #FFFFFF inset',
+        'gray-inset': '0px 2px 1px 0px #FFFFFF inset',
       },
       fontSize: {
         "5xl": "3.75rem",
