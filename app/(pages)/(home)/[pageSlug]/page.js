@@ -1,4 +1,5 @@
 import GlobalComponent from "@/components/global/global-component";
+import PageNotFound from "@/components/PageNotFound/PageNotFound";
 import SomethingWrong from "@/components/somethingWrong/page";
 import { themeConfig } from "@/config/theamConfig";
 import { strapiGet } from "@/lib/api/strapiClient";
@@ -12,8 +13,20 @@ export default async function DynamicPage({ params }) {
             token: themeConfig.TOKEN,
         });
 
+        if (!pageData.result) {
+            return <SomethingWrong />;
+        }
+        
+        if (!pageData.result && pageData.status === 404) {
+            return <PageNotFound />;
+        }
+
         if (!pageData || !pageData.data || Object.keys(pageData.data).length === 0) {
-            throw new Error("Page data is empty");
+            return <SomethingWrong />;
+        }
+
+        if (!pageData || !pageData.data || Object.keys(pageData.data).length === 0) {
+            return <PageNotFound />;
         }
 
         return <GlobalComponent data={pageData.data} />;

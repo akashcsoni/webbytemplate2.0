@@ -55,7 +55,7 @@ export default function ProductsList(props) {
         // Call the API using the utility function
         const response = await strapiPost(
           "/product/filter",
-          { data: payload },
+          { ...payload },
           themeConfig.TOKEN
         );
 

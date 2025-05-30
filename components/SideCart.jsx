@@ -1,7 +1,6 @@
 "use client";
 
 import { useCart } from "@/contexts/CartContext";
-import { Button } from "@heroui/react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
