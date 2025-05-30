@@ -1,4 +1,5 @@
 import GlobalComponent from "@/components/global/global-component";
+import PageNotFound from "@/components/PageNotFound/PageNotFound";
 import SinglePage from "@/components/SinglePage";
 import SomethingWrong from "@/components/somethingWrong/page";
 import { themeConfig } from "@/config/theamConfig";
@@ -20,9 +21,20 @@ export default async function DynamicPage({ params }) {
             params: { populate: "*" },
             token: themeConfig.TOKEN,
         });
-        
+
+        if (!pageData.result) {
+            return <SomethingWrong />;
+        }
+        if (!pageData.result && pageData.status === 404) {
+            return <PageNotFound />;
+        }
+
         if (!pageData || !pageData.data || Object.keys(pageData.data).length === 0) {
-            throw new Error("Page data is empty");
+            return <SomethingWrong />;
+        }
+
+        if (!pageData || !pageData.data || Object.keys(pageData.data).length === 0) {
+            return <PageNotFound />;
         }
 
         if (pageSlug === 'product') {

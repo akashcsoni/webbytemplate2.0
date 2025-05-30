@@ -11,7 +11,7 @@ export function TechnologySelector({ all_technology, pageName }) {
 
   function extractBrandName(title) {
     if (!title || typeof title !== "string") return title;
-  
+
     const parts = title.split(":");
     return parts.length > 1 ? parts[1].trim() : title;
   }
@@ -47,7 +47,7 @@ export function TechnologySelector({ all_technology, pageName }) {
       <div className="grid xl:grid-cols-3 lg:grid-cols-2 sm:grid-cols-3 grid-cols-2 gap-3">
         {all_technology.map((tech, index) => {
           const isFirst = index === 0;
-          const safeImages = Array.isArray(tech?.image) ? tech.image : [];
+          // const safeImages = Array.isArray(tech?.image) ? tech.image : [];
           const title = tech?.title || "Untitled";
           const slug = tech?.slug || null;
 
@@ -69,25 +69,19 @@ export function TechnologySelector({ all_technology, pageName }) {
             >
               {/* Images */}
               <div className="flex items-center justify-center mb-2">
-                {safeImages.length > 0 ? (
-                  safeImages.map((image, idx) => (
-                    <div className="relative" key={idx}>
-                      {image?.url ? (
-                        <Image
-                          src={`${image.url}`}
-                          alt={title}
-                          width={image?.width || 46}
-                          height={image?.height || 46}
-                          className="2xl:h-[46px] xl:h-9 h-[35px] w-full"
-                        />
-                      ) : (
-                        <div className="w-8 h-8 bg-gray-100 rounded" />
-                      )}
-                    </div>
-                  ))
-                ) : (
-                  <div className="w-8 h-8 bg-gray-100 rounded" />
-                )}
+                <div className="relative">
+                  {tech?.image?.url ? (
+                    <Image
+                      src={`${tech?.image?.url}`}
+                      alt={title}
+                      width={46}
+                      height={46}
+                      className="2xl:h-[46px] xl:h-9 h-[35px] w-full"
+                    />
+                  ) : (
+                    <div className="w-8 h-8 bg-gray-100 rounded" />
+                  )}
+                </div>
               </div>
 
               {/* Title and Price */}
