@@ -79,14 +79,14 @@ export default function HomeHero({
   }
 
   return (
-    <section className="xl:pb-[35px] pb-[30px] 2xl:pt-20 1xl:pt-16 lg:pt-14 sm:pt-12 pt-8">
+    <section className="xl:pb-[35px] lg:pb-[30px] pb-[25px] 2xl:pt-20 1xl:pt-16 lg:pt-14 sm:pt-10 pt-8">
       <div className="container mx-auto">
         <div className="flex flex-col items-center text-center">
           {/* Main Heading */}
-          <h1 className="mb-[22px]">{title}</h1>
+          <h1 className="lg:mb-[22px] mb-3 1xl:w-[88rem] w-[62rem] max-w-full">{title}</h1>
 
           {/* Subheading */}
-          <p className="xl:max-w-5xl max-w-[49rem] mb-5 md:mb-9 2xl:text-lg lg:text-[17px] md:text-base">
+          <p className="2xl:max-w-5xl xl:max-w-4xl max-w-[49rem] mb-5 md:mb-9 2xl:text-lg lg:text-[16px] md:text-base text-sm">
             {description}
           </p>
 
@@ -216,7 +216,7 @@ export default function HomeHero({
                   aria-haspopup="listbox"
                   type="button"
                 >
-                  <p className="text-black truncate max-w-[100px] sm:max-w-none whitespace-nowrap overflow-hidden text-ellipsis">
+                  <p className="text-black truncate max-w-[100px] sm:max-w-none whitespace-nowrap overflow-hidden text-ellipsis 2xl:text-lg 1xl:text-[17px] sm:text-base text-sm">
                     {selectedCategory}
                   </p>
                   <svg
@@ -236,7 +236,7 @@ export default function HomeHero({
                 </button>
 
                 {isOpen && (
-                  <div className="absolute w-full mt-[55px] bg-white border border-[#d9dde2] rounded-md shadow-lg z-50">
+                  <div className="absolute sm:w-full w-40 2xl:mt-[55px] xl:mt-[51px] md:mt-[49px] sm:mt-[40px] mt-[38px] bg-white border border-[#d9dde2] rounded-md shadow-lg z-50">
                     <ul
                       className="py-1 max-h-60 overflow-auto"
                       role="listbox"
@@ -244,7 +244,7 @@ export default function HomeHero({
                     >
                       <li>
                         <button
-                          className={`w-full text-left px-4 py-2 hover:bg-blue-100 ${selectedCategory === 'All Categories' ? 'bg-blue-100 text-primary' : 'text-black'}`}
+                          className={`w-full text-left px-4 py-2 hover:bg-blue-100 p2 ${selectedCategory === 'All Categories' ? 'bg-blue-100 text-primary' : 'text-black'}`}
                           onClick={(e) => {
                             e.preventDefault()
                             setSelectedCategory('All Categories')
@@ -258,7 +258,7 @@ export default function HomeHero({
                       {categories.map((category) => (
                         <li key={category.id}>
                           <button
-                            className={`w-full text-left px-4 py-2 hover:bg-blue-100 ${selectedCategory === category.title ? 'bg-blue-100 text-primary' : 'text-black'}`}
+                            className={`w-full text-left px-4 py-2 hover:bg-blue-100 p2 !text-black ${selectedCategory === category.title ? 'bg-blue-100 text-primary' : 'text-black'}`}
                             onClick={(e) => {
                               e.preventDefault()
                               setSelectedCategory(category.title)
@@ -281,7 +281,7 @@ export default function HomeHero({
                 <input
                   type="text"
                   placeholder="Search for mockups, Web Templates and More....."
-                  className="w-full sm:px-4 px-2 text-[#505050] bg-white focus:outline-none"
+                  className="w-full sm:px-4 px-2 text-[#505050] bg-white focus:outline-none placeholder:p2 p2"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
@@ -334,7 +334,7 @@ function CategoryPill({ icon, label, link }) {
   return (
     <Link
       href={link || "#"}
-      className="flex items-center gap-2 btn btn-secondary xl:px-[18px] sm:px-4 px-[14px] sm:py-[7px] py-[5px]"
+      className="flex items-center gap-2 btn btn-secondary 1xl:!px-[18px] !px-3 1xl:!py-[7px] !py-[4px]"
     >
       <DynamicIcon icon={icon} />
       <span>{label}</span>
