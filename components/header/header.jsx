@@ -303,7 +303,7 @@ export default function Header() {
                     className={cn(
                       "cursor-pointer flex items-center space-x-1 py-4 px-3",
                       menuActiveCategory === name &&
-                        "text-primary hover:text-primary border-b border-primary",
+                      "text-primary hover:text-primary border-b border-primary",
                     )}
                   >
                     <span className="p2">{label}</span>
@@ -319,7 +319,7 @@ export default function Header() {
             </div>
             <form
               onSubmit={handleSubmit}
-              className="xl:hidden flex border-2 border-blue-300 rounded-[5px] bg-white overflow-hidden sm:h-[48px] h-full w-full mb-6"
+              className="lg:hidden flex border-2 border-blue-300 rounded-[5px] bg-white overflow-hidden md:h-[48px] sm:h-10 h-full w-full mb-6"
             >
               <input
                 type="text"
@@ -406,41 +406,43 @@ export default function Header() {
   return (
     <header className="relative z-50">
       {/* Notification Bar */}
-      {isHeaderLoading ? (
-        <Skeleton className="rounded-lg w-[632px] h-[26px] bg-gray-300 animate-pulse mx-auto" />
-      ) : (
-        <div className="bg-primary text-white py-[7px] text-center">
-          <div className="container mx-auto sm:flex md:items-center items-start justify-center hidden">
-            <CountdownTimer />
-          </div>
+      <div className="bg-primary">
+        {isHeaderLoading ? (
+          <div className="loader"></div>
+        ) : (
+          <div className=" text-white py-[7px] text-center">
+            <div className="container mx-auto sm:flex md:items-center items-start justify-center hidden">
+              <CountdownTimer />
+            </div>
 
-          <div className="flex items-center justify-center text-white text-sm gap-1 sm:hidden">
-            <Image
-              src="/images/fire.png"
-              alt="WebbyTemplate"
-              width={14}
-              height={14}
-              className="w-[14px] h-[14px] mb-0.5"
-            />
-            10% OFF (Up to $10)! Code: WEBBY10
-            <Image
-              src="/images/time.png"
-              alt="WebbyTemplate"
-              width={14}
-              height={14}
-              className="w-[14px] h-[15px] mb-1"
-            />
-            Hurry!
+            <div className="flex items-center justify-center text-white text-sm gap-1 sm:hidden">
+              <Image
+                src="/images/fire.png"
+                alt="WebbyTemplate"
+                width={14}
+                height={14}
+                className="w-[14px] h-[14px] mb-0.5"
+              />
+              10% OFF (Up to $10)! Code: WEBBY10
+              <Image
+                src="/images/time.png"
+                alt="WebbyTemplate"
+                width={14}
+                height={14}
+                className="w-[14px] h-[15px] mb-1"
+              />
+              Hurry!
+            </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
 
       {/* Main Navigation */}
       <div className="bg-white xl:border-b border-primary/10">
-        <div className="flex items-center h-[75px] mx px-4 sm:flex-nowrap flex-wrap w-full">
+        <div className="flex items-center md:h-[75px] h-16 mx px-4 sm:flex-nowrap flex-wrap w-full">
           {/* Mobile menu button */}
           <button
-            className="xl:hidden text-gray-700 sm:mr-3 mr-2"
+            className="lg:hidden text-gray-700 sm:mr-3 mr-0.5"
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
           >
             <svg
@@ -471,7 +473,7 @@ export default function Header() {
 
           <div className="nav-logo">
             {isHeaderLoading ? (
-              <Skeleton className="rounded-lg main-logo-skeleton h-[40px]" />
+              <Skeleton className="rounded-md main-logo-skeleton h-[40px]" />
             ) : (
               headerSettingData?.logo && (
                 <Link href="/" className="flex items-center">
@@ -496,49 +498,52 @@ export default function Header() {
           </div>
 
           {/* Desktop Navigation */}
-          <nav className="links-content flex items-center justify-between relative w-[58%]">
+          <nav className="links-content flex items-center justify-between relative">
             <div className="navigation-links">
               {isHeaderLoading && headerSettingData?.menu?.length > 0
                 ? // Skeletons based on actual menu length
-                  headerSettingData.menu.map((_, index) => (
-                    <Skeleton
-                      key={index}
-                      className="h-5 2xl:w-[115px] w-[100px] rounded"
-                    />
-                  ))
+                headerSettingData.menu.map((_, index) => (
+                  <Skeleton
+                    key={index}
+                    className="h-5 2xl:w-[115px] xl:w-[100px] w-[85px] rounded-md navigation-skeleton"
+                  />
+                ))
                 : !isHeaderLoading && headerSettingData?.menu?.length > 0
                   ? // Render actual links
-                    headerSettingData.menu.map((menu, index) => {
-                      const isActive = menu?.active;
-                      const isCurrentPage = menu?.slug === pathname;
+                  headerSettingData.menu.map((menu, index) => {
+                    const isActive = menu?.active;
+                    const isCurrentPage = menu?.slug === pathname;
 
-                      return (
-                        <Link
-                          key={index}
-                          href={menu?.slug}
-                          className={`links 
+                    return (
+                      <Link
+                        key={index}
+                        href={menu?.slug}
+                        className={`links 
                                ${isActive ? "!text-primary" : "!text-black hover:!text-primary"} 
                                ${isCurrentPage ? "!text-primary" : ""}
                              `}
-                        >
-                          {menu?.label}
-                        </Link>
-                      );
-                    })
+                      >
+                        {menu?.label}
+                      </Link>
+                    );
+                  })
                   : [...Array(6)].map((_, index) => (
-                      <Skeleton key={index} className="h-5 w-[110px] rounded" />
-                    ))}
+                    <Skeleton
+                      key={index}
+                      className="h-5 w-[110px] rounded-md navigation"
+                    />
+                  ))}
             </div>
 
             {/* Search Icon */}
             {isHeaderLoading ? (
               // Skeleton for search icon button (only on lg and up)
-              <Skeleton className="rounded-full w-[23px] h-[23px] bg-gray-300 animate-pulse 1xl:flex-shrink-0 " />
+              <Skeleton className="rounded-full w-[23px] h-[23px] animate-pulse 1xl:flex-shrink-0 mr-0 search-svg" />
             ) : (
               headerSettingData?.search && (
                 <>
                   <button
-                    className="text-gray-700 hover:text-primary mr-0.5 lg:block hidden flex-shrink-0 sm:w-6 sm:h-6 w-4 h-4"
+                    className="text-gray-700 hover:text-primary mr-2 lg:block hidden flex-shrink-0 sm:w-6 sm:h-6 w-4 h-4 "
                     onClick={toggleSearch}
                   >
                     <svg
@@ -547,7 +552,7 @@ export default function Header() {
                       height="24"
                       viewBox="0 0 22 22"
                       fill="none"
-                        xmlns="http://www.w3.org/2000/svg"
+                      xmlns="http://www.w3.org/2000/svg"
                     >
                       <path
                         d="M15.1667 15.1667L18.9472 18.9675M3.5 10.1667C3.5 11.9348 4.20238 13.6305 5.45262 14.8807C6.70286 16.131 8.39856 16.8333 10.1667 16.8333C11.9348 16.8333 13.6305 16.131 14.8807 14.8807C16.131 13.6305 16.8333 11.9348 16.8333 10.1667C16.8333 8.39856 16.131 6.70286 14.8807 5.45262C13.6305 4.20238 11.9348 3.5 10.1667 3.5C8.39856 3.5 6.70286 4.20238 5.45262 5.45262C4.20238 6.70286 3.5 8.39856 3.5 10.1667Z"
@@ -562,11 +567,10 @@ export default function Header() {
                   {/* Search Bar */}
                   <form
                     onSubmit={handleSubmit}
-                    className={`h-[74px] absolute z-50 bg-white overflow-hidden transition-all duration-400 ease-in-out flex items-center justify-between !m-0 ${
-                      isSearchOpen
+                    className={`h-[74px] absolute z-50 bg-white overflow-hidden transition-all duration-400 ease-in-out flex items-center justify-between !m-0 ${isSearchOpen
                         ? "w-full opacity-100 z-100 p-2 ps-[35px] right-0"
                         : "w-0 opacity-0 z-0 p-0 right-0"
-                    }`}
+                      }`}
                   >
                     <div className="flex items-center justify-start w-full gap-5">
                       <svg
@@ -622,13 +626,13 @@ export default function Header() {
 
           <div className="button-content lg:space-x-1 sm:space-x-2 space-x-1 nav-icons flex-1 w-[50%] 1xl:justify-start justify-end">
             {isHeaderLoading ? (
-              <Skeleton className="rounded-lg schedule-skeleton 1xl:h-[40px] sm:h-6 h-4 ml-3" />
+              <Skeleton className="rounded-md schedule-skeleton 1xl:h-[40px] sm:h-6 h-4 1xl:ml-3 schedule-meetings" />
             ) : (
               headerSettingData?.right_menu && (
                 <>
                   <Link
                     href={headerSettingData?.right_menu?.slug}
-                    className="meeting 1xl:hidden block"
+                    className="meeting hidden"
                   >
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
@@ -650,51 +654,27 @@ export default function Header() {
 
                   <Link
                     href={headerSettingData?.right_menu?.slug}
-                    className="schedule"
+                    className="schedule block"
                   >
                     {headerSettingData?.right_menu?.label}
                   </Link>
                 </>
               )
             )}
-            {isHeaderLoading ? (
-              <Skeleton className="rounded-full sm:w-6 sm:h-6 w-4 h-4 1xl:hidden block" />
-            ) : (
-              <Link href="/wishlist" className="heart 1xl:hidden block">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width={20}
-                  height={20}
-                  viewBox="0 0 22 22"
-                  fill="none"
-                  className="sm:w-[22px] sm:h-[22px] w-5 h-5 icon"
-                >
-                  <g clipPath="url(#clip0_2528_235)">
-                    <path
-                      d="M2.5633 11.6888C0.48549 8.91835 1.17809 4.76273 4.64111 3.37753C8.10412 1.99232 10.1819 4.76273 10.8745 6.14794C11.5671 4.76273 14.3375 1.99232 17.8006 3.37753C21.2636 4.76273 21.2636 8.91835 19.1858 11.6888C17.108 14.4592 10.8745 20 10.8745 20C10.8745 20 4.64111 14.4592 2.5633 11.6888Z"
-                      stroke="black"
-                      strokeWidth="1.5"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </g>
-                </svg>
-              </Link>
-            )}
 
             <div className="flex">
-              {!authLoading ? (
-                isAuthenticated ? (
+              {!authLoading &&
+                (isAuthenticated ? (
                   <button onClick={() => logout()} className="login">
                     {isHeaderLoading ? (
-                      <Skeleton className="1xl:block hidden h-[30px]" />
+                      <Skeleton className="1xl:block hidden h-[30px] logout" />
                     ) : (
                       <span className="btn btn-primary 1xl:block hidden">
                         Logout
                       </span>
                     )}
                     {isHeaderLoading ? (
-                      <Skeleton className="sm:w-[22px] sm:h-[22px] w-4 h-4 1xl:hidden block" />
+                      <Skeleton className="sm:w-[22px] sm:h-[22px] w-4 h-4 1xl:hidden block login-svg" />
                     ) : (
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -717,14 +697,14 @@ export default function Header() {
                 ) : (
                   <button onClick={() => openAuth("login")} className="login">
                     {isHeaderLoading ? (
-                      <Skeleton className="1xl:block hidden w-[80px] h-[30px]" />
+                      <Skeleton className="login-skeleton" />
                     ) : (
-                      <span className="btn btn-primary 1xl:block hidden ">
+                      <span className="btn btn-primary 1xl:block hidden login-btn">
                         Login / Sign up
                       </span>
                     )}
                     {isHeaderLoading ? (
-                      <Skeleton className="sm:w-[22px] sm:h-[22px] w-4 h-4 1xl:hidden block" />
+                      <Skeleton className="sm:w-6 sm:h-6 w-4 h-4 rounded-full login-svg" />
                     ) : (
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -732,7 +712,7 @@ export default function Header() {
                         height={20}
                         viewBox="0 0 20 20"
                         fill="none"
-                        className="sm:w-[22px] sm:h-[22px] w-5 h-5 1xl:hidden block"
+                        className="sm:w-[22px] sm:h-[22px] w-5 h-5 hidden login-svg"
                       >
                         <path
                           d="M16.3442 17.7023C16.3442 14.7013 12.9983 12.2618 9.99732 12.2618C6.99631 12.2618 3.65039 14.7013 3.65039 17.7023M9.99732 9.54245C10.9592 9.54245 11.8816 9.16036 12.5618 8.48022C13.2419 7.80008 13.624 6.87762 13.624 5.91576C13.624 4.9539 13.2419 4.03143 12.5618 3.3513C11.8816 2.67116 10.9592 2.28906 9.99732 2.28906C9.03546 2.28906 8.11299 2.67116 7.43286 3.3513C6.75272 4.03143 6.37062 4.9539 6.37062 5.91576C6.37062 6.87762 6.75272 7.80008 7.43286 8.48022C8.11299 9.16036 9.03546 9.54245 9.99732 9.54245Z"
@@ -744,10 +724,7 @@ export default function Header() {
                       </svg>
                     )}
                   </button>
-                )
-              ) : (
-                <div className="login-skeleton animate-pulse rounded-md bg-gray-100 sm:w-[120px] 1xl:h-[40px]" />
-              )}
+                ))}
             </div>
 
             {/* after login */}
@@ -781,9 +758,8 @@ export default function Header() {
                     </svg>
                     <span className="1xl:block hidden">Hello, Name</span>
                     <svg
-                      className={`sm:w-4 sm:h-4 w-3.5 h-3.4 transform transition-transform duration-200 ${
-                        open ? "rotate-180" : ""
-                      }`}
+                      className={`sm:w-4 sm:h-4 w-3.5 h-3.4 transform transition-transform duration-200 ${open ? "rotate-180" : ""
+                        }`}
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
@@ -852,9 +828,9 @@ export default function Header() {
 
             <div className="right-last-icon">
               {isHeaderLoading ? (
-                <Skeleton className="rounded-full sm:w-6 sm:h-6 w-4 h-4 1xl:block hidden" />
+                <Skeleton className="rounded-full sm:w-6 sm:h-6 w-4 h-4 mr-2 wishlist-svg " />
               ) : (
-                <Link className="heart 1xl:block hidden" href="/wishlist">
+                <Link className="heart" href="/wishlist">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     width={20}
@@ -877,7 +853,7 @@ export default function Header() {
               )}
 
               {isHeaderLoading ? (
-                <Skeleton className="rounded-full sm:w-6 sm:h-6 w-4 h-4 1xl:block hidden" />
+                <Skeleton className="rounded-full sm:w-6 sm:h-6 w-4 h-4" />
               ) : (
                 <button className="cart" onClick={toggleCart}>
                   <svg
@@ -928,10 +904,10 @@ export default function Header() {
                   <Link
                     key={index}
                     href={menu?.slug}
-                    className={`block px-3 py-2 text-base font-medium
-          ${menu?.active ? "text-primary hover:text-blue-800" : "!text-black"}
-          ${isCurrentPage ? "underline" : ""}
-        `}
+                    className={`block px-2 py-1.5 font-medium text-sm
+                               ${menu?.active ? "text-primary hover:text-blue-800" : "!text-black"}
+                               ${isCurrentPage ? "underline" : ""}
+                             `}
                   >
                     {menu?.label}
                   </Link>
