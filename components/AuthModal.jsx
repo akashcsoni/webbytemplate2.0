@@ -88,6 +88,11 @@ export default function AuthModal() {
                                     placeholder="Enter mobile number or email"
                                     value={inputValue}
                                     onChange={handleInputChange}
+                                    onKeyDown={(e) => {
+                                        if (e.key === 'Enter') {
+                                            handleSubmit();
+                                        }
+                                    }}
                                     className="h-full w-full p2 !text-black placeholder:text-gray-300 px-2 mb-0.5 rounded-[5px] outline-none"
                                 />
                             </div>

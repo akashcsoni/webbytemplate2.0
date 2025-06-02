@@ -83,20 +83,20 @@ export default function ProductsList(props) {
   const bgClass = section_layout === "with_bg" ? "bg-gray-50" : "";
 
   return (
-    <section className={`xl:py-[35px] sm:py-[30px] py-5 ${bgClass}`}>
+    <section className={`xl:py-[35px] md:py-[30px] py-5 ${bgClass}`}>
       <div className={`${section_layout}`}></div>
       <div className="container mx-auto relative">
         <div>
           <div className={`wc_${section_layout}_secton`}>
-            <div className="flex justify-between sm:items-center items-start sm:flex-row flex-col sm:mb-[30px] mb-6">
+            <div className="flex justify-between sm:items-center items-start sm:flex-row flex-col md:mb-[30px] sm:mb-6 mb-5">
               <div>
                 <h2>{title}</h2>
-                <p className=" 2xl:text-lg 1xl:text-[17px] lg:text-base text-[15px] mt-2 2xl:w-[926px] lg:w-[775px] md:w-[550px] sm:w-[445px] max-w-full">{description}</p>
+                <p className="2xl:text-lg 1xl:text-[17px] lg:text-base text-[15px] mt-2 2xl:w-[926px] lg:w-[775px] md:w-[550px] sm:w-[445px] max-w-full">{description}</p>
               </div>
               {link && (
                 <Link
                   href={link?.link}
-                  className="all-btn flex items-center hover:underline sm:mt-0 mt-4 underline-offset-4"
+                  className="all-btn flex items-center hover:underline sm:mt-0 mt-2 underline-offset-4"
                 >
                   {link?.label}
                   {link?.image ? (
@@ -121,7 +121,7 @@ export default function ProductsList(props) {
               )}
             </div>
             {categories_list && categories_list?.length > 0 && (
-              <div className="grid 1xl:grid-cols-7 xl:grid-cols-6 md:grid-cols-4 sm:grid-cols-3 grid-cols-2 lg:gap-4 gap-3 mb-10 overflow-x-auto pb-2 tab-btn">
+              <div className="grid 1xl:grid-cols-7 xl:grid-cols-6 md:grid-cols-4 sm:grid-cols-3 grid-cols-2 lg:gap-4 gap-3 lg:mb-10 md:mb-8 mb-6 overflow-x-auto pb-2 tab-btn">
                 <button
                   onClick={() => setSelectedCategory(null)}
                   className={`btn whitespace-nowrap px-0 !py-2.5 !h-auto ${selectedCategory === null

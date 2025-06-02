@@ -32,11 +32,11 @@ export default function FaqSection({ title = "", label = "", button, list = [], 
   return (
     <section className="xl:py-[35px] sm:py-[30px] py-5">
       <div className="container mx-auto">
-        <div className="flex justify-between lg:flex-row flex-col 2xl:gap-52 xl:gap-20 sm:gap-8 gap-[30px]">
+        <div className="flex justify-between lg:flex-row flex-col 2xl:gap-52 xl:gap-20 sm:gap-8 gap-5">
           {(title || label) && (
             <div className="xl:w-[30%] lg:w-[36%] w-full">
-              {title && <h2 className="md:mb-4 mb-3">{title}</h2>}
-              {label && <p className="lg:mb-6 mb-5">{label}</p>}
+              {title && <h2 className="md:mb-4 sm:mb-3 mb-2">{title}</h2>}
+              {label && <p className="lg:mb-6 sm:mb-5 mb-4 2xl:text-lg 1xl:text-[17px] lg:text-[15px] sm:text-base text-[15px] 1xl:leading-[30px] sm:leading-6 leading-[1.45rem]">{label}</p>}
               {button?.label && button?.link && (
                 <Link href={button.link} passHref>
                   <button className="btn btn-primary">{button.label}</button>
@@ -47,28 +47,28 @@ export default function FaqSection({ title = "", label = "", button, list = [], 
 
           <div
             className={`${isMedium ? "lg:w-[58%]" : ""
-              } w-full xl:space-y-7 md:space-y-5 space-y-4`}
+              } w-full 1xl:space-y-7 md:space-y-5 space-y-4`}
           >
             {Array.isArray(list) && list.length > 0 ? (
               list.map((item, index) => (
                 <div
                   key={item.id}
-                  className="border-b border-primary/10 2xl:pb-7 xl:pb-6 md:pb-5 pb-4"
+                  className="border-b border-primary/10 2xl:pb-7 1xl:pb-6 md:pb-5 pb-4"
                 >
                   <div
                     role="button"
                     tabIndex={0}
-                    className="flex items-center justify-between cursor-pointer"
+                    className="flex items-center justify-between cursor-pointer sm:gap-[22px] gap-2"
                     onClick={() => toggleQuestion(item.id)}
                     onKeyDown={(e) => handleKeyDown(e, item.id)}
                     aria-expanded={openQuestion === item.id}
                     aria-controls={`faq-content-${item.id}`}
                   >
-                    <div className="flex items-center md:gap-6 sm:gap-4 gap-2">
+                    <div className="flex items-center md:gap-6 sm:gap-4 gap-2.5">
                       <span className="h5 !font-normal text-primary">
                         Q{index + 1}.
                       </span>
-                      <h5 className="font-normal">{item.title}</h5>
+                      <h5 className="font-normal 2xl:text-xl 1xl:text-[19px] md:text-lg sm:text-[17px] sm:text-base text-[15px]">{item.title}</h5>
                     </div>
                     <span className="text-gray-200 p-1" aria-hidden="true">
                       {openQuestion === item.id ? (

@@ -92,7 +92,7 @@ h5,
 
 p,
 .p {
-  @apply 2xl:text-lg 1xl:text-[17px] text-base 1xl:leading-[30px] lg:leading-7 leading-6 text-gray-200;
+  @apply 2xl:text-lg 1xl:text-[17px] sm:text-base text-[15px] 1xl:leading-[30px] lg:leading-7 sm:leading-6 leading-[1.45rem] text-gray-200;
 }
 
 .p2 {
@@ -171,7 +171,7 @@ p,
 }
 
 .links {
-  @apply hover: !text-primary p2 px-2 py-1 !text-base;
+  @apply hover:!text-primary p2 px-2 py-1 !text-base;
 }
 
 .author-links {
@@ -195,7 +195,7 @@ p,
 }
 
 .login {
-  @apply p-0 1xl: !mr-5;
+  @apply p-0 1xl:!mr-5;
 }
 
 .login-skeleton {
@@ -220,7 +220,7 @@ p,
 }
 
 .cart {
-  @apply relative pl-[12px];
+  @apply relative pl-3;
 }
 
 .item-features {
@@ -375,7 +375,7 @@ p,
 
 @media (max-width: 1501px) {
   .login {
-    @apply 1xl: !mr-[10px];
+    @apply 1xl:!mr-[10px];
   }
 
   .right-last-icon {
@@ -399,6 +399,12 @@ p,
   .author-links-content {
     @apply w-[53%];
   }
+  .right-last-icon{
+    @apply space-x-2;
+  }
+  .cart {
+  @apply relative pl-1;
+}
 }
 
 @media (max-width: 1433px) {
@@ -422,7 +428,6 @@ p,
 }
 
 @media (max-width: 1409px) {
-
   .main-logo,
   .main-logo-skeleton {
     @apply w-[225px];
@@ -459,11 +464,11 @@ p,
 
 @media (max-width: 1347px) {
   .navigation-links {
-    gap: 0;
+    @apply gap-0;
   }
 
   .links-content {
-    width: 53%;
+    @apply w-[53%];
   }
 
   .navigation-skeleton {
@@ -488,14 +493,15 @@ p,
 }
 
 @media (max-width: 1311px) {
-
   .login-skeleton,
-  .login .login-btn {
+  .login .login-btn,
+  .after-login-btn {
     @apply hidden;
   }
 
-  .login .login-svg {
-    @apply block;
+  .login .login-svg,
+  .after-login-svg {
+    @apply flex;
   }
 
   .login {
@@ -511,19 +517,25 @@ p,
   }
 
   .links-content {
-    width: 71%;
+    @apply w-[71%];
   }
 
   .right-last-icon {
     @apply divide-x-0 space-x-[0px];
   }
+  
 }
 
-/* @media (max-width: 1285px) {
-  .links-content {
-    @apply w-[55%];
+@media (max-width: 1300px) {
+  .schedule-skeleton {
+    @apply w-[130px];
   }
-} */
+}
+@media (max-width: 1280px) {
+  .schedule-skeleton {
+    @apply w-[120px];
+  }
+}
 @media (max-width: 1264px) {
   .author-links-content {
     @apply w-[48%];
@@ -556,7 +568,7 @@ p,
 
 @media (max-width: 640px) {
   .schedule-skeleton {
-    @apply w-4;
+    @apply w-4 h-4;
   }
 }
 
@@ -626,15 +638,15 @@ p,
 /* navbar end */
 /* rich text stat */
 .rich-heading {
-  @apply xl:mb-[25px] mb-4;
+  @apply 2xl:mb-[25px] 1xl:mb-5 xl:mb-4 mb-3;
 }
 
 .rich-subHeading {
-  @apply xl:mb-5 mb-3;
+  @apply 2xl:mb-5 1xl:mb-4 xl:mb-3 mb-2;
 }
 
 .rich-desc {
-  @apply xl:space-y-5 space-y-2 xl:mb-9 mb-4;
+  @apply 2xl:space-y-5 1xl:space-y-4 xl:space-y-3 space-y-2 2xl:mb-9 1xl:mb-7 xl:mb-6 mb-4;
 }
 
 .rich-subDesc {
@@ -684,7 +696,7 @@ p,
 }
 
 .tabulator-row {
-  @apply py-[10px] px-5 hover: !bg-white;
+  @apply py-[10px] px-5 hover:!bg-white;
 }
 
 .tabulator-table {
@@ -706,8 +718,6 @@ p,
 .product-image div {
   @apply !max-w-full;
 }
-
-/* AUTHOR PAGES END */
 
 /* AUTHOR PAGES END */
 
