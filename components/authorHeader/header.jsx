@@ -3,12 +3,15 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { Avatar } from "@heroui/react";
+import { useAuth } from "@/contexts/AuthContext";
 
-export default function AuthorHeader() {
+export default function AuthorHeader({ authUser }) {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [openCart, setOpenCart] = useState(false);
+  const { logout } = useAuth();
 
   const [open, setOpen] = useState(false);
   const dropdownRef = useRef(null);
@@ -121,13 +124,14 @@ export default function AuthorHeader() {
             </button>
 
             {/* Logo */}
-            <div className="nav-logo !border-blue-300/50">
+            <div className="nav-logo !border-blue-300/10">
               <Link href="/" className="flex items-center" onClick={closeMenu}>
                 <Image
                   src="/logo/white-main-logo.svg"
                   alt="WebbyTemplate"
                   width={180}
                   height={40}
+                  priority={true}
                   className="main-logo author-main-logo block"
                 />
                 <Image
@@ -135,6 +139,7 @@ export default function AuthorHeader() {
                   alt="WebbyTemplate"
                   width={30}
                   height={30}
+                  priority={true}
                   className="author-logo hidden"
                 />
               </Link>
@@ -142,8 +147,8 @@ export default function AuthorHeader() {
           </div>
 
           {/* Desktop Navigation */}
-          <nav className="author-links-content flex items-center justify-between relative w-[58%]">
-            <div>
+          <nav className="author-links-content flex items-center justify-between relative w-[58%] h-full">
+            <div className="flex items-center h-full gap-4">
               <Link href="/partners" className="author-links !text-white">
                 Partners
               </Link>
@@ -162,7 +167,7 @@ export default function AuthorHeader() {
             </div>
             {/* Search Icon */}
             <button
-              className="block flex-shrink-0 w-6 h-6"
+              className="block flex-shrink-0 w-6 h-full"
               onClick={toggleSearch}
             >
               <svg
@@ -213,7 +218,10 @@ export default function AuthorHeader() {
                   className="w-full outline-none text-[#505050] placeholder:text-white/60 text-base bg-primary"
                 />
               </div>
-              <button onClick={toggleSearch} className="ml-2 text-gray-500">
+              <button
+                onClick={toggleSearch}
+                className="ml-2 h-full text-gray-500"
+              >
                 <svg
                   className="stroke-white/60 w-[22px] h-[22px] flex-shrink-0"
                   xmlns="http://www.w3.org/2000/svg"
@@ -234,7 +242,7 @@ export default function AuthorHeader() {
             </div>
           </nav>
           {/* Right Side Actions */}
-          <div className="flex items-center 1xl:space-x-[15px] sm:space-x-3 space-x-1.5 flex-1 w-[50%] xl:justify-start justify-end right-side divide-x divide-blue-300/50">
+          <div className="flex items-center 1xl:space-x-[15px] space-x-1.5 flex-1 w-[50%] xl:justify-start justify-end right-side divide-x divide-blue-300/10">
             {/* Search */}
             <div className="">
               {/* Search Icon */}
@@ -312,10 +320,7 @@ export default function AuthorHeader() {
               </div>
             </div>
 
-            <Link
-              href="/schedule"
-              className="heart 1xl:pl-[15px] sm:pl-3 pl-1.5"
-            >
+            <Link href="/schedule" className="heart 1xl:pl-[15px] pl-1.5">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 width={20}
@@ -336,7 +341,7 @@ export default function AuthorHeader() {
               </svg>
             </Link>
 
-            <div className="flex items-center relative sm:pl-[15px] pl-1.5">
+            <div className="flex items-center relative 1xl:pl-[15px] pl-1.5 pr-1">
               <button className="" onClick={() => setOpenCart(true)}>
                 <svg
                   width="18"
@@ -457,9 +462,9 @@ export default function AuthorHeader() {
 
             <Link
               href="/schedule"
-              className="links !text-white !py-0 1xl:!pl-[15px] sm:!pl-3 !pl-1.5 !pr-0"
+              className="links !text-white !py-0 1xl:!pl-[15px] !pl-1.5 !pr-0"
             >
-              <span className="1xl:block hidden">Schedule Meeting</span>
+              <span className="1xl:block hidden !text-white">Schedule Meeting</span>
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 width="22"
@@ -478,7 +483,7 @@ export default function AuthorHeader() {
               </svg>
             </Link>
             <div
-              className="relative flex text-left 1xl:px-[15px] sm:px-3 pl-1.5"
+              className="relative flex text-left 1xl:px-[15px] pl-1.5 sm:pr-3"
               ref={dropdownRef}
             >
               <button
@@ -521,61 +526,67 @@ export default function AuthorHeader() {
 
               {open && (
                 <div className="absolute -right-1/2 1xl:pt-3 pt-2.5 1xl:mt-[22px] mt-[30px] shadow-dropDown overflow-hidden rounded-md z-10 before:content-[''] before:absolute before:top-1 1xl:before:right-24 before:right-16 1xl:before:w-4 1xl:before:h-5 before:w-3 before:h-3 before:bg-white before:rotate-45 before:border before:border-blue-300 before:rounded-sm before:overflow-hidden">
-                  <div className="z-20 py-2 relative w-[12.5rem] origin-top-right rounded-md bg-white  border border-blue-300 overflow-hidden">
+                  <div className="z-20 py-[10px] px-2 relative w-[12.5rem] origin-top-right rounded-md bg-white overflow-hidden">
                     <ul>
                       <li>
-                        <p className="!font-medium block 1xl:px-5 1xl:py-2 px-4 py-1.5 text-gray-800">
+                        <p className="!font-medium block 1xl:px-3 1xl:py-2 px-4 py-1.5 text-gray-800">
                           Settings
                         </p>
                       </li>
-                      <li className="hover:bg-primary group">
-                        <a href="#">
-                          <p className="block 1xl:px-5 1xl:py-2 px-4 py-1.5 text-gray-800 group-hover:text-white p2">
+                      <li className="hover:bg-primary group rounded-md">
+                        <Link href="javascript:;">
+                          <p className="block 1xl:px-3 1xl:py-2 px-4 py-1.5 text-gray-800 group-hover:text-white p2">
                             Dashboard
                           </p>
-                        </a>
+                        </Link>
                       </li>
-                      <li className="hover:bg-primary group">
-                        <a href="#">
-                          <p className="block 1xl:px-5 1xl:py-2 px-4 py-1.5 text-gray-800 group-hover:text-white p2">
+                      <li className="hover:bg-primary group rounded-md">
+                        <Link href="javascript:;">
+                          <p className="block 1xl:px-3 1xl:py-2 px-4 py-1.5 text-gray-800 group-hover:text-white p2">
                             Products
                           </p>
-                        </a>
+                        </Link>
                       </li>
-                      <li className="hover:bg-primary group">
-                        <a href="#">
-                          <p className="block 1xl:px-5 1xl:py-2 px-4 py-1.5 text-gray-800 group-hover:text-white p2">
+                      <li className="hover:bg-primary group rounded-md">
+                        <Link href="javascript:;">
+                          <p className="block 1xl:px-3 1xl:py-2 px-4 py-1.5 text-gray-800 group-hover:text-white p2">
                             Payment & Tax Set Up
                           </p>
-                        </a>
+                        </Link>
                       </li>
-                      <li className="hover:bg-primary group">
-                        <a href="#">
-                          <p className="block 1xl:px-5 1xl:py-2 px-4 py-1.5 text-gray-800 group-hover:text-white p2">
+                      <li className="hover:bg-primary group rounded-md">
+                        <Link href="javascript:;">
+                          <p className="block 1xl:px-3 1xl:py-2 px-4 py-1.5 text-gray-800 group-hover:text-white p2">
                             Tickets / Support
                           </p>
-                        </a>
+                        </Link>
                       </li>
-                      <li className="hover:bg-primary group">
-                        <a href="#">
-                          <p className="block 1xl:px-5 1xl:py-2 px-4 py-1.5 text-gray-800 group-hover:text-white p2">
+                      <li className="hover:bg-primary group rounded-md">
+                        <Link href="javascript:;">
+                          <p className="block 1xl:px-3 1xl:py-2 px-4 py-1.5 text-gray-800 group-hover:text-white p2">
                             Downloads
                           </p>
-                        </a>
+                        </Link>
                       </li>
-                      <li className="hover:bg-primary group">
-                        <a href="#">
-                          <p className="block 1xl:px-5 1xl:py-2 px-4 py-1.5 text-gray-800 group-hover:text-white p2">
+                      <li className="hover:bg-primary group rounded-md">
+                        <Link href="javascript:;">
+                          <p className="block 1xl:px-3 1xl:py-2 px-4 py-1.5 text-gray-800 group-hover:text-white p2">
                             Profile Settings
                           </p>
-                        </a>
+                        </Link>
                       </li>
-                      <li className="hover:bg-primary group">
-                        <a href="#">
-                          <p className="block 1xl:px-5 1xl:py-2 px-4 py-1.5 text-gray-800 group-hover:text-white p2">
+                      <li className="hover:bg-primary group rounded-md">
+                        <Link
+                          href="/login"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            logout();
+                          }}
+                        >
+                          <p className="block 1xl:px-3 1xl:py-2 px-4 py-1.5 text-gray-800 group-hover:text-white p2">
                             Log Out
                           </p>
-                        </a>
+                        </Link>
                       </li>
                     </ul>
                   </div>
@@ -584,12 +595,10 @@ export default function AuthorHeader() {
             </div>
 
             <div className="1xl:w-[37px] 1xl:h-[37px] sm:w-[32px] sm:h-[32px] w-7 h-7 !m-0 rounded-full border border-blue-300">
-              <Image
-                src="/logo/webby-logo.svg"
+              <Avatar
+                src={authUser ? authUser?.image?.url : ""}
                 alt="WebbyTemplate"
-                width={37}
-                height={37}
-                className="w-full h-full"
+                className="w-full h-full bg-white"
               />
             </div>
           </div>

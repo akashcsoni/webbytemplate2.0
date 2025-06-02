@@ -665,12 +665,15 @@ p,
 }
 
 /* tabulator */
+.tabulator .tabulator-tableholder {
+  @apply xl:!overflow-hidden;
+}
 .tabulator {
   @apply !border-0 !bg-white;
 }
 
 .tabulator-header-contents {
-  @apply !bg-[#E6EFFB80] !px-5 py-3;
+  @apply !bg-[#E6EFFB80] px-5 py-3;
 }
 
 .tabulator .tabulator-header {
@@ -681,6 +684,10 @@ p,
 .tabulator .tabulator-header,
 .tabulator-row .tabulator-cell {
   @apply !bg-transparent !border-0 text-base text-gray-200 !p-0 !text-start;
+}
+
+.tabulator-row .tabulator-cell span {
+  @apply block max-w-fit;
 }
 
 .tabulator-col-sorter {
@@ -696,7 +703,7 @@ p,
 }
 
 .tabulator-row {
-  @apply py-[10px] px-5 hover:!bg-white;
+  @apply lg:py-[10px] md:py-2 sm:py-[6px] py-[4px] px-5 hover:!bg-white;
 }
 
 .tabulator-table {
@@ -715,11 +722,74 @@ p,
   @apply !border !border-emerald-600 inline-block;
 }
 
+/* .tabulator-col[tabulator-field="no"] {
+
+ @apply !w-[70px]
+
+} */
+.tabulator-row .tabulator-cell .tabulator-data-tree-control,
+.tabulator-row .tabulator-cell .tabulator-data-tree-branch {
+  @apply !hidden;
+}
+
 .product-image div {
   @apply !max-w-full;
 }
 
 /* AUTHOR PAGES END */
+
+#CheckTicketStatus div {
+  @apply !shadow-none;
+}
+
+.custom-auto-complete [data-slot="input-wrapper"] {
+  @apply focus:!bg-transparent !bg-white shadow-none border border-gray-100 hover:border-default-400 focus:border-default-foreground xl:px-5 md:px-4 px-3 xl:py-[23px] sm:py-[21px] py-[20px] rounded-[5px];
+}
+
+.custom-auto-complete .group[data-focus="true"] .group-data-\[focus\=true\]\:bg-default-100 {
+  @apply !bg-transparent;
+}
+
+.custom-auto-complete [data-slot="input-wrapper"] input{
+ @apply 2xl:text-base md:text-[15px] sm:text-sm !text-black placeholder:text-gray-300;
+}
+
+.custom-auto-complete [data-slot="label"] {
+  @apply 2xl:text-base md:text-[15px] sm:text-sm !text-black block !pb-1 !font-normal;
+}
+
+.custom-auto-complete.custom-auto-complete-error [data-slot="input-wrapper"]{
+  @apply !bg-transparent !border-danger;
+}
+
+.custom-auto-complete [aria-haspopup="listbox"] {
+  @apply !text-black;
+}
+
+.custom-phone [data-slot="input-wrapper"] {
+  @apply !bg-white shadow-none rounded-[5px] !p-0;
+}
+
+.custom-phone [data-slot="input"] {
+  @apply !hidden;
+}
+
+.custom-phone [data-visible="false"] {
+  @apply !hidden;
+}
+
+.custom-phone [data-slot="base"] {
+  @apply !w-min;
+}
+
+.sm\:data-\[visible\=true\]\:pointer-events-none[data-visible="true"] {
+  @apply !opacity-100;
+}
+
+.rotate {
+  transition: transform 0.3s ease;
+  transform-origin: center;
+}
 
 .loader {
   @apply w-fit p2 !text-white text-base py-[7px] text-center mx-auto;
@@ -730,6 +800,163 @@ p,
 .loader:before {
   content: "Loading...";
 }
+
+.rotate.open {
+  transform: rotate(180deg);
+}
+
+.tabulator-cell {
+  @apply !h-auto;
+}
+
+/* Target a column where tabulator-field="product" */
+div[tabulator-field="no"] {
+  @apply 2xl:!w-[70px] 1xl:!w-[60px] sm:!w-[50px] !w-[40px];
+}
+
+div[tabulator-field="product"] {
+  @apply 2xl:!w-[280px] sm:!w-[260px] !w-[230px];
+}
+
+div[tabulator-field="buyer"] {
+  @apply 2xl:!w-[180px] 1xl:!w-[140px] !w-[130px];
+}
+
+div[tabulator-field="license"] {
+  @apply 2xl:!w-[210px] 1xl:!w-[180px] !w-[160px];
+}
+
+div[tabulator-field="price"] {
+  @apply 2xl:!w-[160px] 1xl:!w-[110px] !w-[90px];
+}
+
+div[tabulator-field="date"] {
+  @apply 2xl:!w-[180px] 1xl:!w-[150px] !w-[130px];
+}
+
+div[tabulator-field="status"] {
+  @apply 2xl:!w-[180px] sm:!w-[150px] !w-[130px];
+}
+
+div[tabulator-field="earnings"] {
+  @apply !w-[70px];
+}
+
+/* deownload page */
+div[tabulator-field="OrderId"] {
+  @apply 2xl:!w-[120px] 1xl:!w-[90px] sm:!w-[80px] !w-[70px];
+}
+
+div[tabulator-field="productNameBundle"] {
+  @apply 2xl:!w-[550px] 1xl:!w-[500px] sm:!w-[450px] !w-[400px];
+}
+
+div[tabulator-field="downloadLink"] {
+  @apply 2xl:!w-[250px] 1xl:!w-[200px] sm:!w-[180px] !w-[150px];
+}
+
+div[tabulator-field="downloadInvoice"] {
+  @apply 2xl:!w-[300px] 1xl:!w-[250px] sm:!w-[230px] !w-[200px];
+}
+
+/* ticket/support */
+.ticket-tabulator .tabulator-header-contents {
+  @apply py-3 bg-[#e6effb80] 2xl:!px-5 !px-3;
+}
+
+.ticket-tabulator .tabulator-row {
+  @apply md:py-3 sm:py-2 py-1 2xl:!px-5 !px-2;
+}
+
+div[tabulator-field="ticketNumber"] {
+  @apply 2xl:!w-[150px] 1xl:!w-[120px] xl:!w-[110px] !w-[120px];
+}
+
+div[tabulator-field="productName"] {
+  @apply 2xl:!w-[190px] 1xl:!w-[140px] xl:!w-[130px] !w-[140px];
+}
+
+div[tabulator-field="description"] {
+  @apply 2xl:!w-[600px] 1xl:!w-[580px] xl:!w-[530px] !w-[560px];
+}
+
+div[tabulator-field="createdBy"] {
+  @apply 2xl:!w-[170px] 1xl:!w-[120px] xl:!w-[115px] !w-[130px];
+}
+
+div[tabulator-field="status"] {
+  @apply 2xl:!w-[150px] xl:!w-[100px] !w-[120px];
+}
+
+div[tabulator-field="dates"] {
+  @apply !w-[100px];
+}
+
+.success{
+  @apply bg-blue-300;
+}
+
+.success rect{
+  @apply stroke-primary;
+}
+
+.success path{
+  @apply fill-primary;
+}
+
+.warning{
+  @apply bg-[#ED9A12]/20;
+}
+
+.warning rect{
+  @apply stroke-[#ED9A12];
+}
+
+.warning path{
+  @apply fill-[#ED9A12];
+}
+
+.reviewed{
+  @apply bg-[#257C65]/20;
+}
+
+.reviewed rect{
+  @apply stroke-[#257C65];
+}
+
+.reviewed path{
+  @apply fill-[#257C65];
+}
+
+.error{
+  @apply bg-[#C32D0B]/20;
+}
+
+.error rect{
+  @apply stroke-[#C32D0B];
+}
+
+.error path{
+  @apply fill-[#C32D0B];
+}
+
+
+
+/* Example: Style only the column title */
+
+/* div[tabulator-field="product"] .tabulator-col-title {
+
+  @apply
+
+} */
+
+
+
+/* .tabulator-tree-level-1,.block .toggle-children{
+
+  @apply rotate-180; 
+
+} */
 
 @keyframes l4 {
   to {
