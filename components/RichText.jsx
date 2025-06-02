@@ -13,7 +13,8 @@ export default function RichText({ body, read_more }) {
     const calculateCharacterLimit = () => {
         const width = window.innerWidth;
         if (width < 640) return 600; // mobile
-        if (width < 1024) return 1500; // tablet
+        if (width <= 1024) return 1100; // tablet
+        if (width >= 1023) return 1200; // tablet
         return 2000; // desktop
     };
 
@@ -110,7 +111,7 @@ export default function RichText({ body, read_more }) {
     return (
         <section className="xl:py-[35px] sm:py-[30px] py-5 RichText">
             <div className="bg-blue-300">
-                <div className="rich-text container xl:py-[60px] sm:py-[45px] py-10">
+                <div className="rich-text container 2xl:py-[60px] xl:py-[50px] md:py-[45px] sm:py-9 py-7">
                     <div
                         className="prose mb-4"
                         dangerouslySetInnerHTML={{ __html: displayContent }}
@@ -120,8 +121,8 @@ export default function RichText({ body, read_more }) {
                             <button
                                 onClick={() => setIsExpanded(!isExpanded)}
                                 className={`inline-flex items-end text-primary font-medium hover:underline absolute inset-x-0 bottom-0 transition-all duration-300 underline-offset-4 ${!isExpanded
-                                        ? "bg-gradient-to-t from-blue-300 via-blue-300/80 to-transparent h-32"
-                                        : "relative h-full"
+                                    ? "bg-gradient-to-t from-blue-300 via-blue-300/80 to-transparent h-32"
+                                    : "relative h-full"
                                     }`}
                             >
                                 <span className="flex items-center">

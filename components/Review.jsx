@@ -5,14 +5,14 @@ import ReviewGrid from "./common/review/review-grid";
 
 export default function Review({ title = "", label = "", link = null, list = [] }) {
     return (
-        <section className="xl:py-[35px] sm:py-[30px] py-5">
+        <section className="xl:py-[35px] md:py-[30px] py-5">
             <div className="container mx-auto">
                 {(title || label || (link && link.label)) && (
-                    <div className="flex justify-between sm:items-center items-start sm:flex-row flex-col sm:mb-[30px] mb-6">
+                    <div className="flex justify-between sm:items-center items-start sm:flex-nowrap flex-wrap md:mb-[30px] sm:mb-6 mb-5">
                         <div>
                             {title && <h2>{title}</h2>}
                             {label && (
-                                <p className="mt-3 lg:max-w-full max-w-[926px]">
+                                <p className="md:mt-3 sm:mt-1.5 mt-0 lg:max-w-full md:max-w-[500px] max-w-[400px]">
                                     {label}
                                 </p>
                             )}
@@ -21,7 +21,7 @@ export default function Review({ title = "", label = "", link = null, list = [] 
                         {link?.link && link?.label && (
                             <Link
                                 href={link.link}
-                                className="all-btn flex items-center hover:underline sm:mt-0 mt-4 underline-offset-4"
+                                className="all-btn flex items-center hover:underline sm:mt-0 mt-3 underline-offset-4"
                             >
                                 {link.label}
                                 <svg
@@ -44,7 +44,7 @@ export default function Review({ title = "", label = "", link = null, list = [] 
                 )}
 
                 {Array.isArray(list) && list.length > 0 ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 sm:gap-[30px] gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 lg:gap-[30px] sm:gap-6 gap-5">
                         {list.map((testimonial) => (
                             <ReviewGrid key={testimonial.id} testimonial={testimonial} />
                         ))}

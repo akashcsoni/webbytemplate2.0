@@ -17,10 +17,10 @@ export default function ServiceSection({
     }
 
     return (
-        <section className={`xl:py-[35px] sm:py-[30px] py-5 ${sectionClassName}`}>
-            <div className="bg-blue-300 lg:py-[60px] sm:py-[35px] py-[30px]">
+        <section className={`xl:py-[35px] md:py-[30px] py-5 ${sectionClassName}`}>
+            <div className="bg-blue-300 lg:py-[60px] md:py-[35px] sm:py-[30px] py-[20px]">
                 <div className={`container mx-auto ${containerClassName}`}>
-                    <div className="flex justify-between items-center mb-5 sm:mb-7">
+                    <div className="flex justify-between items-center mb-4 md:mb-7 sm:mb-6">
                         <h2>{title}</h2>
                         {link_button && link_button.href && link_button.label && (
                             <Link
