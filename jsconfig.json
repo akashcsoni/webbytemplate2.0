@@ -19,7 +19,8 @@
       }
     ],
     "paths": {
-      "@/*": ["./*"]
+      "@/*": ["./*"],
+      "@/comman/*": ["./components/common/*"]
     }
   },
   "include": ["next-env.d.ts", "**/*.js", "**/*.jsx", ".next/types/**/*.js", "components/ui/chart.tsx"],

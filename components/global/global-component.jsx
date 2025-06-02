@@ -5,7 +5,7 @@ import PageLoader from "../common/page-loader/PageLoader"
 
 const componentCache = {} // Optional: shared cache to prevent redundant imports
 
-export default function GlobalComponent({ data }) {
+export default function GlobalComponent({ data, params = {} }) {
     const [components, setComponents] = useState({})
     const [loading, setLoading] = useState(true)
 
@@ -78,7 +78,7 @@ export default function GlobalComponent({ data }) {
 
         const pascalCaseName = convertToPascalCase(rawName)
         const DynamicComponent = components[pascalCaseName]
-        return DynamicComponent ? <DynamicComponent key={index} {...component} /> : null
+        return DynamicComponent ? <DynamicComponent key={index} {...component} params={params} /> : null
     }
 
     return (
