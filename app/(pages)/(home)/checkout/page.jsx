@@ -356,10 +356,10 @@ export default function CheckoutPage() {
     const phoneNo = getStringValue(form.phone_no).trim()
     if (!phoneNo) {
       newErrors.phone_no = "Phone number is required."
-    } else if (!validatePhone(phoneNo, selectedCountryCode)) {
-      const country = countries.find((c) => c.code === selectedCountryCode.code)
+    } else if (!validatePhone(phoneNo, filteredflag?.[0])) {
+      const country = countries.find((c) => c.code === filteredflag?.[0]?.code)
       const expectedLength = country ? country.phoneLength.join(" or ") : "10"
-      newErrors.phone_no = `Please enter a valid phone number (${expectedLength} digits) for ${selectedCountryCode.name}.`
+      newErrors.phone_no = `Please enter a valid phone number (${expectedLength} digits) for ${filteredflag?.[0]?.name}.`
     }
 
     // Terms agreement validation
@@ -416,7 +416,7 @@ export default function CheckoutPage() {
     }
 
     // Safe phone formatting
-    const phoneCode = selectedCountryCode?.dialCode || ""
+    const phoneCode = filteredflag?.[0]?.dialCode || ""
     const phoneNumber = getStringValue(form.phone_no)
     const fullPhone = phoneCode + phoneNumber
 
@@ -502,6 +502,10 @@ export default function CheckoutPage() {
 
   const filteredCountries = countries.filter((country) =>
     country.name.toLowerCase().includes(countrySearchTerm.toLowerCase()),
+  )
+
+  const filteredflag = countries.filter((country) =>
+    country.name.toLowerCase().includes(selectedCountry.toLowerCase()),
   )
 
   // Show loading state while checking cart
@@ -665,20 +669,20 @@ export default function CheckoutPage() {
               >
                 {/* Custom flag-only dropdown */}
                 <Listbox
-                  value={selectedCountryCode}
-                  onChange={setSelectedCountryCode}
+                  // value={selectedCountry}
+                  // onChange={setSelectedCountryCode}
                   className="border-r border-gray-100 pr-[10px]"
                 >
                   <div className="relative">
                     <Listbox.Button className="relative w-full flex items-center justify-center cursor-pointer">
                       <Image
-                        src={selectedCountryCode.flag || "/placeholder.svg?height=16&width=24"}
-                        alt={`${selectedCountryCode.name} flag`}
+                        src={filteredflag?.[0]?.flag || "/placeholder.svg?height=16&width=24"}
+                        alt={`${filteredflag?.[0]?.name} flag`}
                         width={24}
                         height={16}
                         className="rounded-sm mr-2"
                       />
-                      <span className="text-xs text-gray-600 mr-1">{selectedCountryCode.dialCode}</span>
+                      <span className="text-xs text-gray-600 mr-1">{filteredflag?.[0]?.dialCode}</span>
                       <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 9 9" fill="none">
                         <g clipPath="url(#clip0_1233_287)">
                           <path
@@ -688,7 +692,7 @@ export default function CheckoutPage() {
                         </g>
                       </svg>
                     </Listbox.Button>
-                    <Listbox.Options className="absolute mt-3 rounded shadow-xl left-0 z-20 w-80 py-1 outline-none border-gray-100 border bg-white max-h-60 overflow-y-auto">
+                    {/* <Listbox.Options className="absolute mt-3 rounded shadow-xl left-0 z-20 w-80 py-1 outline-none border-gray-100 border bg-white max-h-60 overflow-y-auto">
                       {countries.map((country) => (
                         <Listbox.Option
                           key={country.code}
@@ -706,7 +710,7 @@ export default function CheckoutPage() {
                           <span className="text-sm">{country.name}</span>
                         </Listbox.Option>
                       ))}
-                    </Listbox.Options>
+                    </Listbox.Options> */}
                   </div>
                 </Listbox>
 
@@ -714,7 +718,7 @@ export default function CheckoutPage() {
                 <input
                   type="tel"
                   placeholder="Phone Number"
-                  value={form.phone_no || ""}
+                  value={form.phone_no.replace(filteredflag?.[0]?.dialCode, "") || ""}
                   onChange={(e) => {
                     // Only allow digits
                     const value = e.target.value.replace(/\D/g, "")
@@ -726,7 +730,7 @@ export default function CheckoutPage() {
               </div>
               {errors.phone_no && <p className="text-red-500 text-xs mt-1">{errors.phone_no}</p>}
               <p className="text-xs text-gray-500 mt-1">
-                Expected format: {selectedCountryCode.phoneLength.join(" or ")} digits
+                Expected format: {filteredflag?.[0]?.phoneLength.join(" or ")} digits
               </p>
             </div>
 
@@ -738,7 +742,16 @@ export default function CheckoutPage() {
                   className={`border p2 ${errors.country ? "border-red-500" : "border-gray-100"} text-gray-300 placeholder:text-gray-300 2xl:py-[11px] py-[10px] rounded-[5px] 1xl:px-5 px-3 w-full cursor-pointer flex justify-between items-center`}
                   onClick={toggleCountryDropdown}
                 >
-                  <span className="text-gray-200">{selectedCountry || "Select Country"}</span>
+                  <div className="relative w-full flex gap-2 items-center justify-start cursor-pointer">
+                    {filteredflag?.[0] && <Image
+                      src={filteredflag?.[0]?.flag || ""}
+                      alt={`${selectedCountry} flag`}
+                      width={30}
+                      height={30}
+                      className="rounded-sm !drop-shadow-2xl"
+                    />}
+                    <span className="text-gray-200">{selectedCountry || "Select Country"}</span>
+                  </div>
                   <div className="flex items-center">
                     <svg
                       className={`w-4 h-4 transform transition-transform duration-300 ${isCountryDropdownOpen ? "rotate-180" : "rotate-0"}`}
@@ -820,6 +833,16 @@ export default function CheckoutPage() {
                 {/* Dropdown Menu */}
                 {isStateDropdownOpen && (
                   <div className="p2 absolute left-0 right-0 mt-1 border border-gray-100 bg-white rounded-b-md shadow-lg z-10 max-h-60 overflow-hidden">
+                    <div className="p-2 border-b border-gray-100">
+                      <input
+                        type="text"
+                        placeholder="Search countries..."
+                        value={stateSearchTerm}
+                        onChange={(e) => setStateSearchTerm(e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-200 rounded text-sm outline-none"
+                        onClick={(e) => e.stopPropagation()}
+                      />
+                    </div>
                     <ul className="text-gray-800 max-h-40 overflow-y-auto">
                       {filteredStates.map((state, index) => (
                         <li

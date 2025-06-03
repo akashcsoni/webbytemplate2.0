@@ -257,7 +257,7 @@ export default function ProductsPage({
       console.error("Product creation failed:", error);
       toast.error(
         error?.response?.data?.error?.message ||
-          "An error occurred while creating the product."
+        "An error occurred while creating the product."
       );
     } finally {
       setLoading(false);
@@ -627,10 +627,13 @@ export default function ProductsPage({
   }, [formValues.categories]);
 
   useEffect(() => {
-    getOptionsList();
-    if (authUser?.documentId) {
-      getProductList(authUser?.documentId);
+    if (authUser?.documentId || formValues.short_title) {
+      getProductList(authUser?.documentId, formValues.short_title);
     }
+  }, [formValues.short_title]);
+
+  useEffect(() => {
+    getOptionsList();
 
     const init = async () => {
       setParamsData(await params);
@@ -654,6 +657,15 @@ export default function ProductsPage({
         token: themeConfig.TOKEN,
       });
 
+      const technologyData = await strapiGet(`technologies`, {
+        params: { populate: "*" },
+        token: themeConfig.TOKEN,
+      });
+
+      if (technologyData.data) {
+        setTechnologyList(technologyData.data || []);
+      }
+
       if (productData?.data) {
         setFileFormat(productData.data?.file_format || []);
         setCompatibleWith(productData.data?.compatible_with || []);
@@ -664,21 +676,20 @@ export default function ProductsPage({
     }
   };
 
-  const getProductList = async (id) => {
+  const getProductList = async (id, short_title) => {
     try {
+      const payload = {
+        "search": short_title
+      };
+
       const productData = await strapiPost(`author-product/${id}`, {
         params: { populate: "*" },
-        token: themeConfig.TOKEN,
-      });
-
-      const technologyData = await strapiGet(`technologies`, {
-        params: { populate: "*" },
+        ...payload,
         token: themeConfig.TOKEN,
       });
 
       if (productData?.data) {
         setExistingProduct(productData.data);
-        setTechnologyList(technologyData.data);
       }
     } catch (err) {
       console.error("Failed to fetch product data:", err);

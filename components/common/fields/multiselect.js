@@ -1,24 +1,7 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
-import {
-  Button,
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-  Avatar,
-  Badge,
-} from "@heroui/react";
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from "@/components/ui/command";
-import { Check, ChevronDown, X } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { useState, useEffect, useRef } from "react";
+import { Check, X } from "lucide-react";
 
 export default function FormMultiSelect({
   data,
@@ -26,159 +9,200 @@ export default function FormMultiSelect({
   error,
   defaultValueData,
 }) {
+  const dropdownRef = useRef(null);
+
   const [localError, setLocalError] = useState("");
-  const [selectedKeys, setSelectedKeys] = useState(defaultValueData || []);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [open, setOpen] = useState(false);
+  const [isCountryDropdownOpen, setIsCountryDropdownOpen] = useState(false);
+  const [countrySearchTerm, setCountrySearchTerm] = useState("");
+  const [selectedCountries, setSelectedCountries] = useState(
+    defaultValueData || []
+  );
 
   useEffect(() => {
-    setSelectedKeys(defaultValueData || []);
+    setSelectedCountries(defaultValueData || []);
   }, [defaultValueData]);
 
-  // Filter users based on search query
-  const filteredUsers = useMemo(() => {
-    return data.options.filter((dataList) =>
-      dataList.slug
-        .toLowerCase()
-        .includes(searchQuery.replace(" ", "-").toLowerCase())
-    );
-  }, [data.options, searchQuery]);
-
-  const selectedValue = useMemo(() => {
-    const selectedTitles = data.options
-      .filter((item) => selectedKeys.includes(item?.documentId))
-      .map((item) => item.title);
-
-    return selectedTitles.length > 0
-      ? selectedTitles.join(", ")
-      : "Select member";
-  }, [selectedKeys, data.options]);
-
   const handleChange = () => {
-    onChange(data.name, selectedKeys);
+    onChange(data.name, selectedCountries);
   };
 
   useEffect(() => {
     handleChange();
-  }, [selectedKeys]);
+  }, [selectedCountries]);
 
   useEffect(() => {
     setLocalError(error && error.length > 0 ? error[0] : "");
   }, [error]);
 
   const isInvalid = localError && localError.length > 0;
-  const errorMessage = localError;
 
-  const handleSelect = (value) => {
-    setSelectedKeys((prev) => {
-      if (prev.includes(value)) {
-        return prev.filter((item) => item !== value);
+  const toggleCountryDropdown = () => setIsCountryDropdownOpen((prev) => !prev);
+
+  const handleCountrySelect = (country) => {
+    setSelectedCountries((prev) => {
+      const exists = prev.find((c) => c === country.documentId);
+      if (exists) {
+        return prev.filter((id) => id !== country.documentId);
       } else {
-        return [...prev, value];
+        return [...prev, country.documentId];
       }
     });
   };
 
-  const clearAll = () => {
-    setSelectedKeys([]);
+  const clearAll = (e) => {
+    e.stopPropagation();
+    setSelectedCountries([]);
   };
 
-  const selectedOptions = data.options.filter((option) =>
-    selectedKeys.includes(option?.documentId)
+  const filteredCountries = data.options.filter((country) =>
+    country?.title?.toLowerCase().includes(countrySearchTerm.toLowerCase())
   );
 
+  const selectedCountryTitles = data.options
+    .filter((country) => selectedCountries.includes(country.documentId))
+    .map((country) => country.title);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsCountryDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
   return (
-    <div className="w-full">
-      <p className="2xl:!text-base md:!text-[15px] !text-black !text-md pb-2">
-        {data.label}
-      </p>
+    <div className="relative" ref={dropdownRef}>
+      <label className="p2 !text-black mb-[6px] block">
+        {data?.label}
+        {Array.isArray(data.rules) && data.rules.includes("required") && "*"}
+      </label>
+      <div className="relative">
+        <div
+          className={`border p2 ${isInvalid ? "border-[#F31260]" : "border-gray-100 hover:border-[#a1a1aa] "} text-gray-300 placeholder:text-gray-300 2xl:py-[11px] py-[10px] rounded-[5px] 1xl:px-5 px-3 w-full h-[48px] cursor-pointer flex justify-between items-center flex-wrap gap-2`}
+          onClick={toggleCountryDropdown}
+        >
+          <div className="flex flex-wrap gap-2 items-center">
+            {selectedCountryTitles.length > 0 ? (
+              selectedCountryTitles.map((title, idx) => (
+                <span
+                  key={idx}
+                  className="bg-primary text-white text-xs px-2 py-1 rounded flex items-center gap-1"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  {title}
+                  <X
+                    size={14}
+                    className="cursor-pointer"
+                    onClick={() =>
+                      setSelectedCountries((prev) =>
+                        prev.filter(
+                          (id) =>
+                            id !==
+                            data.options.find((c) => c.title === title)
+                              ?.documentId
+                        )
+                      )
+                    }
+                  />
+                </span>
+              ))
+            ) : (
+              <span className="xl:!text-base sm:!text-sm !text-gray-300">
+                {data?.placeholder}...
+              </span>
+            )}
+          </div>
+          <div className="flex gap-3">
+            {selectedCountries.length > 0 && (
+              <button onClick={clearAll} className="w-4 h-4 text-xs text-black">
+                <X className="cursor-pointer font-normal w-4 h-4" />
+              </button>
+            )}
+            <svg
+              className={`w-4 h-4 transform transition-transform duration-300 ${
+                isCountryDropdownOpen ? "rotate-180" : "rotate-0"
+              }`}
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M19 9l-7 7-7-7"
+              />
+            </svg>
+          </div>
+        </div>
 
-      <Popover open={open} onOpenChange={setOpen}>
-        <PopoverTrigger asChild>
-          <Button
-            variant="outline"
-            role="combobox"
-            aria-expanded={open}
-            className={`!scale-100 block w-full justify-between rounded xl:px-5 md:px-4 px-3 xl:py-[23px] sm:py-[21px] py-[20px] !font-normal  ${selectedKeys.length === 0 ? "text-default-400" : "text-black"}  border-gray-100 hover:border-default-400 focus:border-default-foreground text-base border outline-none flex ${isInvalid ? " !border-danger" : ""}`}
+        {isCountryDropdownOpen && (
+          <div className="p2 absolute left-0 right-0 mt-1 border border-gray-100 bg-white rounded-b-md shadow-lg z-10 max-h-60 overflow-hidden">
+            <div className="p-2 border-b border-gray-100">
+              <input
+                type="text"
+                placeholder="Search countries..."
+                value={countrySearchTerm}
+                onChange={(e) => setCountrySearchTerm(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-200 rounded text-sm outline-none"
+                onClick={(e) => e.stopPropagation()}
+              />
+            </div>
+            <ul className="text-gray-800 max-h-40 overflow-y-auto">
+              {filteredCountries.map((country) => (
+                <li
+                  key={country.documentId}
+                  onClick={() => handleCountrySelect(country)}
+                  className={`px-4 py-2 hover:bg-primary hover:text-white cursor-pointer flex items-center justify-between`}
+                >
+                  {country.title}
+                  {selectedCountries.includes(country.documentId) && (
+                    <Check className="w-4 h-4" />
+                  )}
+                </li>
+              ))}
+              {filteredCountries.length === 0 && (
+                <li className="px-4 py-2 text-gray-500">No {data?.label.toLowerCase()} found</li>
+              )}
+            </ul>
+          </div>
+        )}
+      </div>
+
+      {isInvalid && <p className="2xl:text-sm md:text-[13px] text-xs text-[#F31260] p-1">{localError}</p>}
+      {!isInvalid && data?.description && (
+        <div className="flex items-center gap-[5px] p-1">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="16"
+            height="16"
+            viewBox="0 0 16 16"
+            fill="none"
           >
-            <div className="flex flex-wrap gap-1 flex-1">
-              {selectedKeys.length === 0 ? (
-                <span>Select member</span>
-              ) : (
-                selectedOptions.map((option, index) => (
-                  <div
-                    key={index}
-                    variant="secondary"
-                    className="flex items-center gap-1"
-                  >
-                    <span className="font-normal">{option.title},</span>
-                  </div>
-                ))
-              )}
-            </div>
-            <div className="flex items-center gap-3 ml-2">
-              {selectedKeys.length > 0 && (
-                <X
-                  className="w-4 h-4 text-gray-500 hover:bg-gray-200 rounded cursor-pointer"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    clearAll();
-                  }}
-                />
-              )}
-              <ChevronDown className="w-4 h-4 text-gray-500" />
-            </div>
-          </Button>
-        </PopoverTrigger>
-        <PopoverContent className="w-full p-0" align="start">
-          <Command>
-            <CommandInput
-              placeholder="Search..."
-              value={searchQuery}
-              onValueChange={setSearchQuery}
+            <path
+              d="M10.6667 12.6667L14 9.33335L10.6667 6.00002"
+              stroke="#505050"
+              strokeWidth="1.3"
+              strokeLinecap="round"
+              strokeLinejoin="round"
             />
-            <CommandList className="max-h-[300px]">
-              <CommandEmpty>No results found.</CommandEmpty>
-              <CommandGroup>
-                {filteredUsers.map((option) => (
-                  <CommandItem
-                    key={option?.documentId}
-                    value={option?.documentId}
-                    onSelect={() => handleSelect(option?.documentId)}
-                    className="flex items-center gap-2 cursor-pointer"
-                  >
-                    <Check
-                      className={cn(
-                        "w-4 h-4",
-                        selectedKeys.includes(option?.documentId)
-                          ? "opacity-100"
-                          : "opacity-0"
-                      )}
-                    />
-                    {option.cover && (
-                      <Avatar className="w-8 h-8">
-                        <AvatarImage
-                          src={option.cover.url || "/placeholder.svg"}
-                          alt={option.cover.name}
-                        />
-                        <AvatarFallback className="text-xs">
-                          {option.title.charAt(0)}
-                        </AvatarFallback>
-                      </Avatar>
-                    )}
-                    <div className="flex flex-col">
-                      <span className="text-sm">{option.title}</span>
-                    </div>
-                  </CommandItem>
-                ))}
-              </CommandGroup>
-            </CommandList>
-          </Command>
-        </PopoverContent>
-      </Popover>
-
-      {errorMessage && (
-        <p className="text-sm text-red-500 mt-1">{errorMessage}</p>
+            <path
+              d="M14 9.33337L8.66667 9.33337C4.98467 9.33337 2 6.34871 2 2.66671L2 2.00004"
+              stroke="#505050"
+              strokeWidth="1.3"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+          <p className="xl:text-sm md:text-[13px] text-xs md:leading-5 leading-[17px] text-gray-200">
+            {data?.description}
+          </p>
+        </div>
       )}
     </div>
   );
