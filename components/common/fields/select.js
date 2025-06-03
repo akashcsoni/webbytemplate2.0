@@ -73,6 +73,37 @@ export default function FormSelect({
       onSelectionChange={(e) => {
         setValue(e);
       }}
+      description={
+        data?.description && (
+          <div className="flex items-center gap-[5px]">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="16"
+              height="16"
+              viewBox="0 0 16 16"
+              fill="none"
+            >
+              <path
+                d="M10.6667 12.6667L14 9.33335L10.6667 6.00002"
+                stroke="#505050"
+                strokeWidth="1.3"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+              <path
+                d="M14 9.33337L8.66667 9.33337C4.98467 9.33337 2 6.34871 2 2.66671L2 2.00004"
+                stroke="#505050"
+                strokeWidth="1.3"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+            <p className="xl:text-sm md:text-[13px] text-xs md:leading-5 leading-[17px] text-gray-200">
+              {data?.description}
+            </p>
+          </div>
+        )
+      }
       selectedKey={value}
       startContent={
         data?.startContent &&
