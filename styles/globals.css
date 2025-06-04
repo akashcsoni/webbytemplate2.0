@@ -260,6 +260,70 @@ p,
   @apply 2xl:space-y-[14px] md:space-y-1 sm:space-y-0 space-y-2;
 }
 
+.tabulator .tabulator-header .tabulator-col .tabulator-col-content .tabulator-col-title {
+  @apply text-black font-normal text-base;
+}
+.tabulator .tabulator-header .tabulator-col:nth-child(7) .tabulator-col-title {
+  @apply text-center;
+}
+.tabulator .tabulator-tableholder .tabulator-table .tabulator-row:nth-child(7) .tabulator-cell{
+  @apply text-center w-auto
+}
+.subpixel-antialiased .tabulator .tabulator-footer {
+  @apply bg-white mx-0 my-5 border-0;
+}
+.tabulator .tabulator-footer .tabulator-paginator{
+  @apply inline-flex justify-end
+}
+.tabulator .tabulator-footer .tabulator-paginator button.tabulator-page {
+  @apply border w-10 h-10 text-black text-base inline-flex items-center justify-center p-2.5 rounded-lg border-solid border-[#00193E1A];
+}
+.subpixel-antialiased .tabulator .tabulator-footer .tabulator-footer-contents {
+  @apply p-0;
+}
+.tabulator .tabulator-footer .tabulator-paginator button.tabulator-page.active {
+  @apply bg-primary text-white hover:bg-primary hover:text-white;
+}
+.tabulator .tabulator-footer .tabulator-paginator button.tabulator-page {
+ @apply hover:bg-primary hover:text-white
+}
+.tabulator .tabulator-footer .tabulator-page-counter span {
+  @apply font-normal text-base leading-[26px] text-black;
+}
+.subpixel-antialiased .tabulator .tabulator-footer .tabulator-paginator label,
+.subpixel-antialiased .tabulator .tabulator-footer .tabulator-paginator .tabulator-page-size,
+.tabulator .tabulator-footer .tabulator-paginator button.tabulator-page[aria-label="Next Page"],
+.tabulator .tabulator-footer .tabulator-paginator button.tabulator-page[aria-label="Last Page"] {
+  @apply hidden;
+}
+.tabulator .tabulator-footer .tabulator-paginator button.tabulator-page[aria-label="First Page"]{
+  @apply order-1;
+}
+.tabulator .tabulator-footer .tabulator-paginator .tabulator-pages{
+    @apply order-2;
+}
+.tabulator .tabulator-footer .tabulator-paginator button.tabulator-page[aria-label="Prev Page"]{
+  @apply order-3;
+}
+.tabulator .tabulator-footer .tabulator-paginator button.tabulator-page[aria-label="First Page"],
+.tabulator .tabulator-footer .tabulator-paginator button.tabulator-page[aria-label="Prev Page"] {
+  @apply bg-no-repeat text-[0] bg-[22px] bg-center;
+}
+.tabulator .tabulator-footer .tabulator-paginator button.tabulator-page[aria-label="First Page"] {
+background-image: url("data:image/svg+xml,%3Csvg width='20' height='20' viewBox='0 0 20 20' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M12.575 15L13.75 13.825L9.93333 10L13.75 6.175L12.575 5L7.575 10L12.575 15Z' fill='black'/%3E%3C/svg%3E");
+}
+.tabulator .tabulator-footer .tabulator-paginator button.tabulator-page[aria-label="Prev Page"] {
+background-image: url("data:image/svg+xml,%3Csvg width='20' height='20' viewBox='0 0 20 20' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M8.675 5L7.5 6.175L11.3167 10L7.5 13.825L8.675 15L13.675 10L8.675 5Z' fill='black'/%3E%3C/svg%3E");
+}
+.tabulator .tabulator-footer .tabulator-paginator button.tabulator-page[aria-label="First Page"]:hover {
+  background-image: url("data:image/svg+xml,%3Csvg width='20' height='20' viewBox='0 0 20 20' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M12.575 15L13.75 13.825L9.93333 10L13.75 6.175L12.575 5L7.575 10L12.575 15Z' fill='white'/%3E%3C/svg%3E");
+}
+.tabulator .tabulator-footer .tabulator-paginator button.tabulator-page[aria-label="Prev Page"]:hover {
+  background-image: url("data:image/svg+xml,%3Csvg width='20' height='20' viewBox='0 0 20 20' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M8.675 5L7.5 6.175L11.3167 10L7.5 13.825L8.675 15L13.675 10L8.675 5Z' fill='white'/%3E%3C/svg%3E");
+}
+
+
+
 @media (max-width: 1858px) {
   .author-links-content {
     @apply w-[58%];
