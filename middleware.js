@@ -17,6 +17,7 @@ export async function middleware(request) {
   let username = null;
   let isLogin = false;
   let apiValidation = null;
+  let position = "buyer"; // default
 
   if (isUserPath) {
     isLogin = Boolean(accessToken && userData);
@@ -25,6 +26,7 @@ export async function middleware(request) {
       if (userData) {
         const parsedUser = JSON.parse(userData);
         username = parsedUser?.username || null;
+        position = parsedUser?.position || "buyer";
       }
     } catch (err) {
       console.error("Invalid JSON in authUser cookie:", err);
@@ -33,7 +35,6 @@ export async function middleware(request) {
     // Call API to validate token and get additional user data
     if (accessToken && isLogin) {
       try {
-        // Make API call to validate token
         const apiResponse = await fetch(
           `https://studio.webbytemplate.com/api/users/me`,
           {
@@ -47,19 +48,18 @@ export async function middleware(request) {
 
         if (apiResponse.ok) {
           apiValidation = await apiResponse.json();
-
-          // Update login status based on API response
           isLogin = apiValidation ? true : false;
 
-          // You can also update username from API response if needed
           if (apiValidation?.username) {
             username = apiValidation.username;
           }
-        } else {
-          // Token is invalid according to API
-          isLogin = false;
 
-          // Clear invalid cookies
+          if (apiValidation?.position) {
+            position = apiValidation.position;
+          }
+        } else {
+          // Token is invalid
+          isLogin = false;
           const response = NextResponse.redirect(new URL(`/`, request.url));
           response.cookies.delete("authToken");
           response.cookies.delete("authUser");
@@ -67,8 +67,6 @@ export async function middleware(request) {
         }
       } catch (error) {
         console.error("API validation error:", error);
-        // On API error, fall back to cookie-based validation
-        // You can choose to either allow or deny access on API failure
         isLogin = Boolean(accessToken && userData);
       }
     }
@@ -99,6 +97,29 @@ export async function middleware(request) {
     // If not logged in, block access to /user/* paths
     if (!isLogin) {
       return NextResponse.redirect(new URL(`/`, request.url));
+    }
+
+    // Author-only route restriction
+    const authorOnlyPaths = ["dashboard", "products", "paymentTax"];
+
+    const isRestrictedForBuyer = authorOnlyPaths.some((segment) =>
+      pathname.includes(`/user/${username}/${segment}`)
+    );
+
+    if (position !== "author" && isRestrictedForBuyer) {
+      return NextResponse.redirect(
+        new URL(`/user/${username}/setting`, request.url)
+      );
+    }
+
+    const isAuthorTryingToBecomeAuthor =
+      position === "author" &&
+      pathname === `/user/${username}/become-an-author`;
+
+    if (isAuthorTryingToBecomeAuthor) {
+      return NextResponse.redirect(
+        new URL(`/user/${username}/dashboard`, request.url)
+      );
     }
   }
 

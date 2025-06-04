@@ -5,6 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { Avatar } from "@heroui/react";
 import { useAuth } from "@/contexts/AuthContext";
+import { usePathname } from "next/navigation";
 
 export default function AuthorHeader({ authUser }) {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -12,6 +13,7 @@ export default function AuthorHeader({ authUser }) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [openCart, setOpenCart] = useState(false);
   const { logout } = useAuth();
+  const pathname = usePathname();
 
   const [open, setOpen] = useState(false);
   const dropdownRef = useRef(null);
@@ -87,6 +89,60 @@ export default function AuthorHeader({ authUser }) {
       document.removeEventListener("click", handleClickOutside);
     };
   }, [isMenuOpen, closeMenu]);
+
+  const isAuthor = authUser?.position === "author";
+
+  const commonItems = [
+    {
+      id: "profile-settiings",
+      label: "Profile Settiings",
+      path: `/user/${authUser?.username}/setting`,
+    },
+    {
+      id: "downloads",
+      label: "Downloads",
+      path: `/user/${authUser?.username}/download`,
+    },
+    {
+      id: "ticket-support",
+      label: isAuthor ? "Tickets / Support" : "Support",
+      path: `/user/${authUser?.username}/ticketSupport`,
+    },
+  ];
+
+  const authorItems = [
+    {
+      id: "dashboard",
+      label: "Dashboard",
+      path: `/user/${authUser?.username}/dashboard`,
+    },
+    {
+      id: "products",
+      label: "Products",
+      path: `/user/${authUser?.username}/products/list`,
+    },
+    {
+      id: "paymentTax",
+      label: "Payment & tax set up",
+      path: `/user/${authUser?.username}/paymentTax`,
+    },
+  ];
+
+  const nonAuthorExtra = [
+    {
+      id: "become-an-author",
+      label: "Become an Author",
+      path: `/user/${authUser?.username}/become-an-author`,
+    },
+  ];
+
+  const menuItems = isAuthor
+    ? [...authorItems, ...commonItems]
+    : [...commonItems, ...nonAuthorExtra];
+
+  const isActive = (path) => {
+    return pathname === path;
+  };
 
   return (
     <header className="relative z-50">
@@ -464,7 +520,9 @@ export default function AuthorHeader({ authUser }) {
               href="/schedule"
               className="links !text-white !py-0 1xl:!pl-[15px] !pl-1.5 !pr-0"
             >
-              <span className="1xl:block hidden !text-white">Schedule Meeting</span>
+              <span className="1xl:block hidden !text-white">
+                Schedule Meeting
+              </span>
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 width="22"
@@ -482,6 +540,7 @@ export default function AuthorHeader({ authUser }) {
                 />
               </svg>
             </Link>
+
             <div
               className="relative flex text-left 1xl:px-[15px] pl-1.5 sm:pr-3"
               ref={dropdownRef}
@@ -528,53 +587,27 @@ export default function AuthorHeader({ authUser }) {
                 <div className="absolute -right-1/2 1xl:pt-3 pt-2.5 1xl:mt-[22px] mt-[30px] shadow-dropDown overflow-hidden rounded-md z-10 before:content-[''] before:absolute before:top-1 1xl:before:right-24 before:right-16 1xl:before:w-4 1xl:before:h-5 before:w-3 before:h-3 before:bg-white before:rotate-45 before:border before:border-blue-300 before:rounded-sm before:overflow-hidden">
                   <div className="z-20 py-[10px] px-2 relative w-[12.5rem] origin-top-right rounded-md bg-white overflow-hidden">
                     <ul>
-                      <li>
-                        <p className="!font-medium block 1xl:px-3 1xl:py-2 px-4 py-1.5 text-gray-800">
-                          Settings
-                        </p>
-                      </li>
-                      <li className="hover:bg-primary group rounded-md">
-                        <Link href="javascript:;">
-                          <p className="block 1xl:px-3 1xl:py-2 px-4 py-1.5 text-gray-800 group-hover:text-white p2">
-                            Dashboard
-                          </p>
-                        </Link>
-                      </li>
-                      <li className="hover:bg-primary group rounded-md">
-                        <Link href="javascript:;">
-                          <p className="block 1xl:px-3 1xl:py-2 px-4 py-1.5 text-gray-800 group-hover:text-white p2">
-                            Products
-                          </p>
-                        </Link>
-                      </li>
-                      <li className="hover:bg-primary group rounded-md">
-                        <Link href="javascript:;">
-                          <p className="block 1xl:px-3 1xl:py-2 px-4 py-1.5 text-gray-800 group-hover:text-white p2">
-                            Payment & Tax Set Up
-                          </p>
-                        </Link>
-                      </li>
-                      <li className="hover:bg-primary group rounded-md">
-                        <Link href="javascript:;">
-                          <p className="block 1xl:px-3 1xl:py-2 px-4 py-1.5 text-gray-800 group-hover:text-white p2">
-                            Tickets / Support
-                          </p>
-                        </Link>
-                      </li>
-                      <li className="hover:bg-primary group rounded-md">
-                        <Link href="javascript:;">
-                          <p className="block 1xl:px-3 1xl:py-2 px-4 py-1.5 text-gray-800 group-hover:text-white p2">
-                            Downloads
-                          </p>
-                        </Link>
-                      </li>
-                      <li className="hover:bg-primary group rounded-md">
-                        <Link href="javascript:;">
-                          <p className="block 1xl:px-3 1xl:py-2 px-4 py-1.5 text-gray-800 group-hover:text-white p2">
-                            Profile Settings
-                          </p>
-                        </Link>
-                      </li>
+                      {menuItems?.map((item, index) => {
+                        console.log(item);
+                        return (
+                          <li
+                            className={"hover:bg-primary group rounded-md"}
+                            key={index}
+                          >
+                            <Link href={item.path}>
+                              <p
+                                className={
+                                  isActive(item.path)
+                                    ? "!font-medium block 1xl:px-3 1xl:py-2 px-4 py-1.5 text-gray-800 group-hover:text-white"
+                                    : "block 1xl:px-3 1xl:py-2 px-4 py-1.5 text-gray-800 group-hover:text-white p2"
+                                }
+                              >
+                                {item.label}
+                              </p>
+                            </Link>
+                          </li>
+                        );
+                      })}
                       <li className="hover:bg-primary group rounded-md">
                         <Link
                           href="/login"

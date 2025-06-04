@@ -60,7 +60,7 @@ export default function ProductsPage({
   const debouncedInputChange = useCallback(
     debounce((name, value) => {
       setFilterData((prev) => ({ ...prev, [name]: value }));
-      setActivePage(1)
+      setActivePage(1);
     }, 300),
     [] // you can add dependencies if needed
   );
@@ -74,7 +74,7 @@ export default function ProductsPage({
   const handleStatusChange = (value) => {
     if (value !== undefined) {
       setFilterData((prev) => ({ ...prev, status: value }));
-      setActivePage(1)
+      setActivePage(1);
     }
   };
 
@@ -110,7 +110,8 @@ export default function ProductsPage({
         };
 
         // Call the API using the utility function
-        const response = await strapiPost(`author-product/${id}`,
+        const response = await strapiPost(
+          `author-product/${id}`,
           payload,
           themeConfig.TOKEN
         );
@@ -136,7 +137,7 @@ export default function ProductsPage({
   }, [filterData, authUser, activePage]);
 
   return (
-    <div>
+    <div className="min-h-[1200px]">
       {/* main page heading */}
       <div className="flex items-center justify-between flex-wrap w-full py-[27px] gap-y-3">
         <h1 className="h2">{title}</h1>
@@ -299,13 +300,15 @@ export default function ProductsPage({
         {/* Products list */}
         <Card className="!shadow-none !max-w-full">
           <CardBody className="sm:px-5 px-4 pt-0">
-            {!loading && filteredProducts?.length > 0 ?
-              filteredProducts?.length > 0 ?
+            {!loading ? (
+              filteredProducts?.length > 0 ? (
                 filteredProducts.map((product, index, arr) => {
                   return (
                     <div
                       className={
-                        index !== arr.length - 1 ? "border-b border-gray-100" : ""
+                        index !== arr.length - 1
+                          ? "border-b border-gray-100"
+                          : ""
                       }
                       key={index}
                     >
@@ -313,74 +316,75 @@ export default function ProductsPage({
                     </div>
                   );
                 })
-                :
+              ) : (
                 <div className="flex justify-center items-center h-[343px]">
                   <p>No data is currently available.</p>
                 </div>
-              : (
-                <div>
-                  {Array.from({ length: 9 }).map((_, index) => (
-                    <div
-                      key={index}
-                      className="border-b border-gray-100 py-[18px]"
-                    >
-                      <div className="flex md:flex-row flex-col gap-[18px] product-image">
-                        <Skeleton className="rounded-[3px] md:!w-[100px] w-[100px] md:!h-[120px] h-[120px] flex-shrink-0" />
+              )
+            ) : (
+              <div>
+                {Array.from({ length: 9 }).map((_, index) => (
+                  <div
+                    key={index}
+                    className="border-b border-gray-100 py-[18px]"
+                  >
+                    <div className="flex md:flex-row flex-col gap-[18px] product-image">
+                      <Skeleton className="rounded-[3px] md:!w-[100px] w-[100px] md:!h-[120px] h-[120px] flex-shrink-0" />
 
-                        <div className="flex-1">
-                          <div className="flex lg:items-center items-start justify-between lg:flex-row flex-col gap-2 w-full">
-                            <Skeleton className="h-7 sm:w-[250px] w-full" />
+                      <div className="flex-1">
+                        <div className="flex lg:items-center items-start justify-between lg:flex-row flex-col gap-2 w-full">
+                          <Skeleton className="h-7 sm:w-[250px] w-full" />
 
-                            <div className="flex items-center">
-                              <div className="flex items-center sm:gap-2 gap-1">
-                                <Skeleton className="w-5 h-5 rounded-full" />
-                                <Skeleton className="w-[120px] h-5" />
-                              </div>
-                              <span className="xl:mx-3 lg:mx-2 mx-1.5 text-gray-100 h-[19px] w-[0.5px] border-r border-gray-100"></span>
-                              <div className="flex items-center sm:gap-2 gap-1">
-                                <Skeleton className="w-5 h-5 rounded-full" />
-                                <Skeleton className="w-[120px] h-5" />
-                              </div>
+                          <div className="flex items-center">
+                            <div className="flex items-center sm:gap-2 gap-1">
+                              <Skeleton className="w-5 h-5 rounded-full" />
+                              <Skeleton className="w-[120px] h-5" />
+                            </div>
+                            <span className="xl:mx-3 lg:mx-2 mx-1.5 text-gray-100 h-[19px] w-[0.5px] border-r border-gray-100"></span>
+                            <div className="flex items-center sm:gap-2 gap-1">
+                              <Skeleton className="w-5 h-5 rounded-full" />
+                              <Skeleton className="w-[120px] h-5" />
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="flex flex-wrap items-center gap-2 text-sm 1xl:py-[14px] py-[11px]">
+                          <Skeleton className="w-[80px] h-5" />
+                          <Skeleton className="w-[80px] h-5" />
+                        </div>
+
+                        <div className="flex xl:items-center items-start xl:flex-row flex-col justify-between w-full">
+                          <div className="flex sm:items-center items-start sm:flex-row flex-col gap-y-2">
+                            <div className="flex items-center gap-1">
+                              <Skeleton className="w-7 h-7 rounded-full" />
+                              <Skeleton className="w-[60px] h-5" />
+                            </div>
+                            <span className="xl:mx-3 mx-2 text-gray-100 h-[19px] w-[0.5px] border-r border-gray-100 sm:block hidden"></span>
+
+                            <div className="flex items-center gap-x-2">
+                              <Skeleton className="w-5 h-5 rounded-full" />
+                              <Skeleton className="w-[140px] h-5" />
+                            </div>
+                            <span className="xl:mx-3 mx-2 text-gray-100 h-[19px] w-[0.5px] border-r border-gray-100 sm:block hidden"></span>
+
+                            <div className="flex items-center gap-x-2">
+                              <Skeleton className="w-5 h-5 rounded-full" />
+                              <Skeleton className="w-[100px] h-5" />
                             </div>
                           </div>
 
-                          <div className="flex flex-wrap items-center gap-2 text-sm 1xl:py-[14px] py-[11px]">
-                            <Skeleton className="w-[80px] h-5" />
-                            <Skeleton className="w-[80px] h-5" />
-                          </div>
-
-                          <div className="flex xl:items-center items-start xl:flex-row flex-col justify-between w-full">
-                            <div className="flex sm:items-center items-start sm:flex-row flex-col gap-y-2">
-                              <div className="flex items-center gap-1">
-                                <Skeleton className="w-7 h-7 rounded-full" />
-                                <Skeleton className="w-[60px] h-5" />
-                              </div>
-                              <span className="xl:mx-3 mx-2 text-gray-100 h-[19px] w-[0.5px] border-r border-gray-100 sm:block hidden"></span>
-
-                              <div className="flex items-center gap-x-2">
-                                <Skeleton className="w-5 h-5 rounded-full" />
-                                <Skeleton className="w-[140px] h-5" />
-                              </div>
-                              <span className="xl:mx-3 mx-2 text-gray-100 h-[19px] w-[0.5px] border-r border-gray-100 sm:block hidden"></span>
-
-                              <div className="flex items-center gap-x-2">
-                                <Skeleton className="w-5 h-5 rounded-full" />
-                                <Skeleton className="w-[100px] h-5" />
-                              </div>
-                            </div>
-
-                            <div className="flex gap-2 mt-2 flex-wrap">
-                              <Skeleton className="w-[80px] h-9 rounded-md" />
-                              <Skeleton className="w-[100px] h-9 rounded-md" />
-                              <Skeleton className="w-[90px] h-9 rounded-md" />
-                            </div>
+                          <div className="flex gap-2 mt-2 flex-wrap">
+                            <Skeleton className="w-[80px] h-9 rounded-md" />
+                            <Skeleton className="w-[100px] h-9 rounded-md" />
+                            <Skeleton className="w-[90px] h-9 rounded-md" />
                           </div>
                         </div>
                       </div>
                     </div>
-                  ))}
-                </div>
-              )}
+                  </div>
+                ))}
+              </div>
+            )}
           </CardBody>
         </Card>
 
@@ -388,55 +392,70 @@ export default function ProductsPage({
 
         <div className="flex justify-between items-center sm:my-[30px] my-[10px] sm:px-5 px-4 gap-2 text-sm">
           <div className="flex gap-2 text-sm">
-            <p className="text-black font-normal">Page {activePage} of {pageCount}</p>
+            <p className="text-black font-normal">
+              Page {activePage} of {pageCount}
+            </p>
           </div>
-          {pageCount > 0 && <div className="flex gap-2 text-sm">
-            <button
-              className="px-3 py-1 w-10 h-10 border border-gray-100 rounded flex items-center justify-center"
-              onClick={() => {
-                setActivePage((prev) => Math.max(1, prev - 1));
-                window.scrollTo({ top: 0, behavior: "smooth" });
-              }}
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width={20}
-                height={20}
-                viewBox="0 0 24 24"
-              >
-                <path
-                  fill="none"
-                  stroke="currentColor"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={1.5}
-                  d="m11 6l-6 6l6 6m8-12l-6 6l6 6"
-                ></path>
-              </svg>
-            </button>
-
-            {Array.from({ length: pageCount }, (_, index) => index + 1).map((page) => (
+          {pageCount > 0 && (
+            <div className="flex gap-2 text-sm">
               <button
-                key={page}
-                className={`px-3 py-1 w-10 h-10 btn border border-gray-100 rounded flex items-center justify-center ${activePage === page ? "bg-primary text-white" : ""
-                  }`}
-                onClick={() => { window.scrollTo({ top: 0, behavior: "smooth" }); setActivePage(page); }}
+                className="px-3 py-1 w-10 h-10 border border-gray-100 rounded flex items-center justify-center"
+                onClick={() => {
+                  setActivePage((prev) => Math.max(1, prev - 1));
+                  window.scrollTo({ top: 0, behavior: "smooth" });
+                }}
               >
-                {page}
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width={20}
+                  height={20}
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    fill="none"
+                    stroke="currentColor"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={1.5}
+                    d="m11 6l-6 6l6 6m8-12l-6 6l6 6"
+                  ></path>
+                </svg>
               </button>
-            ))}
 
-            <button
-              className="px-3 py-1 w-10 h-10 btn border border-gray-100 rounded flex items-center justify-center"
-              onClick={() => {
-                setActivePage((prev) => Math.min(Array.from({ length: pageCount }, (_, index) => index + 1).length, prev + 1));
-                window.scrollTo({ top: 0, behavior: "smooth" });
-              }
-              }
-            >
-              »
-            </button>
-          </div>}
+              {Array.from({ length: pageCount }, (_, index) => index + 1).map(
+                (page) => (
+                  <button
+                    key={page}
+                    className={`px-3 py-1 w-10 h-10 btn border border-gray-100 rounded flex items-center justify-center ${
+                      activePage === page ? "bg-primary text-white" : ""
+                    }`}
+                    onClick={() => {
+                      window.scrollTo({ top: 0, behavior: "smooth" });
+                      setActivePage(page);
+                    }}
+                  >
+                    {page}
+                  </button>
+                )
+              )}
+
+              <button
+                className="px-3 py-1 w-10 h-10 btn border border-gray-100 rounded flex items-center justify-center"
+                onClick={() => {
+                  setActivePage((prev) =>
+                    Math.min(
+                      Array.from({ length: pageCount }, (_, index) => index + 1)
+                        .length,
+                      prev + 1
+                    )
+                  );
+                  window.scrollTo({ top: 0, behavior: "smooth" });
+                }}
+              >
+                »
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </div>
