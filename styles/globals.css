@@ -260,35 +260,37 @@ p,
   @apply 2xl:space-y-[14px] md:space-y-1 sm:space-y-0 space-y-2;
 }
 
+
+/* tabulator pagination */
 .tabulator .tabulator-header .tabulator-col .tabulator-col-content .tabulator-col-title {
-  @apply text-black font-normal text-base;
+  @apply text-black !font-normal text-base;
 }
-.tabulator .tabulator-header .tabulator-col:nth-child(7) .tabulator-col-title {
+/* .tabulator .tabulator-header .tabulator-col:nth-child(7) .tabulator-col-title {
   @apply text-center;
-}
+} */
 .tabulator .tabulator-tableholder .tabulator-table .tabulator-row:nth-child(7) .tabulator-cell{
   @apply text-center w-auto
 }
 .subpixel-antialiased .tabulator .tabulator-footer {
-  @apply bg-white mx-0 my-5 border-0;
+  @apply bg-white mx-0 pt-5 border-t border-primary/10;
 }
 .tabulator .tabulator-footer .tabulator-paginator{
   @apply inline-flex justify-end
 }
 .tabulator .tabulator-footer .tabulator-paginator button.tabulator-page {
-  @apply border w-10 h-10 text-black text-base inline-flex items-center justify-center p-2.5 rounded-lg border-solid border-[#00193E1A];
+  @apply border w-10 h-10 mx-1 text-black hover:text-white inline-flex items-center justify-center p-2.5 rounded-lg p2 font-normal border-solid border-primary/10 hover:bg-primary;
 }
 .subpixel-antialiased .tabulator .tabulator-footer .tabulator-footer-contents {
   @apply p-0;
 }
+.tabulator .tabulator-footer .tabulator-pages{
+  @apply !m-0
+}
 .tabulator .tabulator-footer .tabulator-paginator button.tabulator-page.active {
   @apply bg-primary text-white hover:bg-primary hover:text-white;
 }
-.tabulator .tabulator-footer .tabulator-paginator button.tabulator-page {
- @apply hover:bg-primary hover:text-white
-}
 .tabulator .tabulator-footer .tabulator-page-counter span {
-  @apply font-normal text-base leading-[26px] text-black;
+  @apply p2 text-black !font-normal;
 }
 .subpixel-antialiased .tabulator .tabulator-footer .tabulator-paginator label,
 .subpixel-antialiased .tabulator .tabulator-footer .tabulator-paginator .tabulator-page-size,
@@ -307,13 +309,15 @@ p,
 }
 .tabulator .tabulator-footer .tabulator-paginator button.tabulator-page[aria-label="First Page"],
 .tabulator .tabulator-footer .tabulator-paginator button.tabulator-page[aria-label="Prev Page"] {
-  @apply bg-no-repeat text-[0] bg-[22px] bg-center;
+  @apply bg-no-repeat text-[0] bg-center;
 }
 .tabulator .tabulator-footer .tabulator-paginator button.tabulator-page[aria-label="First Page"] {
 background-image: url("data:image/svg+xml,%3Csvg width='20' height='20' viewBox='0 0 20 20' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M12.575 15L13.75 13.825L9.93333 10L13.75 6.175L12.575 5L7.575 10L12.575 15Z' fill='black'/%3E%3C/svg%3E");
+opacity:1;
 }
 .tabulator .tabulator-footer .tabulator-paginator button.tabulator-page[aria-label="Prev Page"] {
 background-image: url("data:image/svg+xml,%3Csvg width='20' height='20' viewBox='0 0 20 20' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M8.675 5L7.5 6.175L11.3167 10L7.5 13.825L8.675 15L13.675 10L8.675 5Z' fill='black'/%3E%3C/svg%3E");
+opacity:1;
 }
 .tabulator .tabulator-footer .tabulator-paginator button.tabulator-page[aria-label="First Page"]:hover {
   background-image: url("data:image/svg+xml,%3Csvg width='20' height='20' viewBox='0 0 20 20' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M12.575 15L13.75 13.825L9.93333 10L13.75 6.175L12.575 5L7.575 10L12.575 15Z' fill='white'/%3E%3C/svg%3E");
@@ -732,6 +736,9 @@ background-image: url("data:image/svg+xml,%3Csvg width='20' height='20' viewBox=
 .tabulator .tabulator-tableholder {
   @apply xl:!overflow-hidden;
 }
+.download-table .tabulator-tableholder {
+  @apply 1xl:!overflow-hidden !overflow-auto;
+}
 .tabulator {
   @apply !border-0 !bg-white;
 }
@@ -747,7 +754,7 @@ background-image: url("data:image/svg+xml,%3Csvg width='20' height='20' viewBox=
 .tabulator .tabulator-header .tabulator-col,
 .tabulator .tabulator-header,
 .tabulator-row .tabulator-cell {
-  @apply !bg-transparent !border-0 text-base text-gray-200 !p-0 !text-start;
+  @apply !bg-transparent !border-0 2xl:text-base xl:text-[15px] text-sm text-gray-200 !p-0 !text-start;
 }
 
 .tabulator-row .tabulator-cell span {
@@ -907,20 +914,20 @@ div[tabulator-field="earnings"] {
 }
 
 /* deownload page */
-div[tabulator-field="OrderId"] {
-  @apply 2xl:!w-[120px] 1xl:!w-[90px] sm:!w-[80px] !w-[70px];
+div[tabulator-field="documentId"] {
+  @apply 2xl:!w-[260px] 1xl:!w-[220px] xl:!w-[230px] lg:!w-[210px] !w-[200px];
 }
 
-div[tabulator-field="productNameBundle"] {
-  @apply 2xl:!w-[550px] 1xl:!w-[500px] sm:!w-[450px] !w-[400px];
+div[tabulator-field="products"] {
+  @apply 2xl:!w-[520px] xl:!w-[445px] lg:!w-[430px] !w-[400px];
 }
 
-div[tabulator-field="downloadLink"] {
-  @apply 2xl:!w-[250px] 1xl:!w-[200px] sm:!w-[180px] !w-[150px];
+div[tabulator-field="product_zip"] {
+  @apply 2xl:!w-[200px] 1xl:!w-[145px] !w-[150px];
 }
 
 div[tabulator-field="downloadInvoice"] {
-  @apply 2xl:!w-[300px] 1xl:!w-[250px] sm:!w-[230px] !w-[200px];
+  @apply 2xl:!w-[250px] !w-[190px];
 }
 
 /* ticket/support */
@@ -1028,17 +1035,17 @@ div[tabulator-field="dates"] {
   }
 }
 
-
 /* .tags::-webkit-scrollbar {
-   width: 5px;
+width: 5px;
 }
 
 .tags::-webkit-scrollbar-track {
-   -webkit-bg: inset 0 0 6px rgba(0,0,0,0.3); 
-   border-radius: 10px;
+-webkit-bg: inset 0 0 6px rgba(0,0,0,0.3);
+border-radius: 10px;
 }
 
 .tags::-webkit-scrollbar-thumb {
-   border-radius: 10px;
-   -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.5); 
+border-radius: 10px;
+-webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.5);
 } */
+
