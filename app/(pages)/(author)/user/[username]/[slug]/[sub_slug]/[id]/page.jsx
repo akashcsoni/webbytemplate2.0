@@ -28,6 +28,6 @@ export default async function DynamicPage({ params }) {
       </Suspense>
     );
   } catch (error) {
-    return <ErrorPage error={error} />;
+    return <ErrorPage error={error} />
   }
 }

@@ -1,11 +1,12 @@
 import GlobalComponent from "@/components/global/global-component";
 import PageNotFound from "@/components/PageNotFound/PageNotFound";
+import SearchPage from "@/components/search/SearchPage";
 import SinglePage from "@/components/SinglePage";
 import SomethingWrong from "@/components/somethingWrong/page";
 import { themeConfig } from "@/config/theamConfig";
 import { strapiGet } from "@/lib/api/strapiClient";
 
-export default async function DynamicPage({ params }) {
+export default async function DynamicPage({ params, searchParams }) {
     const { pageSlug, itemSlug } = await params;
 
     try {
@@ -51,11 +52,18 @@ export default async function DynamicPage({ params }) {
                 </>
             );
         } else if (pageSlug === 'category') {
-            return (
-                <>
+            if ('term' in searchParams) {
+                const term = searchParams?.term;
+                return (
+                    <>
+                        <SearchPage />
+                    </>
+                );
+            } else {
+                return (
                     <GlobalComponent data={pageData.data} />
-                </>
-            );
+                );
+            }
         }
         return <GlobalComponent data={pageData.data} />;
     } catch (error) {

@@ -1,15 +1,12 @@
 import SearchPage from '@/components/search/SearchPage'
 import React from 'react'
 
-const searchPage = async ({ params }) => {
-
-    const { slug } = await params;
-
+const searchPage = () => {
     return (
         <>
-            <SearchPage slug={slug} />
+            <SearchPage />
         </>
-    )
+    )   
 }
 
 export default searchPage
