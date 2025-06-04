@@ -1,23 +1,23 @@
 "use client";
 
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import { themeConfig } from "@/config/theamConfig";
+import { useAuth } from "@/contexts/AuthContext";
+import { strapiPost } from "@/lib/api/strapiClient";
+import { formatDate } from "@/lib/formatDate";
 import {
-  Card,
-  CardBody,
-  Link,
-  Input,
-  Button,
-  Image,
   Autocomplete,
   AutocompleteItem,
+  Button,
+  Card,
+  CardBody,
+  Image,
+  Input,
+  Link,
   Skeleton,
 } from "@heroui/react";
-import { strapiPost } from "@/lib/api/strapiClient";
-import { themeConfig } from "@/config/theamConfig";
-import { formatDate } from "@/lib/formatDate";
-import { SearchIcon } from "./icons";
 import { debounce } from "lodash";
-import { useAuth } from "@/contexts/AuthContext";
+import React, { useCallback, useEffect, useRef, useState } from "react";
+import { SearchIcon } from "./icons";
 
 const statuses = [
   {
@@ -50,7 +50,8 @@ export default function ProductsPage({
 }) {
   const formRef = useRef(null);
   const { authUser } = useAuth();
-
+  const [activePage, setActivePage] = useState(1);
+  const [pageCount, setPageCount] = useState(0);
   const [filterData, setFilterData] = useState({});
   const [filteredProducts, setFilteredProducts] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -59,6 +60,7 @@ export default function ProductsPage({
   const debouncedInputChange = useCallback(
     debounce((name, value) => {
       setFilterData((prev) => ({ ...prev, [name]: value }));
+      setActivePage(1);
     }, 300),
     [] // you can add dependencies if needed
   );
@@ -72,6 +74,7 @@ export default function ProductsPage({
   const handleStatusChange = (value) => {
     if (value !== undefined) {
       setFilterData((prev) => ({ ...prev, status: value }));
+      setActivePage(1);
     }
   };
 
@@ -91,28 +94,33 @@ export default function ProductsPage({
     }
   };
 
-  const page_size = 10;
+  const page_size = 5;
 
   useEffect(() => {
-    const fetchProductData = async () => {
+    const fetchProductData = async (id) => {
       try {
+        setFilteredProducts([]);
         setLoading(true);
 
         // Prepare the payload as JSON
         const payload = {
           page_size: page_size,
+          page: activePage,
           ...filterData,
         };
 
         // Call the API using the utility function
         const response = await strapiPost(
-          `author-product/${authUser?.documentId}`,
+          `author-product/${id}`,
           payload,
           themeConfig.TOKEN
         );
 
-        const productsData = response.data || [];
-        setFilteredProducts(productsData);
+        if (response.data) {
+          const productsData = response.data || [];
+          setPageCount(response.pagination.pageCount);
+          setFilteredProducts(productsData);
+        }
         // setError(null);
       } catch (err) {
         console.error("Error fetching products:", err);
@@ -123,11 +131,13 @@ export default function ProductsPage({
       }
     };
 
-    fetchProductData(authUser?.documentId);
-  }, [filterData, page_size, authUser?.documentId]);
+    if (authUser?.documentId) {
+      fetchProductData(authUser?.documentId);
+    }
+  }, [filterData, authUser, activePage]);
 
   return (
-    <div>
+    <div className="min-h-[1200px]">
       {/* main page heading */}
       <div className="flex items-center justify-between flex-wrap w-full py-[27px] gap-y-3">
         <h1 className="h2">{title}</h1>
@@ -289,21 +299,29 @@ export default function ProductsPage({
 
         {/* Products list */}
         <Card className="!shadow-none !max-w-full">
-          <CardBody className="sm:px-5 px-4 pt-0 pb-5">
-            {filteredProducts.map((product, index, arr) => {
-              return (
-                <div
-                  className={
-                    index !== arr.length - 1 ? "border-b border-gray-100" : ""
-                  }
-                  key={index}
-                >
-                  <ProductItem {...product} />
+          <CardBody className="sm:px-5 px-4 pt-0">
+            {!loading ? (
+              filteredProducts?.length > 0 ? (
+                filteredProducts.map((product, index, arr) => {
+                  return (
+                    <div
+                      className={
+                        index !== arr.length - 1
+                          ? "border-b border-gray-100"
+                          : ""
+                      }
+                      key={index}
+                    >
+                      <ProductItem {...product} />
+                    </div>
+                  );
+                })
+              ) : (
+                <div className="flex justify-center items-center h-[343px]">
+                  <p>No data is currently available.</p>
                 </div>
-              );
-            })}
-
-            {loading && (
+              )
+            ) : (
               <div>
                 {Array.from({ length: 9 }).map((_, index) => (
                   <div
@@ -369,6 +387,75 @@ export default function ProductsPage({
             )}
           </CardBody>
         </Card>
+
+        <div className="border-b border-primary/10" />
+
+        <div className="flex justify-between items-center sm:my-[30px] my-[10px] sm:px-5 px-4 gap-2 text-sm">
+          <div className="flex gap-2 text-sm">
+            <p className="text-black font-normal">
+              Page {activePage} of {pageCount}
+            </p>
+          </div>
+          {pageCount > 0 && (
+            <div className="flex gap-2 text-sm">
+              <button
+                className="px-3 py-1 w-10 h-10 border border-gray-100 rounded flex items-center justify-center"
+                onClick={() => {
+                  setActivePage((prev) => Math.max(1, prev - 1));
+                  window.scrollTo({ top: 0, behavior: "smooth" });
+                }}
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width={20}
+                  height={20}
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    fill="none"
+                    stroke="currentColor"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={1.5}
+                    d="m11 6l-6 6l6 6m8-12l-6 6l6 6"
+                  ></path>
+                </svg>
+              </button>
+
+              {Array.from({ length: pageCount }, (_, index) => index + 1).map(
+                (page) => (
+                  <button
+                    key={page}
+                    className={`px-3 py-1 w-10 h-10 btn border border-gray-100 rounded flex items-center justify-center ${activePage === page ? "bg-primary text-white" : ""
+                      }`}
+                    onClick={() => {
+                      window.scrollTo({ top: 0, behavior: "smooth" });
+                      setActivePage(page);
+                    }}
+                  >
+                    {page}
+                  </button>
+                )
+              )}
+
+              <button
+                className="px-3 py-1 w-10 h-10 btn border border-gray-100 rounded flex items-center justify-center"
+                onClick={() => {
+                  setActivePage((prev) =>
+                    Math.min(
+                      Array.from({ length: pageCount }, (_, index) => index + 1)
+                        .length,
+                      prev + 1
+                    )
+                  );
+                  window.scrollTo({ top: 0, behavior: "smooth" });
+                }}
+              >
+                »
+              </button>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

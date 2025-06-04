@@ -82,7 +82,7 @@ export default function GlobalComponent({ data, params = {} }) {
     }
 
     return (
-        <div className="global-component">
+        <div className="global-component h-full">
             {loading ? (
                 <PageLoader />
             ) : (

@@ -17,7 +17,7 @@ export default function paymentTaxPage() {
   ];
 
   return (
-    <div className="h-[600px]">
+    <div className="h-[600px] min-h-[1200px]">
       {step === 1 && (
         <div className="md:space-y-[25px] space-y-5">
           <h2 className="md:px-[30px] px-5 md:py-4 py-3 subpoint-heading !font-normal border-b border-[#0023161A] ">

@@ -63,9 +63,8 @@ const TimeDropdown = ({ selectedTime, setSelectedTime }) => {
         >
           <span className="text-gray-200">{selectedTime || "This Month"}</span>
           <svg
-            className={`w-4 h-4 transform transition-transform duration-300 ${
-              isOpen ? "rotate-180" : "rotate-0"
-            }`}
+            className={`w-4 h-4 transform transition-transform duration-300 ${isOpen ? "rotate-180" : "rotate-0"
+              }`}
             fill="none"
             stroke="currentColor"
             strokeWidth="2"
@@ -86,9 +85,8 @@ const TimeDropdown = ({ selectedTime, setSelectedTime }) => {
                 <li
                   key={time}
                   onClick={() => handleTimeSelect(time)}
-                  className={`px-3 py-1.5 cursor-pointer hover:bg-primary hover:text-white text-[15px] ${
-                    selectedTime === time ? "bg-primary text-white" : ""
-                  }`}
+                  className={`px-3 py-1.5 cursor-pointer hover:bg-primary hover:text-white text-[15px] ${selectedTime === time ? "bg-primary text-white" : ""
+                    }`}
                 >
                   {time}
                 </li>
@@ -319,7 +317,7 @@ export default function DashboardPage({ title }) {
   ];
 
   return (
-    <div className="py-[27px]">
+    <div className="py-[27px] min-h-[1200px]">
       <div className="flex items-start justify-between sm:flex-nowrap flex-wrap mb-6 ">
         {/* Heading */}
         <h1 className="h2 sm:absolute mb-4">{title}</h1>
@@ -344,7 +342,7 @@ export default function DashboardPage({ title }) {
           >
             <Tab key="summary" title="Summary" className="p-0">
               <Card className="shadow-none px-0  bg-transparent">
-                <CardBody className="p-0 ">
+                <CardBody className="p-0">
                   <div>
                     <div className="border border-primary/10 rounded-md overflow-hidden mb-[20px] bg-white">
                       <div className="flex items-center justify-between sm:flex-nowrap flex-wrap gap-1.5 w-full border-b border-primary/10 sm:px-5 px-3 py-[6px] bg-white overflow-hidden">

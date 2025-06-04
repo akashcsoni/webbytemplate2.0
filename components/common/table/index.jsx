@@ -1,5 +1,5 @@
 import { DateTime } from "luxon";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { ReactTabulator } from "react-tabulator";
 import "react-tabulator/lib/styles.css";
 import "tabulator-tables/dist/css/tabulator.min.css";
@@ -9,47 +9,65 @@ const DynamicTable = ({
   columns,
   layout = "fitColumns",
   options = {},
+  classes = "",
 }) => {
+  const tabulatorRef = useRef(null);
 
-  // Effect to handle toggle children functionality for data tree
   useEffect(() => {
-    if (options.dataTree) {
-      const buttons = document.querySelectorAll(".toggle-children");
-      buttons.forEach((button) => {
-        button.addEventListener("click", () => {
-          const svg = button.querySelector("svg");
-          const isOpen = svg.classList.toggle("open");
-          button.setAttribute("aria-expanded", isOpen);
-        });
-      });
+    if (!options.dataTree) return;
 
-      // Cleanup listeners to prevent memory leaks
-      return () => {
-        buttons.forEach((button) => {
-          button.removeEventListener("click", () => { });
-        });
-      };
-    }
-  }, []);
+    const handleToggle = (event) => {
+      const svg = event.currentTarget.querySelector("svg");
+      if (svg) {
+        const isOpen = svg.classList.toggle("open");
+        event.currentTarget.setAttribute("aria-expanded", isOpen);
+      }
+    };
+
+    const buttons = document.querySelectorAll(".toggle-children");
+    buttons.forEach((button) => {
+      button.addEventListener("click", handleToggle);
+    });
+
+    return () => {
+      buttons.forEach((button) => {
+        button.removeEventListener("click", handleToggle);
+      });
+    };
+  }, [options.dataTree]);
+
+  useEffect(() => {
+    return () => {
+      if (tabulatorRef.current) {
+        try {
+          tabulatorRef.current.destroy(); // Safe destroy
+        } catch (e) {
+          console.warn("Tabulator destroy failed:", e);
+        }
+      }
+    };
+  }, [data]);
 
   return (
     <ReactTabulator
+      ref={tabulatorRef}
       data={data}
       columns={columns}
+      layout={layout}
+      className={"tabulator container " + classes}
+      options={{
+        ...options,
+        pagination: true,
+        pagination: "local",
+        paginationSize: 10,
+        paginationSizeSelector: [true],
+        paginationCounter: "rows",
+      }}
+      columnDefaults={{ resizable: false }}
+      dependencies={{ DateTime }}
       resizableRows={false}
       resizableRowGuide={false}
       resizableColumnGuide={false}
-      options={{
-        ...options,
-      }}
-      columnDefaults={{
-        resizable: false,
-      }}
-      dependencies={{
-        DateTime: DateTime,
-      }}
-      layout={layout}
-      className="tabulator container"
     />
   );
 };

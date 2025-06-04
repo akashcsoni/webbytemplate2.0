@@ -23,15 +23,15 @@ const DownloadPage = ({ title }) => {
   const generateInvoiceHTML = (orderData) => {
     const totalSalesPrice = orderData.multiProduct
       ? orderData?._children?.reduce((total, item) => {
-        return (
-          total + (item.price?.sales_price || item.price?.regular_price || 0)
-        );
-      }, 0)
+          return (
+            total + (item.price?.sales_price || item.price?.regular_price || 0)
+          );
+        }, 0)
       : orderData?.product?.reduce((total, item) => {
-        return (
-          total + (item.price?.sales_price || item.price?.regular_price || 0)
-        );
-      }, 0);
+          return (
+            total + (item.price?.sales_price || item.price?.regular_price || 0)
+          );
+        }, 0);
     // 2. Calculate 18% GST
     const gst = totalSalesPrice * 0.18;
 
@@ -609,9 +609,10 @@ const DownloadPage = ({ title }) => {
                 </tr>
               </thead>
 
-              ${!orderData?.multiProduct &&
-      orderData?.product?.map((item, index) => {
-        return `<tbody>
+              ${
+                !orderData?.multiProduct &&
+                orderData?.product?.map((item, index) => {
+                  return `<tbody>
                     <tr>
                       <td
                         style="
@@ -710,10 +711,11 @@ const DownloadPage = ({ title }) => {
                       </td>
                     </tr>                    
                   </tbody>`;
-      })
-      }
-              ${orderData?.multiProduct &&
-      `<tbody>
+                })
+              }
+              ${
+                orderData?.multiProduct &&
+                `<tbody>
                   <tr>
                     <td
                       style="
@@ -742,7 +744,7 @@ const DownloadPage = ({ title }) => {
                       <table>
                         <tbody>
                       ${orderData?._children.map((item) => {
-        return `
+                        return `
                             <tr>
                               <td style="text-decoration: initial">
                                 <p
@@ -791,7 +793,7 @@ const DownloadPage = ({ title }) => {
                               </td>
                             </tr>                              
                             `;
-      })}                           
+                      })}                           
                         </tbody>
                       </table>
                     </td>
@@ -867,7 +869,7 @@ const DownloadPage = ({ title }) => {
                     </td>
                   </tr>  
                 </tbody>`
-      }              
+              }              
               <tfoot>
                 <tr>
                   <td
@@ -1130,14 +1132,15 @@ const DownloadPage = ({ title }) => {
           data.products &&
           `<div class="flex items-center gap-2">
             <span>${data.products}</span>
-            ${data.multiProduct
-            ? `<button class="toggle-children">
+            ${
+              data.multiProduct
+                ? `<button class="toggle-children">
                     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 18 18" fill="none" class="">
                       <path d="M9 0C4.03754 0 0 4.03754 0 9C0 13.9625 4.03754 18 9 18C13.9625 18 18 13.9625 18 9C18 4.03754 13.9625 0 9 0ZM9 1.38462C13.2141 1.38462 16.6154 4.78592 16.6154 9C16.6154 13.2141 13.2141 16.6154 9 16.6154C4.78592 16.6154 1.38462 13.2141 1.38462 9C1.38462 4.78592 4.78592 1.38462 9 1.38462ZM8.30769 4.15385V11.2708L5.53846 8.50154L4.56508 9.49846L8.50223 13.4349L9.00069 13.9334L9.49915 13.4349L13.4356 9.49777L12.4615 8.50154L9.69231 11.2708V4.15385H8.30769Z" fill="#0156D5" />
                     </svg>
                   </button>`
-            : ""
-          }
+                : ""
+            }
           </div>`
         );
       },
@@ -1196,6 +1199,13 @@ const DownloadPage = ({ title }) => {
       },
     },
   ];
+
+  // const debouncedInputChange = useCallback(
+  //   debounce((name, value) => {
+  //     setFilterData((prev) => ({ ...prev, [name]: value }));
+  //   }, 300),
+  //   []
+  // );
 
   const debouncedInputChange = useCallback(
     debounce((name, value) => {
@@ -1266,13 +1276,13 @@ const DownloadPage = ({ title }) => {
               price: !isMultipleProducts ? item.products?.price : {},
               products: !isMultipleProducts
                 ? item.products?.[0]?.product?.title ||
-                item.products?.[0]?.product_title ||
-                "Untitled"
+                  item.products?.[0]?.product_title ||
+                  "Untitled"
                 : "Multi-Product Order",
               updatedAt: item.updatedAt,
               product_zip: !isMultipleProducts
                 ? item.products?.[0]?.product?.product_zip_url ||
-                item.products?.[0]?.product?.product_zip?.url
+                  item.products?.[0]?.product?.product_zip?.url
                 : null,
               downloadInvoice:
                 item.products?.[0]?.product?.product_zip_url ||
@@ -1295,7 +1305,7 @@ const DownloadPage = ({ title }) => {
   }, [filterData, authUser?.documentId]);
 
   return (
-    <div>
+    <div className="min-h-[1000px]">
       <h1 className="h2 mb-5 mt-[30px]">{title}</h1>
       <div className="border border-primary/10 rounded-md overflow-hidden mb-[20px] bg-white">
         <div className="flex items-center justify-between sm:flex-nowrap flex-wrap gap-1.5 w-full border-b border-primary/10 sm:px-5 px-3 py-[6px] bg-white">
@@ -1317,11 +1327,11 @@ const DownloadPage = ({ title }) => {
               label:
                 "2xl:text-base md:text-[15px] sm:text-sm !text-black block !pb-1 !font-normal",
             }}
-            value={filterData?.documentId || ""}
+            defaultValue={filterData?.documentId || ""}
             onChange={handleInputChange}
-            label="Order Id "
+            label="Order ID"
             labelPlacement="outside"
-            placeholder="Enter order id"
+            placeholder="Enter order ID"
             type="text"
             variant="bordered"
           />
@@ -1336,7 +1346,7 @@ const DownloadPage = ({ title }) => {
               label:
                 "2xl:text-base md:text-[15px] sm:text-sm !text-black block !pb-1 !font-normal",
             }}
-            value={filterData?.products || ""}
+            defaultValue={filterData?.products || ""}
             onChange={handleInputChange}
             label="Product Name or Number"
             labelPlacement="outside"
@@ -1357,11 +1367,11 @@ const DownloadPage = ({ title }) => {
                 label:
                   "2xl:text-base md:text-[15px] sm:text-sm !text-black block !pb-1 !font-normal",
               }}
-              value={
+              defaultValue={
                 filterData?.purchased_date
                   ? parseDate(
-                    filterData.purchased_date.split("-").reverse().join("-")
-                  )
+                      filterData.purchased_date.split("-").reverse().join("-")
+                    )
                   : null
               }
               labelPlacement="outside"
@@ -1410,7 +1420,7 @@ const DownloadPage = ({ title }) => {
                     key={key}
                     className="flex items-center justify-center divide-x divide-primary/10 bg-blue-300 border border-primary/10 p-[1px] rounded-[4px] flex-shrink-0"
                   >
-                    <p className="2xl:text-base 1xl:text-[15px] text-sm leading-5 text-gray-200 sm:px-2 px-1">
+                    <p className="2xl:text-base 1xl:text-[15px] text-sm leading-5 text-primary capitalize sm:px-2 px-1">
                       {key}: <span className="!text-black">{value}</span>
                     </p>
                     <button onClick={() => removeFilter(key)}>
@@ -1459,12 +1469,54 @@ const DownloadPage = ({ title }) => {
 
         <Card className="!shadow-none !max-w-full">
           <CardBody className="sm:px-5 px-4 py-5">
-            <DynamicTable
-              data={filteredOrder}
-              columns={columns}
-              layout="fitDataFill"
-              options={{ dataTree: true, dataTreeStartExpanded: true }}
-            />
+            {/* {!loading ? ( */}
+            {filteredOrder ? (
+              <DynamicTable
+                data={filteredOrder}
+                columns={columns}
+                layout="fitDataFill"
+                classes="download-table"
+                options={{ dataTree: true, dataTreeStartExpanded: true }}
+              />
+            ) : (
+              !loading && (
+                <div className="flex justify-center items-center h-[343px]">
+                  <p>No data is currently available.</p>
+                </div>
+              )
+            )}
+            {loading && filteredOrder?.length === 0 ? (
+              <div className="p-4">
+                <div className="overflow-x-auto rounded-lg border border-gray-100">
+                  <table className="min-w-full divide-y divide-gray-100 bg-white text-sm">
+                    <tbody className="divide-y divide-gray-100">
+                      {[...Array(9)].map((_, idx) => (
+                        <tr key={idx} className="hover:bg-gray-50">
+                          <td className="px-4 py-3">
+                            <div className="h-4 w-24 bg-gray-100 animate-pulse rounded" />
+                          </td>
+                          <td className="px-4 py-3">
+                            <div className="h-4 w-64 bg-gray-100 animate-pulse rounded mb-1" />
+                            <div className="h-4 w-56 bg-gray-100 animate-pulse rounded" />
+                          </td>
+                          <td className="px-4 py-3">
+                            <div className="h-8 w-20 bg-gray-100 animate-pulse rounded" />
+                          </td>
+                          <td className="px-4 py-3">
+                            <div className="h-8 w-28 bg-gray-100 animate-pulse rounded" />
+                          </td>
+                          <td className="px-4 py-3">
+                            <div className="h-4 w-20 bg-gray-100 animate-pulse rounded" />
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            ) : (
+              ""
+            )}
           </CardBody>
         </Card>
       </div>

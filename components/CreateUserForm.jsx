@@ -224,19 +224,74 @@ const profileSetting = ({ title, sub_title, form, image, button }) => {
     event.preventDefault();
 
     const isValid = validateFields();
+    if (!isValid) return;
 
-    if (isValid) {
+    const updatedData = {};
+
+    // Track if anything has changed
+    let hasChanges = false;
+
+    // Compare and include only changed form values
+    Object.keys(formValues).forEach((key) => {
+      const newValue = formValues[key];
+      const oldValue = defaultValueData[key];
+
+      if (newValue !== oldValue) {
+        updatedData[key] = newValue;
+        hasChanges = true;
+      }
+    });
+
+    // Set full_name if first or last name changed
+    if (
+      formValues.first_name !== defaultValueData.first_name ||
+      formValues.last_name !== defaultValueData.last_name
+    ) {
+      updatedData.full_name =
+        `${formValues.first_name} ${formValues.last_name}`.trim();
+      hasChanges = true;
+    }
+
+    // Check if image changed
+    const defaultImageId = defaultValueData.image?.id || null;
+    const newImageId = imageId || null;
+    if (newImageId !== defaultImageId) {
+      updatedData.image = newImageId;
+      hasChanges = true;
+    }
+
+    // Sanitize numeric fields (convert "" to null, and ensure numbers)
+    ["pincode", "phone_no"].forEach((field) => {
+      if (updatedData.hasOwnProperty(field)) {
+        const val = updatedData[field];
+        if (val === "") {
+          updatedData[field] = null;
+        } else if (!isNaN(val)) {
+          updatedData[field] = Number(val);
+        }
+      }
+    });
+
+    if (!hasChanges) {
+      toast.info("No changes detected.");
+      return;
+    }
+
+    try {
       const updateUserData = await strapiPut(
         `users/${defaultValueData.id}`,
-        { ...formValues, image: imageId ? imageId : defaultValueData.image.id },
+        updatedData,
         themeConfig.TOKEN
       );
+
       if (updateUserData) {
-        toast.success("User update successfully..!");
+        toast.success("User updated successfully!");
         getUserData();
       } else {
-        toast.error("User update fail..!");
+        toast.error("User update failed!");
       }
+    } catch (error) {
+      toast.error("User update failed!");
     }
   };
 
@@ -254,7 +309,6 @@ const profileSetting = ({ title, sub_title, form, image, button }) => {
 
   const getUserData = async () => {
     setFromSetLoading(true);
-    setFromSaveLoading(true);
     const { authToken } = await getTokenData();
 
     if (authToken) {
@@ -268,7 +322,6 @@ const profileSetting = ({ title, sub_title, form, image, button }) => {
         setProfileImage(
           userData?.image?.url ? userData?.image?.url : "/images/no-image.svg"
         );
-        setFromSaveLoading(false);
         setFromSetLoading(false);
       }
     }
@@ -529,110 +582,6 @@ const profileSetting = ({ title, sub_title, form, image, button }) => {
     }
   };
 
-  // // Skeleton shimmer animation component
-  // const SkeletonShimmer = ({ className = "" }) => (
-  //   <div className={`animate-pulse bg-gray-100 rounded ${className}`}></div>
-  // );
-
-  // // Skeleton input field
-  // const SkeletonField = ({ isFullWidth = false, hasTextArea = false }) => (
-  //   <div
-  //     className={`${isFullWidth ? "w-full" : "w-full sm:w-full md:w-1/3 xl:w-1/3"} !p-[5px]`}
-  //   >
-  //     <div className="space-y-2">
-  //       <SkeletonShimmer className="h-4 w-24" />
-  //       <SkeletonShimmer
-  //         className={`w-full ${hasTextArea ? "h-24" : "h-10"}`}
-  //       />
-  //       <SkeletonShimmer className="h-3 w-48" />
-  //     </div>
-  //   </div>
-  // );
-
-  // if (fromSetLoading && !title) {
-  //   return (
-  //     <div>
-  //       {/* Title Skeleton */}
-  //       <SkeletonShimmer className="h-8 w-48 mb-5 mt-[30px]" />
-
-  //       <div className="bg-gray-50">
-  //         <div className="mx-auto">
-  //           <div className="border border-gray-100 rounded-md overflow-hidden mb-[20px] bg-white">
-  //             {/* Sub-title Skeleton */}
-  //             <div className="flex items-center justify-between sm:flex-nowrap flex-wrap gap-1.5 w-full border-b border-gray-100 sm:px-5 px-3 py-[6px] bg-white overflow-hidden">
-  //               <SkeletonShimmer className="h-5 w-32" />
-  //             </div>
-
-  //             <div className="sm:py-6 py-4 sm:px-5 px-4">
-  //               {/* Profile Image Section Skeleton */}
-  //               <div className="flex items-center justify-between sm:flex-row flex-col w-full border-b border-gray-100 pb-[25px] mb-[25px] gap-3">
-  //                 <div className="flex items-center sm:flex-row flex-col sm:gap-[22px] gap-1.5">
-  //                   {/* Profile Image Skeleton */}
-  //                   <div className="1xl:w-[100px] 1xl:h-[100px] md:w-[90px] md:h-[90px] sm:w-[85px] sm:h-[85px] w-20 h-20 flex-shrink-0 rounded-full">
-  //                     <SkeletonShimmer className="w-full h-full rounded-full" />
-  //                   </div>
-
-  //                   <div className="space-y-2">
-  //                     {/* Name Skeleton */}
-  //                     <SkeletonShimmer className="h-6 w-40" />
-  //                     {/* Description Skeleton */}
-  //                     <SkeletonShimmer className="h-4 w-56" />
-  //                   </div>
-  //                 </div>
-
-  //                 {/* Upload Button Skeleton */}
-  //                 <SkeletonShimmer className="h-10 w-32 rounded" />
-  //               </div>
-
-  //               {/* Form Fields Skeleton */}
-  //               <div className="space-y-6">
-  //                 {/* First Row - Name Fields */}
-  //                 <div className="flex flex-wrap">
-  //                   <SkeletonField />
-  //                   <SkeletonField />
-  //                   <SkeletonField />
-  //                 </div>
-
-  //                 {/* Bio Field */}
-  //                 <div className="flex flex-wrap">
-  //                   <SkeletonField isFullWidth={true} hasTextArea={true} />
-  //                 </div>
-
-  //                 {/* Second Row - Email, Company, Country */}
-  //                 <div className="flex flex-wrap">
-  //                   <SkeletonField />
-  //                   <SkeletonField />
-  //                   <SkeletonField />
-  //                 </div>
-
-  //                 {/* Address Field */}
-  //                 <div className="flex flex-wrap">
-  //                   <SkeletonField isFullWidth={true} hasTextArea={true} />
-  //                 </div>
-
-  //                 {/* Third Row - City, State, Zip */}
-  //                 <div className="flex flex-wrap">
-  //                   <SkeletonField />
-  //                   <SkeletonField />
-  //                   <SkeletonField />
-  //                 </div>
-
-  //                 {/* Phone Number Field */}
-  //                 <div className="flex flex-wrap">
-  //                   <SkeletonField />
-  //                 </div>
-
-  //                 {/* Submit Button Skeleton */}
-  //                 <SkeletonShimmer className="h-12 w-[220px] rounded sm:mt-5 mt-3" />
-  //               </div>
-  //             </div>
-  //           </div>
-  //         </div>
-  //       </div>
-  //     </div>
-  //   );
-  // }
-
   return (
     <div>
       {title && <h1 className="h2 mb-5 mt-[30px]">{title}</h1>}
@@ -652,8 +601,8 @@ const profileSetting = ({ title, sub_title, form, image, button }) => {
                       <div className="flex items-center sm:flex-row flex-col sm:gap-[22px] gap-1.5">
                         <div className="1xl:w-[100px] 1xl:h-[100px] md:w-[90px] md:h-[90px] sm:w-[85px] sm:h-[85px] w-20 h-20 flex-shrink-0 rounded-full bg-transparent flex items-center justify-center profile-picture">
                           {profileImage !== null &&
-                          profileImage !== undefined &&
-                          profileImage !== "" ? (
+                            profileImage !== undefined &&
+                            profileImage !== "" ? (
                             <Image
                               src={profileImage}
                               alt="Profile"

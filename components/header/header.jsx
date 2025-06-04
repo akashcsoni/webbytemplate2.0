@@ -185,7 +185,8 @@ export default function Header() {
     // Add this inside the Header component, before the useDisclosure hook
     const [apiMenu, setApiMenu] = useState(mainMenu);
     const [activeCategory, setActiveCategory] = useState(null);
-    const { openAuth, authLoading, isAuthenticated, logout } = useAuth();
+    const { openAuth, authLoading, isAuthenticated, logout, authUser } =
+        useAuth();
     const { toggleCart, cartItems } = useCart();
 
     useEffect(() => {
@@ -304,7 +305,7 @@ export default function Header() {
                                         className={cn(
                                             "cursor-pointer flex items-center space-x-1 py-4 px-3",
                                             menuActiveCategory === name &&
-                                            "text-primary hover:text-primary border-b border-primary",
+                                            "text-primary hover:text-primary border-b border-primary"
                                         )}
                                     >
                                         <span className="p2">{label}</span>
@@ -354,7 +355,7 @@ export default function Header() {
                         <div
                             className={cn(
                                 "absolute left-0 right-0 bg-white shadow-lg z-10 mt-[1px]",
-                                menuActiveCategory ? "block" : "hidden",
+                                menuActiveCategory ? "block" : "hidden"
                             )}
                             onMouseEnter={() =>
                                 menuActiveCategory && setMenuActiveCategory(menuActiveCategory)
@@ -395,7 +396,7 @@ export default function Header() {
                                             ))}
                                         </div>
                                     </div>
-                                ) : null,
+                                ) : null
                             )}
                         </div>
                     </nav>
@@ -662,15 +663,17 @@ export default function Header() {
                             )
                         )}
 
-
-                        {!authLoading && (
-                            isAuthenticated ? (
+                        {!authLoading &&
+                            (isAuthenticated ? (
                                 <div className="login">
                                     {isHeaderLoading ? (
                                         <Skeleton className="1xl:block hidden h-[30px] logout" />
                                     ) : (
                                         <div className="flex items-center justify-center 1xl:gap-[15px] sm:gap-2">
-                                            <div className="relative flex text-left" ref={dropdownRef}>
+                                            <div
+                                                className="relative flex text-left"
+                                                ref={dropdownRef}
+                                            >
                                                 <button
                                                     onClick={toggleDropdown}
                                                     className="inline-flex items-center 1xl:gap-2 btn btn-primary focus:outline-none mr-2 after-login-btn"
@@ -691,7 +694,7 @@ export default function Header() {
                                                         />
                                                     </svg>
 
-                                                    <span className="1xl:block hidden">Hello, Name</span>
+                                                    <span className="1xl:block hidden w-20 truncate">Hello, {authUser?.username || "Name"}</span>
 
                                                     {/* Arrow Icon */}
                                                     <svg
@@ -750,7 +753,7 @@ export default function Header() {
                                                         <div className="z-20 relative w-[12.5rem] origin-top-right rounded-md bg-white overflow-hidden">
                                                             <ul className="divide-y divide-gray-100">
                                                                 <li className="hover:bg-primary group">
-                                                                    <Link href="/account">
+                                                                    <Link href={`/user/${authUser?.username}`}>
                                                                         <p className="block 1xl:px-5 1xl:py-3 px-4 py-1.5 !text-black group-hover:!text-white p2 font-medium">
                                                                             My Account
                                                                         </p>
@@ -764,14 +767,14 @@ export default function Header() {
                                                                     </Link>
                                                                 </li>
                                                                 <li className="hover:bg-primary group">
-                                                                    <Link href="/downloads">
+                                                                    <Link href={`/user/${authUser?.username}/downloads`}>
                                                                         <p className="block 1xl:px-5 1xl:py-3 px-4 py-1.5 !text-black group-hover:!text-white p2 font-medium">
                                                                             Downloads
                                                                         </p>
                                                                     </Link>
                                                                 </li>
                                                                 <li className="hover:bg-primary group">
-                                                                    <Link href="/orders">
+                                                                    <Link href={`/user/${authUser?.username}/orders`}>
                                                                         <p className="block 1xl:px-5 1xl:py-3 px-4 py-1.5 !text-black group-hover:!text-white p2 font-medium">
                                                                             Orders
                                                                         </p>
@@ -821,8 +824,7 @@ export default function Header() {
                                         </>
                                     )}
                                 </button>
-                            )
-                        )}
+                            ))}
 
                         <div className="right-last-icon">
                             {isHeaderLoading ? (
