@@ -1,6 +1,6 @@
 "use client";
 
-import { NO_FOUND_PRODUCT_GRID_IMAGE, URL } from "@/config/theamConfig";
+import { NO_FOUND_PRODUCT_GRID_IMAGE } from "@/config/theamConfig";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -11,9 +11,6 @@ const sanitizeText = (text) =>
     : "";
 
 export default function 
-
-
-
 
 ({ product }) {
   const productSlug = product?.slug ?? "";

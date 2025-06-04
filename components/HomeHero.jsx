@@ -32,17 +32,22 @@ export default function HomeHero({
   }, [])
 
   const handleSubmit = (e) => {
-    e.preventDefault()
-    const trimmedTerm = searchTerm.trim()
-    if (trimmedTerm === '') return
+    e.preventDefault();
+    const trimmedTerm = searchTerm.trim();
+    if (trimmedTerm === '') return;
 
     // Replace spaces with hyphens or encodeURIComponent for URL safety
-    const categorySlug = selectedCategory === 'All Categories' ? '' : selectedCategory.toLowerCase().replace(/\s+/g, '-')
-    const querySlug = encodeURIComponent(trimmedTerm)
+    const querySlug = encodeURIComponent(trimmedTerm);
 
-    // Redirect to /search/[category]/[query]
-    router.push(`/search/${categorySlug}/${querySlug}`)
-  }
+    if (selectedCategory === 'All Categories') {
+      // Redirect to /search/[querySlug] when 'All Categories' is selected
+      router.push(`/search/${querySlug}`);
+    } else {
+      // Handle the category-specific route
+      const categorySlug = selectedCategory.toLowerCase().replace(/\s+/g, '-');
+      router.push(`/category/${categorySlug}?term=${querySlug}`);
+    }
+  };
 
   // Close dropdown when clicking outside
   useEffect(() => {

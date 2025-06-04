@@ -22,8 +22,6 @@ export default async function DynamicPage({ params }) {
             token: themeConfig.TOKEN,
         });
 
-        console.log(pageData)
-
         if (!pageData.result) {
             return <SomethingWrong />;
         }
