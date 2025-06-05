@@ -53,7 +53,7 @@ const DynamicTable = ({
       data={data}
       columns={columns}
       layout={layout}
-      className={"tabulator container " + classes}
+      className={"tabulator " + classes}
       options={{
         ...options,
         placeholder: dummyHtml,
