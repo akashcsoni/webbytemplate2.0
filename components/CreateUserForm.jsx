@@ -258,6 +258,9 @@ const profileSetting = ({ title, sub_title, form, image, button }) => {
     if (newImageId !== defaultImageId) {
       updatedData.image = newImageId;
       hasChanges = true;
+    } else {
+      updatedData.image = defaultImageId;
+      hasChanges = true;
     }
 
     // Sanitize numeric fields (convert "" to null, and ensure numbers)

@@ -10,7 +10,6 @@ import toast from "react-hot-toast";
 import { debounce } from "lodash";
 import { parseDate, getLocalTimeZone } from "@internationalized/date";
 import { I18nProvider } from "@react-aria/i18n";
-// import { html2pdf } from "html2pdf.js";
 import html2pdf from "html2pdf.js/dist/html2pdf.min";
 
 const DownloadPage = ({ title }) => {
@@ -1200,13 +1199,6 @@ const DownloadPage = ({ title }) => {
     },
   ];
 
-  // const debouncedInputChange = useCallback(
-  //   debounce((name, value) => {
-  //     setFilterData((prev) => ({ ...prev, [name]: value }));
-  //   }, 300),
-  //   []
-  // );
-
   const debouncedInputChange = useCallback(
     debounce((name, value) => {
       setFilterData((prev) => ({ ...prev, [name]: value }));
@@ -1476,6 +1468,7 @@ const DownloadPage = ({ title }) => {
                 columns={columns}
                 layout="fitDataFill"
                 classes="download-table"
+                loading={loading}
                 options={{ dataTree: true, dataTreeStartExpanded: true }}
               />
             ) : (
@@ -1484,38 +1477,6 @@ const DownloadPage = ({ title }) => {
                   <p>No data is currently available.</p>
                 </div>
               )
-            )}
-            {loading && filteredOrder?.length === 0 ? (
-              <div className="p-4">
-                <div className="overflow-x-auto rounded-lg border border-gray-100">
-                  <table className="min-w-full divide-y divide-gray-100 bg-white text-sm">
-                    <tbody className="divide-y divide-gray-100">
-                      {[...Array(9)].map((_, idx) => (
-                        <tr key={idx} className="hover:bg-gray-50">
-                          <td className="px-4 py-3">
-                            <div className="h-4 w-24 bg-gray-100 animate-pulse rounded" />
-                          </td>
-                          <td className="px-4 py-3">
-                            <div className="h-4 w-64 bg-gray-100 animate-pulse rounded mb-1" />
-                            <div className="h-4 w-56 bg-gray-100 animate-pulse rounded" />
-                          </td>
-                          <td className="px-4 py-3">
-                            <div className="h-8 w-20 bg-gray-100 animate-pulse rounded" />
-                          </td>
-                          <td className="px-4 py-3">
-                            <div className="h-8 w-28 bg-gray-100 animate-pulse rounded" />
-                          </td>
-                          <td className="px-4 py-3">
-                            <div className="h-4 w-20 bg-gray-100 animate-pulse rounded" />
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            ) : (
-              ""
             )}
           </CardBody>
         </Card>
