@@ -1,12 +1,13 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, Suspense } from "react";
 import { Slider } from "@heroui/react";
 import Link from "next/link";
 import { strapiPost } from "@/lib/api/strapiClient";
 import { themeConfig } from "@/config/theamConfig";
 import ProductGrid from "../product/product-grid";
 import ProductDummyGrid from "../product/product-dummy-grid";
+import { useRouter, useSearchParams, usePathname } from "next/navigation";
 
 // Skeleton components for loading states
 const FilterSkeleton = ({ count = 5 }) => (
@@ -66,16 +67,126 @@ const DropdownSection = ({ title, children }) => {
     );
 };
 
-export default function SearchPage({ slug }) {
+// Loading component for Suspense
+const SearchPageLoading = () => (
+    <div className="container px-4 py-8">
+        <div className="flex flex-col xl:flex-row xl:gap-[34px]">
+            <div className="relative w-full xl:w-1/4">
+                <div className="animate-pulse">
+                    <div className="h-8 bg-gray-200 rounded mb-4"></div>
+                    <div className="space-y-4">
+                        {[...Array(4)].map((_, i) => (
+                            <div key={i} className="h-32 bg-gray-200 rounded"></div>
+                        ))}
+                    </div>
+                </div>
+            </div>
+            <div className="w-full xl:w-4/5">
+                <div className="animate-pulse">
+                    <div className="h-8 bg-gray-200 rounded mb-4"></div>
+                    <div className="h-12 bg-gray-200 rounded mb-8"></div>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6">
+                        {[...Array(8)].map((_, i) => (
+                            <div key={i} className="h-64 bg-gray-200 rounded"></div>
+                        ))}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+);
+
+// Main SearchPage component
+const SearchPageContent = ({ slug }) => {
+    const router = useRouter();
+    const searchParams = useSearchParams();
+    const pathname = usePathname();
+
+    // Add mounted state to handle client-side rendering
+    const [mounted, setMounted] = useState(false);
+
+    // Set mounted state after component mounts
+    useEffect(() => {
+        setMounted(true);
+    }, []);
 
     const [sort, setSort] = useState("Best seller");
+    const [sortDirection, setSortDirection] = useState("desc");
     const [activePage, setActivePage] = useState(1);
-    const pages = [1, 2, 3];
-    const [priceRange, setPriceRange] = useState([0, 500]);
+    const [pageSize] = useState(12); // Default page size
+    const [pagination, setPagination] = useState({
+        total: 0,
+        page: 1,
+        page_size: 12,
+        pageCount: 1
+    });
+
+    const [totalProducts, setTotalProducts] = useState(0);
+    const [error, setError] = useState(null);
+
+    // Initialize search query from pathname
+    const initialSearchQuery = (() => {
+        const segments = pathname.split('/');
+        return segments[2] || '';
+    })();
+
+    const [searchQuery, setSearchQuery] = useState(initialSearchQuery);
+
+    // Add a ref to track if price was changed by user
+    const priceChangedByUser = React.useRef(false);
+
+    // Map UI sort options to API filter keys
+    const sortOptions = {
+        "Best seller": "top_download",
+        "Newest": "newest",
+        "Best rated": "top_rated",
+        "Trending": "trending",
+        "Price": "price"
+    };
+
+    // Single state for price range
+    const [priceRange, setPriceRange] = useState(() => {
+        const min = searchParams.get('price_min');
+        const max = searchParams.get('price_max');
+        return [
+            min ? parseInt(min) : 0,
+            max ? parseInt(max) : 500
+        ];
+    });
+
+    // Handle price range changes
+    const handlePriceChange = (newRange) => {
+        priceChangedByUser.current = true;
+        setPriceRange(newRange);
+    };
+
+    // Update URL when price range changes
+    useEffect(() => {
+        // Only update URL if price was changed by user
+        if (priceChangedByUser.current) {
+            const params = new URLSearchParams(searchParams.toString());
+            params.set('price_min', priceRange[0]);
+            params.set('price_max', priceRange[1]);
+            router.push(createOrderedUrl(params));
+            priceChangedByUser.current = false;
+        }
+    }, [priceRange]);
+
+    // Reset price range when price filter is removed from URL
+    useEffect(() => {
+        const min = searchParams.get('price_min');
+        const max = searchParams.get('price_max');
+        if (!min && !max) {
+            setPriceRange([0, 500]);
+        }
+    }, [searchParams]);
+
+    // Add debounce timer ref
+    const debounceTimer = React.useRef(null);
+
     const [showSidebar, setShowSidebar] = useState(false);
     const [open, setOpen] = useState(false);
     const [selected, setSelected] = useState("Sort by");
-    const [sortDirection, setSortDirection] = useState("desc"); // "asc" or "desc"
 
     const [filterLoading, setfilterLoading] = useState(true);
     const [filteredProducts, setfilteredProducts] = useState([]);
@@ -96,38 +207,415 @@ export default function SearchPage({ slug }) {
 
     const options = ["Best Seller", "Newest", "Best Rated", "Tranding", "Price"];
 
+    // Add function to convert title to clean slug
+    const titleToSlug = (title) => {
+        return title
+            .toLowerCase()
+            .replace(/\s+/g, '-') // Replace spaces with hyphens
+            .replace(/[^a-z0-9-]/g, '') // Remove any characters that aren't letters, numbers, or hyphens
+            .replace(/-+/g, '-') // Replace multiple hyphens with single hyphen
+            .replace(/^-+|-+$/g, ''); // Remove leading and trailing hyphens
+    };
+
+    // Add function to convert slug back to title
+    const slugToTitle = (slug) => {
+        return slug
+            .split('-')
+            .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+            .join(' ');
+    };
+
+    // Function to create URL with ordered parameters
+    const createOrderedUrl = (params) => {
+        const orderedParams = [];
+
+        // Add parameters in specific order
+        if (params.get('tags')) {
+            orderedParams.push(`tags=${params.get('tags')}`);
+        }
+        if (params.get('sales')) {
+            orderedParams.push(`sales=${params.get('sales')}`);
+        }
+        if (params.get('feature')) {
+            orderedParams.push(`feature=${params.get('feature')}`);
+        }
+        // Only add price parameters if they were changed by user
+        if (priceChangedByUser.current && params.get('price_min')) {
+            orderedParams.push(`price_min=${params.get('price_min')}`);
+        }
+        if (priceChangedByUser.current && params.get('price_max')) {
+            orderedParams.push(`price_max=${params.get('price_max')}`);
+        }
+
+        return `/search${orderedParams.length > 0 ? '?' + orderedParams.join('&') : ''}`;
+    };
+
+    // Function to remove a filter
+    const removeFilter = (type, value) => {
+        const params = new URLSearchParams(searchParams.toString());
+
+        switch (type) {
+            case 'tags':
+                const currentTags = params.get('tags')?.split(',') || [];
+                const newTags = currentTags.filter(tag => tag !== value);
+                if (newTags.length > 0) {
+                    params.set('tags', newTags.join(','));
+                } else {
+                    params.delete('tags');
+                }
+                break;
+            case 'sales':
+                const currentSales = params.get('sales')?.split(',') || [];
+                const newSales = currentSales.filter(sale => sale !== value);
+                if (newSales.length > 0) {
+                    params.set('sales', newSales.join(','));
+                } else {
+                    params.delete('sales');
+                }
+                break;
+            case 'feature':
+                const currentFeatures = params.get('feature')?.split(',') || [];
+                const newFeatures = currentFeatures.filter(feature => feature !== value);
+                if (newFeatures.length > 0) {
+                    params.set('feature', newFeatures.join(','));
+                } else {
+                    params.delete('feature');
+                }
+                break;
+            case 'price':
+                params.delete('price_min');
+                params.delete('price_max');
+                setPriceRange([0, 500]); // Reset price range when removing price filter
+                break;
+        }
+
+        router.push(createOrderedUrl(params));
+    };
+
+    // Function to clear all filters
+    const clearAllFilters = () => {
+        // Reset all states
+        setSelectedSales([]);
+        setSelectedFeatures([]);
+        setPriceRange([0, 500]);
+        priceChangedByUser.current = false;
+
+        // Reset filter data selections
+        setfilterData(prevData => ({
+            ...prevData,
+            tags: prevData.tags?.map(tag => ({ ...tag, selected: false })),
+            sales: prevData.sales?.map(sale => ({ ...sale, selected: false })),
+            features: prevData.features?.map(feature => ({ ...feature, selected: false }))
+        }));
+
+        setsearchFilterData(prevData => ({
+            ...prevData,
+            tags: prevData.tags?.map(tag => ({ ...tag, selected: false })),
+            sales: prevData.sales?.map(sale => ({ ...sale, selected: false })),
+            features: prevData.features?.map(feature => ({ ...feature, selected: false }))
+        }));
+
+        router.push('/search');
+    };
+
+    // Update handleTagChange
+    const handleTagChange = (tagTitle) => {
+        const currentTags = searchParams.get('tags')?.split(',') || [];
+        const tagSlug = titleToSlug(tagTitle);
+        let newTags;
+
+        if (currentTags.includes(tagSlug)) {
+            newTags = currentTags.filter(tag => tag !== tagSlug);
+        } else {
+            newTags = [...currentTags, tagSlug];
+        }
+
+        const params = new URLSearchParams(searchParams.toString());
+        if (newTags.length > 0) {
+            params.set('tags', newTags.join(','));
+        } else {
+            params.delete('tags');
+        }
+
+        router.push(createOrderedUrl(params));
+    };
+
+    // Update handleSalesChange
+    const handleSalesChange = (saleTitle) => {
+        const saleSlug = titleToSlug(saleTitle);
+        let newSales;
+
+        if (selectedSales.includes(saleSlug)) {
+            newSales = selectedSales.filter(sale => sale !== saleSlug);
+        } else {
+            newSales = [...selectedSales, saleSlug];
+        }
+        setSelectedSales(newSales);
+
+        const params = new URLSearchParams(searchParams.toString());
+        if (newSales.length > 0) {
+            params.set('sales', newSales.join(','));
+        } else {
+            params.delete('sales');
+        }
+        router.push(createOrderedUrl(params));
+    };
+
+    // Update handleFeatureChange
+    const handleFeatureChange = (featureTitle) => {
+        const featureSlug = titleToSlug(featureTitle);
+        let newFeatures;
+
+        if (selectedFeatures.includes(featureSlug)) {
+            newFeatures = selectedFeatures.filter(feature => feature !== featureSlug);
+        } else {
+            newFeatures = [...selectedFeatures, featureSlug];
+        }
+        setSelectedFeatures(newFeatures);
+
+        const params = new URLSearchParams(searchParams.toString());
+        if (newFeatures.length > 0) {
+            params.set('feature', newFeatures.join(','));
+        } else {
+            params.delete('feature');
+        }
+        router.push(createOrderedUrl(params));
+    };
+
+    // Update sales state to be an array like tags
+    const [selectedSales, setSelectedSales] = useState(() => {
+        return searchParams.get('sales')?.split(',') || [];
+    });
+
+    const [selectedFeatures, setSelectedFeatures] = useState(() => {
+        return searchParams.get('feature')?.split(',') || [];
+    });
+
+    // Helper function to safely parse API response
+    const safeParseResponse = (response) => {
+        try {
+            if (!response) return null;
+
+            // Ensure we have the basic structure
+            const data = response?.data || [];
+            const filter = response?.filter || {};
+            const pagination = response?.pagination || {
+                total: data.length,
+                page: activePage,
+                page_size: pageSize,
+                pageCount: Math.ceil(data.length / pageSize)
+            };
+
+            return {
+                data,
+                filter,
+                pagination
+            };
+        } catch (err) {
+            console.error("Error parsing API response:", err);
+            return null;
+        }
+    };
+
+    // Helper function to safely update filter data
+    const safeUpdateFilterData = (filter, urlTags, sales, features) => {
+        try {
+            const updatedTags = (filter?.tags || []).map(tag => ({
+                ...tag,
+                selected: urlTags.includes(tag?.title || '')
+            }));
+
+            const updatedSales = (filter?.sales || []).map(sale => ({
+                ...sale,
+                selected: sales.includes(sale?.title || '')
+            }));
+
+            const updatedFeatures = (filter?.features || []).map(feature => ({
+                ...feature,
+                selected: features.includes(feature?.title || '')
+            }));
+
+            return {
+                ...filter,
+                tags: updatedTags,
+                sales: updatedSales,
+                features: updatedFeatures
+            };
+        } catch (err) {
+            console.error("Error updating filter data:", err);
+            return {
+                tags: [],
+                sales: [],
+                features: [],
+                categories: []
+            };
+        }
+    };
+
+    // Update useEffect to handle search term from path
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const [filterResponse] = await Promise.all([strapiPost("product/filter",
-                    {
-                        "page_size": 12,
-                        "shop": true,
-                        "base": ""
+                setfilterLoading(true);
+                setError(null);
+
+                // Get search term from pathname
+                const segments = pathname.split('/');
+                const searchFromPath = segments[2] || '';
+
+                const urlTags = searchParams.get('tags')?.split(',').map(slug => slugToTitle(slug)) || [];
+                const priceMin = searchParams.get('price_min');
+                const priceMax = searchParams.get('price_max');
+                const sales = searchParams.get('sales')?.split(',').map(slug => slugToTitle(slug)) || [];
+                const features = searchParams.get('feature')?.split(',').map(slug => slugToTitle(slug)) || [];
+                const base = searchParams.get('base') || '';
+
+                // Update search query state from path
+                setSearchQuery(searchFromPath);
+
+                // Get current sort option and direction
+                const currentSort = sortOptions[sort] || "top_download";
+                const currentDirection = sortDirection;
+
+                // Update selected states based on URL
+                setSelectedSales(sales.map(slug => titleToSlug(slug)));
+                setSelectedFeatures(features.map(slug => titleToSlug(slug)));
+
+                // Prepare API request parameters
+                const apiParams = {
+                    "page_size": pageSize,
+                    "page": activePage,
+                    "shop": true,
+                    "filter": currentSort,
+                    "order": currentDirection
+                };
+
+                // Only add parameters if they exist
+                if (searchFromPath) {
+                    apiParams.search = searchFromPath;
+                }
+
+                if (priceMin || priceMax) {
+                    apiParams.min_price = priceMin ? parseInt(priceMin) : 0;
+                    apiParams.max_price = priceMax ? parseInt(priceMax) : 150;
+                }
+
+                if (sales.length > 0) {
+                    apiParams.sales = sales.join(',');
+                    apiParams.on_sale = true;
+                }
+
+                if (urlTags.length > 0) {
+                    apiParams.tag = urlTags.join(',');
+                }
+
+                if (features.length > 0) {
+                    apiParams.feature = features.join(',');
+                }
+
+                if (base) {
+                    apiParams.base = base;
+                }
+
+                // Log the filter parameters
+                console.log('Filter Parameters:', {
+                    search: searchFromPath,
+                    tags: urlTags,
+                    priceRange: {
+                        min: priceMin ? parseInt(priceMin) : undefined,
+                        max: priceMax ? parseInt(priceMax) : undefined
                     },
+                    sales: sales,
+                    features: features,
+                    base: base,
+                    sort: currentSort,
+                    order: currentDirection,
+                    page: activePage,
+                    pageSize
+                });
+
+                const [filterResponse] = await Promise.all([strapiPost("product/filter",
+                    apiParams,
                     themeConfig.TOKEN
                 )]);
 
-                if (filterResponse?.result === true) {
-                    setfilterData(filterResponse?.filter);
-                    setsearchFilterData(filterResponse?.filter);
-                    setfilteredProducts(filterResponse?.data);
+                const parsedResponse = safeParseResponse(filterResponse);
 
+                if (parsedResponse) {
+                    const { data, filter, pagination } = parsedResponse;
 
-                    console.log('filter', filterResponse?.filter);
-                    console.log('products', filterResponse?.data);
-                    console.log('pagination', filterResponse?.pagination);
+                    // Update filter data with safe parsing
+                    const updatedFilterData = safeUpdateFilterData(filter, urlTags, sales, features);
+
+                    setfilterData(updatedFilterData);
+                    setsearchFilterData(updatedFilterData);
+                    setfilteredProducts(data);
+                    setTotalProducts(data.length);
+                    setPagination(pagination);
+
+                    // Log the filtered results
+                    console.log('Filtered Results:', {
+                        totalProducts: data.length,
+                        products: data,
+                        filterCounts: {
+                            tags: filter?.tags?.length || 0,
+                            sales: filter?.sales?.length || 0,
+                            features: filter?.features?.length || 0,
+                            categories: filter?.categories?.length || 0
+                        },
+                        pagination
+                    });
+                } else {
+                    // Handle invalid response format
+                    setError("Invalid response format from server");
+                    setfilteredProducts([]);
+                    setTotalProducts(0);
+                    setPagination({
+                        total: 0,
+                        page: 1,
+                        page_size: pageSize,
+                        pageCount: 1
+                    });
                 }
 
             } catch (error) {
                 console.error("Error fetching menu data:", error);
+                setError(error.message || "An error occurred while fetching data");
+                setfilteredProducts([]);
+                setTotalProducts(0);
             } finally {
                 setfilterLoading(false);
             }
         };
 
         fetchData();
-    }, []);
+    }, [searchParams, sort, sortDirection, pathname, activePage, pageSize]);
+
+    // Handle page change
+    const handlePageChange = (newPage) => {
+        setActivePage(newPage);
+        // Scroll to top when page changes
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
+    // Generate page numbers for pagination
+    const generatePageNumbers = () => {
+        const pages = [];
+        const maxPages = Math.min(5, pagination.pageCount); // Show max 5 pages
+        let startPage = Math.max(1, activePage - Math.floor(maxPages / 2));
+        let endPage = startPage + maxPages - 1;
+
+        if (endPage > pagination.pageCount) {
+            endPage = pagination.pageCount;
+            startPage = Math.max(1, endPage - maxPages + 1);
+        }
+
+        for (let i = startPage; i <= endPage; i++) {
+            pages.push(i);
+        }
+
+        return pages;
+    };
 
     const filterTags = (event) => {
         const searchTerm = event.target.value;
@@ -151,6 +639,122 @@ export default function SearchPage({ slug }) {
             ...prevData,
             tags: filteredTags.map((tag) => ({ ...tag, selected: false })),
         }));
+    };
+
+    // Update search handler
+    const handleSearch = (e) => {
+        const searchValue = e.target.value;
+        setSearchQuery(searchValue);
+    };
+
+    // Add submit handler
+    const handleSearchSubmit = (e) => {
+        e.preventDefault();
+        updateSearchInUrl();
+    };
+
+    // Function to update search in URL
+    const updateSearchInUrl = () => {
+        const params = new URLSearchParams(searchParams.toString());
+
+        // Remove search from params as it will be in the path
+        params.delete('search');
+
+        // Create URL with ordered parameters
+        const orderedParams = [];
+
+        // Add other parameters in specific order
+        if (params.get('tags')) {
+            orderedParams.push(`tags=${params.get('tags')}`);
+        }
+        if (params.get('sales')) {
+            orderedParams.push(`sales=${params.get('sales')}`);
+        }
+        if (params.get('feature')) {
+            orderedParams.push(`feature=${params.get('feature')}`);
+        }
+        if (params.get('price_min')) {
+            orderedParams.push(`price_min=${params.get('price_min')}`);
+        }
+        if (params.get('price_max')) {
+            orderedParams.push(`price_max=${params.get('price_max')}`);
+        }
+
+        // Create URL with search term in path
+        const searchPath = searchQuery.trim() ? `/search/${searchQuery.trim()}` : '/search';
+        const queryString = orderedParams.length > 0 ? '?' + orderedParams.join('&') : '';
+        const newUrl = `${searchPath}${queryString}`;
+
+        router.push(newUrl);
+    };
+
+    // Update the search form JSX
+    const renderSearchForm = () => {
+        const inputProps = {
+            type: "text",
+            placeholder: "Search for mockups, Web Templates and More.....",
+            className: "w-full rounded-l sm:px-4 px-2.5 placeholder:text-gray-300 outline-none lg:h-10 h-9 p2"
+        };
+
+        if (mounted) {
+            // Client-side rendering
+            Object.assign(inputProps, {
+                value: searchQuery,
+                onChange: handleSearch,
+                onKeyDown: (e) => {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        updateSearchInUrl();
+                    }
+                }
+            });
+        } else {
+            // Server-side rendering
+            Object.assign(inputProps, {
+                defaultValue: initialSearchQuery,
+                readOnly: true
+            });
+        }
+
+        const formContent = (
+            <>
+                <input {...inputProps} />
+                <button
+                    type={mounted ? "submit" : "button"}
+                    className="bg-[#0156d5] text-white lg:py-3 py-2.5 px-[18px] rounded-r flex items-center justify-center"
+                >
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="20"
+                        height="20"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        aria-hidden="true"
+                    >
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <path d="m21 21-4.3-4.3"></path>
+                    </svg>
+                </button>
+            </>
+        );
+
+        if (mounted) {
+            return (
+                <form onSubmit={handleSearchSubmit} className="relative flex items-center sm:mb-5 mb-2 border border-gray-100 rounded-[5px] overflow-hidden">
+                    {formContent}
+                </form>
+            );
+        }
+
+        return (
+            <div className="relative flex items-center sm:mb-5 mb-2 border border-gray-100 rounded-[5px] overflow-hidden">
+                {formContent}
+            </div>
+        );
     };
 
     return (
@@ -206,6 +810,19 @@ export default function SearchPage({ slug }) {
                                 ) : (
                                     <>
                                         <ul className="text-sm 1xl:space-y-[14px] space-y-3 h-44 pr-2 overflow-auto tags">
+                                            <li
+                                                className="flex justify-between items-center rounded cursor-pointer group"
+                                            >
+                                                <Link
+                                                    href="/search"
+                                                    className={`p2 group-hover:text-primary flex-1 ${!searchParams.get('tags') && !searchParams.get('sales') && !searchParams.get('feature') && !searchParams.get('price_min') && !searchParams.get('price_max') ? 'font-bold' : ''}`}
+                                                >
+                                                    All Categories
+                                                </Link>
+                                                <span className="p2">
+                                                    {filterData?.categories?.reduce((total, cat) => total + cat.products, 0)}
+                                                </span>
+                                            </li>
                                             {filterData?.categories?.map((cat, index) => {
                                                 return (
                                                     <li
@@ -244,6 +861,8 @@ export default function SearchPage({ slug }) {
                                                             <input
                                                                 type="checkbox"
                                                                 value={tag?.title}
+                                                                checked={tag?.selected}
+                                                                onChange={() => handleTagChange(tag.title)}
                                                                 className="form-checkbox 1xl:h-[18px] 1xl:w-[18px] w-4 h-4 !rounded-[4px] border-gray-100 border appearance-none checked:bg-primary"
                                                             />
                                                             <svg
@@ -280,8 +899,8 @@ export default function SearchPage({ slug }) {
                                             maxValue={1000}
                                             minValue={0}
                                             size="sm"
-                                            value={priceRange} // changed
-                                            onChange={setPriceRange} // changed
+                                            value={priceRange}
+                                            onChange={handlePriceChange}
                                             step={10}
                                         />
                                         <div className="flex justify-between text-sm text-gray-700 mt-2">
@@ -309,7 +928,9 @@ export default function SearchPage({ slug }) {
                                                         <div className="relative flex items-center justify-center">
                                                             <input
                                                                 type="checkbox"
-                                                                value={sale.title} // Use sale.name for the checkbox value
+                                                                value={sale.title}
+                                                                checked={selectedSales.includes(titleToSlug(sale.title))}
+                                                                onChange={() => handleSalesChange(sale.title)}
                                                                 className="form-checkbox 1xl:h-[18px] 1xl:w-[18px] w-4 h-4 !rounded-[4px] border-gray-100 border appearance-none checked:bg-primary"
                                                             />
                                                             <svg
@@ -344,7 +965,7 @@ export default function SearchPage({ slug }) {
                                     </div>
                                 ) : (
                                     <ul className="text-sm 1xl:space-y-[14px] space-y-3 h-44 pr-2 overflow-auto tags">
-                                        {filterData?.features?.map((features, index) => (
+                                        {filterData?.features?.map((feature, index) => (
                                             <li
                                                 key={index}
                                                 className="flex items-center justify-between"
@@ -353,7 +974,9 @@ export default function SearchPage({ slug }) {
                                                     <div className="relative flex items-center justify-center">
                                                         <input
                                                             type="checkbox"
-                                                            value={features.title} // Use features.name for the checkbox value
+                                                            value={feature.title}
+                                                            checked={selectedFeatures.includes(titleToSlug(feature.title))}
+                                                            onChange={() => handleFeatureChange(feature.title)}
                                                             className="form-checkbox 1xl:h-[18px] 1xl:w-[18px] w-4 h-4 !rounded-[4px] border-gray-100 border appearance-none checked:bg-primary"
                                                         />
                                                         <svg
@@ -371,9 +994,9 @@ export default function SearchPage({ slug }) {
                                                             ></path>
                                                         </svg>
                                                     </div>
-                                                    <span className="p2">{features.title}</span>
+                                                    <span className="p2">{feature.title}</span>
                                                 </label>
-                                                <span className="p2">{features.count}</span>
+                                                <span className="p2">{feature.count}</span>
                                             </li>
                                         ))}
                                     </ul>
@@ -386,36 +1009,19 @@ export default function SearchPage({ slug }) {
                 {/* Main section */}
                 <main className="w-full xl:w-4/5">
                     <h1 className="h2 mb-4">Website Templates</h1>
-                    <div className="relative flex items-center sm:mb-5 mb-2 border border-gray-100 rounded-[5px] overflow-hidden">
-                        <input
-                            defaultValue={slug}
-                            type="text"
-                            placeholder="Search for mockups, Web Templates and More....."
-                            className="w-full rounded-l sm:px-4 px-2.5 placeholder:text-gray-300 outline-none lg:h-10 h-9 p2"
-                        />
-                        <button className="bg-[#0156d5] text-white lg:py-3 py-2.5 px-[18px] rounded-r flex items-center justify-center">
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                width="20"
-                                height="20"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                                strokeWidth="2"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                aria-hidden="true"
-                            >
-                                <circle cx="11" cy="11" r="8"></circle>
-                                <path d="m21 21-4.3-4.3"></path>
-                            </svg>
-                        </button>
-                    </div>
+                    {renderSearchForm()}
+
+                    {/* Error message */}
+                    {error && (
+                        <div className="text-red-500 text-center my-4">
+                            {error}
+                        </div>
+                    )}
 
                     {/* Filter Tabs */}
                     <div className="flex items-center justify-between w-full sm:mb-6 mb-3">
                         <div>
-                            <p className="p2">You found 41 Html templates</p>
+                            <p className="p2">You found {totalProducts} Website Templates</p>
                         </div>
                         <div className="xl:flex hidden gap-2">
                             {["Best seller", "Newest", "Best rated", "Trending", "Price"].map(
@@ -546,89 +1152,139 @@ export default function SearchPage({ slug }) {
                         </div>
                     </div>
 
+                    {/* Filter tags section */}
                     <div className="flex items-center justify-start w-full gap-2 flex-wrap mb-[25px]">
-                        <p className="p2 !text-black">1 items in</p>
-                        <Link
-                            href="javascript:;"
-                            className="2xl:!text-base sm:!text-[15px] !text-sm all-btn inline-flex items-center border-b border-transparent hover:border-primary "
-                        >
-                            All Categories
-                        </Link>
-                        /<p className="p2 !text-black">Headless Templates</p>
-                        <div className="flex items-center justify-center divide-x divide-primary/10 bg-blue-300 border border-primary/10 p-[1px] rounded-[4px] flex-shrink-0">
-                            <p className="p2 !text-black sm:px-2 px-1">Bank template</p>
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                width="27"
-                                height="27"
-                                viewBox="0 0 9 9"
-                                fill="none"
-                                className="px-2 flex-shrink-0 cursor-pointer"
+                        {/* {searchParams.get('tags') && (
+                            <>
+                                <p className="p2 !text-black">1 items in</p>
+                                <Link
+                                    href="/search"
+                                    className="2xl:!text-base sm:!text-[15px] !text-sm all-btn inline-flex items-center border-b border-transparent hover:border-primary"
+                                >
+                                    All Categories
+                                </Link>
+                                /<p className="p2 !text-black">Headless Templates</p>
+                            </>
+                        )} */}
+
+                        {/* Tags */}
+                        {searchParams.get('tags')?.split(',').map((tag, index) => (
+                            <div key={`tag-${index}`} className="flex items-center justify-center divide-x divide-primary/10 bg-blue-300 border border-primary/10 p-[1px] rounded-[4px] flex-shrink-0">
+                                <p className="p2 !text-black sm:px-2 px-1">{slugToTitle(tag)}</p>
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    width="27"
+                                    height="27"
+                                    viewBox="0 0 9 9"
+                                    fill="none"
+                                    className="px-2 flex-shrink-0 cursor-pointer"
+                                    onClick={() => removeFilter('tags', tag)}
+                                >
+                                    <path
+                                        d="M8.80065 0.206172C8.7375 0.142889 8.66249 0.0926821 8.5799 0.0584261C8.49732 0.02417 8.40879 0.00653721 8.31939 0.00653721C8.22999 0.00653721 8.14146 0.02417 8.05888 0.0584261C7.97629 0.0926821 7.90128 0.142889 7.83813 0.206172L4.5 3.53747L1.16187 0.199346C1.09867 0.136145 1.02364 0.086012 0.941068 0.0518081C0.858492 0.0176043 0.769989 6.65925e-10 0.68061 0C0.591231 -6.65925e-10 0.502727 0.0176043 0.420151 0.0518081C0.337576 0.086012 0.262546 0.136145 0.199346 0.199346C0.136145 0.262546 0.086012 0.337576 0.0518081 0.420151C0.0176043 0.502727 -6.65925e-10 0.591231 0 0.68061C6.65925e-10 0.769989 0.0176043 0.858492 0.0518081 0.941068C0.086012 1.02364 0.136145 1.09867 0.199346 1.16187L3.53747 4.5L0.199346 7.83813C0.136145 7.90133 0.086012 7.97636 0.0518081 8.05893C0.0176043 8.14151 0 8.23001 0 8.31939C0 8.40877 0.0176043 8.49727 0.0518081 8.57985C0.086012 8.66242 0.136145 8.73745 0.199346 8.80065C0.262546 8.86385 0.337576 8.91399 0.420151 8.94819C0.502727 8.9824 0.591231 9 0.68061 9C0.769989 9 0.858492 8.9824 0.941068 8.94819C1.02364 8.91399 1.09867 8.86385 1.16187 8.80065L4.5 5.46253L7.83813 8.80065C7.90133 8.86385 7.97636 8.91399 8.05893 8.94819C8.14151 8.9824 8.23001 9 8.31939 9C8.40877 9 8.49727 8.9824 8.57985 8.94819C8.66242 8.91399 8.73745 8.86385 8.80065 8.80065C8.86385 8.73745 8.91399 8.66242 8.94819 8.57985C8.9824 8.49727 9 8.40877 9 8.31939C9 8.23001 8.9824 8.14151 8.94819 8.05893C8.91399 7.97636 8.86385 7.90133 8.80065 7.83813L5.46253 4.5L8.80065 1.16187C9.06006 0.902469 9.06006 0.465577 8.80065 0.206172Z"
+                                        fill="#0156D5"
+                                    />
+                                </svg>
+                            </div>
+                        ))}
+
+                        {/* Sales */}
+                        {searchParams.get('sales')?.split(',').map((sale, index) => (
+                            <div key={`sale-${index}`} className="flex items-center justify-center divide-x divide-primary/10 bg-blue-300 border border-primary/10 p-[1px] rounded-[4px] flex-shrink-0">
+                                <p className="p2 sm:px-2 px-1">
+                                    Sales : <span className="!text-black">{slugToTitle(sale)}</span>
+                                </p>
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    width="27"
+                                    height="27"
+                                    viewBox="0 0 9 9"
+                                    fill="none"
+                                    className="px-2 flex-shrink-0 cursor-pointer"
+                                    onClick={() => removeFilter('sales', sale)}
+                                >
+                                    <path
+                                        d="M8.80065 0.206172C8.7375 0.142889 8.66249 0.0926821 8.5799 0.0584261C8.49732 0.02417 8.40879 0.00653721 8.31939 0.00653721C8.22999 0.00653721 8.14146 0.02417 8.05888 0.0584261C7.97629 0.0926821 7.90128 0.142889 7.83813 0.206172L4.5 3.53747L1.16187 0.199346C1.09867 0.136145 1.02364 0.086012 0.941068 0.0518081C0.858492 0.0176043 0.769989 6.65925e-10 0.68061 0C0.591231 -6.65925e-10 0.502727 0.0176043 0.420151 0.0518081C0.337576 0.086012 0.262546 0.136145 0.199346 0.199346C0.136145 0.262546 0.086012 0.337576 0.0518081 0.420151C0.0176043 0.502727 -6.65925e-10 0.591231 0 0.68061C6.65925e-10 0.769989 0.0176043 0.858492 0.0518081 0.941068C0.086012 1.02364 0.136145 1.09867 0.199346 1.16187L3.53747 4.5L0.199346 7.83813C0.136145 7.90133 0.086012 7.97636 0.0518081 8.05893C0.0176043 8.14151 0 8.23001 0 8.31939C0 8.40877 0.0176043 8.49727 0.0518081 8.57985C0.086012 8.66242 0.136145 8.73745 0.199346 8.80065C0.262546 8.86385 0.337576 8.91399 0.420151 8.94819C0.502727 8.9824 0.591231 9 0.68061 9C0.769989 9 0.858492 8.9824 0.941068 8.94819C1.02364 8.91399 1.09867 8.86385 1.16187 8.80065L4.5 5.46253L7.83813 8.80065C7.90133 8.86385 7.97636 8.91399 8.05893 8.94819C8.14151 8.9824 8.23001 9 8.31939 9C8.40877 9 8.49727 8.9824 8.57985 8.94819C8.66242 8.91399 8.73745 8.86385 8.80065 8.80065C8.86385 8.73745 8.91399 8.66242 8.94819 8.57985C8.9824 8.49727 9 8.40877 9 8.31939C9 8.23001 8.9824 8.14151 8.94819 8.05893C8.91399 7.97636 8.86385 7.90133 8.80065 7.83813L5.46253 4.5L8.80065 1.16187C9.06006 0.902469 9.06006 0.465577 8.80065 0.206172Z"
+                                        fill="#0156D5"
+                                    />
+                                </svg>
+                            </div>
+                        ))}
+
+                        {/* Features */}
+                        {searchParams.get('feature')?.split(',').map((feature, index) => (
+                            <div key={`feature-${index}`} className="flex items-center justify-center divide-x divide-primary/10 bg-blue-300 border border-primary/10 p-[1px] rounded-[4px] flex-shrink-0">
+                                <p className="p2 sm:px-2 px-1">
+                                    Feature : <span className="!text-black">{slugToTitle(feature)}</span>
+                                </p>
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    width="27"
+                                    height="27"
+                                    viewBox="0 0 9 9"
+                                    fill="none"
+                                    className="px-2 flex-shrink-0 cursor-pointer"
+                                    onClick={() => removeFilter('feature', feature)}
+                                >
+                                    <path
+                                        d="M8.80065 0.206172C8.7375 0.142889 8.66249 0.0926821 8.5799 0.0584261C8.49732 0.02417 8.40879 0.00653721 8.31939 0.00653721C8.22999 0.00653721 8.14146 0.02417 8.05888 0.0584261C7.97629 0.0926821 7.90128 0.142889 7.83813 0.206172L4.5 3.53747L1.16187 0.199346C1.09867 0.136145 1.02364 0.086012 0.941068 0.0518081C0.858492 0.0176043 0.769989 6.65925e-10 0.68061 0C0.591231 -6.65925e-10 0.502727 0.0176043 0.420151 0.0518081C0.337576 0.086012 0.262546 0.136145 0.199346 0.199346C0.136145 0.262546 0.086012 0.337576 0.0518081 0.420151C0.0176043 0.502727 -6.65925e-10 0.591231 0 0.68061C6.65925e-10 0.769989 0.0176043 0.858492 0.0518081 0.941068C0.086012 1.02364 0.136145 1.09867 0.199346 1.16187L3.53747 4.5L0.199346 7.83813C0.136145 7.90133 0.086012 7.97636 0.0518081 8.05893C0.0176043 8.14151 0 8.23001 0 8.31939C0 8.40877 0.0176043 8.49727 0.0518081 8.57985C0.086012 8.66242 0.136145 8.73745 0.199346 8.80065C0.262546 8.86385 0.337576 8.91399 0.420151 8.94819C0.502727 8.9824 0.591231 9 0.68061 9C0.769989 9 0.858492 8.9824 0.941068 8.94819C1.02364 8.91399 1.09867 8.86385 1.16187 8.80065L4.5 5.46253L7.83813 8.80065C7.90133 8.86385 7.97636 8.91399 8.05893 8.94819C8.14151 8.9824 8.23001 9 8.31939 9C8.40877 9 8.49727 8.9824 8.57985 8.94819C8.66242 8.91399 8.73745 8.86385 8.80065 8.80065C8.86385 8.73745 8.91399 8.66242 8.94819 8.57985C8.9824 8.49727 9 8.40877 9 8.31939C9 8.23001 8.9824 8.14151 8.94819 8.05893C8.91399 7.97636 8.86385 7.90133 8.80065 7.83813L5.46253 4.5L8.80065 1.16187C9.06006 0.902469 9.06006 0.465577 8.80065 0.206172Z"
+                                        fill="#0156D5"
+                                    />
+                                </svg>
+                            </div>
+                        ))}
+
+                        {/* Price Range */}
+                        {(searchParams.get('price_min') || searchParams.get('price_max')) && (
+                            <div className="flex items-center justify-center divide-x divide-primary/10 bg-blue-300 border border-primary/10 p-[1px] rounded-[4px] flex-shrink-0">
+                                <p className="p2 sm:px-2 px-1">
+                                    Price : <span className="!text-black">${searchParams.get('price_min')} - ${searchParams.get('price_max')}</span>
+                                </p>
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    width="27"
+                                    height="27"
+                                    viewBox="0 0 9 9"
+                                    fill="none"
+                                    className="px-2 flex-shrink-0 cursor-pointer"
+                                    onClick={() => removeFilter('price')}
+                                >
+                                    <path
+                                        d="M8.80065 0.206172C8.7375 0.142889 8.66249 0.0926821 8.5799 0.0584261C8.49732 0.02417 8.40879 0.00653721 8.31939 0.00653721C8.22999 0.00653721 8.14146 0.02417 8.05888 0.0584261C7.97629 0.0926821 7.90128 0.142889 7.83813 0.206172L4.5 3.53747L1.16187 0.199346C1.09867 0.136145 1.02364 0.086012 0.941068 0.0518081C0.858492 0.0176043 0.769989 6.65925e-10 0.68061 0C0.591231 -6.65925e-10 0.502727 0.0176043 0.420151 0.0518081C0.337576 0.086012 0.262546 0.136145 0.199346 0.199346C0.136145 0.262546 0.086012 0.337576 0.0518081 0.420151C0.0176043 0.502727 -6.65925e-10 0.591231 0 0.68061C6.65925e-10 0.769989 0.0176043 0.858492 0.0518081 0.941068C0.086012 1.02364 0.136145 1.09867 0.199346 1.16187L3.53747 4.5L0.199346 7.83813C0.136145 7.90133 0.086012 7.97636 0.0518081 8.05893C0.0176043 8.14151 0 8.23001 0 8.31939C0 8.40877 0.0176043 8.49727 0.0518081 8.57985C0.086012 8.66242 0.136145 8.73745 0.199346 8.80065C0.262546 8.86385 0.337576 8.91399 0.420151 8.94819C0.502727 8.9824 0.591231 9 0.68061 9C0.769989 9 0.858492 8.9824 0.941068 8.94819C1.02364 8.91399 1.09867 8.86385 1.16187 8.80065L4.5 5.46253L7.83813 8.80065C7.90133 8.86385 7.97636 8.91399 8.05893 8.94819C8.14151 8.9824 8.23001 9 8.31939 9C8.40877 9 8.49727 8.9824 8.57985 8.94819C8.66242 8.91399 8.73745 8.86385 8.80065 8.80065C8.86385 8.73745 8.91399 8.66242 8.94819 8.57985C8.9824 8.49727 9 8.40877 9 8.31939C9 8.23001 8.9824 8.14151 8.94819 8.05893C8.91399 7.97636 8.86385 7.90133 8.80065 7.83813L5.46253 4.5L8.80065 1.16187C9.06006 0.902469 9.06006 0.465577 8.80065 0.206172Z"
+                                        fill="#0156D5"
+                                    />
+                                </svg>
+                            </div>
+                        )}
+
+                        {/* Clear All button - only show if there are any filters */}
+                        {(searchParams.get('tags') || searchParams.get('sales') || searchParams.get('feature') || searchParams.get('price_min') || searchParams.get('price_max')) && (
+                            <Link
+                                href="/search"
+                                className="2xl:!text-base sm:!text-[15px] !text-sm all-btn inline-flex items-center border-b border-transparent hover:border-primary gap-2"
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    clearAllFilters();
+                                }}
                             >
-                                <path
-                                    d="M8.80065 0.206172C8.7375 0.142889 8.66249 0.0926821 8.5799 0.0584261C8.49732 0.02417 8.40879 0.00653721 8.31939 0.00653721C8.22999 0.00653721 8.14146 0.02417 8.05888 0.0584261C7.97629 0.0926821 7.90128 0.142889 7.83813 0.206172L4.5 3.53747L1.16187 0.199346C1.09867 0.136145 1.02364 0.086012 0.941068 0.0518081C0.858492 0.0176043 0.769989 6.65925e-10 0.68061 0C0.591231 -6.65925e-10 0.502727 0.0176043 0.420151 0.0518081C0.337576 0.086012 0.262546 0.136145 0.199346 0.199346C0.136145 0.262546 0.086012 0.337576 0.0518081 0.420151C0.0176043 0.502727 -6.65925e-10 0.591231 0 0.68061C6.65925e-10 0.769989 0.0176043 0.858492 0.0518081 0.941068C0.086012 1.02364 0.136145 1.09867 0.199346 1.16187L3.53747 4.5L0.199346 7.83813C0.136145 7.90133 0.086012 7.97636 0.0518081 8.05893C0.0176043 8.14151 0 8.23001 0 8.31939C0 8.40877 0.0176043 8.49727 0.0518081 8.57985C0.086012 8.66242 0.136145 8.73745 0.199346 8.80065C0.262546 8.86385 0.337576 8.91399 0.420151 8.94819C0.502727 8.9824 0.591231 9 0.68061 9C0.769989 9 0.858492 8.9824 0.941068 8.94819C1.02364 8.91399 1.09867 8.86385 1.16187 8.80065L4.5 5.46253L7.83813 8.80065C7.90133 8.86385 7.97636 8.91399 8.05893 8.94819C8.14151 8.9824 8.23001 9 8.31939 9C8.40877 9 8.49727 8.9824 8.57985 8.94819C8.66242 8.91399 8.73745 8.86385 8.80065 8.80065C8.86385 8.73745 8.91399 8.66242 8.94819 8.57985C8.9824 8.49727 9 8.40877 9 8.31939C9 8.23001 8.9824 8.14151 8.94819 8.05893C8.91399 7.97636 8.86385 7.90133 8.80065 7.83813L5.46253 4.5L8.80065 1.16187C9.06006 0.902469 9.06006 0.465577 8.80065 0.206172Z"
-                                    fill="black"
-                                />
-                            </svg>
-                        </div>
-                        <div className="flex items-center justify-center divide-x divide-primary/10 bg-blue-300 border border-primary/10 p-[1px] rounded-[4px] flex-shrink-0">
-                            <p className="p2 sm:px-2 px-1">
-                                Tags : <span className="!text-black"> Bank template</span>
-                            </p>
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                width="27"
-                                height="27"
-                                viewBox="0 0 9 9"
-                                fill="none"
-                                className="px-2 flex-shrink-0 cursor-pointer"
-                            >
-                                <path
-                                    d="M8.80065 0.206172C8.7375 0.142889 8.66249 0.0926821 8.5799 0.0584261C8.49732 0.02417 8.40879 0.00653721 8.31939 0.00653721C8.22999 0.00653721 8.14146 0.02417 8.05888 0.0584261C7.97629 0.0926821 7.90128 0.142889 7.83813 0.206172L4.5 3.53747L1.16187 0.199346C1.09867 0.136145 1.02364 0.086012 0.941068 0.0518081C0.858492 0.0176043 0.769989 6.65925e-10 0.68061 0C0.591231 -6.65925e-10 0.502727 0.0176043 0.420151 0.0518081C0.337576 0.086012 0.262546 0.136145 0.199346 0.199346C0.136145 0.262546 0.086012 0.337576 0.0518081 0.420151C0.0176043 0.502727 -6.65925e-10 0.591231 0 0.68061C6.65925e-10 0.769989 0.0176043 0.858492 0.0518081 0.941068C0.086012 1.02364 0.136145 1.09867 0.199346 1.16187L3.53747 4.5L0.199346 7.83813C0.136145 7.90133 0.086012 7.97636 0.0518081 8.05893C0.0176043 8.14151 0 8.23001 0 8.31939C0 8.40877 0.0176043 8.49727 0.0518081 8.57985C0.086012 8.66242 0.136145 8.73745 0.199346 8.80065C0.262546 8.86385 0.337576 8.91399 0.420151 8.94819C0.502727 8.9824 0.591231 9 0.68061 9C0.769989 9 0.858492 8.9824 0.941068 8.94819C1.02364 8.91399 1.09867 8.86385 1.16187 8.80065L4.5 5.46253L7.83813 8.80065C7.90133 8.86385 7.97636 8.91399 8.05893 8.94819C8.14151 8.9824 8.23001 9 8.31939 9C8.40877 9 8.49727 8.9824 8.57985 8.94819C8.66242 8.91399 8.73745 8.86385 8.80065 8.80065C8.86385 8.73745 8.91399 8.66242 8.94819 8.57985C8.9824 8.49727 9 8.40877 9 8.31939C9 8.23001 8.9824 8.14151 8.94819 8.05893C8.91399 7.97636 8.86385 7.90133 8.80065 7.83813L5.46253 4.5L8.80065 1.16187C9.06006 0.902469 9.06006 0.465577 8.80065 0.206172Z"
-                                    fill="black"
-                                />
-                            </svg>
-                        </div>
-                        <div className="flex items-center justify-center divide-x divide-primary/10 bg-blue-300 border border-primary/10 p-[1px] rounded-[4px] flex-shrink-0">
-                            <p className="p2 sm:px-2 px-1">
-                                Sales : <span className="!text-black">Medium</span>
-                            </p>
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                width="27"
-                                height="27"
-                                viewBox="0 0 9 9"
-                                fill="none"
-                                className="px-2 flex-shrink-0 cursor-pointer"
-                            >
-                                <path
-                                    d="M8.80065 0.206172C8.7375 0.142889 8.66249 0.0926821 8.5799 0.0584261C8.49732 0.02417 8.40879 0.00653721 8.31939 0.00653721C8.22999 0.00653721 8.14146 0.02417 8.05888 0.0584261C7.97629 0.0926821 7.90128 0.142889 7.83813 0.206172L4.5 3.53747L1.16187 0.199346C1.09867 0.136145 1.02364 0.086012 0.941068 0.0518081C0.858492 0.0176043 0.769989 6.65925e-10 0.68061 0C0.591231 -6.65925e-10 0.502727 0.0176043 0.420151 0.0518081C0.337576 0.086012 0.262546 0.136145 0.199346 0.199346C0.136145 0.262546 0.086012 0.337576 0.0518081 0.420151C0.0176043 0.502727 -6.65925e-10 0.591231 0 0.68061C6.65925e-10 0.769989 0.0176043 0.858492 0.0518081 0.941068C0.086012 1.02364 0.136145 1.09867 0.199346 1.16187L3.53747 4.5L0.199346 7.83813C0.136145 7.90133 0.086012 7.97636 0.0518081 8.05893C0.0176043 8.14151 0 8.23001 0 8.31939C0 8.40877 0.0176043 8.49727 0.0518081 8.57985C0.086012 8.66242 0.136145 8.73745 0.199346 8.80065C0.262546 8.86385 0.337576 8.91399 0.420151 8.94819C0.502727 8.9824 0.591231 9 0.68061 9C0.769989 9 0.858492 8.9824 0.941068 8.94819C1.02364 8.91399 1.09867 8.86385 1.16187 8.80065L4.5 5.46253L7.83813 8.80065C7.90133 8.86385 7.97636 8.91399 8.05893 8.94819C8.14151 8.9824 8.23001 9 8.31939 9C8.40877 9 8.49727 8.9824 8.57985 8.94819C8.66242 8.91399 8.73745 8.86385 8.80065 8.80065C8.86385 8.73745 8.91399 8.66242 8.94819 8.57985C8.9824 8.49727 9 8.40877 9 8.31939C9 8.23001 8.9824 8.14151 8.94819 8.05893C8.91399 7.97636 8.86385 7.90133 8.80065 7.83813L5.46253 4.5L8.80065 1.16187C9.06006 0.902469 9.06006 0.465577 8.80065 0.206172Z"
-                                    fill="black"
-                                />
-                            </svg>
-                        </div>
-                        <Link
-                            href="javascript:;"
-                            className="2xl:!text-base sm:!text-[15px] !text-sm all-btn inline-flex items-center border-b border-transparent hover:border-primary gap-2"
-                        >
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                width="9"
-                                height="9"
-                                viewBox="0 0 9 9"
-                                fill="none"
-                            >
-                                <path
-                                    d="M8.80065 0.206172C8.7375 0.142889 8.66249 0.0926821 8.5799 0.0584261C8.49732 0.02417 8.40879 0.00653721 8.31939 0.00653721C8.22999 0.00653721 8.14146 0.02417 8.05888 0.0584261C7.97629 0.0926821 7.90128 0.142889 7.83813 0.206172L4.5 3.53747L1.16187 0.199346C1.09867 0.136145 1.02364 0.086012 0.941068 0.0518081C0.858492 0.0176043 0.769989 6.65925e-10 0.68061 0C0.591231 -6.65925e-10 0.502727 0.0176043 0.420151 0.0518081C0.337576 0.086012 0.262546 0.136145 0.199346 0.199346C0.136145 0.262546 0.086012 0.337576 0.0518081 0.420151C0.0176043 0.502727 -6.65925e-10 0.591231 0 0.68061C6.65925e-10 0.769989 0.0176043 0.858492 0.0518081 0.941068C0.086012 1.02364 0.136145 1.09867 0.199346 1.16187L3.53747 4.5L0.199346 7.83813C0.136145 7.90133 0.086012 7.97636 0.0518081 8.05893C0.0176043 8.14151 0 8.23001 0 8.31939C0 8.40877 0.0176043 8.49727 0.0518081 8.57985C0.086012 8.66242 0.136145 8.73745 0.199346 8.80065C0.262546 8.86385 0.337576 8.91399 0.420151 8.94819C0.502727 8.9824 0.591231 9 0.68061 9C0.769989 9 0.858492 8.9824 0.941068 8.94819C1.02364 8.91399 1.09867 8.86385 1.16187 8.80065L4.5 5.46253L7.83813 8.80065C7.90133 8.86385 7.97636 8.91399 8.05893 8.94819C8.14151 8.9824 8.23001 9 8.31939 9C8.40877 9 8.49727 8.9824 8.57985 8.94819C8.66242 8.91399 8.73745 8.86385 8.80065 8.80065C8.86385 8.73745 8.91399 8.66242 8.94819 8.57985C8.9824 8.49727 9 8.40877 9 8.31939C9 8.23001 8.9824 8.14151 8.94819 8.05893C8.91399 7.97636 8.86385 7.90133 8.80065 7.83813L5.46253 4.5L8.80065 1.16187C9.06006 0.902469 9.06006 0.465577 8.80065 0.206172Z"
-                                    fill="#0156D5"
-                                />
-                            </svg>
-                            Clear All
-                        </Link>
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    width="9"
+                                    height="9"
+                                    viewBox="0 0 9 9"
+                                    fill="none"
+                                >
+                                    <path
+                                        d="M8.80065 0.206172C8.7375 0.142889 8.66249 0.0926821 8.5799 0.0584261C8.49732 0.02417 8.40879 0.00653721 8.31939 0.00653721C8.22999 0.00653721 8.14146 0.02417 8.05888 0.0584261C7.97629 0.0926821 7.90128 0.142889 7.83813 0.206172L4.5 3.53747L1.16187 0.199346C1.09867 0.136145 1.02364 0.086012 0.941068 0.0518081C0.858492 0.0176043 0.769989 6.65925e-10 0.68061 0C0.591231 -6.65925e-10 0.502727 0.0176043 0.420151 0.0518081C0.337576 0.086012 0.262546 0.136145 0.199346 0.199346C0.136145 0.262546 0.086012 0.337576 0.0518081 0.420151C0.0176043 0.502727 -6.65925e-10 0.591231 0 0.68061C6.65925e-10 0.769989 0.0176043 0.858492 0.0518081 0.941068C0.086012 1.02364 0.136145 1.09867 0.199346 1.16187L3.53747 4.5L0.199346 7.83813C0.136145 7.90133 0.086012 7.97636 0.0518081 8.05893C0.0176043 8.14151 0 8.23001 0 8.31939C0 8.40877 0.0176043 8.49727 0.0518081 8.57985C0.086012 8.66242 0.136145 8.73745 0.199346 8.80065C0.262546 8.86385 0.337576 8.91399 0.420151 8.94819C0.502727 8.9824 0.591231 9 0.68061 9C0.769989 9 0.858492 8.9824 0.941068 8.94819C1.02364 8.91399 1.09867 8.86385 1.16187 8.80065L4.5 5.46253L7.83813 8.80065C7.90133 8.86385 7.97636 8.91399 8.05893 8.94819C8.14151 8.9824 8.23001 9 8.31939 9C8.40877 9 8.49727 8.9824 8.57985 8.94819C8.66242 8.91399 8.73745 8.86385 8.80065 8.80065C8.86385 8.73745 8.91399 8.66242 8.94819 8.57985C8.9824 8.49727 9 8.40877 9 8.31939C9 8.23001 8.9824 8.14151 8.94819 8.05893C8.91399 7.97636 8.86385 7.90133 8.80065 7.83813L5.46253 4.5L8.80065 1.16187C9.06006 0.902469 9.06006 0.465577 8.80065 0.206172Z"
+                                        fill="#0156D5"
+                                    />
+                                </svg>
+                                Clear All
+                            </Link>
+                        )}
                     </div>
 
                     {/* Grid */}
-
                     <div>
                         {filterLoading ? (
                             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6">
@@ -649,51 +1305,62 @@ export default function SearchPage({ slug }) {
                         )}
                     </div>
 
-                    {/* Pagination */}
-                    <div className="flex justify-center sm:mt-[50px] mt-[30px]  gap-2 text-sm">
-                        <button
-                            className="px-3 py-1 w-10 h-10 border rounded flex items-center justify-center"
-                            onClick={() => setActivePage((prev) => Math.max(1, prev - 1))}
-                        >
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                width={20}
-                                height={20}
-                                viewBox="0 0 24 24"
-                            >
-                                <path
-                                    fill="none"
-                                    stroke="currentColor"
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={1.5}
-                                    d="m11 6l-6 6l6 6m8-12l-6 6l6 6"
-                                ></path>
-                            </svg>
-                        </button>
-
-                        {pages.map((page) => (
+                    {/* Pagination - only show if we have products and no error */}
+                    {!error && filteredProducts?.length > 0 && (
+                        <div className="flex justify-center sm:mt-[50px] mt-[30px] gap-2 text-sm">
                             <button
-                                key={page}
-                                className={`px-3 py-1 w-10 h-10 btn border rounded flex items-center justify-center ${activePage === page ? "bg-primary text-white" : ""
-                                    }`}
-                                onClick={() => setActivePage(page)}
+                                className="px-3 py-1 w-10 h-10 border rounded flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
+                                onClick={() => handlePageChange(activePage - 1)}
+                                disabled={activePage === 1}
                             >
-                                {page}
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    width={20}
+                                    height={20}
+                                    viewBox="0 0 24 24"
+                                >
+                                    <path
+                                        fill="none"
+                                        stroke="currentColor"
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth={1.5}
+                                        d="m11 6l-6 6l6 6m8-12l-6 6l6 6"
+                                    ></path>
+                                </svg>
                             </button>
-                        ))}
 
-                        <button
-                            className="px-3 py-1 w-10 h-10 btn border rounded flex items-center justify-center"
-                            onClick={() =>
-                                setActivePage((prev) => Math.min(pages.length, prev + 1))
-                            }
-                        >
-                            »
-                        </button>
-                    </div>
+                            {generatePageNumbers().map((page) => (
+                                <button
+                                    key={page}
+                                    className={`px-3 py-1 w-10 h-10 btn border rounded flex items-center justify-center ${activePage === page ? "bg-primary text-white" : ""
+                                        }`}
+                                    onClick={() => handlePageChange(page)}
+                                >
+                                    {page}
+                                </button>
+                            ))}
+
+                            <button
+                                className="px-3 py-1 w-10 h-10 btn border rounded flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
+                                onClick={() => handlePageChange(activePage + 1)}
+                                disabled={activePage === pagination.pageCount}
+                            >
+                                »
+                            </button>
+                        </div>
+                    )}
                 </main>
             </div>
         </div>
+    );
+};
+
+// Wrapper component with Suspense
+export default function SearchPage({ slug }) {
+    return (
+        <Suspense fallback={<SearchPageLoading />}>
+            <SearchPageContent slug={slug} />
+        </Suspense>
     );
 }

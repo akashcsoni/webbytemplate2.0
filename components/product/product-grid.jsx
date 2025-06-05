@@ -10,20 +10,29 @@ const sanitizeText = (text) =>
     ? text.replace(/</g, "&lt;").replace(/>/g, "&gt;")
     : "";
 
-export default function 
-
-({ product }) {
+export default function ({ product }) {
   const productSlug = product?.slug ?? "";
   const productTitle = sanitizeText(product?.short_title || product?.title);
-  const authorName = sanitizeText(product?.author?.full_name || product?.author?.username);
-  const productImage = product?.grid_image?.url ? `${product.grid_image.url}` : NO_FOUND_PRODUCT_GRID_IMAGE;
-  const authorImage = product?.author?.image?.url ? `${product.author.image.url}` : NO_FOUND_PRODUCT_GRID_IMAGE;
-  const regularPrice = product?.price?.regular_price ?? product?.price?.sales_price;
-  const salesPrice = product?.price?.sales_price ?? product?.price?.regular_price;
+  const authorName = sanitizeText(
+    product?.author?.full_name || product?.author?.username,
+  );
+  const productImage = product?.grid_image?.url
+    ? `${product.grid_image.url}`
+    : NO_FOUND_PRODUCT_GRID_IMAGE;
+  const authorImage = product?.author?.image?.url
+    ? `${product.author.image.url}`
+    : NO_FOUND_PRODUCT_GRID_IMAGE;
+  const regularPrice =
+    product?.price?.regular_price ?? product?.price?.sales_price;
+  const salesPrice =
+    product?.price?.sales_price ?? product?.price?.regular_price;
 
   return (
-    <div className="group">
-      <Link prefetch={true} href={`/product/${encodeURIComponent(productSlug)}`}>
+    <div className="group relative">
+      <Link
+        prefetch={true}
+        href={`/product/${encodeURIComponent(productSlug)}`}
+      >
         <div className="cursor-pointer relative rounded-lg overflow-hidden mb-4 transition-transform duration-300 group-hover:shadow-lg">
           <Image
             src={productImage}
@@ -31,8 +40,29 @@ export default function
             width={270}
             height={345}
             className="w-full h-auto object-cover aspect-[1/1.2]"
-            onError={(e) => { e.currentTarget.src = NO_FOUND_PRODUCT_GRID_IMAGE; }}
+            onError={(e) => {
+              e.currentTarget.src = NO_FOUND_PRODUCT_GRID_IMAGE;
+            }}
           />
+          <div className="absolute top-0 w-full h-full items-center justify-center bg-black/60 hidden group-hover:flex transition-all">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="40"
+          height="40"
+          viewBox="0 0 40 40"
+          fill="none"
+        >
+          <g clipPath="url(#clip0_5061_42)">
+            <path
+              d="M9 31L32.0001 8.00011M32.0001 8.00011L32 30M32.0001 8.00011L9.99976 8.00024"
+              stroke="white"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </g>
+        </svg>
+      </div>
         </div>
       </Link>
       <div className="flex items-center justify-between">
@@ -43,7 +73,9 @@ export default function
             width={270}
             height={345}
             className="object-cover aspect-[1/1.2] rounded-full w-7 h-7 flex items-center justify-center text-xs mr-[10px]"
-            onError={(e) => { e.currentTarget.src = NO_FOUND_PRODUCT_GRID_IMAGE; }}
+            onError={(e) => {
+              e.currentTarget.src = NO_FOUND_PRODUCT_GRID_IMAGE;
+            }}
           />
           <div>
             <Link href={`/product/${encodeURIComponent(productSlug)}`}>
@@ -60,7 +92,10 @@ export default function
         {product?.price && (
           <div>
             <span className="p !text-primary">
-              ${salesPrice === null ? regularPrice.toFixed(2) : salesPrice.toFixed(2)}
+              $
+              {salesPrice === null
+                ? regularPrice.toFixed(2)
+                : salesPrice.toFixed(2)}
             </span>
             <br />
             {salesPrice !== null && regularPrice && (
@@ -71,6 +106,7 @@ export default function
           </div>
         )}
       </div>
+      
     </div>
   );
 }
