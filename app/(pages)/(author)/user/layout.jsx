@@ -100,7 +100,7 @@ export default function Layout({ children }) {
                           {
                             id: "ticket-support",
                             label: "TICKETS / SUPPORT",
-                            path: `/user/${authUser?.username}/ticketSupport`,
+                            path: `/user/${authUser?.username}/support`,
                           },
                           {
                             id: "downloads",
@@ -156,7 +156,7 @@ export default function Layout({ children }) {
                           {
                             id: "ticket-support",
                             label: "SUPPORT",
-                            path: `/user/${authUser?.username}/ticketSupport`,
+                            path: `/user/${authUser?.username}/support`,
                           },
                           {
                             id: "become-an-author",
