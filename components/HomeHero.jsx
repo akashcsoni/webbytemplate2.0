@@ -2,7 +2,6 @@
 
 import { useState, useRef, useEffect } from "react";
 import DynamicIcon from "./ui/DynamicIcon";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 export default function HomeHero({
@@ -228,12 +227,12 @@ export default function HomeHero({
 
 function CategoryPill({ icon, label, link }) {
   return (
-    <Link
-      href={link || "#"}
+    <span
+      // href={link || "#"}
       className="flex items-center gap-2 btn btn-secondary 1xl:!px-[18px] !px-3 1xl:!py-[7px] !py-[4px]"
     >
       <DynamicIcon icon={icon} />
       <span>{label}</span>
-    </Link>
+    </span>
   );
 }
