@@ -4,6 +4,7 @@ import Link from "next/link";
 import ProductGrid from "./product/product-grid";
 import { strapiPost } from "@/lib/api/strapiClient";
 import { themeConfig } from "@/config/theamConfig";
+import ProductDummyGrid from "./product/product-dummy-grid";
 
 /**
  * Products List Component
@@ -91,7 +92,9 @@ export default function ProductsList(props) {
             <div className="flex justify-between sm:items-center items-start sm:flex-row flex-col md:mb-[30px] sm:mb-6 mb-5">
               <div>
                 <h2>{title}</h2>
-                <p className="2xl:text-lg 1xl:text-[17px] lg:text-base text-[15px] mt-2 2xl:w-[926px] lg:w-[775px] md:w-[550px] sm:w-[445px] max-w-full">{description}</p>
+                <p className="2xl:text-lg 1xl:text-[17px] lg:text-base text-[15px] mt-2 2xl:w-[926px] lg:w-[775px] md:w-[550px] sm:w-[445px] max-w-full">
+                  {description}
+                </p>
               </div>
               {link && (
                 <Link
@@ -124,10 +127,11 @@ export default function ProductsList(props) {
               <div className="grid 1xl:grid-cols-7 xl:grid-cols-6 md:grid-cols-4 sm:grid-cols-3 grid-cols-2 lg:gap-4 gap-3 lg:mb-10 md:mb-8 mb-6 overflow-x-auto pb-2 tab-btn">
                 <button
                   onClick={() => setSelectedCategory(null)}
-                  className={`btn whitespace-nowrap px-0 !py-2.5 !h-auto ${selectedCategory === null
-                    ? "bg-primary text-white border-primary"
-                    : "bg-white border-gray-200 hover:bg-gray-50"
-                    }`}
+                  className={`btn whitespace-nowrap px-0 !py-2.5 !h-auto ${
+                    selectedCategory === null
+                      ? "bg-primary text-white border-primary"
+                      : "bg-white border-gray-200 hover:bg-gray-50"
+                  }`}
                 >
                   All
                 </button>
@@ -136,10 +140,11 @@ export default function ProductsList(props) {
                   <button
                     key={index}
                     onClick={() => handleCategoryClick(category?.slug)}
-                    className={`btn whitespace-nowrap px-0 !py-[9px] !h-auto ${selectedCategory === category?.slug
-                      ? "bg-primary text-white border-primary"
-                      : "bg-white border-gray-200 hover:bg-gray-50 hover:text-primary hover:border-primary"
-                      }`}
+                    className={`btn whitespace-nowrap px-0 !py-[9px] !h-auto ${
+                      selectedCategory === category?.slug
+                        ? "bg-primary text-white border-primary"
+                        : "bg-white border-gray-200 hover:bg-gray-50 hover:text-primary hover:border-primary"
+                    }`}
                   >
                     {category?.title || category?.name}
                   </button>
@@ -150,19 +155,7 @@ export default function ProductsList(props) {
             {loading ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-[26px]">
                 {[...Array(5)].map((_, index) => (
-                  <div key={index} className="animate-pulse">
-                    <div className="bg-gray-200 rounded-lg h-[340px] mb-4"></div>
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center">
-                        <div className="bg-gray-200 rounded-full w-8 h-8 mr-3"></div>
-                        <div>
-                          <div className="bg-gray-200 h-4 w-24 rounded mb-2"></div>
-                          <div className="bg-gray-200 h-3 w-16 rounded"></div>
-                        </div>
-                      </div>
-                      <div className="bg-gray-200 h-4 w-16 rounded"></div>
-                    </div>
-                  </div>
+                  <ProductDummyGrid key={index} />
                 ))}
               </div>
             ) : error ? (
