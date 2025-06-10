@@ -52,8 +52,7 @@ export default async function DynamicPage({ params, searchParams }) {
                 </>
             );
         } else if (pageSlug === 'category') {
-            if ('term' in searchParams) {
-                const term = searchParams?.term;
+            if (Object.keys(searchParams).length > 0) {
                 return (
                     <>
                         <SearchPage />
