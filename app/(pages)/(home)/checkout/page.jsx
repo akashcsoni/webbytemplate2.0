@@ -88,61 +88,6 @@ export default function CheckoutPage() {
     }
   }, [selectedCountry, stateSearchTerm]) // Remove selectedState from dependencies to avoid infinite loops
 
-  // Fetch user data when component mounts
-  // useEffect(() => {
-  //   const fetchLoginUserData = async () => {
-  //     const authToken = Cookies.get("authToken")
-  //     try {
-  //       const userData = await strapiGet("users/me", {
-  //         params: { populate: "*" },
-  //         token: authToken,
-  //       })
-
-  //       // If we have user data, update the form
-  //       if (userData) {
-  //         // First set the country and country code
-  //         if (userData.country) {
-  //           setSelectedCountry(userData.country)
-
-  //           // Set selected country code based on country name
-  //           const countryData = countries.find((c) => c.name === userData.country)
-  //           if (countryData) {
-  //             setSelectedCountryCode(countryData)
-  //           }
-  //         }
-
-  //         // Set form data from user data
-  //         setForm({
-  //           first_name: userData.first_name || "",
-  //           last_name: userData.last_name || "",
-  //           company_name: userData.company_name || "",
-  //           email: userData.email || "",
-  //           address: userData.address || "",
-  //           city: userData.city || "",
-  //           pincode: userData.pincode || "",
-  //           state: userData.state || "",
-  //           country: userData.country || "",
-  //           phone_no: userData.phone_no || "",
-  //           agreed: false, // Always start with unchecked for legal reasons
-  //         })
-
-  //         // Set the state after a small delay to ensure country is processed first
-  //         if (userData.state && userData.country) {
-  //           setTimeout(() => {
-  //             setSelectedState(userData.state)
-  //           }, 100)
-  //         }
-  //       }
-  //     } catch (error) {
-  //       console.error("Error fetching user data:", error)
-  //     } finally {
-  //       setUserDataLoading(false)
-  //     }
-  //   }
-
-  //   fetchLoginUserData()
-  // }, [])
-
   useEffect(() => {
     const fetchLoginUserData = async () => {
       const authToken = Cookies.get("authToken");
@@ -158,15 +103,51 @@ export default function CheckoutPage() {
         });
 
         if (userData) {
-          if (userData.country) {
-            setSelectedCountry(userData.country);
+          // Handle phone number and country detection
+          let phoneNumber = userData.phone_no || "";
+          let detectedCountry = null;
 
-            const countryData = countries.find((c) => c.name === userData.country);
-            if (countryData) {
-              setSelectedCountryCode(countryData);
+          // Try to detect country from phone number
+          if (phoneNumber && typeof phoneNumber === 'string' && phoneNumber.startsWith("+")) {
+            // Find country by dial code
+            for (const country of countries) {
+              if (country.dialCode && phoneNumber.startsWith(country.dialCode)) {
+                detectedCountry = country;
+                // Remove country code from phone number
+                phoneNumber = phoneNumber.replace(country.dialCode, "").trim();
+                break;
+              }
             }
           }
 
+          // Validate phone number format
+          if (phoneNumber) {
+            // Remove any non-digit characters
+            phoneNumber = phoneNumber.replace(/\D/g, "");
+          }
+
+          // Set country based on detection or default to India
+          if (detectedCountry) {
+            setSelectedCountry(detectedCountry.name);
+            setSelectedCountryCode(detectedCountry);
+          } else {
+            // Default to India
+            const indiaCountry = countries.find(c => c.name === "India");
+            if (indiaCountry) {
+              setSelectedCountry("India");
+              setSelectedCountryCode(indiaCountry);
+            } else {
+              console.error("India country data not found in countries list");
+              // Fallback to first country in the list
+              const firstCountry = countries[0];
+              if (firstCountry) {
+                setSelectedCountry(firstCountry.name);
+                setSelectedCountryCode(firstCountry);
+              }
+            }
+          }
+
+          // Set form data with proper validation
           setForm({
             first_name: userData.first_name || "",
             last_name: userData.last_name || "",
@@ -176,19 +157,36 @@ export default function CheckoutPage() {
             city: userData.city || "",
             pincode: userData.pincode || "",
             state: userData.state || "",
-            country: userData.country || "",
-            phone_no: userData.phone_no || "",
+            country: detectedCountry?.name || "India",
+            phone_no: phoneNumber || "",
             agreed: false,
           });
 
-          if (userData.state && userData.country) {
-            setTimeout(() => {
-              setSelectedState(userData.state);
-            }, 100);
+          // Set state if available and country is set
+          if (userData.state && (detectedCountry?.name || "India")) {
+            const currentCountry = detectedCountry || countries.find(c => c.name === "India");
+            if (currentCountry?.states?.includes(userData.state)) {
+              setTimeout(() => {
+                setSelectedState(userData.state);
+              }, 100);
+            } else {
+              console.warn(`State ${userData.state} not found in country ${currentCountry?.name}`);
+            }
           }
         }
       } catch (error) {
         console.error("Error fetching user data:", error);
+        // Set default values in case of error
+        const indiaCountry = countries.find(c => c.name === "India");
+        if (indiaCountry) {
+          setSelectedCountry("India");
+          setSelectedCountryCode(indiaCountry);
+        }
+        setForm(prev => ({
+          ...prev,
+          country: "India",
+          phone_no: "",
+        }));
       } finally {
         setUserDataLoading(false);
       }
@@ -201,7 +199,6 @@ export default function CheckoutPage() {
       setUserDataLoading(false);
     }
   }, []);
-
 
   const toggleCountryDropdown = () => setIsCountryDropdownOpen(!isCountryDropdownOpen)
   const toggleStateDropdown = (e) => {
@@ -352,14 +349,24 @@ export default function CheckoutPage() {
       newErrors.country = "Country is required."
     }
 
-    // Phone validation
-    const phoneNo = getStringValue(form.phone_no).trim()
+    // Phone validation with better error handling
+    const phoneNo = getStringValue(form.phone_no).trim();
     if (!phoneNo) {
-      newErrors.phone_no = "Phone number is required."
-    } else if (!validatePhone(phoneNo, filteredflag?.[0])) {
-      const country = countries.find((c) => c.code === filteredflag?.[0]?.code)
-      const expectedLength = country ? country.phoneLength.join(" or ") : "10"
-      newErrors.phone_no = `Please enter a valid phone number (${expectedLength} digits) for ${filteredflag?.[0]?.name}.`
+      newErrors.phone_no = "Phone number is required.";
+    } else {
+      const selectedCountryData = countries.find((c) => c.name === selectedCountry);
+      if (selectedCountryData) {
+        const cleanPhone = phoneNo.replace(/\D/g, "");
+        const isValidLength = selectedCountryData.phoneLength.includes(cleanPhone.length);
+        const isValidPattern = selectedCountryData.phonePattern.test(cleanPhone);
+
+        if (!isValidLength || !isValidPattern) {
+          const expectedLength = selectedCountryData.phoneLength.join(" or ");
+          newErrors.phone_no = `Please enter a valid phone number (${expectedLength} digits) for ${selectedCountryData.name}.`;
+        }
+      } else {
+        newErrors.phone_no = "Please select a valid country first.";
+      }
     }
 
     // Terms agreement validation
@@ -372,7 +379,6 @@ export default function CheckoutPage() {
   }
 
   const handlePayNow = async () => {
-
     setpayNowLoading(true);
 
     if (!isAuthenticated) {
@@ -416,9 +422,9 @@ export default function CheckoutPage() {
     }
 
     // Safe phone formatting
-    const phoneCode = filteredflag?.[0]?.dialCode || ""
-    const phoneNumber = getStringValue(form.phone_no)
-    const fullPhone = phoneCode + phoneNumber
+    const phoneCode = filteredflag?.[0]?.dialCode || "";
+    const phoneNumber = getStringValue(form.phone_no);
+    const fullPhone = phoneCode + phoneNumber;
 
     const shippingAddress = {
       first_name: getStringValue(form.first_name),
@@ -542,13 +548,14 @@ export default function CheckoutPage() {
       )}
 
       {/* Show user status if authenticated */}
-      {!authLoading && isAuthenticated && (
+      
+      {/* {!authLoading && isAuthenticated && (
         <div className="m-3">
           <div className="text-lg w-full rounded-1xl border border-green-100 font-bold leading-tight bg-[#e8f5e8] p-4 pr-8 relative">
             ✓ You are logged in and ready to checkout
           </div>
         </div>
-      )}
+      )} */}
 
       {/* Checkout Title */}
       <h1 className="h2 border-b border-primary/10 xl:pb-[30px] pb-4">Checkout</h1>
@@ -718,11 +725,11 @@ export default function CheckoutPage() {
                 <input
                   type="tel"
                   placeholder="Phone Number"
-                  value={form.phone_no.replace(filteredflag?.[0]?.dialCode, "") || ""}
+                  value={form.phone_no || ""}
                   onChange={(e) => {
                     // Only allow digits
-                    const value = e.target.value.replace(/\D/g, "")
-                    handleChange("phone_no", value)
+                    const value = e.target.value.replace(/\D/g, "");
+                    handleChange("phone_no", value);
                   }}
                   className="outline-none w-full ml-2 text-gray-200"
                   maxLength={15}

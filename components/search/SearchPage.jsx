@@ -53,9 +53,8 @@ const DropdownSection = ({ title, children }) => {
         <span className="text-sm text-gray-500">
           <svg
             xmlns="http://www.w3.org/2000/svg"
-            className={`h-4 w-4 transform transition-transform duration-300 ease-in-out ${
-              open ? "rotate-180" : "rotate-0"
-            }`}
+            className={`h-4 w-4 transform transition-transform duration-300 ease-in-out ${open ? "rotate-180" : "rotate-0"
+              }`}
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -151,14 +150,6 @@ const SearchPageContent = ({ slug }) => {
     Price: "price",
   };
 
-  // Update useEffect to handle sort from URL
-  useEffect(() => {
-    const sortFromUrl = searchParams.get("sort");
-    if (sortFromUrl && sortOptions[sortFromUrl]) {
-      setSort(sortFromUrl);
-    }
-  }, [searchParams]);
-
   // Update the sort button click handler
   const handleSortChange = (tab) => {
     if (sort === tab) {
@@ -184,16 +175,31 @@ const SearchPageContent = ({ slug }) => {
     setPriceRange(newRange);
   };
 
-  // Update URL when price range changes
+  // Update URL when price range changes with debounce
   useEffect(() => {
     // Only update URL if price was changed by user
     if (priceChangedByUser.current) {
-      const params = new URLSearchParams(searchParams.toString());
-      params.set("price_min", priceRange[0]);
-      params.set("price_max", priceRange[1]);
-      router.push(createOrderedUrl(params));
-      priceChangedByUser.current = false;
+      // Clear any existing timer
+      if (debounceTimer.current) {
+        clearTimeout(debounceTimer.current);
+      }
+
+      // Set new timer
+      debounceTimer.current = setTimeout(() => {
+        const params = new URLSearchParams(searchParams.toString());
+        params.set("price_min", priceRange[0]);
+        params.set("price_max", priceRange[1]);
+        router.push(createOrderedUrl(params));
+        priceChangedByUser.current = false;
+      }, 500); // Wait for 500ms after user stops sliding
     }
+
+    // Cleanup timer on unmount
+    return () => {
+      if (debounceTimer.current) {
+        clearTimeout(debounceTimer.current);
+      }
+    };
   }, [priceRange]);
 
   // Reset price range when price filter is removed from URL
@@ -252,8 +258,24 @@ const SearchPageContent = ({ slug }) => {
   // Function to create URL with ordered parameters
   const createOrderedUrl = (params) => {
     const orderedParams = [];
+    const segments = pathname.split("/");
+    const currentPath = segments[1] === "category"
+      ? `/category/${segments[2] || ""}`
+      : segments[2]
+        ? `/search/${segments[2]}`
+        : "/search";
 
-    // Add parameters in specific order
+    // Add term if it exists
+    if (params.get("term")) {
+      orderedParams.push(`term=${params.get("term")}`);
+    }
+
+    // Add sort if it exists
+    if (params.get('sort')) {
+      orderedParams.push(`sort=${params.get('sort')}`);
+    }
+
+    // Add other parameters in specific order
     if (params.get("tags")) {
       orderedParams.push(`tags=${params.get("tags")}`);
     }
@@ -270,7 +292,7 @@ const SearchPageContent = ({ slug }) => {
       orderedParams.push(`price_max=${params.get("price_max")}`);
     }
 
-    return `/search${orderedParams.length > 0 ? "?" + orderedParams.join("&") : ""}`;
+    return `${currentPath}${orderedParams.length > 0 ? "?" + orderedParams.join("&") : ""}`;
   };
 
   // Function to remove a filter
@@ -278,6 +300,10 @@ const SearchPageContent = ({ slug }) => {
     const params = new URLSearchParams(searchParams.toString());
 
     switch (type) {
+      case "sort":
+        params.delete("sort");
+        setSelectedType("");
+        break;
       case "tags":
         const currentTags = params.get("tags")?.split(",") || [];
         const newTags = currentTags.filter((tag) => tag !== value);
@@ -346,7 +372,14 @@ const SearchPageContent = ({ slug }) => {
       })),
     }));
 
-    router.push("/search");
+    // Create new params object with only the term parameter if it exists
+    const params = new URLSearchParams();
+    const term = searchParams.get("term");
+    if (term) {
+      params.set("term", term);
+    }
+
+    router.push(createOrderedUrl(params));
   };
 
   // Update handleTagChange
@@ -424,6 +457,11 @@ const SearchPageContent = ({ slug }) => {
     return searchParams.get("feature")?.split(",") || [];
   });
 
+  // Add sort state
+  const [selectedType, setSelectedType] = useState(() => {
+    return searchParams.get('sort') || '';
+  });
+
   // Helper function to safely parse API response
   const safeParseResponse = (response) => {
     try {
@@ -495,6 +533,7 @@ const SearchPageContent = ({ slug }) => {
         // Get search term from pathname
         const segments = pathname.split("/");
         const searchFromPath = segments[2] || "";
+        const termQuery = searchParams.get("term");
 
         const urlTags =
           searchParams
@@ -513,9 +552,20 @@ const SearchPageContent = ({ slug }) => {
             .get("feature")
             ?.split(",")
             .map((slug) => slugToTitle(slug)) || [];
+        const sort = searchParams.get("sort");
 
-        // Update search query state from path
-        setSearchQuery(searchFromPath);
+        // Update search query state based on URL pattern
+        if (segments[1] === "category") {
+          // For category URLs, always use the term parameter
+          setSearchQuery(termQuery || "");
+        } else {
+          // For search URLs
+          if (termQuery) {
+            setSearchQuery(termQuery);
+          } else {
+            setSearchQuery(searchFromPath);
+          }
+        }
 
         // Get current sort option and direction
         const currentSort = sortOptions[sort] || "top_download";
@@ -524,6 +574,7 @@ const SearchPageContent = ({ slug }) => {
         // Update selected states based on URL
         setSelectedSales(sales.map((slug) => titleToSlug(slug)));
         setSelectedFeatures(features.map((slug) => titleToSlug(slug)));
+        setSelectedType(sort || "");
 
         // Prepare API request parameters
         const apiParams = {
@@ -534,15 +585,32 @@ const SearchPageContent = ({ slug }) => {
           order: currentDirection,
         };
 
-        // Check if we're in a category route
-        if (segments[1] === "category") {
-          // Add category as base parameter
-          apiParams.base = segments[2];
+        // Add sort if it exists
+        if (sort) {
+          apiParams.type = sort;
         }
 
-        // Add search term if it exists and we're not in a category
-        if (searchFromPath && segments[1] !== "category") {
-          apiParams.search = searchFromPath;
+        // Handle different URL patterns
+        if (segments[1] === "category") {
+          // For category URLs with sub-categories
+          if (segments.length > 3) {
+            // If we have a sub-category (e.g., /category/ui-templates/figma)
+            apiParams.base = segments[3]; // Use the sub-category as base
+          } else {
+            // If we have just a main category (e.g., /category/ui-templates)
+            apiParams.base = searchFromPath;
+          }
+          if (termQuery) {
+            apiParams.search = termQuery;
+          }
+        } else if (segments[1] === "search") {
+          // For search URLs
+          if (termQuery) {
+            apiParams.search = termQuery;
+            apiParams.base = searchFromPath;
+          } else {
+            apiParams.search = searchFromPath;
+          }
         }
 
         if (priceMin || priceMax) {
@@ -565,8 +633,9 @@ const SearchPageContent = ({ slug }) => {
 
         // Log the filter parameters
         console.log("Filter Parameters:", {
-          base: segments[1] === "category" ? segments[2] : undefined,
-          search: segments[1] !== "category" ? searchFromPath : undefined,
+          base: apiParams.base,
+          search: apiParams.search,
+          sort: sort,
           tags: urlTags,
           priceRange: {
             min: priceMin ? parseInt(priceMin) : undefined,
@@ -589,43 +658,45 @@ const SearchPageContent = ({ slug }) => {
         if (parsedResponse) {
           const { data, filter, pagination } = parsedResponse;
 
-          // Update filter data with safe parsing
-          const updatedFilterData = safeUpdateFilterData(
-            filter,
-            urlTags,
-            sales,
-            features
-          );
+          if (data && Array.isArray(data)) {
+            setfilteredProducts(data);
+            setTotalProducts(data.length);
+            setPagination(pagination);
 
-          setfilterData(updatedFilterData);
-          setsearchFilterData(updatedFilterData);
-          setfilteredProducts(data);
-          setTotalProducts(data.length);
-          setPagination(pagination);
+            const updatedFilterData = safeUpdateFilterData(
+              filter,
+              urlTags,
+              sales,
+              features
+            );
 
-          // Log the filtered results
-          console.log("Filtered Results:", {
-            totalProducts: data.length,
-            products: data,
-            filterCounts: {
-              tags: filter?.tags?.length || 0,
-              sales: filter?.sales?.length || 0,
-              features: filter?.features?.length || 0,
-              categories: filter?.categories?.length || 0,
-            },
-            pagination,
-          });
-        } else {
-          // Handle invalid response format
-          setError("Invalid response format from server");
-          setfilteredProducts([]);
-          setTotalProducts(0);
-          setPagination({
-            total: 0,
-            page: 1,
-            page_size: pageSize,
-            pageCount: 1,
-          });
+            setfilterData(updatedFilterData);
+            setsearchFilterData(updatedFilterData);
+
+            // Log the filtered results
+            console.log("Filtered Results:", {
+              totalProducts: data.length,
+              products: data,
+              filterCounts: {
+                tags: filter?.tags?.length || 0,
+                sales: filter?.sales?.length || 0,
+                features: filter?.features?.length || 0,
+                categories: filter?.categories?.length || 0,
+              },
+              pagination,
+            });
+          } else {
+            // Handle invalid response format
+            setError("Invalid response format from server");
+            setfilteredProducts([]);
+            setTotalProducts(0);
+            setPagination({
+              total: 0,
+              page: 1,
+              page_size: pageSize,
+              pageCount: 1,
+            });
+          }
         }
       } catch (error) {
         console.error("Error fetching menu data:", error);
@@ -823,6 +894,9 @@ const SearchPageContent = ({ slug }) => {
     let url = `/category/${categorySlug}`;
     const params = new URLSearchParams();
 
+    // Always add term parameter
+    params.set("term", searchTerm || "");
+
     // Add existing filters if they exist
     if (existingParams) {
       const currentParams = new URLSearchParams(existingParams);
@@ -922,7 +996,7 @@ xl:relative xl:translate-x-0 z-20 xl:p-0 xl:shadow-none xl:block
                       </Link>
                       <span className="p2">
                         {filterData?.categories?.reduce(
-                          (total, cat) => total + cat.products,
+                          (total, cat) => total + (cat.totalProductCount || cat.products || 0),
                           0
                         )}
                       </span>
@@ -934,20 +1008,40 @@ xl:relative xl:translate-x-0 z-20 xl:p-0 xl:shadow-none xl:block
                         searchQuery,
                         searchParams.toString()
                       );
-
                       return (
-                        <li
-                          key={index}
-                          className="flex justify-between items-center rounded cursor-pointer group"
-                        >
-                          <Link
-                            href={categoryUrl}
-                            className="p2 group-hover:text-primary flex-1"
-                          >
-                            {cat.title}
-                          </Link>
-                          <span className="p2">{cat.products}</span>
-                        </li>
+                        <React.Fragment key={`category-group-${index}`}>
+                          <li className="flex justify-between items-center rounded cursor-pointer group">
+                            <Link
+                              href={categoryUrl}
+                              className="p2 group-hover:text-primary flex-1"
+                            >
+                              {cat.title}
+                            </Link>
+                            <span className="p2">{cat.totalProductCount || cat.products || 0}</span>
+                          </li>
+                          {cat.sub_categories?.map((subCat, subIndex) => {
+                            const subCategorySlug = `${categorySlug}/${subCat.slug}`;
+                            const subCategoryUrl = createCategoryUrl(
+                              subCategorySlug,
+                              searchQuery,
+                              searchParams.toString()
+                            );
+                            return (
+                              <li
+                                key={`subcat-${index}-${subIndex}`}
+                                className="flex justify-between items-center rounded cursor-pointer group"
+                              >
+                                <Link
+                                  href={subCategoryUrl}
+                                  className="p2 group-hover:text-primary flex-1"
+                                >
+                                  {subCat.title}
+                                </Link>
+                                <span className="p2">{subCat.totalProductCount || subCat.products || 0}</span>
+                              </li>
+                            );
+                          })}
+                        </React.Fragment>
                       );
                     })}
                   </ul>
@@ -1154,11 +1248,10 @@ xl:relative xl:translate-x-0 z-20 xl:p-0 xl:shadow-none xl:block
                 (tab) => (
                   <button
                     key={tab}
-                    className={`btn rounded font-normal flex items-center justify-center gap-[6px] ${
-                      sort === tab
-                        ? "bg-primary text-white border border-primary"
-                        : "bg-white text-black border border-primary/10"
-                    }`}
+                    className={`btn rounded font-normal flex items-center justify-center gap-[6px] ${sort === tab
+                      ? "bg-primary text-white border border-primary"
+                      : "bg-white text-black border border-primary/10"
+                      }`}
                     onClick={() => handleSortChange(tab)}
                   >
                     {tab}
@@ -1201,29 +1294,6 @@ xl:relative xl:translate-x-0 z-20 xl:p-0 xl:shadow-none xl:block
             </div>
           </div>
 
-          {/* Add sort filter tag */}
-          {searchParams.get("sort") && (
-            <div className="flex items-center justify-center divide-x divide-primary/10 bg-blue-300 border border-primary/10 p-[1px] rounded-[4px] flex-shrink-0">
-              <p className="p2 sm:px-2 px-1">
-                Sort : <span className="!text-black">{sort}</span>
-              </p>
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="27"
-                height="27"
-                viewBox="0 0 9 9"
-                fill="none"
-                className="px-2 flex-shrink-0 cursor-pointer"
-                onClick={() => removeFilter("sort")}
-              >
-                <path
-                  d="M8.80065 0.206172C8.7375 0.142889 8.66249 0.0926821 8.5799 0.0584261C8.49732 0.02417 8.40879 0.00653721 8.31939 0.00653721C8.22999 0.00653721 8.14146 0.02417 8.05888 0.0584261C7.97629 0.0926821 7.90128 0.142889 7.83813 0.206172L4.5 3.53747L1.16187 0.199346C1.09867 0.136145 1.02364 0.086012 0.941068 0.0518081C0.858492 0.0176043 0.769989 6.65925e-10 0.68061 0C0.591231 -6.65925e-10 0.502727 0.0176043 0.420151 0.0518081C0.337576 0.086012 0.262546 0.136145 0.199346 0.199346C0.136145 0.262546 0.086012 0.337576 0.0518081 0.420151C0.0176043 0.502727 -6.65925e-10 0.591231 0 0.68061C6.65925e-10 0.769989 0.0176043 0.858492 0.0518081 0.941068C0.086012 1.02364 0.136145 1.09867 0.199346 1.16187L3.53747 4.5L0.199346 7.83813C0.136145 7.90133 0.086012 7.97636 0.0518081 8.05893C0.0176043 8.14151 0 8.23001 0 8.31939C0 8.40877 0.0176043 8.49727 0.0518081 8.57985C0.086012 8.66242 0.136145 8.73745 0.199346 8.80065C0.262546 8.86385 0.337576 8.91399 0.420151 8.94819C0.502727 8.9824 0.591231 9 0.68061 9C0.769989 9 0.858492 8.9824 0.941068 8.94819C1.02364 8.91399 1.09867 8.86385 1.16187 8.80065L4.5 5.46253L7.83813 8.80065C7.90133 8.86385 7.97636 8.91399 8.05893 8.94819C8.14151 8.9824 8.23001 9 8.31939 9C8.40877 9 8.49727 8.9824 8.57985 8.94819C8.66242 8.91399 8.73745 8.86385 8.80065 8.80065C8.86385 8.73745 8.91399 8.66242 8.94819 8.57985C8.9824 8.49727 9 8.40877 9 8.31939C9 8.23001 8.9824 8.14151 8.94819 8.05893C8.91399 7.97636 8.86385 7.90133 8.80065 7.83813L5.46253 4.5L8.80065 1.16187C9.06006 0.902469 9.06006 0.465577 8.80065 0.206172Z"
-                  fill="#0156D5"
-                />
-              </svg>
-            </div>
-          )}
-
           {/* template categories */}
           <div className="flex items-center justify-between w-full xl:hidden sm:mb-6 mb-[15px] ">
             <button
@@ -1256,9 +1326,8 @@ xl:relative xl:translate-x-0 z-20 xl:p-0 xl:shadow-none xl:block
               >
                 {selected}
                 <svg
-                  className={`ml-2 h-4 w-4 transition-transform duration-300 ease-in-out ${
-                    open ? "rotate-180" : "rotate-0"
-                  }`}
+                  className={`ml-2 h-4 w-4 transition-transform duration-300 ease-in-out ${open ? "rotate-180" : "rotate-0"
+                    }`}
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -1294,18 +1363,28 @@ xl:relative xl:translate-x-0 z-20 xl:p-0 xl:shadow-none xl:block
 
           {/* Filter tags section */}
           <div className="flex items-center justify-start w-full gap-2 flex-wrap mb-[25px]">
-            {/* {searchParams.get('tags') && (
-<>
-<p className="p2 !text-black">1 items in</p>
-<Link
-href="/search"
-className="2xl:!text-base sm:!text-[15px] !text-sm all-btn inline-flex items-center border-b border-transparent hover:border-primary"
->
-All Categories
-</Link>
-/<p className="p2 !text-black">Headless Templates</p>
-</>
-)} */}
+            {/* Type filter tag */}
+            {searchParams.get('sort') && (
+              <div className="flex items-center justify-center divide-x divide-primary/10 bg-blue-300 border border-primary/10 p-[1px] rounded-[4px] flex-shrink-0">
+                <p className="p2 sm:px-2 px-1">
+                  Sort : <span className="!text-black">{searchParams.get('sort')}</span>
+                </p>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="27"
+                  height="27"
+                  viewBox="0 0 9 9"
+                  fill="none"
+                  className="px-2 flex-shrink-0 cursor-pointer"
+                  onClick={() => removeFilter('sort')}
+                >
+                  <path
+                    d="M8.80065 0.206172C8.7375 0.142889 8.66249 0.0926821 8.5799 0.0584261C8.49732 0.02417 8.40879 0.00653721 8.31939 0.00653721C8.22999 0.00653721 8.14146 0.02417 8.05888 0.0584261C7.97629 0.0926821 7.90128 0.142889 7.83813 0.206172L4.5 3.53747L1.16187 0.199346C1.09867 0.136145 1.02364 0.086012 0.941068 0.0518081C0.858492 0.0176043 0.769989 6.65925e-10 0.68061 0C0.591231 -6.65925e-10 0.502727 0.0176043 0.420151 0.0518081C0.337576 0.086012 0.262546 0.136145 0.199346 0.199346C0.136145 0.262546 0.086012 0.337576 0.0518081 0.420151C0.0176043 0.502727 -6.65925e-10 0.591231 0 0.68061C6.65925e-10 0.769989 0.0176043 0.858492 0.0518081 0.941068C0.086012 1.02364 0.136145 1.09867 0.199346 1.16187L3.53747 4.5L0.199346 7.83813C0.136145 7.90133 0.086012 7.97636 0.0518081 8.05893C0.0176043 8.14151 0 8.23001 0 8.31939C0 8.40877 0.0176043 8.49727 0.0518081 8.57985C0.086012 8.66242 0.136145 8.73745 0.199346 8.80065C0.262546 8.86385 0.337576 8.91399 0.420151 8.94819C0.502727 8.9824 0.591231 9 0.68061 9C0.769989 9 0.858492 8.9824 0.941068 8.94819C1.02364 8.91399 1.09867 8.86385 1.16187 8.80065L4.5 5.46253L7.83813 8.80065C7.90133 8.86385 7.97636 8.91399 8.05893 8.94819C8.14151 8.9824 8.23001 9 8.31939 9C8.40877 9 8.49727 8.9824 8.57985 8.94819C8.66242 8.91399 8.73745 8.86385 8.80065 8.80065C8.86385 8.73745 8.91399 8.66242 8.94819 8.57985C8.9824 8.49727 9 8.40877 9 8.31939C9 8.23001 8.9824 8.14151 8.94819 8.05893C8.91399 7.97636 8.86385 7.90133 8.80065 7.83813L5.46253 4.5L8.80065 1.16187C9.06006 0.902469 9.06006 0.465577 8.80065 0.206172Z"
+                    fill="#0156D5"
+                  />
+                </svg>
+              </div>
+            )}
 
             {/* Tags */}
             {searchParams
@@ -1399,37 +1478,33 @@ All Categories
             {/* Price Range */}
             {(searchParams.get("price_min") ||
               searchParams.get("price_max")) && (
-              <div className="flex items-center justify-center divide-x divide-primary/10 bg-blue-300 border border-primary/10 p-[1px] rounded-[4px] flex-shrink-0">
-                <p className="p2 sm:px-2 px-1">
-                  Price :{" "}
-                  <span className="!text-black">
-                    ${searchParams.get("price_min")} - $
-                    {searchParams.get("price_max")}
-                  </span>
-                </p>
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="27"
-                  height="27"
-                  viewBox="0 0 9 9"
-                  fill="none"
-                  className="px-2 flex-shrink-0 cursor-pointer"
-                  onClick={() => removeFilter("price")}
-                >
-                  <path
-                    d="M8.80065 0.206172C8.7375 0.142889 8.66249 0.0926821 8.5799 0.0584261C8.49732 0.02417 8.40879 0.00653721 8.31939 0.00653721C8.22999 0.00653721 8.14146 0.02417 8.05888 0.0584261C7.97629 0.0926821 7.90128 0.142889 7.83813 0.206172L4.5 3.53747L1.16187 0.199346C1.09867 0.136145 1.02364 0.086012 0.941068 0.0518081C0.858492 0.0176043 0.769989 6.65925e-10 0.68061 0C0.591231 -6.65925e-10 0.502727 0.0176043 0.420151 0.0518081C0.337576 0.086012 0.262546 0.136145 0.199346 0.199346C0.136145 0.262546 0.086012 0.337576 0.0518081 0.420151C0.0176043 0.502727 -6.65925e-10 0.591231 0 0.68061C6.65925e-10 0.769989 0.0176043 0.858492 0.0518081 0.941068C0.086012 1.02364 0.136145 1.09867 0.199346 1.16187L3.53747 4.5L0.199346 7.83813C0.136145 7.90133 0.086012 7.97636 0.0518081 8.05893C0.0176043 8.14151 0 8.23001 0 8.31939C0 8.40877 0.0176043 8.49727 0.0518081 8.57985C0.086012 8.66242 0.136145 8.73745 0.199346 8.80065C0.262546 8.86385 0.337576 8.91399 0.420151 8.94819C0.502727 8.9824 0.591231 9 0.68061 9C0.769989 9 0.858492 8.9824 0.941068 8.94819C1.02364 8.91399 1.09867 8.86385 1.16187 8.80065L4.5 5.46253L7.83813 8.80065C7.90133 8.86385 7.97636 8.91399 8.05893 8.94819C8.14151 8.9824 8.23001 9 8.31939 9C8.40877 9 8.49727 8.9824 8.57985 8.94819C8.66242 8.91399 8.73745 8.86385 8.80065 8.80065C8.86385 8.73745 8.91399 8.66242 8.94819 8.57985C8.9824 8.49727 9 8.40877 9 8.31939C9 8.23001 8.9824 8.14151 8.94819 8.05893C8.91399 7.97636 8.86385 7.90133 8.80065 7.83813L5.46253 4.5L8.80065 1.16187C9.06006 0.902469 9.06006 0.465577 8.80065 0.206172Z"
-                    fill="#0156D5"
-                  />
-                </svg>
-              </div>
-            )}
+                <div className="flex items-center justify-center divide-x divide-primary/10 bg-blue-300 border border-primary/10 p-[1px] rounded-[4px] flex-shrink-0">
+                  <p className="p2 sm:px-2 px-1">
+                    Price :{" "}
+                    <span className="!text-black">
+                      ${searchParams.get("price_min")} - $
+                      {searchParams.get("price_max")}
+                    </span>
+                  </p>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="27"
+                    height="27"
+                    viewBox="0 0 9 9"
+                    fill="none"
+                    className="px-2 flex-shrink-0 cursor-pointer"
+                    onClick={() => removeFilter("price")}
+                  >
+                    <path
+                      d="M8.80065 0.206172C8.7375 0.142889 8.66249 0.0926821 8.5799 0.0584261C8.49732 0.02417 8.40879 0.00653721 8.31939 0.00653721C8.22999 0.00653721 8.14146 0.02417 8.05888 0.0584261C7.97629 0.0926821 7.90128 0.142889 7.83813 0.206172L4.5 3.53747L1.16187 0.199346C1.09867 0.136145 1.02364 0.086012 0.941068 0.0518081C0.858492 0.0176043 0.769989 6.65925e-10 0.68061 0C0.591231 -6.65925e-10 0.502727 0.0176043 0.420151 0.0518081C0.337576 0.086012 0.262546 0.136145 0.199346 0.199346C0.136145 0.262546 0.086012 0.337576 0.0518081 0.420151C0.0176043 0.502727 -6.65925e-10 0.591231 0 0.68061C6.65925e-10 0.769989 0.0176043 0.858492 0.0518081 0.941068C0.086012 1.02364 0.136145 1.09867 0.199346 1.16187L3.53747 4.5L0.199346 7.83813C0.136145 7.90133 0.086012 7.97636 0.0518081 8.05893C0.0176043 8.14151 0 8.23001 0 8.31939C0 8.40877 0.0176043 8.49727 0.0518081 8.57985C0.086012 8.66242 0.136145 8.73745 0.199346 8.80065C0.262546 8.86385 0.337576 8.91399 0.420151 8.94819C0.502727 8.9824 0.591231 9 0.68061 9C0.769989 9 0.858492 8.9824 0.941068 8.94819C1.02364 8.91399 1.09867 8.86385 1.16187 8.80065L4.5 5.46253L7.83813 8.80065C7.90133 8.86385 7.97636 8.91399 8.05893 8.94819C8.14151 8.9824 8.23001 9 8.31939 9C8.40877 9 8.49727 8.9824 8.57985 8.94819C8.66242 8.91399 8.73745 8.86385 8.80065 8.80065C8.86385 8.73745 8.91399 8.66242 8.94819 8.57985C8.9824 8.49727 9 8.40877 9 8.31939C9 8.23001 8.9824 8.14151 8.94819 8.05893C8.91399 7.97636 8.86385 7.90133 8.80065 7.83813L5.46253 4.5L8.80065 1.16187C9.06006 0.902469 9.06006 0.465577 8.80065 0.206172Z"
+                      fill="#0156D5"
+                    />
+                  </svg>
+                </div>
+              )}
 
             {/* Clear All button - only show if there are any filters */}
-            {(searchParams.get("tags") ||
-              searchParams.get("sales") ||
-              searchParams.get("feature") ||
-              searchParams.get("price_min") ||
-              searchParams.get("price_max")) && (
+            {(searchParams.get('sort') || searchParams.get('tags') || searchParams.get('sales') || searchParams.get('feature') || searchParams.get('price_min') || searchParams.get('price_max')) && (
               <Link
                 href="/search"
                 className="2xl:!text-base sm:!text-[15px] !text-sm all-btn inline-flex items-center border-b border-transparent hover:border-primary gap-2"
@@ -1506,9 +1581,8 @@ All Categories
                 {generatePageNumbers().map((page) => (
                   <button
                     key={page}
-                    className={`px-3 py-1 w-10 h-10 btn border rounded flex items-center justify-center ${
-                      activePage === page ? "bg-primary text-white" : ""
-                    }`}
+                    className={`px-3 py-1 w-10 h-10 btn border rounded flex items-center justify-center ${activePage === page ? "bg-primary text-white" : ""
+                      }`}
                     onClick={() => handlePageChange(page)}
                   >
                     {page}

@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
 import CountdownTimer from "./countdown-timer";
 import MegaMenu from "./mega-menu";
 import { strapiGet } from "@/lib/api/strapiClient";
-import { themeConfig, URL } from "@/config/theamConfig";
+import { themeConfig } from "@/config/theamConfig";
 import { containsTargetURL } from "@/lib/containsTargetURL";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCart } from "@/contexts/CartContext";
@@ -15,140 +15,6 @@ import AuthModal from "../AuthModal";
 import SideCart from "../SideCart";
 import { usePathname, useRouter } from "next/navigation";
 import { Skeleton } from "@heroui/react";
-
-// Replace the existing mainMenu array with this
-const mainMenu = [
-  {
-    id: 3,
-    label: "Templates & Themes",
-    name: "templates",
-    menu: [
-      {
-        id: 11,
-        label: "WordPress Themes",
-        sub_menu: [
-          {
-            id: 73,
-            label: "Premium Themes",
-            slug: "/premium-themes",
-            tag: null,
-          },
-          { id: 74, label: "Free Themes", slug: "/free-themes", tag: null },
-          {
-            id: 75,
-            label: "Multipurpose Themes",
-            slug: "/multipurpose-themes",
-            tag: null,
-          },
-          { id: 76, label: "Blog Themes", slug: "/business-themes", tag: null },
-          {
-            id: 77,
-            label: "Portfolio Themes",
-            slug: "/portfolio-themes",
-            tag: null,
-          },
-          {
-            id: 78,
-            label: "Creative Themes",
-            slug: "/creative-themes",
-            tag: null,
-          },
-          {
-            id: 79,
-            label: "WooCommerce Themes",
-            slug: "/woocommerce-themes",
-            tag: null,
-          },
-          {
-            id: 80,
-            label: "Minimalist Themes",
-            slug: "/minimalist-themes",
-            tag: null,
-          },
-        ],
-      },
-      {
-        id: 12,
-        label: "Elementor Kits",
-        sub_menu: [
-          {
-            id: 81,
-            label: "Landing Page Kits",
-            slug: "/landing-page-kits",
-            tag: null,
-          },
-          { id: 82, label: "Business Kits", slug: "/business-kits", tag: null },
-          { id: 83, label: "Personal Kits", slug: "/personal-kits", tag: null },
-          { id: 84, label: "Creative Kits", slug: "/creative-kits", tag: null },
-        ],
-      },
-    ],
-  },
-  {
-    id: 4,
-    label: "Plugins",
-    name: "plugins",
-    menu: [
-      {
-        id: 13,
-        label: "WordPress Plugins",
-        sub_menu: [
-          { id: 85, label: "SEO Plugins", slug: "/seo-plugins", tag: null },
-          {
-            id: 86,
-            label: "Security Plugins",
-            slug: "/security-plugins",
-            tag: null,
-          },
-          {
-            id: 87,
-            label: "Performance Optimization",
-            slug: "/performance-optimization",
-            tag: null,
-          },
-          { id: 88, label: "Contact Forms", slug: "/contact-forms", tag: null },
-          { id: 89, label: "Page Builders", slug: "/page-builders", tag: null },
-        ],
-      },
-      {
-        id: 14,
-        label: "PrestaShop Modules",
-        sub_menu: [
-          {
-            id: 90,
-            label: "Payment Gateways",
-            slug: "/payment-gateways",
-            tag: null,
-          },
-          {
-            id: 91,
-            label: "Shipping & Logistics",
-            slug: "/shipping-and-logistics",
-            tag: null,
-          },
-          {
-            id: 92,
-            label: "Marketing & Promotions",
-            slug: "/marketing-and-promotions",
-            tag: null,
-          },
-          {
-            id: 93,
-            label: "Customer Support",
-            slug: "/customer-support",
-            tag: null,
-          },
-          {
-            id: 94,
-            label: "Inventory Management",
-            slug: "/inventory-management",
-            tag: null,
-          },
-        ],
-      },
-    ],
-  },
-];
 
 export default function Header() {
   // for after login start
@@ -165,12 +31,12 @@ export default function Header() {
     window.addEventListener("mousedown", handleClickOutside);
     return () => window.removeEventListener("mousedown", handleClickOutside);
   }, []);
-  // for after login
-  const [isHeaderLoading, setIsHeaderLoading] = useState(true);
-  // for skeleton
+
+  // Separate loading states for menu and settings
+  const [isMenuLoading, setIsMenuLoading] = useState(true);
+  const [isSettingsLoading, setIsSettingsLoading] = useState(true);
 
   const pathname = usePathname();
-
   const router = useRouter();
   const [query, setQuery] = useState("");
 
@@ -182,8 +48,8 @@ export default function Header() {
     }
   };
 
-  // Add this inside the Header component, before the useDisclosure hook
-  const [apiMenu, setApiMenu] = useState(mainMenu);
+  // Initialize apiMenu state as empty array
+  const [apiMenu, setApiMenu] = useState([]);
   const [activeCategory, setActiveCategory] = useState(null);
   const { openAuth, authLoading, isAuthenticated, logout, authUser } =
     useAuth();
@@ -191,6 +57,7 @@ export default function Header() {
 
   useEffect(() => {
     const fetchMenuData = async () => {
+      setIsMenuLoading(true);
       try {
         const [menuResponse] = await Promise.all([
           strapiGet("header-menu", {
@@ -229,77 +96,20 @@ export default function Header() {
         }
       } catch (error) {
         console.error("Error fetching menu data:", error);
-        // Fallback to hardcoded menu if API fails
-        setApiMenu(mainMenu);
+        // Set empty array if API fails
+        setApiMenu([]);
+      } finally {
+        setIsMenuLoading(false);
       }
     };
 
     fetchMenuData();
   }, []);
 
-  const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [headerSettingData, setheaderSettingData] = useState({
-    menu: [
-      {
-        id: 1,
-        label: "Become an author",
-        slug: "/become-an-author",
-        tag: null,
-        active: false,
-      },
-      {
-        id: 2,
-        label: "Partners",
-        slug: "/partners",
-        tag: null,
-        active: false,
-      },
-      {
-        id: 3,
-        label: "Offers",
-        slug: "/offers",
-        tag: null,
-        active: false,
-      },
-      {
-        id: 4,
-        label: "Support",
-        slug: "/support",
-        tag: null,
-        active: false,
-      },
-      {
-        id: 5,
-        label: "Hire an agency",
-        slug: "/hire-an-agency",
-        tag: null,
-        active: false,
-      },
-      {
-        id: 6,
-        label: "Unlimited Downloads",
-        slug: "/unlimited-downloads",
-        tag: null,
-        active: true,
-      },
-    ],
-  });
-
-  const toggleSearch = () => {
-    setIsSearchOpen((prev) => !prev);
-  };
-
-  const closeMenu = useCallback(() => {
-    setIsMenuOpen(false);
-    setActiveCategory(null);
-  }, []);
-
   // Close menu when clicking outside
   useEffect(() => {
     const fetchHeaderSettingData = async () => {
-      setIsHeaderLoading(true);
+      setIsSettingsLoading(true);
       try {
         const [headerSetting] = await Promise.all([
           strapiGet("header-setting", {
@@ -313,17 +123,33 @@ export default function Header() {
         setheaderSettingData(settingsData);
       } catch (error) {
         console.error("Error fetching menu data:", error);
-        // Fallback to hardcoded menu if API fails
+        // Set empty object if API fails
+        setheaderSettingData({});
       } finally {
-        setIsHeaderLoading(false);
+        setIsSettingsLoading(false);
       }
     };
 
     fetchHeaderSettingData();
   }, []);
 
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [headerSettingData, setheaderSettingData] = useState({});
+
+  const toggleSearch = () => {
+    setIsSearchOpen((prev) => !prev);
+  };
+
+  const closeMenu = useCallback(() => {
+    setIsMenuOpen(false);
+    setActiveCategory(null);
+  }, []);
+
   // Add this code right before the `return` statement in the Header component
   const Menu = ({ loading }) => {
+
     const [menuActiveCategory, setMenuActiveCategory] = useState(null);
 
     // Handlers for mouse events
@@ -343,39 +169,39 @@ export default function Header() {
             <div className="flex">
               {!loading
                 ? apiMenu.map(({ name, label }) => (
+                  <div
+                    key={name}
+                    className="relative xl:block hidden"
+                    onMouseEnter={() => handleMouseEnter(name)}
+                  >
                     <div
-                      key={name}
-                      className="relative xl:block hidden"
-                      onMouseEnter={() => handleMouseEnter(name)}
+                      className={cn(
+                        "cursor-pointer flex items-center space-x-1 py-4 px-3",
+                        menuActiveCategory === name &&
+                        "text-primary hover:text-primary border-b border-primary"
+                      )}
                     >
-                      <div
-                        className={cn(
-                          "cursor-pointer flex items-center space-x-1 py-4 px-3",
-                          menuActiveCategory === name &&
-                            "text-primary hover:text-primary border-b border-primary"
-                        )}
+                      <span className="p2">{label}</span>
+                      <svg
+                        width="9"
+                        height="11"
+                        viewBox="0 0 9 11"
+                        fill="none"
                       >
-                        <span className="p2">{label}</span>
-                        <svg
-                          width="9"
-                          height="11"
-                          viewBox="0 0 9 11"
-                          fill="none"
-                        >
-                          <path
-                            d="M4.1612 9.18783C4.35263 9.36422 4.64737 9.36422 4.8388 9.18783L8.8388 5.5023C8.94155 5.40763 9 5.27429 9 5.13459V4.64321C9 4.20715 8.48076 3.98005 8.16057 4.27607L4.83943 7.34657C4.64781 7.52372 4.35219 7.52372 4.16057 7.34657L0.839427 4.27607C0.519237 3.98005 0 4.20715 0 4.64321V5.13459C0 5.27429 0.0584515 5.40763 0.161196 5.5023L4.1612 9.18783Z"
-                            fill="#505050"
-                          />
-                        </svg>
-                      </div>
+                        <path
+                          d="M4.1612 9.18783C4.35263 9.36422 4.64737 9.36422 4.8388 9.18783L8.8388 5.5023C8.94155 5.40763 9 5.27429 9 5.13459V4.64321C9 4.20715 8.48076 3.98005 8.16057 4.27607L4.83943 7.34657C4.64781 7.52372 4.35219 7.52372 4.16057 7.34657L0.839427 4.27607C0.519237 3.98005 0 4.20715 0 4.64321V5.13459C0 5.27429 0.0584515 5.40763 0.161196 5.5023L4.1612 9.18783Z"
+                          fill="#505050"
+                        />
+                      </svg>
                     </div>
-                  ))
+                  </div>
+                ))
                 : [...Array(9)].map((_, idx) => (
-                    <Skeleton
-                      className="my-4 h-5 2xl:w-[115px] xl:w-[100px] w-[85px] rounded-md 1xl:block hidden mr-3"
-                      key={idx}
-                    />
-                  ))}
+                  <Skeleton
+                    className="my-4 h-5 2xl:w-[115px] xl:w-[100px] w-[85px] rounded-md 1xl:block hidden mr-3"
+                    key={idx}
+                  />
+                ))}
             </div>
             <form
               onSubmit={handleSubmit}
@@ -467,7 +293,7 @@ export default function Header() {
     <header className="relative z-50">
       {/* Notification Bar */}
       <div className="bg-primary">
-        {isHeaderLoading ? (
+        {isSettingsLoading ? (
           <div className="loader"></div>
         ) : (
           <div className=" text-white py-[7px] text-center">
@@ -531,7 +357,7 @@ export default function Header() {
 
           {/* Logo */}
           <div className="nav-logo">
-            {isHeaderLoading ? (
+            {isSettingsLoading ? (
               <Skeleton className="rounded-md main-logo-skeleton h-[40px]" />
             ) : (
               headerSettingData?.logo && (
@@ -559,43 +385,43 @@ export default function Header() {
           {/* Desktop Navigation */}
           <nav className="links-content flex items-center justify-between relative">
             <div className="navigation-links">
-              {isHeaderLoading
+              {isSettingsLoading
                 ? // Skeletons based on actual menu length
-                  headerSettingData?.menu?.map((_, index) => (
-                    <Skeleton
-                      key={index}
-                      className="h-5 2xl:w-[115px] xl:w-[100px] w-[85px] rounded-md navigation-skeleton"
-                    />
-                  ))
-                : !isHeaderLoading && headerSettingData?.menu?.length > 0
+                [...Array(6)].map((_, index) => (
+                  <Skeleton
+                    key={index}
+                    className="h-5 2xl:w-[115px] xl:w-[100px] w-[85px] rounded-md navigation-skeleton"
+                  />
+                ))
+                : !isSettingsLoading && headerSettingData?.menu?.length > 0
                   ? // Render actual links
-                    headerSettingData.menu.map((menu, index) => {
-                      const isActive = menu?.active;
-                      const isCurrentPage = menu?.slug === pathname;
+                  headerSettingData.menu.map((menu, index) => {
+                    const isActive = menu?.active;
+                    const isCurrentPage = menu?.slug === pathname;
 
-                      return (
-                        <Link
-                          key={index}
-                          href={menu?.slug}
-                          className={`links
+                    return (
+                      <Link
+                        key={index}
+                        href={menu?.slug}
+                        className={`links
 ${isActive ? "!text-primary" : "!text-black hover:!text-primary"}
 ${isCurrentPage ? "!text-primary" : ""}
 `}
-                        >
-                          {menu?.label}
-                        </Link>
-                      );
-                    })
+                      >
+                        {menu?.label}
+                      </Link>
+                    );
+                  })
                   : [...Array(6)].map((_, index) => (
-                      <Skeleton
-                        key={index}
-                        className="h-5 w-[110px] rounded-md 1xl:block !hidden"
-                      />
-                    ))}
+                    <Skeleton
+                      key={index}
+                      className="h-5 w-[110px] rounded-md 1xl:block !hidden"
+                    />
+                  ))}
             </div>
 
             {/* Search Icon */}
-            {isHeaderLoading ? (
+            {isSettingsLoading ? (
               // Skeleton for search icon button (only on lg and up)
               <Skeleton className="rounded-full w-[23px] h-[23px] animate-pulse 1xl:flex-shrink-0 mr-0 search-svg" />
             ) : (
@@ -626,11 +452,10 @@ ${isCurrentPage ? "!text-primary" : ""}
                   {/* Search Bar */}
                   <form
                     onSubmit={handleSubmit}
-                    className={`h-[74px] absolute z-50 bg-white overflow-hidden transition-all duration-400 ease-in-out flex items-center justify-between !m-0 ${
-                      isSearchOpen
+                    className={`h-[74px] absolute z-50 bg-white overflow-hidden transition-all duration-400 ease-in-out flex items-center justify-between !m-0 ${isSearchOpen
                         ? "w-full opacity-100 z-100 p-2 ps-[35px] right-0"
                         : "w-0 opacity-0 z-0 p-0 right-0"
-                    }`}
+                      }`}
                   >
                     <div className="flex items-center justify-start w-full gap-5">
                       <svg
@@ -685,7 +510,7 @@ ${isCurrentPage ? "!text-primary" : ""}
           {/* Right Side Actions */}
           {/* <div className="button-content lg:space-x-1 sm:space-x-2 space-x-1 nav-icons flex-1 w-[50%] 1xl:justify-start justify-end"> */}
           <div className="button-content nav-icons flex-1 w-[50%] 1xl:justify-start justify-end">
-            {isHeaderLoading ? (
+            {isSettingsLoading ? (
               <Skeleton className="rounded-md schedule-skeleton 1xl:ml-3 schedule-meetings " />
             ) : (
               headerSettingData?.right_menu && (
@@ -725,7 +550,7 @@ ${isCurrentPage ? "!text-primary" : ""}
             {!authLoading &&
               (isAuthenticated ? (
                 <div className="login">
-                  {isHeaderLoading ? (
+                  {isSettingsLoading ? (
                     <Skeleton className="login-skeleton" />
                   ) : (
                     <div className="flex items-center justify-center 1xl:gap-[15px] sm:gap-2">
@@ -776,7 +601,7 @@ ${isCurrentPage ? "!text-primary" : ""}
 
                         {/* Non-button clickable icon */}
                         <div className="after-login-svg hidden">
-                          {isHeaderLoading ? (
+                          {isSettingsLoading ? (
                             <Skeleton className="sm:w-6 sm:h-6 w-4 h-4 rounded-full after-login-svg-skeleton" />
                           ) : (
                             <span
@@ -874,7 +699,7 @@ before:shadow-md before:rounded-sm"
                 </div>
               ) : (
                 <button onClick={() => openAuth("login")} className="login">
-                  {isHeaderLoading ? (
+                  {isSettingsLoading ? (
                     <Skeleton className="login-skeleton" />
                   ) : (
                     <>
@@ -903,7 +728,7 @@ before:shadow-md before:rounded-sm"
               ))}
 
             <div className="right-last-icon">
-              {isHeaderLoading ? (
+              {isSettingsLoading ? (
                 <Skeleton className="rounded-full sm:w-6 sm:h-6 w-4 h-4 mr-2 wishlist-svg " />
               ) : (
                 <Link className="heart" href="/wishlist">
@@ -928,7 +753,7 @@ before:shadow-md before:rounded-sm"
                 </Link>
               )}
 
-              {isHeaderLoading ? (
+              {isSettingsLoading ? (
                 <Skeleton className="rounded-full sm:w-6 sm:h-6 w-4 h-4" />
               ) : (
                 <button className="cart" onClick={toggleCart}>
@@ -959,7 +784,9 @@ before:shadow-md before:rounded-sm"
         </div>
       </div>
 
-      <Menu loading={isHeaderLoading} />
+      {/* Menu */}
+
+      <Menu loading={isMenuLoading} />
 
       {/* Mega Menu */}
       {!isMenuOpen && activeCategory && (
