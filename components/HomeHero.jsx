@@ -33,9 +33,21 @@ export default function HomeHero({
   const handleSubmit = (e) => {
     e.preventDefault();
     const trimmedTerm = searchTerm.trim();
-    if (trimmedTerm === '') return;
 
-    // Replace spaces with hyphens or encodeURIComponent for URL safety
+    // If no search term is entered and no category is selected
+    if (trimmedTerm === '' && selectedCategory === 'All Categories') {
+      router.push('/search');
+      return;
+    }
+
+    // If search term is empty but category is selected
+    if (trimmedTerm === '') {
+      const categorySlug = selectedCategory.toLowerCase().replace(/\s+/g, '-');
+      router.push(`/category/${categorySlug}`);
+      return;
+    }
+
+    // If search term exists
     const querySlug = encodeURIComponent(trimmedTerm);
 
     if (selectedCategory === 'All Categories') {

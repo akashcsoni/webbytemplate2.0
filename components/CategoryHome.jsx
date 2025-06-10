@@ -1,5 +1,6 @@
 import Link from 'next/link'
-import React from 'react'
+import { useRouter, usePathname } from 'next/navigation';
+import React, { useState } from 'react'
 
 const ChevronIcon = () => (
     <span className="mx-2 text-[#505050]">
@@ -26,6 +27,24 @@ const CategoryHome = ({
     description = '',
     breadcrumb = []
 }) => {
+    const router = useRouter();
+    const pathname = usePathname();
+    const [searchTerm, setSearchTerm] = useState('');
+
+    const handleSearch = () => {
+        if (searchTerm.trim()) {
+            const searchParams = new URLSearchParams();
+            searchParams.set('term', searchTerm.trim());
+            router.push(`${pathname}?${searchParams.toString()}`);
+        }
+    };
+
+    const handleKeyPress = (e) => {
+        if (e.key === 'Enter') {
+            handleSearch();
+        }
+    };
+
     return (
         <main className="lg:py-12 md:py-10 py-8">
             {/* Breadcrumb Navigation */}
@@ -62,10 +81,16 @@ const CategoryHome = ({
                     <div className="relative flex items-center lg:mb-8 sm:mb-6 mb-4 border border-gray-100 rounded-[5px] overflow-hidden">
                         <input
                             type="text"
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            onKeyPress={handleKeyPress}
                             placeholder="Search for mockups, Web Templates and More....."
                             className="w-full rounded-l px-4 outline-none lg:h-10 h-9 p2"
                         />
-                        <button className="bg-[#0156d5] text-white lg:py-3 py-2.5 px-[18px] rounded-r flex items-center justify-center">
+                        <button 
+                            onClick={handleSearch}
+                            className="bg-[#0156d5] text-white lg:py-3 py-2.5 px-[18px] rounded-r flex items-center justify-center"
+                        >
                             <svg
                                 xmlns="http://www.w3.org/2000/svg"
                                 width="20"
