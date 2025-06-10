@@ -169,7 +169,7 @@ p,
   @apply lg:flex hidden gap-4;
 }
 .navigation-skeleton:nth-child(1) {
-  @apply 2xl:ml-3;
+  @apply ml-3;
 }
 .author-links-content {
   @apply hidden xl:flex space-x-5 ps-[27px] w-[59%];
