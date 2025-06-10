@@ -986,7 +986,7 @@ div[tabulator-field="productName"] {
   @apply 2xl:!w-[190px] 1xl:!w-[140px] xl:!w-[130px] !w-[140px];
 }
 
-div[tabulator-field="description"] {
+div[tabulator-field="descriptions"] {
   @apply 2xl:!w-[600px] 1xl:!w-[580px] xl:!w-[530px] !w-[560px];
 }
 
