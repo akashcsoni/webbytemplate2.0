@@ -144,6 +144,26 @@ const SearchPageContent = ({ slug }) => {
         "Price": "price"
     };
 
+    // Update useEffect to handle sort from URL
+    useEffect(() => {
+        const sortFromUrl = searchParams.get('sort');
+        if (sortFromUrl && sortOptions[sortFromUrl]) {
+            setSort(sortFromUrl);
+        }
+    }, [searchParams]);
+
+    // Update the sort button click handler
+    const handleSortChange = (tab) => {
+        if (sort === tab) {
+            // Toggle direction if same tab clicked
+            setSortDirection(prev => prev === "asc" ? "desc" : "asc");
+        } else {
+            // Set new tab and default direction
+            setSort(tab);
+            setSortDirection("desc");
+        }
+    };
+
     // Single state for price range
     const [priceRange, setPriceRange] = useState(() => {
         const min = searchParams.get('price_min');
@@ -239,11 +259,10 @@ const SearchPageContent = ({ slug }) => {
         if (params.get('feature')) {
             orderedParams.push(`feature=${params.get('feature')}`);
         }
-        // Only add price parameters if they were changed by user
-        if (priceChangedByUser.current && params.get('price_min')) {
+        if (params.get('price_min')) {
             orderedParams.push(`price_min=${params.get('price_min')}`);
         }
-        if (priceChangedByUser.current && params.get('price_max')) {
+        if (params.get('price_max')) {
             orderedParams.push(`price_max=${params.get('price_max')}`);
         }
 
@@ -468,7 +487,6 @@ const SearchPageContent = ({ slug }) => {
                 const priceMax = searchParams.get('price_max');
                 const sales = searchParams.get('sales')?.split(',').map(slug => slugToTitle(slug)) || [];
                 const features = searchParams.get('feature')?.split(',').map(slug => slugToTitle(slug)) || [];
-                const base = searchParams.get('base') || '';
 
                 // Update search query state from path
                 setSearchQuery(searchFromPath);
@@ -490,8 +508,14 @@ const SearchPageContent = ({ slug }) => {
                     "order": currentDirection
                 };
 
-                // Only add parameters if they exist
-                if (searchFromPath) {
+                // Check if we're in a category route
+                if (segments[1] === 'category') {
+                    // Add category as base parameter
+                    apiParams.base = segments[2];
+                }
+
+                // Add search term if it exists and we're not in a category
+                if (searchFromPath && segments[1] !== 'category') {
                     apiParams.search = searchFromPath;
                 }
 
@@ -513,13 +537,10 @@ const SearchPageContent = ({ slug }) => {
                     apiParams.feature = features.join(',');
                 }
 
-                if (base) {
-                    apiParams.base = base;
-                }
-
                 // Log the filter parameters
                 console.log('Filter Parameters:', {
-                    search: searchFromPath,
+                    base: segments[1] === 'category' ? segments[2] : undefined,
+                    search: segments[1] !== 'category' ? searchFromPath : undefined,
                     tags: urlTags,
                     priceRange: {
                         min: priceMin ? parseInt(priceMin) : undefined,
@@ -527,7 +548,6 @@ const SearchPageContent = ({ slug }) => {
                     },
                     sales: sales,
                     features: features,
-                    base: base,
                     sort: currentSort,
                     order: currentDirection,
                     page: activePage,
@@ -757,6 +777,49 @@ const SearchPageContent = ({ slug }) => {
         );
     };
 
+    // Add this function after the createOrderedUrl function
+    const createCategoryUrl = (categorySlug, searchTerm = '', existingParams = null) => {
+        // Create the base URL with category path
+        let url = `/category/${categorySlug}`;
+        const params = new URLSearchParams();
+
+        // Add existing filters if they exist
+        if (existingParams) {
+            const currentParams = new URLSearchParams(existingParams);
+
+            // Add tags
+            if (currentParams.get('tags')) {
+                params.set('tags', currentParams.get('tags'));
+            }
+
+            // Add sales
+            if (currentParams.get('sales')) {
+                params.set('sales', currentParams.get('sales'));
+            }
+
+            // Add features
+            if (currentParams.get('feature')) {
+                params.set('feature', currentParams.get('feature'));
+            }
+
+            // Add price range
+            if (currentParams.get('price_min')) {
+                params.set('price_min', currentParams.get('price_min'));
+            }
+            if (currentParams.get('price_max')) {
+                params.set('price_max', currentParams.get('price_max'));
+            }
+        }
+
+        // Append query string if we have any parameters
+        const queryString = params.toString();
+        if (queryString) {
+            url += `?${queryString}`;
+        }
+
+        return url;
+    };
+
     return (
         <div className="container px-4 py-8">
             <div className="flex flex-col xl:flex-row xl:gap-[34px]">
@@ -802,168 +865,177 @@ const SearchPageContent = ({ slug }) => {
                         </div>
 
                         <div className="xl:space-y-[30px] space-y-7">
-                            <DropdownSection title="Categories">
-                                {filterLoading ? (
-                                    <div>
-                                        <CategorySkeleton />
-                                    </div>
-                                ) : (
-                                    <>
-                                        <ul className="text-sm 1xl:space-y-[14px] space-y-3 h-44 pr-2 overflow-auto tags">
-                                            <li
-                                                className="flex justify-between items-center rounded cursor-pointer group"
+                            {/* Categories Section */}
+                            {filterLoading ? (
+                                <DropdownSection title="Categories">
+                                    <CategorySkeleton />
+                                </DropdownSection>
+                            ) : filterData?.categories?.length > 0 ? (
+                                <DropdownSection title="Categories">
+                                    <ul className="text-sm 1xl:space-y-[14px] space-y-3 h-44 pr-2 overflow-auto tags">
+                                        <li className="flex justify-between items-center rounded cursor-pointer group">
+                                            <Link
+                                                href="/search"
+                                                className={`p2 group-hover:text-primary flex-1 ${!searchParams.get('tags') && !searchParams.get('sales') && !searchParams.get('feature') && !searchParams.get('price_min') && !searchParams.get('price_max') ? 'font-bold' : ''}`}
                                             >
-                                                <Link
-                                                    href="/search"
-                                                    className={`p2 group-hover:text-primary flex-1 ${!searchParams.get('tags') && !searchParams.get('sales') && !searchParams.get('feature') && !searchParams.get('price_min') && !searchParams.get('price_max') ? 'font-bold' : ''}`}
-                                                >
-                                                    All Categories
-                                                </Link>
-                                                <span className="p2">
-                                                    {filterData?.categories?.reduce((total, cat) => total + cat.products, 0)}
-                                                </span>
-                                            </li>
-                                            {filterData?.categories?.map((cat, index) => {
-                                                return (
-                                                    <li
-                                                        key={index}
-                                                        className="flex justify-between items-center rounded cursor-pointer group"
-                                                    >
-                                                        <span className="p2 group-hover:text-primary">
-                                                            {cat.title}
-                                                        </span>
-                                                        <span className="p2">{cat.products}</span>
-                                                    </li>
-                                                )
-                                            })}
-                                        </ul>
-                                    </>
-                                )}
-                            </DropdownSection>
+                                                All Categories
+                                            </Link>
+                                            <span className="p2">
+                                                {filterData?.categories?.reduce((total, cat) => total + cat.products, 0)}
+                                            </span>
+                                        </li>
+                                        {filterData?.categories?.map((cat, index) => {
+                                            const categorySlug = titleToSlug(cat.title);
+                                            const categoryUrl = createCategoryUrl(
+                                                categorySlug,
+                                                searchQuery,
+                                                searchParams.toString()
+                                            );
 
-                            <DropdownSection title="Tags">
-                                {filterLoading ? (
-                                    <div>
-                                        <div className="w-full h-10 bg-gray-200 rounded mb-3.5 animate-pulse"></div>
-                                        <FilterSkeleton />
-                                    </div>
-                                ) : (
-                                    <>
-                                        <input onChange={(e) => filterTags(e)} type="search" id="search" name="search" className=" w-full h-10 border border-gray-100 outline-none p-3 mb-3.5" placeholder="Search tags here" />
-                                        <ul className="text-sm 1xl:space-y-[14px] space-y-3 h-44 pr-2 overflow-auto tags">
-                                            {searchFilterData?.tags?.map((tag, index) => (
+                                            return (
                                                 <li
                                                     key={index}
-                                                    className="flex items-center justify-between"
+                                                    className="flex justify-between items-center rounded cursor-pointer group"
                                                 >
-                                                    <label className="flex items-center 1xl:space-x-3 space-x-1.5 cursor-pointer">
-                                                        <div className="relative flex items-center justify-center">
-                                                            <input
-                                                                type="checkbox"
-                                                                value={tag?.title}
-                                                                checked={tag?.selected}
-                                                                onChange={() => handleTagChange(tag.title)}
-                                                                className="form-checkbox 1xl:h-[18px] 1xl:w-[18px] w-4 h-4 !rounded-[4px] border-gray-100 border appearance-none checked:bg-primary"
-                                                            />
-                                                            <svg
-                                                                xmlns="http://www.w3.org/2000/svg"
-                                                                width={15}
-                                                                height={15}
-                                                                viewBox="0 0 24 24"
-                                                                className="absolute"
-                                                            >
-                                                                <path
-                                                                    fill="white"
-                                                                    d="m9.55 17.308l-4.97-4.97l.714-.713l4.256 4.256l9.156-9.156l.713.714z"
-                                                                    strokeWidth={1.5}
-                                                                    stroke="white"
-                                                                ></path>
-                                                            </svg>
-                                                        </div>
-                                                        <span className="p2">{tag?.title}</span>
-                                                    </label>
-                                                    <span className="p2">{tag?.count}</span>
+                                                    <Link
+                                                        href={categoryUrl}
+                                                        className="p2 group-hover:text-primary flex-1"
+                                                    >
+                                                        {cat.title}
+                                                    </Link>
+                                                    <span className="p2">{cat.products}</span>
                                                 </li>
-                                            ))}
-                                        </ul>
-                                    </>
-                                )}
-                            </DropdownSection>
+                                            );
+                                        })}
+                                    </ul>
+                                </DropdownSection>
+                            ) : null}
 
-                            <DropdownSection title="Price">
-                                <div className="flex flex-col gap-2 w-full h-full items-start justify-center">
-                                    <div className="w-full max-w-md">
-                                        <Slider
-                                            aria-label="Select a budget"
-                                            formatOptions={{ style: "currency", currency: "USD" }}
-                                            maxValue={1000}
-                                            minValue={0}
-                                            size="sm"
-                                            value={priceRange}
-                                            onChange={handlePriceChange}
-                                            step={10}
-                                        />
-                                        <div className="flex justify-between text-sm text-gray-700 mt-2">
-                                            <span>${priceRange[0]}</span>{" "}
-                                            <span>${priceRange[1]}</span>
+                            {/* Tags Section */}
+                            {filterLoading ? (
+                                <DropdownSection title="Tags">
+                                    <div className="w-full h-10 bg-gray-200 rounded mb-3.5 animate-pulse"></div>
+                                    <FilterSkeleton />
+                                </DropdownSection>
+                            ) : filterData?.tags?.length > 0 ? (
+                                <DropdownSection title="Tags">
+                                    <input onChange={(e) => filterTags(e)} type="search" id="search" name="search" className="w-full h-10 border border-gray-100 outline-none p-3 mb-3.5" placeholder="Search tags here" />
+                                    <ul className="text-sm 1xl:space-y-[14px] space-y-3 h-44 pr-2 overflow-auto tags">
+                                        {searchFilterData?.tags?.map((tag, index) => (
+                                            <li
+                                                key={index}
+                                                className="flex items-center justify-between"
+                                            >
+                                                <label className="flex items-center 1xl:space-x-3 space-x-1.5 cursor-pointer">
+                                                    <div className="relative flex items-center justify-center">
+                                                        <input
+                                                            type="checkbox"
+                                                            value={tag?.title}
+                                                            checked={tag?.selected}
+                                                            onChange={() => handleTagChange(tag.title)}
+                                                            className="form-checkbox 1xl:h-[18px] 1xl:w-[18px] w-4 h-4 !rounded-[4px] border-gray-100 border appearance-none checked:bg-primary"
+                                                        />
+                                                        <svg
+                                                            xmlns="http://www.w3.org/2000/svg"
+                                                            width={15}
+                                                            height={15}
+                                                            viewBox="0 0 24 24"
+                                                            className="absolute"
+                                                        >
+                                                            <path
+                                                                fill="white"
+                                                                d="m9.55 17.308l-4.97-4.97l.714-.713l4.256 4.256l9.156-9.156l.713.714z"
+                                                                strokeWidth={1.5}
+                                                                stroke="white"
+                                                            ></path>
+                                                        </svg>
+                                                    </div>
+                                                    <span className="p2">{tag?.title}</span>
+                                                </label>
+                                                <span className="p2">{tag?.count}</span>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </DropdownSection>
+                            ) : null}
+
+                            {/* Price Section - Only show if there are products */}
+                            {totalProducts > 0 && (
+                                <DropdownSection title="Price">
+                                    <div className="flex flex-col gap-2 w-full h-full items-start justify-center">
+                                        <div className="w-full max-w-md">
+                                            <Slider
+                                                aria-label="Select a budget"
+                                                formatOptions={{ style: "currency", currency: "USD" }}
+                                                maxValue={1000}
+                                                minValue={0}
+                                                size="sm"
+                                                value={priceRange}
+                                                onChange={handlePriceChange}
+                                                step={10}
+                                            />
+                                            <div className="flex justify-between text-sm text-gray-700 mt-2">
+                                                <span>${priceRange[0]}</span>{" "}
+                                                <span>${priceRange[1]}</span>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                            </DropdownSection>
+                                </DropdownSection>
+                            )}
 
-                            <DropdownSection title="Sales">
-                                {filterLoading ? (
-                                    <div>
-                                        <FilterSkeleton />
-                                    </div>
-                                ) : (
-                                    <>
-                                        <ul className="text-sm 1xl:space-y-[14px] space-y-3 h-44 pr-2 overflow-auto tags">
-                                            {filterData?.sales?.map((sale, index) => (
-                                                <li
-                                                    key={index}
-                                                    className="flex items-center justify-between"
-                                                >
-                                                    <label className="flex items-center 1xl:space-x-3 space-x-1.5 cursor-pointer">
-                                                        <div className="relative flex items-center justify-center">
-                                                            <input
-                                                                type="checkbox"
-                                                                value={sale.title}
-                                                                checked={selectedSales.includes(titleToSlug(sale.title))}
-                                                                onChange={() => handleSalesChange(sale.title)}
-                                                                className="form-checkbox 1xl:h-[18px] 1xl:w-[18px] w-4 h-4 !rounded-[4px] border-gray-100 border appearance-none checked:bg-primary"
-                                                            />
-                                                            <svg
-                                                                xmlns="http://www.w3.org/2000/svg"
-                                                                width={11}
-                                                                height={11}
-                                                                viewBox="0 0 24 24"
-                                                                className="absolute"
-                                                            >
-                                                                <path
-                                                                    fill="white"
-                                                                    d="m9.55 17.308l-4.97-4.97l.714-.713l4.256 4.256l9.156-9.156l.713.714z"
-                                                                    strokeWidth={3}
-                                                                    stroke="white"
-                                                                ></path>
-                                                            </svg>
-                                                        </div>
-                                                        <span className="p2">{sale.title}</span>
-                                                    </label>
-                                                    <span className="p2">{sale.count}</span>
-                                                </li>
-                                            ))}
-                                        </ul>
-                                    </>
-                                )}
-                            </DropdownSection>
+                            {/* Sales Section */}
+                            {filterLoading ? (
+                                <DropdownSection title="Sales">
+                                    <FilterSkeleton />
+                                </DropdownSection>
+                            ) : filterData?.sales?.length > 0 ? (
+                                <DropdownSection title="Sales">
+                                    <ul className="text-sm 1xl:space-y-[14px] space-y-3 h-44 pr-2 overflow-auto tags">
+                                        {filterData?.sales?.map((sale, index) => (
+                                            <li
+                                                key={index}
+                                                className="flex items-center justify-between"
+                                            >
+                                                <label className="flex items-center 1xl:space-x-3 space-x-1.5 cursor-pointer">
+                                                    <div className="relative flex items-center justify-center">
+                                                        <input
+                                                            type="checkbox"
+                                                            value={sale.title}
+                                                            checked={selectedSales.includes(titleToSlug(sale.title))}
+                                                            onChange={() => handleSalesChange(sale.title)}
+                                                            className="form-checkbox 1xl:h-[18px] 1xl:w-[18px] w-4 h-4 !rounded-[4px] border-gray-100 border appearance-none checked:bg-primary"
+                                                        />
+                                                        <svg
+                                                            xmlns="http://www.w3.org/2000/svg"
+                                                            width={11}
+                                                            height={11}
+                                                            viewBox="0 0 24 24"
+                                                            className="absolute"
+                                                        >
+                                                            <path
+                                                                fill="white"
+                                                                d="m9.55 17.308l-4.97-4.97l.714-.713l4.256 4.256l9.156-9.156l.713.714z"
+                                                                strokeWidth={3}
+                                                                stroke="white"
+                                                            ></path>
+                                                        </svg>
+                                                    </div>
+                                                    <span className="p2">{sale.title}</span>
+                                                </label>
+                                                <span className="p2">{sale.count}</span>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </DropdownSection>
+                            ) : null}
 
-                            <DropdownSection title="Features">
-                                {filterLoading ? (
-                                    <div>
-                                        <FilterSkeleton />
-                                    </div>
-                                ) : (
+                            {/* Features Section */}
+                            {filterLoading ? (
+                                <DropdownSection title="Features">
+                                    <FilterSkeleton />
+                                </DropdownSection>
+                            ) : filterData?.features?.length > 0 ? (
+                                <DropdownSection title="Features">
                                     <ul className="text-sm 1xl:space-y-[14px] space-y-3 h-44 pr-2 overflow-auto tags">
                                         {filterData?.features?.map((feature, index) => (
                                             <li
@@ -1000,8 +1072,8 @@ const SearchPageContent = ({ slug }) => {
                                             </li>
                                         ))}
                                     </ul>
-                                )}
-                            </DropdownSection>
+                                </DropdownSection>
+                            ) : null}
                         </div>
                     </aside>
                 </div>
@@ -1032,18 +1104,7 @@ const SearchPageContent = ({ slug }) => {
                                             ? "bg-primary text-white border border-primary"
                                             : "bg-white text-black border border-primary/10"
                                             }`}
-                                        onClick={() => {
-                                            if (sort === tab) {
-                                                // Toggle direction if same tab clicked
-                                                setSortDirection((prev) =>
-                                                    prev === "asc" ? "desc" : "asc",
-                                                );
-                                            } else {
-                                                // Set new tab and default direction
-                                                setSort(tab);
-                                                setSortDirection("desc");
-                                            }
-                                        }}
+                                        onClick={() => handleSortChange(tab)}
                                     >
                                         {tab}
                                         {sort === tab && (
@@ -1084,6 +1145,29 @@ const SearchPageContent = ({ slug }) => {
                             )}
                         </div>
                     </div>
+
+                    {/* Add sort filter tag */}
+                    {searchParams.get('sort') && (
+                        <div className="flex items-center justify-center divide-x divide-primary/10 bg-blue-300 border border-primary/10 p-[1px] rounded-[4px] flex-shrink-0">
+                            <p className="p2 sm:px-2 px-1">
+                                Sort : <span className="!text-black">{sort}</span>
+                            </p>
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                width="27"
+                                height="27"
+                                viewBox="0 0 9 9"
+                                fill="none"
+                                className="px-2 flex-shrink-0 cursor-pointer"
+                                onClick={() => removeFilter('sort')}
+                            >
+                                <path
+                                    d="M8.80065 0.206172C8.7375 0.142889 8.66249 0.0926821 8.5799 0.0584261C8.49732 0.02417 8.40879 0.00653721 8.31939 0.00653721C8.22999 0.00653721 8.14146 0.02417 8.05888 0.0584261C7.97629 0.0926821 7.90128 0.142889 7.83813 0.206172L4.5 3.53747L1.16187 0.199346C1.09867 0.136145 1.02364 0.086012 0.941068 0.0518081C0.858492 0.0176043 0.769989 6.65925e-10 0.68061 0C0.591231 -6.65925e-10 0.502727 0.0176043 0.420151 0.0518081C0.337576 0.086012 0.262546 0.136145 0.199346 0.199346C0.136145 0.262546 0.086012 0.337576 0.0518081 0.420151C0.0176043 0.502727 -6.65925e-10 0.591231 0 0.68061C6.65925e-10 0.769989 0.0176043 0.858492 0.0518081 0.941068C0.086012 1.02364 0.136145 1.09867 0.199346 1.16187L3.53747 4.5L0.199346 7.83813C0.136145 7.90133 0.086012 7.97636 0.0518081 8.05893C0.0176043 8.14151 0 8.23001 0 8.31939C0 8.40877 0.0176043 8.49727 0.0518081 8.57985C0.086012 8.66242 0.136145 8.73745 0.199346 8.80065C0.262546 8.86385 0.337576 8.91399 0.420151 8.94819C0.502727 8.9824 0.591231 9 0.68061 9C0.769989 9 0.858492 8.9824 0.941068 8.94819C1.02364 8.91399 1.09867 8.86385 1.16187 8.80065L4.5 5.46253L7.83813 8.80065C7.90133 8.86385 7.97636 8.91399 8.05893 8.94819C8.14151 8.9824 8.23001 9 8.31939 9C8.40877 9 8.49727 8.9824 8.57985 8.94819C8.66242 8.91399 8.73745 8.86385 8.80065 8.80065C8.86385 8.73745 8.91399 8.66242 8.94819 8.57985C8.9824 8.49727 9 8.40877 9 8.31939C9 8.23001 8.9824 8.14151 8.94819 8.05893C8.91399 7.97636 8.86385 7.90133 8.80065 7.83813L5.46253 4.5L8.80065 1.16187C9.06006 0.902469 9.06006 0.465577 8.80065 0.206172Z"
+                                    fill="#0156D5"
+                                />
+                            </svg>
+                        </div>
+                    )}
 
                     {/* template categories */}
                     <div className="flex items-center justify-between w-full xl:hidden sm:mb-6 mb-[15px] ">
