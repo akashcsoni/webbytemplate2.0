@@ -315,7 +315,7 @@ export default function Header() {
         console.error("Error fetching menu data:", error);
         // Fallback to hardcoded menu if API fails
       } finally {
-        setIsHeaderLoading(true);
+        setIsHeaderLoading(false);
       }
     };
 
