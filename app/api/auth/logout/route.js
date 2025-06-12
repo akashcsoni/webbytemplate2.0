@@ -8,6 +8,7 @@ export async function POST() {
         cookieStore.delete('authToken')
         cookieStore.delete('authUser')
         cookieStore.delete('cart_id')
+        cookieStore.delete('wishlist_id')
 
         return NextResponse.json(
             { success: true, message: "Logged out successfully" },

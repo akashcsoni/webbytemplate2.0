@@ -199,8 +199,9 @@ function OtpModal({ isOpen, onClose, identifier }) {
         if (!validateOtp()) return
         setIsSubmitting(true)
         const cart_id = Cookies.get('cart_id');
+        const wishlist_id = Cookies.get('wishlist_id');
         try {
-            const response = await strapiPost("verify-otp", { email: identifier, otp: otpValues.join(""), cart_id: cart_id }, themeConfig.TOKEN)
+            const response = await strapiPost("verify-otp", { email: identifier, otp: otpValues.join(""), cart_id: cart_id, wishlist_id: wishlist_id }, themeConfig.TOKEN)
 
             if (response && response.jwt) {
 

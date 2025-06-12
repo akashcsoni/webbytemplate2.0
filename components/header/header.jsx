@@ -648,7 +648,7 @@ before:shadow-md before:rounded-sm"
                                   </Link>
                                 </li>
                                 <li className="hover:bg-blue-300 group md:py-[10px] md:px-5 py-2 px-3">
-                                  <Link href="javascript:;">
+                                  <Link href="/wishlist">
                                     <p className="block text-gray-800 group-hover:text-primary p2">
                                       Wishlist
                                     </p>

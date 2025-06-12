@@ -53,7 +53,7 @@ const SubscribeSection = ({
     };
 
     return (
-        <div className="xl:pt-[35px] sm:pt-[30px] pt-5">
+        <div className="xl:pt-[35px] sm:pt-[30px] pt-5 relative">
             <div className="w-full bg-primary py-10">
                 <div className="container mx-auto">
                     <div className="mx-auto flex flex-col lg:flex-row items-center justify-between 2xl:gap-[230px] xl:gap-[140px] lg:gap-[65px] sm:gap-6 gap-4">
