@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { CartProvider } from "@/contexts/CartContext";
 import { Toaster } from "react-hot-toast";
+import { WishListProvider } from "@/contexts/WishListContext";
 
 export function Providers({ children }) {
   const router = useRouter();
@@ -15,7 +16,9 @@ export function Providers({ children }) {
       <Toaster position="top-right" />
       <AuthProvider>
         <CartProvider>
-          {children}
+          <WishListProvider>
+            {children}
+          </WishListProvider>
         </CartProvider>
       </AuthProvider>
     </HeroUIProvider>

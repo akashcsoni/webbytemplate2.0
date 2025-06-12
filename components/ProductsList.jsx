@@ -84,7 +84,7 @@ export default function ProductsList(props) {
   const bgClass = section_layout === "with_bg" ? "bg-gray-50" : "";
 
   return (
-    <section className={`xl:py-[35px] md:py-[30px] py-5 ${bgClass}`}>
+    <section className={`xl:py-[35px] md:py-[30px] py-5 relative  ${bgClass}`}>
       <div className={`${section_layout}`}></div>
       <div className="container mx-auto relative">
         <div>
