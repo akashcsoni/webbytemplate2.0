@@ -22,6 +22,7 @@ export function WishListProvider({ children }) {
 
     const isLoggedIn = isAuthenticated
     const userId = authUser?.documentId || authUser?.id
+    const user_Id = authUser?.id
 
     // Fetch auth session
     const fetchSession = async () => {
@@ -278,38 +279,17 @@ export function WishListProvider({ children }) {
         }
     };
 
-    const wishlistTocart = async (wishlistItems) => {
+    const wishlistTocart = async () => {
         try {
 
             setIsLoading(true);
 
-            let currentId = wishlistId;
-
-            // If no wishlist exists, create one
-            if (!currentId) {
-                currentId = await createNewWishlist(isLoggedIn);
-                if (!currentId) {
-                    console.error("Failed to create new wishlist");
-                    return;
-                }
-                await fetchWishlistById(currentId);
-            }
-
-            // Prepare the wishlist data
-            const wishlistData = {
-                products: wishlistItems,
-                ...(userId && { user: userId })
-            };
-
-            console.log("Updating wishlist with data:", wishlistData); // Debug log
-
-            const res = await strapiPut(`carts/${currentId}`, wishlistData, themeConfig.TOKEN);
-
-            if (res?.data) {
-                const { id, totalPrice, products } = res.data;
-                setWishListId(id);
-                setTotalPrice(totalPrice || 0);
-                setWishlistItems(products || []);
+            const res = await strapiPost(`wishlist/login-user-data/${user_Id}`, themeConfig.TOKEN);
+            
+            if (res?.result) {
+                setWishListId(null);
+                setTotalPrice(0);
+                setWishlistItems([]);
             } else {
                 console.error("Invalid response from wishlist update:", res);
                 throw new Error("Failed to update wishlist");

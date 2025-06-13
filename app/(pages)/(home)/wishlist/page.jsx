@@ -156,7 +156,7 @@ export default function wishlistPage() {
                       Remove all
                     </button>
                     
-                    {/* <button onClick={() => wishlistTocart(wishlistItems)} className="btn btn-primary gap-[10px] font-medium">
+                    <button onClick={() => wishlistTocart()} className="btn btn-primary gap-[10px] font-medium">
                       Add all items to cart
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -172,7 +172,7 @@ export default function wishlistPage() {
                           fill="currentColor"
                         />
                       </svg>
-                    </button> */}
+                    </button>
                   </>
                 )
               }
