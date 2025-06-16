@@ -1,18 +1,23 @@
 "use client"
 import { useState } from "react"
 import { Modal, ModalContent, ModalHeader, ModalBody, Button, useDisclosure } from "@heroui/react"
+import { strapiPost } from "@/lib/api/strapiClient"
 
 const SinglePageModal = ({ product_id }) => {
   const { isOpen, onOpen, onOpenChange } = useDisclosure()
 
   const [form, setForm] = useState({
     email: "",
-    product_id: product_id,
-    description: "",
+    product: product_id,
+    message: "",
     agreed: false,
+    type: 'product-inquiry'
   })
 
   const [errors, setErrors] = useState({})
+  const [apiErrors, setApiErrors] = useState('')
+  const [successMessage, setSuccessMessage] = useState('')
+  const [isLoading, setIsLoading] = useState(false)
 
   const validateEmail = (email) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
@@ -30,10 +35,10 @@ const SinglePageModal = ({ product_id }) => {
       newErrors.email = "Please enter a valid email address."
     }
 
-    // Description validation
-    const description = form.description.trim()
-    if (!description) {
-      newErrors.description = "Description is required."
+    // message validation
+    const message = form.message.trim()
+    if (!message) {
+      newErrors.message = "Message is required."
     }
 
     // Terms agreement validation
@@ -51,6 +56,9 @@ const SinglePageModal = ({ product_id }) => {
     if (errors[name]) {
       setErrors((prev) => ({ ...prev, [name]: undefined }))
     }
+    // Clear success and API error messages when user starts typing
+    setSuccessMessage('')
+    setApiErrors('')
   }
 
   const handleCheckboxChange = () => {
@@ -60,24 +68,47 @@ const SinglePageModal = ({ product_id }) => {
     }
   }
 
-  const contact_for_product = (event) => {
+  const contact_for_product = async (event) => {
     event.preventDefault()
+    setSuccessMessage('')
+    setApiErrors('')
+    setIsLoading(true)
 
     const isInquiryValid = validateForm()
 
     if (!isInquiryValid) {
+      setIsLoading(false)
       console.warn("Product Inquiry form is invalid.")
       return
     } else {
-      console.log("Product Inquiry form data", form)
-      document.getElementById("ProductInquiry").reset()
-      setForm({
-        email: "",
-        product_id: product_id,
-        description: "",
-        agreed: false,
-      })
-      onOpenChange(false)
+      try {
+        const response = await strapiPost("contact-requests", form)
+        if (response) {
+          if (response.data) {
+            setSuccessMessage("Your inquiry has been sent successfully! We'll get back to you soon.")
+            document.getElementById("ProductInquiry").reset()
+            setForm({
+              email: "",
+              product: product_id,
+              message: "",
+              agreed: false,
+              type: 'product-inquiry'
+            })
+            // Close modal after 2 seconds on success
+            setTimeout(() => {
+              onOpenChange(false)
+            }, 2000)
+          } else {
+            setApiErrors(response.message || "Failed to send inquiry. Please try again.")
+          }
+        }
+      } catch (error) {
+        console.log(error, 'error')
+        setApiErrors("An error occurred while sending your inquiry. Please try again.")
+      } finally {
+        setIsLoading(false)
+        console.log('finally')
+      }
     }
   }
 
@@ -124,6 +155,16 @@ const SinglePageModal = ({ product_id }) => {
                   {/* Left - Form */}
                   <div className="left-form">
                     <form id="ProductInquiry" onSubmit={contact_for_product} className="xl:space-y-4 space-y-3">
+                      {apiErrors && (
+                        <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded relative mb-4" role="alert">
+                          <span className="block sm:inline">{apiErrors}</span>
+                        </div>
+                      )}
+                      {successMessage && (
+                        <div className="bg-green-50 border border-green-200 text-green-600 px-4 py-3 rounded relative mb-4" role="alert">
+                          <span className="block sm:inline">{successMessage}</span>
+                        </div>
+                      )}
                       <div className="grid">
                         <label className="p2 !text-black">Company email</label>
                         <input
@@ -132,6 +173,7 @@ const SinglePageModal = ({ product_id }) => {
                           onChange={(e) => handleChange("email", e.target.value)}
                           placeholder="Email address"
                           className={inputClass("email")}
+                          disabled={isLoading}
                         />
                         {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
                       </div>
@@ -139,12 +181,13 @@ const SinglePageModal = ({ product_id }) => {
                       <div className="h-full">
                         <label className="p2 !text-black">How can we help?</label>
                         <textarea
-                          value={form.description}
-                          onChange={(e) => handleChange("description", e.target.value)}
+                          value={form.message}
+                          onChange={(e) => handleChange("message", e.target.value)}
                           placeholder="Let's talk now..."
-                          className={inputClass("description")}
+                          className={inputClass("message")}
+                          disabled={isLoading}
                         />
-                        {errors.description && <p className="text-red-500 text-xs mt-1">{errors.description}</p>}
+                        {errors.message && <p className="text-red-500 text-xs mt-1">{errors.message}</p>}
                       </div>
 
                       <div className="flex items-start gap-2">
@@ -154,6 +197,7 @@ const SinglePageModal = ({ product_id }) => {
                           checked={form.agreed}
                           onChange={handleCheckboxChange}
                           className="mt-1"
+                          disabled={isLoading}
                         />
                         <label htmlFor="agreed" className="p2 md:pb-4 sm:pb-2 pb-1">
                           By clicking "Talk to WebbyTemplate", I acknowledge that I have read and understood the{" "}
@@ -162,8 +206,22 @@ const SinglePageModal = ({ product_id }) => {
                       </div>
                       {errors.agreed && <p className="text-red-500 text-xs mt-1">{errors.agreed}</p>}
 
-                      <button type="submit" className="btn btn-primary">
-                        Talk to WebbyTemplate
+                      <button 
+                        type="submit" 
+                        className="btn btn-primary relative"
+                        disabled={isLoading}
+                      >
+                        {isLoading ? (
+                          <>
+                            <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white inline-block" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            Processing...
+                          </>
+                        ) : (
+                          "Talk to WebbyTemplate"
+                        )}
                       </button>
                     </form>
                   </div>
