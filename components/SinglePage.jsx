@@ -640,9 +640,8 @@ export default function SinglePage({ pageData }) {
                     )}
                   </div>
                 )}
-
                 {/* contact sales */}
-                {isWhiteLabel && <SinglePageModal product_id={pageData?.id} />}
+                {isWhiteLabel && <SinglePageModal product_id={pageData?.documentId} />}
               </div>
 
               {/* Related Topics */}
