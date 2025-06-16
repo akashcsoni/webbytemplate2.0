@@ -1,5 +1,6 @@
 "use client";
 
+import EmptyWishlist from "@/components/emptywishlist/page";
 import { useCart } from "@/contexts/CartContext";
 import { useWishlist } from "@/contexts/WishListContext";
 import { Image } from "@heroui/react";
@@ -155,7 +156,7 @@ export default function wishlistPage() {
                       </svg>
                       Remove all
                     </button>
-                    
+
                     <button onClick={() => wishlistTocart()} className="btn btn-primary gap-[10px] font-medium">
                       Add all items to cart
                       <svg
@@ -181,9 +182,7 @@ export default function wishlistPage() {
         </div>
 
         {wishlistItems?.length <= 0 ? (
-          <div className="text-center py-12">
-            <h2 className="text-2xl font-medium mb-2">Your shopping wishlist is empty</h2>
-          </div>
+          <EmptyWishlist />
         ) : (
           <div className="overflow-auto">
             <table className="w-full min-w-[992px] overflow-auto">

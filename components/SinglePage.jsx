@@ -46,6 +46,7 @@ function FeatureItem({ text }) {
 }
 
 export default function SinglePage({ pageData }) {
+
   const { addToCart, openCart, cartItems } = useCart();
   const { addToWishlist, wishlistItems } = useWishlist();
   const [wishlistLoading, setWishlistLoading] = useState(false);
@@ -593,7 +594,7 @@ export default function SinglePage({ pageData }) {
                           </svg>
                           {wishlistLoading
                             ? "Processing..."
-                            : isProductInCart
+                            : isProductInWishlist
                               ? "Update Wishlist"
                               : "Add to Wishlist"}
                         </button>
