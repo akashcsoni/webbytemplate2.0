@@ -1,5 +1,7 @@
 'use client';
 
+import { themeConfig } from '@/config/theamConfig';
+import { strapiPost } from '@/lib/api/strapiClient';
 import Link from 'next/link';
 import React, { useState } from 'react';
 
@@ -9,8 +11,10 @@ const SubscribeSection = ({
     check_box = 'I accept the Terms of Service and <a href="/privacy-policy" className="underline">Privacy Policy</a>.',
     email_input = true,
 }) => {
+    const [loading, setloading] = useState(false)
     const [email, setEmail] = useState('');
     const [emailError, setEmailError] = useState('');
+    const [succsessMessage, setSuccsessMessage] = useState('');
     const [checkboxChecked, setCheckboxChecked] = useState(false);
     const [checkboxError, setCheckboxError] = useState('');
 
@@ -19,7 +23,10 @@ const SubscribeSection = ({
         return regex.test(value);
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
+
+        setloading(true);
+
         e.preventDefault();
 
         let valid = true;
@@ -41,14 +48,32 @@ const SubscribeSection = ({
         if (!checkboxChecked) {
             setCheckboxError('You must accept the terms.');
             valid = false;
+            setloading(false);
         }
 
         if (valid) {
-            console.log('Form submitted with:', { email });
+            try {
+                const response = await strapiPost("contact-requests", { email, type: 'subscribe' })
 
-            // ✅ Reset form fields
-            setEmail('');
-            setCheckboxChecked(false);
+                if (response) {
+                    if (response.data) {
+                        setSuccsessMessage(response.message)
+                        // ✅ Reset form fields
+                        setEmail('');
+                        setCheckboxChecked(false);
+                        setTimeout(() => {
+                            setSuccsessMessage(null)
+                        }, 2000);
+                    } else {
+                        setEmailError(response.message)
+                    }
+                }
+            } catch (error) {
+                console.log(error, 'error')
+            } finally {
+                console.log('finally')
+                setloading(false);
+            }
         }
     };
 
@@ -80,7 +105,7 @@ const SubscribeSection = ({
                                                 type="submit"
                                                 className="btn btn-primary font-medium whitespace-nowrap"
                                             >
-                                                Subscribe
+                                                {loading ? "Processing..." : 'Subscribe'}
                                             </button>
                                         </div>
                                         {emailError && (
@@ -103,6 +128,12 @@ const SubscribeSection = ({
                                     {checkboxError && (
                                         <p className="text-red-500 text-sm mt-1">{checkboxError}</p>
                                     )}
+
+                                    {
+                                        succsessMessage && (
+                                            <p className="text-green-500 text-sm mt-1">{succsessMessage}</p>
+                                        )
+                                    }
                                 </form>
                             </div>
                         )}
