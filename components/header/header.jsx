@@ -292,36 +292,39 @@ export default function Header() {
   return (
     <header className="relative z-50">
       {/* Notification Bar */}
-      <div className="bg-primary">
+      
+      {/* <div className="bg-primary">
         {isSettingsLoading ? (
           <div className="loader"></div>
         ) : (
-          <div className=" text-white py-[7px] text-center">
-            <div className="container mx-auto sm:flex md:items-center items-start justify-center hidden">
-              <CountdownTimer />
-            </div>
+          <>
+            <div className=" text-white py-[7px] text-center">
+              <div className="container mx-auto sm:flex md:items-center items-start justify-center hidden">
+                <CountdownTimer />
+              </div>
 
-            <div className="flex items-center justify-center text-white text-sm gap-1 sm:hidden">
-              <Image
-                src="/images/fire.png"
-                alt="WebbyTemplate"
-                width={14}
-                height={14}
-                className="w-[14px] h-[14px] mb-0.5"
-              />
-              10% OFF (Up to $10)! Code: WEBBY10
-              <Image
-                src="/images/time.png"
-                alt="WebbyTemplate"
-                width={14}
-                height={14}
-                className="w-[14px] h-[15px] mb-1"
-              />
-              Hurry!
+              <div className="flex items-center justify-center text-white text-sm gap-1 sm:hidden">
+                <Image
+                  src="/images/fire.png"
+                  alt="WebbyTemplate"
+                  width={14}
+                  height={14}
+                  className="w-[14px] h-[14px] mb-0.5"
+                />
+                10% OFF (Up to $10)! Code: WEBBY10
+                <Image
+                  src="/images/time.png"
+                  alt="WebbyTemplate"
+                  width={14}
+                  height={14}
+                  className="w-[14px] h-[15px] mb-1"
+                />
+                Hurry!
+              </div>
             </div>
-          </div>
+          </>
         )}
-      </div>
+      </div> */}
 
       {/* Main Navigation */}
       <div className="bg-white xl:border-b border-primary/10">
@@ -453,8 +456,8 @@ ${isCurrentPage ? "!text-primary" : ""}
                   <form
                     onSubmit={handleSubmit}
                     className={`h-[74px] absolute z-50 bg-white overflow-hidden transition-all duration-400 ease-in-out flex items-center justify-between !m-0 ${isSearchOpen
-                        ? "w-full opacity-100 z-100 p-2 ps-[35px] right-0"
-                        : "w-0 opacity-0 z-0 p-0 right-0"
+                      ? "w-full opacity-100 z-100 p-2 ps-[35px] right-0"
+                      : "w-0 opacity-0 z-0 p-0 right-0"
                       }`}
                   >
                     <div className="flex items-center justify-start w-full gap-5">
