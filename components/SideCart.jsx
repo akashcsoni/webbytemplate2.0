@@ -3,9 +3,11 @@
 import { useCart } from "@/contexts/CartContext";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import React, { useState } from "react";
 
 export default function SideCart() {
   const router = useRouter();
+  const [removingItemId, setRemovingItemId] = useState(null);
 
   const {
     isCartOpen,
@@ -19,7 +21,11 @@ export default function SideCart() {
     if (cartItem) {
       if (cartItem?.product) {
         if (cartItem?.product?.documentId) {
+          // Set the removing item ID to trigger the animation
+          setRemovingItemId(cartItem.id);
           removeFromCart(cartItem?.product?.documentId);
+
+          // Match this duration with your CSS transition duration
         }
       }
     }
@@ -65,7 +71,7 @@ export default function SideCart() {
           </button>
         </div>
 
-        <div className="overflow-y-auto sm:max-h-[calc(100vh-235px)] max-h-[calc(100vh-210px)] sm:p-5 p-3 space-y-[25px] h-full">
+        <div className="overflow-hidden sm:max-h-[calc(100vh-235px)] max-h-[calc(100vh-210px)] sm:p-5 p-3 space-y-[25px] h-full">
           {Array.isArray(cartItems) && cartItems?.length > 0 ? (
             cartItems?.map((item) => {
               const imageUrl = item?.product?.grid_image?.url
@@ -74,10 +80,16 @@ export default function SideCart() {
               const title = item?.product?.title || "No title";
               const price = item?.total?.toFixed(2) || "0.00";
 
+              const isRemoving = removingItemId === item.id; // Check if the item is being removed
+
               return (
                 <div
                   key={item?.id || Math.random()}
-                  className="flex items-start sm:gap-[18px] gap-3"
+                  className={`flex items-start sm:gap-[18px] gap-3 transition-all ease-in-out duration-300 ${
+                    isRemoving
+                      ? "opacity-0 translate-x-full"
+                      : "opacity-100 translate-x-0"
+                  }`}
                 >
                   <img
                     src={imageUrl}
@@ -97,6 +109,7 @@ export default function SideCart() {
                   <button
                     onClick={() => removeProductFromCart(item)}
                     className="text-gray-400 hover:text-red-500 sm:ml-[10px] mt-1"
+                    aria-label="Remove item"
                   >
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
@@ -127,10 +140,9 @@ export default function SideCart() {
                 width="75"
                 height="75"
                 viewBox="0 0 126 126"
-                                  fill="none"
-                                  className="xl:mb-7 lg:mb-5 sm:mb-4 mb-3  lg:w-[75px] lg:h-[75px] sm:w-[70px] sm:h-[70px] w-[55px] h-[55px]"
+                fill="none"
+                className="xl:mb-7 lg:mb-5 sm:mb-4 mb-3  lg:w-[75px] lg:h-[75px] sm:w-[70px] sm:h-[70px] w-[55px] h-[55px]"
               >
-                
                 <g mask="url(#mask0_4726_887)">
                   <path
                     d="M3.73411 6.5023C3.41255 6.18075 3.21491 5.75845 3.17188 5.30959V5.11455C3.17188 4.59737 3.37731 4.10138 3.74301 3.73569C4.10871 3.36999 4.6047 3.16455 5.12188 3.16455H9.02007C14.1381 3.16455 17.1839 6.40203 19.1387 10.2137C20.4827 12.8451 21.484 16.1288 22.3716 19.1953L22.8941 21.0001H24.773H116.398C117.387 21.0005 118.363 21.23 119.248 21.6705C120.133 22.1111 120.904 22.7509 121.501 23.5396C122.097 24.3283 122.503 25.2446 122.686 26.2164C122.869 27.1878 122.824 28.1883 122.555 29.1395C122.555 29.1399 122.555 29.1404 122.555 29.1409L109.242 76.0846C108.331 79.2862 106.402 82.1036 103.746 84.1096C101.089 86.1155 97.8511 87.2005 94.5226 87.2001H49.3192C45.9629 87.2012 42.6986 86.0988 40.0306 84.0625C37.363 82.0266 35.4387 79.17 34.5542 75.9329C34.5541 75.9325 34.554 75.9321 34.5539 75.9317L28.8404 54.9734L28.8176 54.8896L28.789 54.8076C28.7742 54.7652 28.7607 54.7222 28.7487 54.6788L28.7432 54.6589L28.7374 54.6391L19.5615 23.5158L19.5602 23.5116L18.6728 20.5209C18.6537 20.4547 18.6345 20.3885 18.6154 20.3223C17.7657 17.3812 16.9276 14.4803 15.65 11.9925C14.8644 10.4609 13.9788 9.1992 12.8419 8.33152C11.6205 7.3993 10.312 7.07345 9.01118 7.07345H5.11297C4.5958 7.07345 4.09981 6.868 3.73411 6.5023ZM57.3206 119.622C55.2859 121.657 52.5261 122.8 49.6485 122.8C46.7709 122.8 44.0112 121.657 41.9764 119.622C39.9416 117.587 38.7985 114.827 38.7985 111.95C38.7985 109.072 39.9416 106.313 41.9764 104.278C44.0112 102.243 46.7709 101.1 49.6485 101.1C52.5261 101.1 55.2859 102.243 57.3206 104.278C59.3554 106.313 60.4985 109.072 60.4985 111.95C60.4985 114.827 59.3554 117.587 57.3206 119.622ZM101.821 119.622C99.7859 121.657 97.0261 122.8 94.1485 122.8C91.2709 122.8 88.5112 121.657 86.4764 119.622C84.4416 117.587 83.2985 114.827 83.2985 111.95C83.2985 109.072 84.4416 106.313 86.4764 104.278C88.5112 102.243 91.2709 101.1 94.1485 101.1C97.0261 101.1 99.7859 102.243 101.821 104.278C103.856 106.313 104.999 109.072 104.999 111.95C104.999 114.827 103.856 117.587 101.821 119.622Z"
@@ -143,12 +155,16 @@ export default function SideCart() {
                   />
                 </g>
               </svg>
-              <h5 className="lg:mb-3 sm:mb-2 mb-1">Your shopping cart is empty</h5>
+              <h5 className="lg:mb-3 sm:mb-2 mb-1">
+                Your shopping cart is empty
+              </h5>
               <p className="p2 lg:mb-[26px] sm:mb-5 mb-3 sm:px-5">
                 Looks like you have not added anything to your cart. Go ahead &
                 explore top categories.
               </p>
-              <Link href="/" className="btn btn-primary">Continue Shopping</Link>
+              <Link href="/" className="btn btn-primary">
+                Continue Shopping
+              </Link>
             </div>
           )}
         </div>

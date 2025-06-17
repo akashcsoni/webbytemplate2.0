@@ -5,13 +5,19 @@ import { useCart } from "@/contexts/CartContext";
 import { useWishlist } from "@/contexts/WishListContext";
 import { Image } from "@heroui/react";
 import Link from "next/link";
-import React from "react";
-
+import React, { useState } from "react";
 
 export default function wishlistPage() {
-
-  const { wishlistItems, isLoading, removeFromWishlist, setIsLoading, clearToWishlist, wishlistTocart } = useWishlist();
+  const {
+    wishlistItems,
+    isLoading,
+    removeFromWishlist,
+    setIsLoading,
+    clearToWishlist,
+    wishlistTocart,
+  } = useWishlist();
   const { addToCart, openCart } = useCart();
+  const [removingItemId, setRemovingItemId] = useState(null);
 
   const LoadingSkeleton = () => (
     <div className="animate-pulse">
@@ -90,23 +96,26 @@ export default function wishlistPage() {
       if (wishlistItem?.product) {
         if (wishlistItem?.product?.documentId) {
           removeFromWishlist(wishlistItem?.product?.documentId);
+          setRemovingItemId(wishlistItem.id); // Set the item ID to trigger animation
         }
       }
     }
-  }
+  };
 
   const handleAddToCart = async (wishlistItem) => {
-
     if (!wishlistItem) {
       console.error("wishlistItem is missing.");
       return;
     }
 
-    setIsLoading(true)
+    setIsLoading(true);
 
     try {
       const cartData = {
-        product: wishlistItem?.product?.documentId || wishlistItem?.product?.id || null,
+        product:
+          wishlistItem?.product?.documentId ||
+          wishlistItem?.product?.id ||
+          null,
         extra_info: wishlistItem?.extra_info,
       };
 
@@ -120,7 +129,7 @@ export default function wishlistPage() {
     } catch (error) {
       console.error("Add to cart failed:", error);
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
       openCart(true);
     }
   };
@@ -135,48 +144,51 @@ export default function wishlistPage() {
           </div>
           <div className="flex items-center">
             <div className="flex sm:gap-[18px] gap-2 flex-wrap xl:p-4 sm:p-3">
-
-              {
-                !wishlistItems?.length <= 0 && (
-                  <>
-                    <button onClick={() => clearToWishlist()} className="btn btn-outline-primary gap-[10px] font-medium">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="18"
-                        height="19"
-                        viewBox="0 0 18 19"
-                        fill="none"
-                      >
-                        <g clipPath="url(#clip0_4731_7318)">
-                          <path
-                            d="M7.2 4.1H10.8C10.8 3.62261 10.6104 3.16477 10.2728 2.82721C9.93523 2.48964 9.47739 2.3 9 2.3C8.52261 2.3 8.06477 2.48964 7.72721 2.82721C7.38964 3.16477 7.2 3.62261 7.2 4.1ZM5.4 4.1C5.4 3.14522 5.77928 2.22955 6.45442 1.55442C7.12955 0.879285 8.04522 0.5 9 0.5C9.95478 0.5 10.8705 0.879285 11.5456 1.55442C12.2207 2.22955 12.6 3.14522 12.6 4.1H17.1C17.3387 4.1 17.5676 4.19482 17.7364 4.3636C17.9052 4.53239 18 4.7613 18 5C18 5.23869 17.9052 5.46761 17.7364 5.6364C17.5676 5.80518 17.3387 5.9 17.1 5.9H16.3062L15.5088 15.206C15.4321 16.1046 15.021 16.9417 14.3567 17.5517C13.6924 18.1617 12.8233 18.5001 11.9214 18.5H6.0786C5.17672 18.5001 4.30765 18.1617 3.64333 17.5517C2.97902 16.9417 2.56786 16.1046 2.4912 15.206L1.6938 5.9H0.9C0.661305 5.9 0.432387 5.80518 0.263604 5.6364C0.0948211 5.46761 0 5.23869 0 5C0 4.7613 0.0948211 4.53239 0.263604 4.3636C0.432387 4.19482 0.661305 4.1 0.9 4.1H5.4ZM11.7 9.5C11.7 9.2613 11.6052 9.03239 11.4364 8.8636C11.2676 8.69482 11.0387 8.6 10.8 8.6C10.5613 8.6 10.3324 8.69482 10.1636 8.8636C9.99482 9.03239 9.9 9.2613 9.9 9.5V13.1C9.9 13.3387 9.99482 13.5676 10.1636 13.7364C10.3324 13.9052 10.5613 14 10.8 14C11.0387 14 11.2676 13.9052 11.4364 13.7364C11.6052 13.5676 11.7 13.3387 11.7 13.1V9.5ZM7.2 8.6C6.96131 8.6 6.73239 8.69482 6.5636 8.8636C6.39482 9.03239 6.3 9.2613 6.3 9.5V13.1C6.3 13.3387 6.39482 13.5676 6.5636 13.7364C6.73239 13.9052 6.96131 14 7.2 14C7.43869 14 7.66761 13.9052 7.8364 13.7364C8.00518 13.5676 8.1 13.3387 8.1 13.1V9.5C8.1 9.2613 8.00518 9.03239 7.8364 8.8636C7.66761 8.69482 7.43869 8.6 7.2 8.6Z"
-                            fill="currentColor"
-                          />
-                        </g>
-                      </svg>
-                      Remove all
-                    </button>
-
-                    <button onClick={() => wishlistTocart()} className="btn btn-primary gap-[10px] font-medium">
-                      Add all items to cart
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="15"
-                        height="15"
-                        viewBox="0 0 15 15"
-                        fill="none"
-                      >
+              {!wishlistItems?.length <= 0 && (
+                <>
+                  <button
+                    onClick={() => clearToWishlist()}
+                    className="btn btn-outline-primary gap-[10px] font-medium"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="18"
+                      height="19"
+                      viewBox="0 0 18 19"
+                      fill="none"
+                    >
+                      <g clipPath="url(#clip0_4731_7318)">
                         <path
-                          fillRule="evenodd"
-                          clipRule="evenodd"
-                          d="M6.30057 7.49988L0.988281 2.18928L2.18342 0.994141L8.68747 7.49988L2.18342 14.0056L0.988281 12.8122L6.30057 7.49988ZM11.3647 7.49988L6.05243 2.18928L7.24757 0.994141L13.7516 7.49988L7.24757 14.0056L6.05243 12.8122L11.3647 7.49988Z"
+                          d="M7.2 4.1H10.8C10.8 3.62261 10.6104 3.16477 10.2728 2.82721C9.93523 2.48964 9.47739 2.3 9 2.3C8.52261 2.3 8.06477 2.48964 7.72721 2.82721C7.38964 3.16477 7.2 3.62261 7.2 4.1ZM5.4 4.1C5.4 3.14522 5.77928 2.22955 6.45442 1.55442C7.12955 0.879285 8.04522 0.5 9 0.5C9.95478 0.5 10.8705 0.879285 11.5456 1.55442C12.2207 2.22955 12.6 3.14522 12.6 4.1H17.1C17.3387 4.1 17.5676 4.19482 17.7364 4.3636C17.9052 4.53239 18 4.7613 18 5C18 5.23869 17.9052 5.46761 17.7364 5.6364C17.5676 5.80518 17.3387 5.9 17.1 5.9H16.3062L15.5088 15.206C15.4321 16.1046 15.021 16.9417 14.3567 17.5517C13.6924 18.1617 12.8233 18.5001 11.9214 18.5H6.0786C5.17672 18.5001 4.30765 18.1617 3.64333 17.5517C2.97902 16.9417 2.56786 16.1046 2.4912 15.206L1.6938 5.9H0.9C0.661305 5.9 0.432387 5.80518 0.263604 5.6364C0.0948211 5.46761 0 5.23869 0 5C0 4.7613 0.0948211 4.53239 0.263604 4.3636C0.432387 4.19482 0.661305 4.1 0.9 4.1H5.4ZM11.7 9.5C11.7 9.2613 11.6052 9.03239 11.4364 8.8636C11.2676 8.69482 11.0387 8.6 10.8 8.6C10.5613 8.6 10.3324 8.69482 10.1636 8.8636C9.99482 9.03239 9.9 9.2613 9.9 9.5V13.1C9.9 13.3387 9.99482 13.5676 10.1636 13.7364C10.3324 13.9052 10.5613 14 10.8 14C11.0387 14 11.2676 13.9052 11.4364 13.7364C11.6052 13.5676 11.7 13.3387 11.7 13.1V9.5ZM7.2 8.6C6.96131 8.6 6.73239 8.69482 6.5636 8.8636C6.39482 9.03239 6.3 9.2613 6.3 9.5V13.1C6.3 13.3387 6.39482 13.5676 6.5636 13.7364C6.73239 13.9052 6.96131 14 7.2 14C7.43869 14 7.66761 13.9052 7.8364 13.7364C8.00518 13.5676 8.1 13.3387 8.1 13.1V9.5C8.1 9.2613 8.00518 9.03239 7.8364 8.8636C7.66761 8.69482 7.43869 8.6 7.2 8.6Z"
                           fill="currentColor"
                         />
-                      </svg>
-                    </button>
-                  </>
-                )
-              }
+                      </g>
+                    </svg>
+                    Remove all
+                  </button>
+
+                  <button
+                    onClick={() => wishlistTocart()}
+                    className="btn btn-primary gap-[10px] font-medium"
+                  >
+                    Add all items to cart
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="15"
+                      height="15"
+                      viewBox="0 0 15 15"
+                      fill="none"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        clipRule="evenodd"
+                        d="M6.30057 7.49988L0.988281 2.18928L2.18342 0.994141L8.68747 7.49988L2.18342 14.0056L0.988281 12.8122L6.30057 7.49988ZM11.3647 7.49988L6.05243 2.18928L7.24757 0.994141L13.7516 7.49988L7.24757 14.0056L6.05243 12.8122L11.3647 7.49988Z"
+                        fill="currentColor"
+                      />
+                    </svg>
+                  </button>
+                </>
+              )}
             </div>
           </div>
         </div>
@@ -207,7 +219,10 @@ export default function wishlistPage() {
               </thead>
               <tbody className="divide-y divide-primary/10 w-full">
                 {wishlistItems?.map((item) => (
-                  <tr key={item.id}>
+                  <tr
+                    key={item.id}
+                    className={`transition-all ease-in-out duration-500 ${removingItemId === item.id ? "opacity-0" : "opacity-100"}`}
+                  >
                     <td className="xl:p-4 p-3">
                       <Image
                         src={item.product?.grid_image?.url}
@@ -218,13 +233,21 @@ export default function wishlistPage() {
                       />
                     </td>
                     <td className="xl:p-4 p-3 p font-medium !text-black">
-                      <Link className="hover:text-blue-500" href={`/product/${item?.product?.slug}`}>
+                      <Link
+                        className="hover:text-blue-500"
+                        href={`/product/${item?.product?.slug}`}
+                      >
                         {item.product?.title}
                       </Link>
                     </td>
-                    <td className="xl:p-4 p-3">${item.extra_info?.[0]?.price.toFixed(2)}</td>
                     <td className="xl:p-4 p-3">
-                      <button onClick={() => handleAddToCart(item)} className="text-blue-500 hover:border-primary border-b border-white flex items-center gap-2">
+                      ${item.extra_info?.[0]?.price.toFixed(2)}
+                    </td>
+                    <td className="xl:p-4 p-3">
+                      <button
+                        onClick={() => handleAddToCart(item)}
+                        className="text-blue-500 hover:border-primary border-b border-white flex items-center gap-2"
+                      >
                         Add to cart{" "}
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
@@ -243,7 +266,10 @@ export default function wishlistPage() {
                       </button>
                     </td>
                     <td className="xl:p-4 p-3">
-                      <button onClick={() => removeProductFromWishlist(item)} className="text-blue-500 hover:underline flex items-center justify-end w-full gap-2">
+                      <button
+                        onClick={() => removeProductFromWishlist(item)}
+                        className="text-blue-500 hover:underline flex items-center justify-end w-full gap-2"
+                      >
                         Remove item{" "}
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
