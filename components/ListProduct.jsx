@@ -426,9 +426,8 @@ export default function ProductsPage({
                 (page) => (
                   <button
                     key={page}
-                    className={`px-3 py-1 w-10 h-10 btn border border-gray-100 rounded flex items-center justify-center ${
-                      activePage === page ? "bg-primary text-white" : ""
-                    }`}
+                    className={`px-3 py-1 w-10 h-10 btn border border-gray-100 rounded flex items-center justify-center ${activePage === page ? "bg-primary text-white" : ""
+                      }`}
                     onClick={() => {
                       window.scrollTo({ top: 0, behavior: "smooth" });
                       setActivePage(page);

@@ -41,9 +41,8 @@ export default function SideCart() {
       )}
 
       <div
-        className={`fixed top-0 right-0 h-full w-full max-w-[450px] bg-white shadow-lg z-50 transition-transform duration-300 ease-in-out ${
-          isCartOpen ? "translate-x-0" : "translate-x-full"
-        }`}
+        className={`fixed top-0 right-0 h-full w-full max-w-[450px] bg-white shadow-lg z-50 transition-transform duration-300 ease-in-out ${isCartOpen ? "translate-x-0" : "translate-x-full"
+          }`}
       >
         <div className="flex items-center justify-between p-4 bg-blue-300">
           <h5 className="sm:text-[20px] text-lg font-medium">
@@ -85,11 +84,10 @@ export default function SideCart() {
               return (
                 <div
                   key={item?.id || Math.random()}
-                  className={`flex items-start sm:gap-[18px] gap-3 transition-all ease-in-out duration-300 ${
-                    isRemoving
+                  className={`flex items-start sm:gap-[18px] gap-3 transition-all ease-in-out duration-300 ${isRemoving
                       ? "opacity-0 translate-x-full"
                       : "opacity-100 translate-x-0"
-                  }`}
+                    }`}
                 >
                   <img
                     src={imageUrl}
