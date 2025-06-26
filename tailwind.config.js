@@ -79,6 +79,9 @@ module.exports = {
         "2xl": "1.5625rem",
       },
     },
+    listStyleType: {
+      radio: 'round',
+    }
   },
   darkMode: "class",
   plugins: [heroui()],
