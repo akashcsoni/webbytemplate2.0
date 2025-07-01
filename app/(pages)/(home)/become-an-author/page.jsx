@@ -1,8 +1,8 @@
 "use client";
-import { Image } from "@heroui/react";
 import React, { useRef, useState } from "react";
 import FaqSection from "../../../../components/FaqSection";
 import SubscribeSection from "../../../../components/SubscribeSection";
+import Image from "next/image";
 
 const page = () => {
   const videoRef = useRef(null);
