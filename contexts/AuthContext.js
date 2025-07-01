@@ -23,9 +23,8 @@ export function AuthProvider({ children }) {
             }) // Adjust to your endpoint
             if (res.ok) {
                 const data = await res.json()
-                if (data.authUser && data.authToken) {
-                    console.log(data.authUser)
-                    setauthUser(data.authUser)
+                if (data.userDataFromAPI && data.authToken) {
+                    setauthUser(data.userDataFromAPI)
                     setauthToken(data.authToken)
                     setIsAuthenticated(true)
                     closeAuth();

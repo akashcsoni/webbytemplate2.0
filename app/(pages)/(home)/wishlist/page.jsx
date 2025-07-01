@@ -3,7 +3,7 @@
 import EmptyWishlist from "@/components/emptywishlist/page";
 import { useCart } from "@/contexts/CartContext";
 import { useWishlist } from "@/contexts/WishListContext";
-import { Image } from "@heroui/react";
+import Image from "next/image";
 import Link from "next/link";
 import React, { useState } from "react";
 

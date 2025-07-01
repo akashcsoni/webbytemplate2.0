@@ -278,8 +278,9 @@ const ticketSupportPage = ({ title }) => {
   const page_size = 10;
 
   const fetchSupportData = async (id, position) => {
+    // console.log(id, position, 'SupportData')
     // setLoading(true);
-    if (id && position) {
+    if (id && position === false) {
       try {
         const payload = {
           page_size,
@@ -320,14 +321,17 @@ const ticketSupportPage = ({ title }) => {
   };
 
   useEffect(() => {
-    fetchSupportData(authUser?.documentId, authUser?.position);
+    if (authUser) {
+      fetchSupportData(authUser?.documentId, authUser?.author);
+    }
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, [filterData, authUser?.documentId]);
 
   useEffect(() => {
     const fetchSupportAuthorData = async (id, position) => {
       // setLoading(true);
-      if (id && position === "author") {
+      // console.log(id, position, 'SupportAuthorData')
+      if (id && position === true) {
         try {
           const payload = {
             page_size,
@@ -368,7 +372,9 @@ const ticketSupportPage = ({ title }) => {
         }
       }
     };
-    fetchSupportAuthorData(authUser?.documentId, authUser?.position);
+    if (authUser) {
+      fetchSupportAuthorData(authUser?.documentId, authUser?.author);
+    }
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, [filterData, authUser?.documentId]);
 
