@@ -674,17 +674,17 @@ const SearchPageContent = ({ slug }) => {
             setsearchFilterData(updatedFilterData);
 
             // Log the filtered results
-            console.log("Filtered Results:", {
-              totalProducts: data.length,
-              products: data,
-              filterCounts: {
-                tags: filter?.tags?.length || 0,
-                sales: filter?.sales?.length || 0,
-                features: filter?.features?.length || 0,
-                categories: filter?.categories?.length || 0,
-              },
-              pagination,
-            });
+            // console.log("Filtered Results:", {
+            //   totalProducts: data.length,
+            //   products: data,
+            //   filterCounts: {
+            //     tags: filter?.tags?.length || 0,
+            //     sales: filter?.sales?.length || 0,
+            //     features: filter?.features?.length || 0,
+            //     categories: filter?.categories?.length || 0,
+            //   },
+            //   pagination,
+            // });
           } else {
             // Handle invalid response format
             setError("Invalid response format from server");

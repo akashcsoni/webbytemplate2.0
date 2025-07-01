@@ -237,7 +237,7 @@ const page = () => {
           {/* <Button className="btn btn-primary">Keep Going</Button> */}
           {/* MODAL START */}
           <Button className="btn btn-primary" onPress={onOpen}>
-            Open Modal
+            Keep Going
           </Button>
           <Modal
             backdrop="opaque"
@@ -261,8 +261,8 @@ const page = () => {
                     <Button
                       color="foreground"
                       variant="light"
-                                          onPress={onClose}
-                                          className="p-0 !min-w-[22px]"
+                      onPress={onClose}
+                      className="p-0 !min-w-[22px]"
                     >
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -272,16 +272,16 @@ const page = () => {
                       >
                         <path
                           fill="black"
-                          fill-rule="evenodd"
+                          fillRule="evenodd"
                           d="M4.15 4.15a.5.5 0 0 1 .707 0l3.15 3.15l3.15-3.15a.5.5 0 0 1 .707.707l-3.15 3.15l3.15 3.15a.5.5 0 0 1-.707.707l-3.15-3.15l-3.15 3.15a.5.5 0 0 1-.707-.707l3.15-3.15l-3.15-3.15a.5.5 0 0 1 0-.707"
-                          clip-rule="evenodd"
+                          clipRule="evenodd"
                         />
                       </svg>
                     </Button>
                   </ModalHeader>
                   <ModalBody className="p-4">
                     <p>
-                     Profile Updated Successfully !
+                      Profile Updated Successfully !
                     </p>
                   </ModalBody>
                 </>
