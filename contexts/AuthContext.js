@@ -24,6 +24,7 @@ export function AuthProvider({ children }) {
             if (res.ok) {
                 const data = await res.json()
                 if (data.authUser && data.authToken) {
+                    console.log(data.authUser)
                     setauthUser(data.authUser)
                     setauthToken(data.authToken)
                     setIsAuthenticated(true)

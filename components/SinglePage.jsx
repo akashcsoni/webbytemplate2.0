@@ -290,18 +290,23 @@ export default function SinglePage({ pageData }) {
           <Link href="/" className="text-[#0156d5] hover:underline">
             Home
           </Link>
-          <span className="mx-2 text-gray-500">&gt;</span>
-          {pageData.categories && pageData.categories.length > 0 ? (
-            <Link
-              href={`/category/${pageData.categories[0].slug}`}
-              className="text-[#0156d5] hover:underline"
-            >
-              {pageData.categories[0].title}
-            </Link>
-          ) : null}
+
+          {pageData.categories && pageData.categories.length > 0 && (
+            <>
+              <span className="mx-2 text-gray-500">&gt;</span>
+              <Link
+                href={`/category/${pageData.categories[0].slug}`}
+                className="text-[#0156d5] hover:underline"
+              >
+                {pageData.categories[0].title}
+              </Link>
+            </>
+          )}
+
           <span className="mx-2 text-gray-500">&gt;</span>
           <span className="text-[#505050]">{pageData?.title}</span>
         </nav>
+
 
         {/* Main Header */}
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-5 md:mb-10">
@@ -510,7 +515,7 @@ export default function SinglePage({ pageData }) {
             {/* Technology */}
 
             {allTechnologies && allTechnologies.length > 0 && (
-              <div className="border-b border-[#d9dde2] ">
+              <div>
                 <TechnologySelector
                   pageName={pageData?.title}
                   all_technology={allTechnologies}
@@ -539,107 +544,116 @@ export default function SinglePage({ pageData }) {
             )}
 
             {/* Add to Cart Button */}
+
+
+
             <div className="!mt-0">
               <div className="lg:py-5 py-4 grid gap-5">
-                {!isWhiteLabel && (
-                  <div className="space-y-3">
-                    <div className="flex items-center gap-4">
-                      <div className="w-full ">
-                        <button
-                          className={`w-full btn flex items-center justify-center transition-all duration-200 ${isProductInCart
-                            ? "btn-secondary border-2 border-primary text-primary hover:btn-primary"
-                            : "btn-primary"
-                            }`}
-                          onClick={handleAddToCart}
-                          disabled={loading}
-                        >
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            className="xl:w-5 xl:h-5 w-4 h-4 mr-2"
-                          >
-                            <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" />
-                            <line x1="3" y1="6" x2="21" y2="6" />
-                            <path d="M16 10a4 4 0 0 1-8 0" />
-                          </svg>
-                          {loading
-                            ? "Processing..."
-                            : isProductInCart
-                              ? "Update Cart"
-                              : "Add to Cart"}
-                        </button>
-                      </div>
-                      <div className="w-full">
-                        <button
-                          className="w-full btn btn-secondary border-2 border-primary text-primary hover:btn-primary flex items-center justify-center transition-all duration-200"
-                          onClick={handleAddToWishlist}
-                          disabled={wishlistLoading}
-                        >
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            className="xl:w-5 xl:h-5 w-4 h-4 mr-2"
-                          >
-                            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
-                          </svg>
-                          {wishlistLoading
-                            ? "Processing..."
-                            : isProductInWishlist
-                              ? "Update Wishlist"
-                              : "Add to Wishlist"}
-                        </button>
-                      </div>
-                    </div>
 
-                    {isProductInCart && !loading && (
-                      <div className="flex items-center justify-center gap-2 text-sm text-green-600">
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          className="w-4 h-4"
-                        >
-                          <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
-                          <polyline points="22 4 12 14.01 9 11.01" />
-                        </svg>
-                        <span>Already in your cart</span>
+                {pageData?.all_license && pageData?.all_license.length > 0 && (
+                  <>
+                    {!isWhiteLabel && (
+                      <div className="space-y-3">
+                        <div className="flex items-center gap-4">
+                          <div className="w-full ">
+                            <button
+                              className={`w-full btn flex items-center justify-center transition-all duration-200 ${isProductInCart
+                                ? "btn-secondary border-2 border-primary text-primary hover:btn-primary"
+                                : "btn-primary"
+                                }`}
+                              onClick={handleAddToCart}
+                              disabled={loading}
+                            >
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                className="xl:w-5 xl:h-5 w-4 h-4 mr-2"
+                              >
+                                <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" />
+                                <line x1="3" y1="6" x2="21" y2="6" />
+                                <path d="M16 10a4 4 0 0 1-8 0" />
+                              </svg>
+                              {loading
+                                ? "Processing..."
+                                : isProductInCart
+                                  ? "Update Cart"
+                                  : "Add to Cart"}
+                            </button>
+                          </div>
+                          <div className="w-full">
+                            <button
+                              className="w-full btn btn-secondary border-2 border-primary text-primary hover:btn-primary flex items-center justify-center transition-all duration-200"
+                              onClick={handleAddToWishlist}
+                              disabled={wishlistLoading}
+                            >
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                className="xl:w-5 xl:h-5 w-4 h-4 mr-2"
+                              >
+                                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+                              </svg>
+                              {wishlistLoading
+                                ? "Processing..."
+                                : isProductInWishlist
+                                  ? "Update Wishlist"
+                                  : "Add to Wishlist"}
+                            </button>
+                          </div>
+                        </div>
+
+                        {isProductInCart && !loading && (
+                          <div className="flex items-center justify-center gap-2 text-sm text-green-600">
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              className="w-4 h-4"
+                            >
+                              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+                              <polyline points="22 4 12 14.01 9 11.01" />
+                            </svg>
+                            <span>Already in your cart</span>
+                          </div>
+                        )}
+
+                        {isProductInWishlist && !loading && (
+                          <div className="flex items-center justify-center gap-2 text-sm text-green-600">
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              className="w-4 h-4"
+                            >
+                              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+                              <polyline points="22 4 12 14.01 9 11.01" />
+                            </svg>
+                            <span>Already in your wishlist</span>
+                          </div>
+                        )}
                       </div>
                     )}
-
-                    {isProductInWishlist && !loading && (
-                      <div className="flex items-center justify-center gap-2 text-sm text-green-600">
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          className="w-4 h-4"
-                        >
-                          <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
-                          <polyline points="22 4 12 14.01 9 11.01" />
-                        </svg>
-                        <span>Already in your wishlist</span>
-                      </div>
-                    )}
-                  </div>
+                  </>
                 )}
+
                 {/* contact sales */}
                 {isWhiteLabel && <SinglePageModal product_id={pageData?.documentId} />}
               </div>
@@ -673,7 +687,7 @@ export default function SinglePage({ pageData }) {
 
             {/* Review */}
 
-            {pageData?.rating && pageData?.rating > 0 && (
+            {pageData?.rating !== 0 && (
               <div className="2xl:py-[15px] py-3 flex justify-between items-center">
                 <h5 className="text-[#000000] font-medium">Review:</h5>
                 <div className="flex items-center">
