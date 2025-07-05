@@ -215,7 +215,6 @@ const ticketSupportPage = ({ title }) => {
       },
       cellClick: async (e, cell) => {
         const orderData = cell.getRow().getData();
-        console.log(orderData);
         if (orderData.id) {
           await setOpenTicket(orderData?.id);
         } else {

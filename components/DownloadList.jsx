@@ -22,15 +22,15 @@ const DownloadPage = ({ title }) => {
   const generateInvoiceHTML = (orderData) => {
     const totalSalesPrice = orderData.multiProduct
       ? orderData?._children?.reduce((total, item) => {
-          return (
-            total + (item.price?.sales_price || item.price?.regular_price || 0)
-          );
-        }, 0)
+        return (
+          total + (item.price?.sales_price || item.price?.regular_price || 0)
+        );
+      }, 0)
       : orderData?.product?.reduce((total, item) => {
-          return (
-            total + (item.price?.sales_price || item.price?.regular_price || 0)
-          );
-        }, 0);
+        return (
+          total + (item.price?.sales_price || item.price?.regular_price || 0)
+        );
+      }, 0);
     // 2. Calculate 18% GST
     const gst = totalSalesPrice * 0.18;
 
@@ -608,10 +608,9 @@ const DownloadPage = ({ title }) => {
                 </tr>
               </thead>
 
-              ${
-                !orderData?.multiProduct &&
-                orderData?.product?.map((item, index) => {
-                  return `<tbody>
+              ${!orderData?.multiProduct &&
+      orderData?.product?.map((item, index) => {
+        return `<tbody>
                     <tr>
                       <td
                         style="
@@ -710,11 +709,10 @@ const DownloadPage = ({ title }) => {
                       </td>
                     </tr>                    
                   </tbody>`;
-                })
-              }
-              ${
-                orderData?.multiProduct &&
-                `<tbody>
+      })
+      }
+              ${orderData?.multiProduct &&
+      `<tbody>
                   <tr>
                     <td
                       style="
@@ -743,7 +741,7 @@ const DownloadPage = ({ title }) => {
                       <table>
                         <tbody>
                       ${orderData?._children.map((item) => {
-                        return `
+        return `
                             <tr>
                               <td style="text-decoration: initial">
                                 <p
@@ -792,7 +790,7 @@ const DownloadPage = ({ title }) => {
                               </td>
                             </tr>                              
                             `;
-                      })}                           
+      })}                           
                         </tbody>
                       </table>
                     </td>
@@ -868,7 +866,7 @@ const DownloadPage = ({ title }) => {
                     </td>
                   </tr>  
                 </tbody>`
-              }              
+      }              
               <tfoot>
                 <tr>
                   <td
@@ -1131,15 +1129,14 @@ const DownloadPage = ({ title }) => {
           data.products &&
           `<div class="flex items-center gap-2">
             <span>${data.products}</span>
-            ${
-              data.multiProduct
-                ? `<button class="toggle-children">
+            ${data.multiProduct
+            ? `<button class="toggle-children">
                     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 18 18" fill="none" class="">
                       <path d="M9 0C4.03754 0 0 4.03754 0 9C0 13.9625 4.03754 18 9 18C13.9625 18 18 13.9625 18 9C18 4.03754 13.9625 0 9 0ZM9 1.38462C13.2141 1.38462 16.6154 4.78592 16.6154 9C16.6154 13.2141 13.2141 16.6154 9 16.6154C4.78592 16.6154 1.38462 13.2141 1.38462 9C1.38462 4.78592 4.78592 1.38462 9 1.38462ZM8.30769 4.15385V11.2708L5.53846 8.50154L4.56508 9.49846L8.50223 13.4349L9.00069 13.9334L9.49915 13.4349L13.4356 9.49777L12.4615 8.50154L9.69231 11.2708V4.15385H8.30769Z" fill="#0156D5" />
                     </svg>
                   </button>`
-                : ""
-            }
+            : ""
+          }
           </div>`
         );
       },
@@ -1162,7 +1159,7 @@ const DownloadPage = ({ title }) => {
           : "";
       },
       cellClick: (e, cell) => {
-        const url = cell.getRow().getData().product_zip;
+        const url = cell.getRow().getData()?.product_zip;
         url ? window.open(url, "_blank") : alert("No download link found.");
       },
     },
@@ -1268,13 +1265,13 @@ const DownloadPage = ({ title }) => {
               price: !isMultipleProducts ? item.products?.price : {},
               products: !isMultipleProducts
                 ? item.products?.[0]?.product?.title ||
-                  item.products?.[0]?.product_title ||
-                  "Untitled"
+                item.products?.[0]?.product_title ||
+                "Untitled"
                 : "Multi-Product Order",
               updatedAt: item.updatedAt,
               product_zip: !isMultipleProducts
                 ? item.products?.[0]?.product?.product_zip_url ||
-                  item.products?.[0]?.product?.product_zip?.url
+                item.products?.[0]?.product?.product_zip?.url
                 : null,
               downloadInvoice:
                 item.products?.[0]?.product?.product_zip_url ||
@@ -1290,8 +1287,9 @@ const DownloadPage = ({ title }) => {
         setLoading(false);
       }
     };
-
-    fetchOrderData(authUser?.documentId);
+    if (authUser) {
+      fetchOrderData(authUser?.documentId);
+    }
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, [filterData, authUser?.documentId]);
 
@@ -1361,8 +1359,8 @@ const DownloadPage = ({ title }) => {
               defaultValue={
                 filterData?.purchased_date
                   ? parseDate(
-                      filterData.purchased_date.split("-").reverse().join("-")
-                    )
+                    filterData.purchased_date.split("-").reverse().join("-")
+                  )
                   : null
               }
               labelPlacement="outside"

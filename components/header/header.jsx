@@ -292,7 +292,7 @@ export default function Header() {
   return (
     <header className="relative z-50">
       {/* Notification Bar */}
-      
+
       {/* <div className="bg-primary">
         {isSettingsLoading ? (
           <div className="loader"></div>

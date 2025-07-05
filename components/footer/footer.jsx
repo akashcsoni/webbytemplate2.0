@@ -193,8 +193,8 @@ export function Footer({ footerMenu = [], footerSettings = {} }) {
               <li key={subItem?.id || index}>
                 <Link
                   href={subItem?.slug || "#"}
-                  className={`!text-gray-400 p2 hover:!text-white focus:!text-white active:!text-white ${
-                    isActive ? '!text-white font-medium' : ''
+                  className={`!text-gray-400 p2 hover:!text-white focus:!text-white active:!text-white${
+                    isActive ? ' active !text-white font-medium' : ''
                   }`}
                   aria-current={isActive ? 'page' : undefined}
                 >
@@ -211,11 +211,12 @@ export function Footer({ footerMenu = [], footerSettings = {} }) {
   // If no menu items at all, don't render the menu section
   const hasMenuItems = organizedMenu.length > 0;
 
+  // Update isActiveLink to support sub-paths
   const isActiveLink = (slug) => {
     if (!slug) return false;
     const cleanPathname = pathname?.replace(/\/$/, '');
     const cleanSlug = slug.replace(/\/$/, '');
-    return cleanPathname === cleanSlug;
+    return cleanPathname === cleanSlug || cleanPathname.startsWith(cleanSlug + '/');
   };
 
   return (
