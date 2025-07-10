@@ -6,6 +6,8 @@ import SomethingWrong from "@/components/somethingWrong/page";
 import { themeConfig } from "@/config/theamConfig";
 import { strapiGet } from "@/lib/api/strapiClient";
 
+export const dynamic = 'force-dynamic'; // Force no caching, SSR on every request
+
 export default async function DynamicPage({ params, searchParams }) {
     const { pageSlug, itemSlug, categorySlug } = await params;
 
