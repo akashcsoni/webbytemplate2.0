@@ -23,7 +23,7 @@ const SinglePageTab = ({ data }) => {
             dangerouslySetInnerHTML={{ __html: data.overview_description }}
           />
         ) : (
-          <p>No overview available.</p>
+          <p>An overview for this item is currently unavailable.</p>
         );
 
       case "reviews":
@@ -32,7 +32,7 @@ const SinglePageTab = ({ data }) => {
             <ReviewList slug={data.slug} />
           </div>
         ) : (
-          <p>No reviews found.</p>
+          <p>No reviews have been submitted yet. Be the first to share your experience!</p>
         );
 
       case "changelog":
@@ -51,14 +51,14 @@ const SinglePageTab = ({ data }) => {
             ))}
           </div>
         ) : (
-          <p>No changelog available.</p>
+          <p>No changelog has been published yet.</p>
         );
 
       case "faq":
         return data?.faq?.length > 0 ? (
           <FaqSection list={data.faq} type="full" />
         ) : (
-          <p>No FAQs available.</p>
+          <p>There are no frequently asked questions at the moment.</p>
         );
 
       default:

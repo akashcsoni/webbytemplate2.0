@@ -81,7 +81,7 @@ const ReviewList = ({ slug }) => {
     }
 
     if (error) return <p className="text-red-500">{error}</p>;
-    if (!reviews.length) return <p>No reviews found.</p>;
+    if (!reviews.length) return <p>No reviews have been submitted yet. Be the first to share your experience!</p>;
 
     return (
         <>
