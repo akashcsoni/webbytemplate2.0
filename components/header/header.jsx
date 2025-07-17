@@ -74,14 +74,15 @@ export default function Header() {
               .toLowerCase()
               .replace(/\s+/g, "-")
               .replace(/&/g, "and");
-
             return {
               id: item.id,
               label: item.label,
               name: name, // Add the generated name property
+              slug: item.slug,
               menu: item.menu.map((subItem) => ({
                 id: subItem.id,
                 label: subItem.label,
+                slug: subItem.slug,
                 sub_menu: subItem.sub_menu.map((menuItem) => ({
                   id: menuItem.id,
                   label: menuItem.label,
@@ -91,7 +92,6 @@ export default function Header() {
               })),
             };
           });
-
           setApiMenu(transformedMenu);
         }
       } catch (error) {
@@ -168,7 +168,7 @@ export default function Header() {
             {/* Main Menu */}
             <div className="flex">
               {!loading
-                ? apiMenu.map(({ name, label }) => (
+                ? apiMenu.map(({ name, label, slug }) => (
                   <div
                     key={name}
                     className="relative xl:block hidden"
@@ -181,7 +181,7 @@ export default function Header() {
                         "text-primary hover:text-primary border-b border-primary"
                       )}
                     >
-                      <span className="p2">{label}</span>
+                      <Link href={slug}><span className="p2 hover:text-primary">{label}</span></Link>
                       <svg
                         width="9"
                         height="11"
@@ -251,11 +251,13 @@ export default function Header() {
                 menuActiveCategory === name && menu ? (
                   <div key={name} className="mx-auto py-6 px-4">
                     <div className="grid grid-cols-4 lg:grid-cols-5 gap-8 px-4">
-                      {menu.map(({ id, label, sub_menu }) => (
+                      {menu.map(({ id, label, sub_menu, slug }) => (
                         <div key={id}>
-                          <h3 className="mb-2 pb-3 border-b-2 border-blue-300 p !text-black">
-                            {label}
-                          </h3>
+                          <Link href={slug} className="group block">
+                            <h3 className="mb-2 pb-3 border-b-2 border-blue-300 p text-black transition-colors duration-300 group-hover:text-primary">
+                              {label}
+                            </h3>
+                          </Link>
                           <ul className="2xl:space-y-4 space-y-3">
                             {sub_menu.map(({ id, label, slug, tag }) => (
                               <li key={id}>
