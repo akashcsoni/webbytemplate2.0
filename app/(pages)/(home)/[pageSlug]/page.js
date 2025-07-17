@@ -30,7 +30,6 @@ export default async function DynamicPage({ params }) {
         if (!pageData || !pageData.data || Object.keys(pageData.data).length === 0) {
             return <PageNotFound />;
         }
-
         return <GlobalComponent data={pageData.data} />;
     } catch (error) {
         return <SomethingWrong />;
