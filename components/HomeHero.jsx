@@ -86,6 +86,7 @@ export default function HomeHero({
     );
   }
 
+
   if (!title || !description) {
     return (
       <div className="container mx-auto px-4 py-16 text-center">
