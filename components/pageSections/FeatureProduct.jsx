@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react'
-import FeatureProductGrid from './feature-product-grid';
+import FeatureProductGrid from '../feature-product-grid';
 
 const FeatureProduct = ({ title = '', grid_section = [] }) => {
     return (

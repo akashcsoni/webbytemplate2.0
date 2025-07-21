@@ -1,10 +1,10 @@
 "use client";
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import ProductGrid from "./product/product-grid";
+import ProductGrid from "../product/product-grid";
 import { strapiPost } from "@/lib/api/strapiClient";
 import { themeConfig } from "@/config/theamConfig";
-import ProductDummyGrid from "./product/product-dummy-grid";
+import ProductDummyGrid from "../product/product-dummy-grid";
 
 /**
  * Products List Component

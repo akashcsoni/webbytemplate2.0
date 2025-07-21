@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import React from 'react'
-import BenefitsGrid from './benefits-grid';
+import BenefitsGrid from '../benefits-grid';
 
 const AuthoreBenefits = ({ title = '', grid_section = [], button_name = '', button_link = '' }) => {
 

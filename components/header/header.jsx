@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
-import CountdownTimer from "./countdown-timer";
+// import CountdownTimer from "./countdown-timer";
 import MegaMenu from "./mega-menu";
 import { strapiGet } from "@/lib/api/strapiClient";
 import { themeConfig } from "@/config/theamConfig";

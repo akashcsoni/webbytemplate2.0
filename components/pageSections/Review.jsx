@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import ReviewGrid from "./common/review/review-grid";
+import ReviewGrid from "../common/review/review-grid";
 
 export default function Review({ title = "", label = "", link = null, list = [] }) {
     return (
