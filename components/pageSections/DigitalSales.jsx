@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react'
-import DynamicIcon from './ui/DynamicIcon';
+import DynamicIcon from '../ui/DynamicIcon';
 
 const DigitalSales = ({ title = '', grid_section }) => {
     // Ensure grid_section is always an array

@@ -1,7 +1,7 @@
 "use client";
 
 import PropTypes from "prop-types";
-import ServiceGrid from "./common/service/service-grid";
+import ServiceGrid from "../common/service/service-grid";
 import Link from "next/link";
 
 export default function ServiceSection({

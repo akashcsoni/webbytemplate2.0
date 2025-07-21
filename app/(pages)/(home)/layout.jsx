@@ -1,6 +1,5 @@
 import "@/styles/globals.css";
 import clsx from "clsx";
-
 import { Providers } from "../providers";
 import { siteConfig } from "@/config/site";
 import { fontSans } from "@/config/fonts";
@@ -37,9 +36,7 @@ export default function RootLayout({ children }) {
       >
         <Providers themeProps={{ attribute: "class", defaultTheme: "dark" }}>
           <Header />
-          <main>
-            {children}
-          </main>
+          <main>{children}</main>
           <FooterFooterContainer />
         </Providers>
       </body>

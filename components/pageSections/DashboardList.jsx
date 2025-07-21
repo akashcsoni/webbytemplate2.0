@@ -26,7 +26,7 @@ import {
 } from "@/components/ui/chart";
 
 import { ReactTabulator } from "react-tabulator";
-import DynamicTable from "./common/table";
+import DynamicTable from "../common/table";
 
 const ChartContainers = ({ children, config, className }) => {
   return <div className={`bg-white p-4 ${className}`}>{children}</div>;

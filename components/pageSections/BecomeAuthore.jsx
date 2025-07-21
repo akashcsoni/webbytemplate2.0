@@ -1,9 +1,25 @@
 'use client';
 
+import { useAuth } from '@/contexts/AuthContext';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import React, { useRef, useState } from 'react'
 
 const BecomeAuthore = ({ button_link = '', button_name = '', description = '', title = '', video_embed_code = '', poster_image = {} }) => {
+
+    const { user, openAuth } = useAuth();
+    // const { openAuth, authLoading, isAuthenticated, logout, authUser } =
+    // useAuth();
+    const router = useRouter();
+
+    const handleButtonClick = () => {
+        if (user && user.username) {
+            // User is logged in, redirect to their support page
+            router.push(`/user/${user.username}/support`);
+        } else {
+            openAuth("login")
+        }
+    };
 
     const videoRef = useRef(null);
     const [isPlaying, setIsPlaying] = useState(false);
@@ -54,7 +70,9 @@ const BecomeAuthore = ({ button_link = '', button_name = '', description = '', t
                         {description && <p className="sm:mb-[30px] mb-[18px]">{description}</p>}
                         <div className="flex items-center flex-wrap sm:gap-4 gap-2">
                             {(button_link && button_name) && (
-                                <Link href={button_link}><button className="btn btn-primary">{button_name}</button></Link>
+                                <button className="btn btn-primary" onClick={handleButtonClick}>
+                                    {button_name}
+                                </button>
                             )}
                         </div>
                     </div>

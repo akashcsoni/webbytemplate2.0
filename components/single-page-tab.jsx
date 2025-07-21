@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
-import FaqSection from "./FaqSection";
+import FaqSection from "../components/pageSections/FaqSection";
 import ReviewList from "./product/review-list";
 
 const tabs = [

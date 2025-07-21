@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import DynamicIcon from "./ui/DynamicIcon";
+import DynamicIcon from "../ui/DynamicIcon";
 import { useRouter } from "next/navigation";
 
 export default function HomeHero({

@@ -1,5 +1,5 @@
 import React from 'react'
-import CategoryTagCard from './product/category/tag/category-tag-card'
+import CategoryTagCard from '../product/category/tag/category-tag-card'
 
 const CategoryTagList = ({ title, description, categories }) => {
 

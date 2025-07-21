@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import React from "react";
 
-const SomethingWrong = () => {
+const SomethingWrong = ({ message }) => {
   return (
     <div className="container">
       <div className="flex flex-col items-center justify-center text-center w-full h-full lg:pt-[50px] lg:pb-[100px] sm:pt-10 pt-7 sm:pb-20 pb-10">
@@ -19,7 +19,7 @@ const SomethingWrong = () => {
           Something Went Wrong
         </h2>
         <p className="2xl:mb-[38px] mb-[20px] w-[484px] max-w-full">
-          We encountered an error. Our team has been notified. Please try again shortly.
+          {message}
         </p>
         <Link href="/" className="btn btn-primary">
           Go back home

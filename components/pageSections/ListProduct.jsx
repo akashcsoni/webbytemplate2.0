@@ -17,7 +17,7 @@ import {
 } from "@heroui/react";
 import { debounce } from "lodash";
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { SearchIcon } from "./icons";
+import { SearchIcon } from "../icons";
 
 const statuses = [
   {
