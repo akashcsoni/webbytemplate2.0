@@ -72,7 +72,7 @@ export default function Layout({ children }) {
       >
         <Providers themeProps={{ attribute: "class", defaultTheme: "dark" }}>
           <AuthorHeader authUser={authUser} />
-          {(authUser && Object.keys(authUser).length > 0) && (
+          {(authUser) && (
             <section className="2xl:pb-20 lg:pb-[70px] md:pb-[60px] sm:pb-[50px] pb-10">
               <div className="">
                 {/* Sidebar */}

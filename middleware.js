@@ -106,7 +106,7 @@ export async function middleware(request) {
       pathname.includes(`/user/${username}/${segment}`)
     );
 
-    if (position !== false && isRestrictedForBuyer) {
+    if (position !== true && isRestrictedForBuyer) {
       return NextResponse.redirect(
         new URL(`/user/${username}/setting`, request.url)
       );
