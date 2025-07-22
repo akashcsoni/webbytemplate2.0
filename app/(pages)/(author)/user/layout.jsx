@@ -11,8 +11,8 @@ import { useEffect, useState } from "react";
 import { strapiGet } from "@/lib/api/strapiClient";
 
 export default function Layout({ children }) {
+  
   const [authUser, setAuthUser] = useState({});
-  const [authToken, setAuthToken] = useState("");
   const pathname = usePathname();
 
   const isActive = (path) => {
@@ -26,7 +26,6 @@ export default function Layout({ children }) {
         throw new Error("Network response was not ok");
       }
       const data = await response.json();
-      setAuthToken(data?.authToken || "");
       setAuthUser(data?.authUser || {});
       getUserData(data?.authToken, data?.authUser?.id);
     } catch (error) {
@@ -73,11 +72,11 @@ export default function Layout({ children }) {
       >
         <Providers themeProps={{ attribute: "class", defaultTheme: "dark" }}>
           <AuthorHeader authUser={authUser} />
-          {authUser && (
+          {(authUser && Object.keys(authUser).length > 0) && (
             <section className="2xl:pb-20 lg:pb-[70px] md:pb-[60px] sm:pb-[50px] pb-10">
               <div className="">
                 {/* Sidebar */}
-                {authUser?.position === "author" ? (
+                {authUser?.author === true ? (
                   <div className="bg-white border-y border-primary/10 shadow-sm w-full flex items-center">
                     <div className="container">
                       <ul className="flex items-center lg:justify-start justify-between overflow-auto h-full">

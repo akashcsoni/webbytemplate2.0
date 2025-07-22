@@ -7,15 +7,14 @@ import React, { useRef, useState } from 'react'
 
 const BecomeAuthore = ({ button_link = '', button_name = '', description = '', title = '', video_embed_code = '', poster_image = {} }) => {
 
-    const { user, openAuth } = useAuth();
+    const { authUser, openAuth } = useAuth();
     // const { openAuth, authLoading, isAuthenticated, logout, authUser } =
     // useAuth();
     const router = useRouter();
 
     const handleButtonClick = () => {
-        if (user && user.username) {
-            // User is logged in, redirect to their support page
-            router.push(`/user/${user.username}/support`);
+        if (authUser && authUser.username) {
+            router.push(`/user/${authUser.username}/become-an-author`);
         } else {
             openAuth("login")
         }
