@@ -17,7 +17,7 @@ export async function middleware(request) {
   let username = null;
   let isLogin = false;
   let apiValidation = null;
-  let position = "buyer"; // default
+  let position = false; // default
 
   if (isUserPath) {
     isLogin = Boolean(accessToken && userData);
@@ -26,7 +26,7 @@ export async function middleware(request) {
       if (userData) {
         const parsedUser = JSON.parse(userData);
         username = parsedUser?.username || null;
-        position = parsedUser?.position || "buyer";
+        position = parsedUser?.author || false;
       }
     } catch (err) {
       console.error("Invalid JSON in authUser cookie:", err);
@@ -54,8 +54,8 @@ export async function middleware(request) {
             username = apiValidation.username;
           }
 
-          if (apiValidation?.position) {
-            position = apiValidation.position;
+          if (apiValidation?.author) {
+            position = apiValidation?.author;
           }
         } else {
           // Token is invalid
@@ -106,14 +106,14 @@ export async function middleware(request) {
       pathname.includes(`/user/${username}/${segment}`)
     );
 
-    if (position !== "author" && isRestrictedForBuyer) {
+    if (position !== false && isRestrictedForBuyer) {
       return NextResponse.redirect(
         new URL(`/user/${username}/setting`, request.url)
       );
     }
 
     const isAuthorTryingToBecomeAuthor =
-      position === "author" &&
+      position === true &&
       pathname === `/user/${username}/become-an-author`;
 
     if (isAuthorTryingToBecomeAuthor) {

@@ -220,8 +220,15 @@ function OtpModal({ isOpen, onClose, identifier }) {
                 if (cookieResponse.ok) {
                     onClose()
                     login()
+                    const currentUrl = window.location.href;
+                    const hasAuthorQuery = currentUrl.includes("author=true");
+                    const username = response.user?.username;
                     setTimeout(() => {
-                        window.location.reload()
+                        if (hasAuthorQuery && username) {
+                            window.location.href = `/user/${username}/become-an-author`;
+                        } else {
+                            window.location.reload();
+                        }
                     }, 1000);
                 } else {
                     throw new Error("Failed to set authentication cookies")

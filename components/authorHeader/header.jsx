@@ -72,7 +72,6 @@ export default function AuthorHeader({ authUser }) {
 
   const closeMenu = useCallback(() => {
     setIsMenuOpen(false);
-    setActiveCategory(null);
   }, []);
 
   // Close menu when clicking outside
