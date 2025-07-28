@@ -23,7 +23,8 @@ const SinglePageSwiper = ({
   const [isBeginning, setIsBeginning] = useState(true);
   const [isEnd, setIsEnd] = useState(false);
 
-  const [imagesLoaded, setImagesLoaded] = useState(false);
+  const [imagesLoaded, setImagesLoaded] = useSt
+  ate(false);
 
   // Default breakpoints if not provided
   const defaultBreakpoints = {
