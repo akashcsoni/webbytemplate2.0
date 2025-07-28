@@ -42,8 +42,14 @@ export default function ProductsPage({
   const [fileFormat, setFileFormat] = useState([]);
   const [compatibleWith, setCompatibleWith] = useState([]);
   const [existingProduct, setExistingProduct] = useState([]);
+  // console.log(existingProduct, "existingProductexistingProductexistingProduct");
   const [tagList, setTagList] = useState([]);
   const [showFiels, setShowFiels] = useState([]);
+  const [categoryOptions, setCategoryOptions] = useState([]);
+  // console.log(
+  // categoryOptions,
+  // "categoryOptionscategoryOptionscategoryOptionscategoryOptionscategoryOptionscategoryOptionscategoryOptionscategoryOptionscategoryOptions"
+  // );I
 
   const globalValidator = (field) => {
     // Define validator functions
@@ -421,7 +427,7 @@ export default function ProductsPage({
       placeholder: "Select correct format",
       type: "multiselect",
       html: "multiselect",
-      options: fileFormat,
+      options: categoryOptions,
       startContent: true,
       description: "Choose one format for the product",
       validation: { required: "File format is require" },
@@ -438,8 +444,8 @@ export default function ProductsPage({
       options: existingProduct,
       startContent: true,
       description: "Choose one existing product",
-      validation: { required: "Existing Product is require" },
-      rules: ["required"],
+      validation: { required: "" },
+      rules: [],
       className: "mb-5",
     },
     {
@@ -455,19 +461,19 @@ export default function ProductsPage({
       rules: ["required"],
       className: "mb-5",
     },
-    {
-      position: 8,
-      name: "compatible_with",
-      label: "Compatible With",
-      placeholder: "Enter compatible With",
-      type: "multiselect",
-      html: "multiselect",
-      options: compatibleWith,
-      description: "Brief compatible With for the product",
-      validation: { required: "Compatible With is require" },
-      rules: ["required"],
-      className: "mb-5",
-    },
+    // {
+    // position: 8,
+    // name: "compatible_with",
+    // label: "Compatible With",
+    // placeholder: "Enter compatible With",
+    // type: "multiselect",
+    // html: "multiselect",
+    // options: compatibleWith,
+    // description: "Brief compatible With for the product",
+    // validation: { required: "Compatible With is require" },
+    // rules: ["required"],
+    // className: "mb-5",
+    // },
     {
       position: 4,
       name: "sell_exclusivity",
@@ -650,7 +656,9 @@ export default function ProductsPage({
     return items.map((item) => item.documentId);
   };
 
+  // for category based data
   const getFormatAndCompatibleList = async (id) => {
+    console.log(id, "id for cheking id ");
     try {
       const productData = await strapiGet(`format/${id}`, {
         params: { populate: "*" },
@@ -670,6 +678,15 @@ export default function ProductsPage({
         setFileFormat(productData.data?.file_format || []);
         setCompatibleWith(productData.data?.compatible_with || []);
       }
+
+      // ✅ 3. Get category options using your generic strapiGet function
+      const categoryOptionsData = await strapiGet(`category-options/${id}`, {
+        token: themeConfig.TOKEN, // Pass token only if needed
+      });
+
+      if (categoryOptionsData?.options) {
+        setCategoryOptions(categoryOptionsData.options); // <-- Make sure this state exists
+      }
     } catch (err) {
       console.error("Failed to fetch product data:", err);
       toast.error("Failed to load product data.");
@@ -677,9 +694,11 @@ export default function ProductsPage({
   };
 
   const getProductList = async (id, short_title) => {
+    console.log(short_title, "this is for checking existing title");
+
     try {
       const payload = {
-        "search": short_title
+        search: short_title,
       };
 
       const productData = await strapiPost(`author-product/${id}`, {
