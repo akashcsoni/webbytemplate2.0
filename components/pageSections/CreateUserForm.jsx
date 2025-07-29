@@ -32,6 +32,8 @@ const profileSetting = ({ title, sub_title, form, image, button }) => {
       const fileData = await strapiPost(`upload`, formData, themeConfig.TOKEN);
       setImageId(fileData[0].id);
       setProfileImage(fileData[0].url);
+
+      
       setImageLoading(false);
     } catch (error) {
       setImageLoading(false);
