@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useEffect, useState } from "react";
@@ -10,6 +11,7 @@ import {
   FormMultiSelect,
   FormSelect,
   FormRadio,
+  GroupSelect,
 } from "@/comman/fields";
 import {
   strapiDelete,
@@ -30,6 +32,7 @@ export default function ProductsPage({
   sub_title,
   params = {},
 }) {
+
   const { authUser } = useAuth();
   const router = useRouter();
   const [formValues, setFormValues] = useState({});
@@ -39,17 +42,11 @@ export default function ProductsPage({
   const [defaultValueData, setDefaultValueData] = useState({});
   const [categoriesList, setCategoriesList] = useState([]);
   const [technologyList, setTechnologyList] = useState([]);
-  const [fileFormat, setFileFormat] = useState([]);
-  const [compatibleWith, setCompatibleWith] = useState([]);
   const [existingProduct, setExistingProduct] = useState([]);
-  // console.log(existingProduct, "existingProductexistingProductexistingProduct");
   const [tagList, setTagList] = useState([]);
   const [showFiels, setShowFiels] = useState([]);
-  const [categoryOptions, setCategoryOptions] = useState([]);
-  // console.log(
-  // categoryOptions,
-  // "categoryOptionscategoryOptionscategoryOptionscategoryOptionscategoryOptionscategoryOptionscategoryOptionscategoryOptionscategoryOptions"
-  // );I
+  const [dynamicCategoryFields, setDynamicCategoryFields] = useState([]);
+  const [topicsData, setTopicsData] = useState([]);
 
   const globalValidator = (field) => {
     // Define validator functions
@@ -271,19 +268,31 @@ export default function ProductsPage({
   };
 
   const handleFieldChange = async (name, value) => {
-    setFormValues((prevValues) => ({
-      ...prevValues,
+    // 1. Update form values
+    const updatedFormValues = {
+      ...formValues,
       [name]: value,
-    }));
+    };
+    setFormValues(updatedFormValues);
 
+    // 2. Clear validation error for this field
     setValidationErrors((prevErrors) => ({
       ...prevErrors,
       [name]: "",
     }));
 
+    // 3. Update show fields if zip is selected
     if (name === "product_zip_select") {
       setShowFiels([value]);
     }
+
+    // 4. Update combined selected children array across all dynamic multiselect fields
+    const combinedSelectedChildren = Object.entries(updatedFormValues)
+      .filter(([key]) =>
+        dynamicCategoryFields.some((field) => field.name === key)
+      )
+      .flatMap(([, values]) => values || []); // flatten all selected values
+
   };
 
   const field = [
@@ -422,20 +431,6 @@ export default function ProductsPage({
     },
     {
       position: 5,
-      name: "file_format",
-      label: "File Format",
-      placeholder: "Select correct format",
-      type: "multiselect",
-      html: "multiselect",
-      options: categoryOptions,
-      startContent: true,
-      description: "Choose one format for the product",
-      validation: { required: "File format is require" },
-      rules: ["required"],
-      className: "mb-5",
-    },
-    {
-      position: 5,
       name: "existing_product",
       label: "Link to an Existing Product",
       placeholder: "Select correct existing product",
@@ -461,19 +456,19 @@ export default function ProductsPage({
       rules: ["required"],
       className: "mb-5",
     },
-    // {
-    // position: 8,
-    // name: "compatible_with",
-    // label: "Compatible With",
-    // placeholder: "Enter compatible With",
-    // type: "multiselect",
-    // html: "multiselect",
-    // options: compatibleWith,
-    // description: "Brief compatible With for the product",
-    // validation: { required: "Compatible With is require" },
-    // rules: ["required"],
-    // className: "mb-5",
-    // },
+    {
+      position: 20,
+      name: "topics",
+      label: "Topics",
+      placeholder: "Enter topics",
+      type: "groupselect",
+      html: "groupselect",
+      options: topicsData,
+      description: "Comma-separated grouptable to describe product",
+      validation: { required: "grouptable is require" },
+      rules: ["required"],
+      className: "mb-5",
+    },
     {
       position: 4,
       name: "sell_exclusivity",
@@ -621,6 +616,16 @@ export default function ProductsPage({
           />
         );
 
+      case "groupselect":
+        return (
+          <GroupSelect
+            data={data}
+            onChange={handleFieldChange}
+            error={validationErrors[data.name]}
+            defaultValueData={defaultValueData[data.name]}
+          />
+        );
+
       default:
         break;
     }
@@ -656,9 +661,7 @@ export default function ProductsPage({
     return items.map((item) => item.documentId);
   };
 
-  // for category based data
   const getFormatAndCompatibleList = async (id) => {
-    console.log(id, "id for cheking id ");
     try {
       const productData = await strapiGet(`format/${id}`, {
         params: { populate: "*" },
@@ -674,18 +677,51 @@ export default function ProductsPage({
         setTechnologyList(technologyData.data || []);
       }
 
-      if (productData?.data) {
-        setFileFormat(productData.data?.file_format || []);
-        setCompatibleWith(productData.data?.compatible_with || []);
+      // fetch topics from category
+      const topicsData = await strapiGet(`category-topics/${id}`, {
+        // params: { populate: "*" },
+        token: themeConfig.TOKEN,
+      });
+
+      console.log(topicsData?.topics);
+
+      if (topicsData?.topics) {
+        setTopicsData(topicsData?.topics);
       }
 
-      // ✅ 3. Get category options using your generic strapiGet function
+      // Fetch dynamic category options
       const categoryOptionsData = await strapiGet(`category-options/${id}`, {
-        token: themeConfig.TOKEN, // Pass token only if needed
+        token: themeConfig.TOKEN,
       });
 
       if (categoryOptionsData?.options) {
-        setCategoryOptions(categoryOptionsData.options); // <-- Make sure this state exists
+        const dynamicFields = categoryOptionsData.options.map((option) => {
+          const childOptions = (option.childs || []).map((child) => {
+            // console.log("Child =>", child); // Shows all child properties
+
+            return {
+              ...child, // 🔁 Spread all properties of child
+              label: child.title, // Override label (used by FormMultiSelect)
+              value: child.documentId, // Override value (used by FormMultiSelect)
+            };
+          });
+
+          return {
+            position: 100,
+            name: option.slug || `option_${option.documentId}`,
+            label: option.title,
+            placeholder: `Select ${option.title}`,
+            type: "multiselect",
+            html: "multiselect",
+            options: childOptions,
+            description: `Choose appropriate ${option.title}`,
+            validation: { required: `${option.title} is required` },
+            rules: ["required"],
+            className: "mb-5",
+          };
+        });
+
+        setDynamicCategoryFields(dynamicFields);
       }
     } catch (err) {
       console.error("Failed to fetch product data:", err);
@@ -694,7 +730,7 @@ export default function ProductsPage({
   };
 
   const getProductList = async (id, short_title) => {
-    console.log(short_title, "this is for checking existing title");
+    // console.log(short_title, "this is for checking existing title");
 
     try {
       const payload = {
@@ -722,6 +758,8 @@ export default function ProductsPage({
         params: { populate: "*" },
         token: themeConfig.TOKEN,
       });
+
+      // console.log(productData);
 
       if (productData?.data) {
         const select = productData.data?.product_zip
@@ -773,7 +811,23 @@ export default function ProductsPage({
                   {field?.map((data, index) => {
                     return (
                       getFields(data) && (
-                        <div key={index} className={data.className}>
+                        <div
+                          key={data.name || index}
+                          className={data.className}
+                        >
+                          {getFields(data)}
+                        </div>
+                      )
+                    );
+                  })}
+
+                  {dynamicCategoryFields?.map((data, index) => {
+                    return (
+                      getFields(data) && (
+                        <div
+                          key={`dynamic-${data.name}`}
+                          className={data.className}
+                        >
                           {getFields(data)}
                         </div>
                       )

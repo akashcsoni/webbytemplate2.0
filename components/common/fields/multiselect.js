@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect, useRef } from "react";
@@ -9,6 +10,7 @@ export default function FormMultiSelect({
   error,
   defaultValueData,
 }) {
+  
   const dropdownRef = useRef(null);
 
   const [localError, setLocalError] = useState("");
@@ -54,9 +56,13 @@ export default function FormMultiSelect({
     setSelectedCountries([]);
   };
 
+  // console.log(data, "data for check");
+
   const filteredCountries = data.options.filter((country) =>
     country?.title?.toLowerCase().includes(countrySearchTerm.toLowerCase())
   );
+
+  // console.log(filteredCountries, "filteredCountries");
 
   const selectedCountryTitles = data.options
     .filter((country) => selectedCountries.includes(country.documentId))
@@ -124,9 +130,8 @@ export default function FormMultiSelect({
               </button>
             )}
             <svg
-              className={`w-4 h-4 transform transition-transform duration-300 ${
-                isCountryDropdownOpen ? "rotate-180" : "rotate-0"
-              }`}
+              className={`w-4 h-4 transform transition-transform duration-300 ${isCountryDropdownOpen ? "rotate-180" : "rotate-0"
+                }`}
               fill="none"
               stroke="currentColor"
               strokeWidth="2"
@@ -167,14 +172,20 @@ export default function FormMultiSelect({
                 </li>
               ))}
               {filteredCountries.length === 0 && (
-                <li className="px-4 py-2 text-gray-500">No {data?.label.toLowerCase()} found</li>
+                <li className="px-4 py-2 text-gray-500">
+                  No {data?.label.toLowerCase()} found
+                </li>
               )}
             </ul>
           </div>
         )}
       </div>
 
-      {isInvalid && <p className="2xl:text-sm md:text-[13px] text-xs text-[#F31260] p-1">{localError}</p>}
+      {isInvalid && (
+        <p className="2xl:text-sm md:text-[13px] text-xs text-[#F31260] p-1">
+          {localError}
+        </p>
+      )}
       {!isInvalid && data?.description && (
         <div className="flex items-center gap-[5px] p-1">
           <svg
