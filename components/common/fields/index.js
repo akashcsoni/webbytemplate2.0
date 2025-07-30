@@ -5,3 +5,4 @@ export { default as FormSelect } from "./select";
 export { default as FormDropzone } from "./dropzone";
 export { default as FormMultiSelect } from "./multiselect";
 export { default as FormRadio } from "./radio";
+export { default as GroupSelect } from "./groupSelect";
