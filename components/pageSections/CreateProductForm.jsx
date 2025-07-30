@@ -1,7 +1,6 @@
-
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { Button } from "@heroui/react";
 import {
   FormInput,
@@ -32,11 +31,9 @@ export default function ProductsPage({
   sub_title,
   params = {},
 }) {
-
   const { authUser } = useAuth();
   const router = useRouter();
   const [formValues, setFormValues] = useState({});
-  const [paramsData, setParamsData] = useState({});
   const [validationErrors, setValidationErrors] = useState({});
   const [loading, setLoading] = useState(false);
   const [defaultValueData, setDefaultValueData] = useState({});
@@ -46,8 +43,10 @@ export default function ProductsPage({
   const [tagList, setTagList] = useState([]);
   const [showFiels, setShowFiels] = useState([]);
   const [dynamicCategoryFields, setDynamicCategoryFields] = useState([]);
+  const [allSelectedChildren, setAllSelectedChildren] = useState([]);
   const [topicsData, setTopicsData] = useState([]);
-
+  const [isEditMode, setIsEditMode] = useState(false);
+  
   const globalValidator = (field) => {
     // Define validator functions
     const validators = {
@@ -94,7 +93,10 @@ export default function ProductsPage({
 
   const getOptionsList = async () => {
     const categoriesData = await strapiGet(`categories`, {
-      params: { populate: "*" },
+      params: {
+        populate: "*",
+        "pagination[pageSize]": 200,
+      },
       token: themeConfig.TOKEN,
     });
 
@@ -115,17 +117,17 @@ export default function ProductsPage({
     const rules = {};
 
     // Dynamically create validation rules
-    field.forEach((field_data) => {
+    getFieldDefinitions().forEach((field_data) => {
       rules[field_data.name] = globalValidator(field_data);
     });
 
     // Add image field validation rules
-    image_field.forEach((field_data) => {
+    getImageFields().forEach((field_data) => {
       rules[field_data.name] = globalValidator(field_data);
     });
 
     // Iterate through field groups and validate each field
-    field.forEach((field_data) => {
+    getFieldDefinitions().forEach((field_data) => {
       const fieldValue = formValues[field_data.name];
 
       if (field_data.name in rules) {
@@ -146,7 +148,7 @@ export default function ProductsPage({
     });
 
     // Validate image fields
-    image_field.forEach((field_data) => {
+    getImageFields().forEach((field_data) => {
       const fieldValue = formValues[field_data.name];
 
       if (field_data.name in rules) {
@@ -194,6 +196,38 @@ export default function ProductsPage({
       formValues;
     const slug = generateSlug(title);
 
+    let optionIds = [];
+    if (allSelectedChildren?.length) {
+      try {
+        const optionRes = await strapiGet("options", {
+          params: {
+            filters: {
+              documentId: {
+                $in: allSelectedChildren,
+              },
+            },
+            fields: ["id"],
+            pagination: { pageSize: 1000 },
+          },
+          token: themeConfig.TOKEN,
+        });
+        optionIds = optionRes?.data?.map((opt) => opt.id) || [];
+      } catch (err) {
+        console.error("Failed to fetch options:", err);
+        toast.error("Failed to fetch selected options.");
+        setLoading(false);
+        return;
+      }
+    }
+
+    // Extract dynamic field values
+    const dynamicFieldValues = {};
+    dynamicCategoryFields.forEach(field => {
+      if (formValues[field.name]) {
+        dynamicFieldValues[field.name] = formValues[field.name];
+      }
+    });
+
     let data = {
       ...formValues,
       title,
@@ -213,6 +247,9 @@ export default function ProductsPage({
         sales_price: Number(price),
       },
       publishedAt: null,
+      options: optionIds,
+      // Save dynamic field values separately
+      ...dynamicFieldValues,
     };
 
     try {
@@ -236,6 +273,8 @@ export default function ProductsPage({
         for (const imgId of removedImages) {
           await strapiDelete(`upload/files/${imgId.id}`, themeConfig.TOKEN);
         }
+
+
 
         response = await strapiPut(
           "products/" + defaultValueData.id,
@@ -293,9 +332,10 @@ export default function ProductsPage({
       )
       .flatMap(([, values]) => values || []); // flatten all selected values
 
+    setAllSelectedChildren(combinedSelectedChildren);
   };
 
-  const field = [
+  const getFieldDefinitions = () => [
     {
       position: 1,
       name: "title",
@@ -398,7 +438,7 @@ export default function ProductsPage({
             "You can provide a URL to a zip file containing your product data, which will be fetched and processed.",
         },
       ],
-      rules: ["required"],
+      rules: isEditMode ? [] : ["required"],
       className: "mb-5",
     },
     {
@@ -411,7 +451,7 @@ export default function ProductsPage({
       fileType: "zip",
       description: "Zip file containing the product assets",
       validation: { required: "Product zip is require" },
-      rules: showFiels.includes("product_zip") ? ["required"] : [],
+      rules: showFiels.includes("product_zip") && !isEditMode ? ["required"] : [],
       className: "mb-5",
     },
     {
@@ -426,7 +466,7 @@ export default function ProductsPage({
         required: "Product zip url is require",
         url: "Product zip url is unvalid",
       },
-      rules: showFiels.includes("product_zip_url") ? ["required", "url"] : [],
+      rules: showFiels.includes("product_zip_url") && !isEditMode ? ["required", "url"] : showFiels.includes("product_zip_url") ? ["url"] : [],
       className: "mb-5",
     },
     {
@@ -507,7 +547,7 @@ export default function ProductsPage({
     },
   ];
 
-  const image_field = [
+  const getImageFields = () => [
     {
       position: 1,
       name: "grid_image",
@@ -519,7 +559,7 @@ export default function ProductsPage({
       description: "Minimum resolution: 271x345px; max file size: 2MB",
       support: "JPG or PNG",
       validation: { required: "Grid image is require" },
-      rules: ["required"],
+      rules: isEditMode ? [] : ["required"],
     },
     {
       position: 2,
@@ -533,7 +573,7 @@ export default function ProductsPage({
         "Minimum resolution: 440x560px or 868x554px; max file size: 2MB/per image",
       support: "JPG, PNG, or GIF",
       validation: { required: "Gallery image is require" },
-      rules: ["required"],
+      rules: isEditMode ? [] : ["required"],
     },
   ];
 
@@ -551,7 +591,11 @@ export default function ProductsPage({
             data={data}
             onChange={handleFieldChange}
             error={validationErrors[data.name]}
-            defaultValueData={defaultValueData[data.name]}
+            defaultValueData={
+              (data.name === "product_zip_url" && isEditMode)
+                ? undefined
+                : defaultValueData[data.name]
+            }
           />
         );
 
@@ -571,7 +615,11 @@ export default function ProductsPage({
             data={data}
             onChange={handleFieldChange}
             error={validationErrors[data.name]}
-            defaultValueData={defaultValueData[data.name]}
+            defaultValueData={
+              (data.name === "product_zip" && isEditMode)
+                ? undefined
+                : defaultValueData[data.name]
+            }
           />
         );
 
@@ -581,7 +629,11 @@ export default function ProductsPage({
             data={data}
             onChange={handleFieldChange}
             error={validationErrors[data.name]}
-            defaultValueData={defaultValueData[data.name]}
+            defaultValueData={
+              data.name === "product_zip_select" && isEditMode
+                ? undefined
+                : defaultValueData[data.name]
+            }
           />
         );
 
@@ -608,7 +660,7 @@ export default function ProductsPage({
       case "dropzone":
         return (
           <FormDropzone
-            type={paramsData?.sub_slug}
+            type={isEditMode ? "edit" : "add"}
             data={data}
             onChange={handleFieldChange}
             error={validationErrors[data.name]}
@@ -625,17 +677,16 @@ export default function ProductsPage({
             defaultValueData={defaultValueData[data.name]}
           />
         );
-
       default:
         break;
     }
   };
 
   useEffect(() => {
-    if (formValues.categories) {
+    if (formValues.categories && !isEditMode) {
       getFormatAndCompatibleList(formValues.categories);
     }
-  }, [formValues.categories]);
+  }, [formValues.categories, isEditMode]);
 
   useEffect(() => {
     if (authUser?.documentId || formValues.short_title) {
@@ -647,8 +698,8 @@ export default function ProductsPage({
     getOptionsList();
 
     const init = async () => {
-      setParamsData(await params);
       const { id } = (await params) || {};
+      setIsEditMode(!!id);
       if (id) {
         await getProductData(id);
       }
@@ -661,7 +712,7 @@ export default function ProductsPage({
     return items.map((item) => item.documentId);
   };
 
-  const getFormatAndCompatibleList = async (id) => {
+  const getFormatAndCompatibleList = async (id, existingProductData = null) => {
     try {
       const productData = await strapiGet(`format/${id}`, {
         params: { populate: "*" },
@@ -677,13 +728,15 @@ export default function ProductsPage({
         setTechnologyList(technologyData.data || []);
       }
 
+
+
       // fetch topics from category
       const topicsData = await strapiGet(`category-topics/${id}`, {
         // params: { populate: "*" },
         token: themeConfig.TOKEN,
       });
 
-      console.log(topicsData?.topics);
+
 
       if (topicsData?.topics) {
         setTopicsData(topicsData?.topics);
@@ -693,12 +746,9 @@ export default function ProductsPage({
       const categoryOptionsData = await strapiGet(`category-options/${id}`, {
         token: themeConfig.TOKEN,
       });
-
       if (categoryOptionsData?.options) {
         const dynamicFields = categoryOptionsData.options.map((option) => {
           const childOptions = (option.childs || []).map((child) => {
-            // console.log("Child =>", child); // Shows all child properties
-
             return {
               ...child, // 🔁 Spread all properties of child
               label: child.title, // Override label (used by FormMultiSelect)
@@ -720,7 +770,6 @@ export default function ProductsPage({
             className: "mb-5",
           };
         });
-
         setDynamicCategoryFields(dynamicFields);
       }
     } catch (err) {
@@ -729,9 +778,23 @@ export default function ProductsPage({
     }
   };
 
-  const getProductList = async (id, short_title) => {
-    // console.log(short_title, "this is for checking existing title");
+  useEffect(() => {
+    let categoryId = null;
 
+    if (typeof defaultValueData?.categories === "string") {
+      categoryId = defaultValueData.categories;
+    } else if (Array.isArray(defaultValueData?.categories)) {
+      categoryId = defaultValueData.categories?.[0]?.documentId;
+    } else if (typeof defaultValueData?.categories === "object") {
+      categoryId = defaultValueData.categories?.documentId;
+    }
+
+    if (categoryId && !isEditMode) {
+      getFormatAndCompatibleList(categoryId);
+    }
+  }, [defaultValueData, isEditMode]);
+
+  const getProductList = async (id, short_title) => {
     try {
       const payload = {
         search: short_title,
@@ -752,6 +815,8 @@ export default function ProductsPage({
     }
   };
 
+
+
   const getProductData = async (id) => {
     try {
       const productData = await strapiGet(`products/${id}`, {
@@ -759,21 +824,54 @@ export default function ProductsPage({
         token: themeConfig.TOKEN,
       });
 
-      // console.log(productData);
-
       if (productData?.data) {
-        const select = productData.data?.product_zip
-          ? "product_zip"
-          : "product_zip_url";
+        const firstVendorProduct = productData.data?.vendor_given_products?.[0];
 
-        setShowFiels([select]);
+        // Don't automatically select zip fields in edit mode
+        // setShowFiels([]); // Keep empty to not show any zip fields by default
 
-        setDefaultValueData((prev) => ({
-          ...prev,
+        const processedVendorProducts =
+          productData.data?.vendor_given_products?.map((item) => {
+            if (item.zip) {
+              return {
+                ...item,
+                type: "zip",
+                value: item.zip, // or item.zip.url or .documentId based on use
+              };
+            } else if (item.url) {
+              return {
+                ...item,
+                type: "url",
+                value: item.url,
+              };
+            }
+            return item;
+          }) || [];
+
+        // Extract dynamic field values from saved data
+        const dynamicFieldValues = {};
+
+        // Get dynamic field values directly from product data
+        // These should be saved as separate fields when the product was created/updated
+        if (productData.data) {
+          // Check for dynamic field values in the product data
+          Object.keys(productData.data).forEach(key => {
+            // Check if this key matches a dynamic field name pattern
+            if (key.includes('-') || key === 'compatibility') {
+              const value = productData.data[key];
+              if (Array.isArray(value)) {
+                dynamicFieldValues[key] = value;
+              }
+            }
+          });
+        }
+
+        const finalDefaultValueData = {
           ...productData.data,
-          product_zip_select: select,
+          // Don't set product_zip_select in edit mode - let user choose
           categories: extractIds(productData.data?.categories)?.[0],
           tags: extractIds(productData.data?.tags),
+          topics: extractIds(productData.data?.topics),
           file_format: extractIds(productData.data?.file_format),
           compatible_with: extractIds(productData.data?.compatible_with),
           technology: productData.data?.all_technology?.technology?.documentId,
@@ -781,7 +879,23 @@ export default function ProductsPage({
             productData.data?.all_technology?.products
           ),
           price: productData.data?.price?.sales_price,
-        }));
+          vendor_given_products: processedVendorProducts,
+          // Keep the existing values but don't pre-select the radio button
+          product_zip: firstVendorProduct?.zip || null,
+          product_zip_url: firstVendorProduct?.url || "",
+          // Add dynamic field values
+          ...dynamicFieldValues,
+        };
+
+        setDefaultValueData((prev) => finalDefaultValueData);
+
+        // If we have categories, fetch dynamic fields with existing data
+        if (productData.data?.categories) {
+          const categoryId = extractIds(productData.data?.categories)?.[0];
+          if (categoryId) {
+            await getFormatAndCompatibleList(categoryId, productData.data);
+          }
+        }
       }
     } catch (err) {
       console.error("Failed to fetch product data:", err);
@@ -808,7 +922,7 @@ export default function ProductsPage({
                 onSubmit={save_product_details}
               >
                 <div className="flex flex-col">
-                  {field?.map((data, index) => {
+                  {getFieldDefinitions()?.map((data, index) => {
                     return (
                       getFields(data) && (
                         <div
@@ -821,7 +935,7 @@ export default function ProductsPage({
                     );
                   })}
 
-                  {dynamicCategoryFields?.map((data, index) => {
+                  {dynamicCategoryFields?.map((data) => {
                     return (
                       getFields(data) && (
                         <div
@@ -1024,7 +1138,7 @@ export default function ProductsPage({
               <div className="border-b border-primary/10">
                 <p className="text-black py-[6px] px-5">{sub_title}</p>
               </div>
-              {image_field?.map((data, index) => {
+              {getImageFields()?.map((data, index) => {
                 return <div key={index}>{getFields(data)}</div>;
               })}
             </div>
