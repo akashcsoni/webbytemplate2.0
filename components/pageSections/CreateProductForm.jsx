@@ -1,7 +1,6 @@
-"use client";
-
-import { useEffect, useState, useCallback } from "react";
-import { Button } from "@heroui/react";
+"use client"
+import { useEffect, useState } from "react"
+import { Button } from "@heroui/react"
 import {
   FormInput,
   FormTextArea,
@@ -11,42 +10,30 @@ import {
   FormSelect,
   FormRadio,
   GroupSelect,
-} from "@/comman/fields";
-import {
-  strapiDelete,
-  strapiGet,
-  strapiPost,
-  strapiPut,
-} from "@/lib/api/strapiClient";
-import { themeConfig } from "@/config/theamConfig";
-import { useAuth } from "@/contexts/AuthContext";
-import toast from "react-hot-toast";
-import { useRouter } from "next/navigation";
+} from "@/comman/fields"
+import { strapiDelete, strapiGet, strapiPost, strapiPut } from "@/lib/api/strapiClient"
+import { themeConfig } from "@/config/theamConfig"
+import { useAuth } from "@/contexts/AuthContext"
+import toast from "react-hot-toast"
+import { useRouter } from "next/navigation"
 
-export default function ProductsPage({
-  button,
-  images,
-  form,
-  title,
-  sub_title,
-  params = {},
-}) {
-  const { authUser } = useAuth();
-  const router = useRouter();
-  const [formValues, setFormValues] = useState({});
-  const [validationErrors, setValidationErrors] = useState({});
-  const [loading, setLoading] = useState(false);
-  const [defaultValueData, setDefaultValueData] = useState({});
-  const [categoriesList, setCategoriesList] = useState([]);
-  const [technologyList, setTechnologyList] = useState([]);
-  const [existingProduct, setExistingProduct] = useState([]);
-  const [tagList, setTagList] = useState([]);
-  const [showFiels, setShowFiels] = useState([]);
-  const [dynamicCategoryFields, setDynamicCategoryFields] = useState([]);
-  const [allSelectedChildren, setAllSelectedChildren] = useState([]);
-  const [topicsData, setTopicsData] = useState([]);
-  const [isEditMode, setIsEditMode] = useState(false);
-  
+export default function ProductsPage({ button, images, form, title, sub_title, params = {} }) {
+  const { authUser } = useAuth()
+  const router = useRouter()
+  const [formValues, setFormValues] = useState({})
+  const [validationErrors, setValidationErrors] = useState({})
+  const [loading, setLoading] = useState(false)
+  const [defaultValueData, setDefaultValueData] = useState({})
+  const [categoriesList, setCategoriesList] = useState([])
+  const [technologyList, setTechnologyList] = useState([])
+  const [existingProduct, setExistingProduct] = useState([])
+  const [tagList, setTagList] = useState([])
+  const [showFiels, setShowFiels] = useState([])
+  const [dynamicCategoryFields, setDynamicCategoryFields] = useState([])
+  const [allSelectedChildren, setAllSelectedChildren] = useState([])
+  const [topicsData, setTopicsData] = useState([])
+  const [isEditMode, setIsEditMode] = useState(false)
+
   const globalValidator = (field) => {
     // Define validator functions
     const validators = {
@@ -56,40 +43,33 @@ export default function ProductsPage({
             value === undefined ||
             value === null ||
             value === "" ||
-            (typeof value === "object" &&
-              value !== null &&
-              "length" in value &&
-              value.length === 0);
-
-          return !isEmpty;
+            (typeof value === "object" && value !== null && "length" in value && value.length === 0)
+          return !isEmpty
         },
         message: field.validation.required,
       }),
-
       url: () => ({
         validate: (value) => {
-          if (!value) return true; // Allow empty (use 'required' to enforce presence)
-          const urlRegex =
-            /^(https?:\/\/)?([^\s@]+)\.([^\s@]{2,})(\/[^\s@]*)?$/i;
-          return urlRegex.test(value);
+          if (!value) return true // Allow empty (use 'required' to enforce presence)
+          const urlRegex = /^(https?:\/\/)?([^\s@]+)\.([^\s@]{2,})(\/[^\s@]*)?$/i
+          return urlRegex.test(value)
         },
         message: field.validation.url,
       }),
-    };
+    }
 
     // Create field validators object
-    const fieldValidators = {};
-
+    const fieldValidators = {}
     if (field.rules) {
       field.rules.forEach((rule) => {
         if (validators[rule]) {
-          fieldValidators[rule] = validators[rule]();
+          fieldValidators[rule] = validators[rule]()
         }
-      });
+      })
     }
 
-    return fieldValidators;
-  };
+    return fieldValidators
+  }
 
   const getOptionsList = async () => {
     const categoriesData = await strapiGet(`categories`, {
@@ -98,88 +78,80 @@ export default function ProductsPage({
         "pagination[pageSize]": 200,
       },
       token: themeConfig.TOKEN,
-    });
-
+    })
     const tagData = await strapiGet(`tags`, {
       params: { populate: "*" },
       token: themeConfig.TOKEN,
-    });
-
+    })
     if (categoriesData?.data && tagData?.data) {
-      setCategoriesList(categoriesData?.data);
-      setTagList(tagData?.data);
+      setCategoriesList(categoriesData?.data)
+      setTagList(tagData?.data)
     }
-  };
+  }
 
   const validateFields = () => {
-    let isValid = true;
-    const errors = {};
-    const rules = {};
+    let isValid = true
+    const errors = {}
+    const rules = {}
 
     // Dynamically create validation rules
     getFieldDefinitions().forEach((field_data) => {
-      rules[field_data.name] = globalValidator(field_data);
-    });
+      rules[field_data.name] = globalValidator(field_data)
+    })
 
     // Add image field validation rules
     getImageFields().forEach((field_data) => {
-      rules[field_data.name] = globalValidator(field_data);
-    });
+      rules[field_data.name] = globalValidator(field_data)
+    })
 
     // Iterate through field groups and validate each field
     getFieldDefinitions().forEach((field_data) => {
-      const fieldValue = formValues[field_data.name];
-
+      const fieldValue = formValues[field_data.name]
       if (field_data.name in rules) {
-        const validators = rules[field_data.name];
-
+        const validators = rules[field_data.name]
         for (const validatorName in validators) {
-          const { validate, message } = validators[validatorName];
-
+          const { validate, message } = validators[validatorName]
           if (!validate(fieldValue)) {
             if (!errors[field_data.name]) {
-              errors[field_data.name] = [];
+              errors[field_data.name] = []
             }
-            errors[field_data.name].push(message);
-            isValid = false;
+            errors[field_data.name].push(message)
+            isValid = false
           }
         }
       }
-    });
+    })
 
     // Validate image fields
     getImageFields().forEach((field_data) => {
-      const fieldValue = formValues[field_data.name];
-
+      const fieldValue = formValues[field_data.name]
       if (field_data.name in rules) {
-        const validators = rules[field_data.name];
-
+        const validators = rules[field_data.name]
         for (const validatorName in validators) {
-          const { validate, message } = validators[validatorName];
-
+          const { validate, message } = validators[validatorName]
           if (!validate(fieldValue)) {
             if (!errors[field_data.name]) {
-              errors[field_data.name] = [];
+              errors[field_data.name] = []
             }
-            errors[field_data.name].push(message);
-            isValid = false;
+            errors[field_data.name].push(message)
+            isValid = false
           }
         }
       }
-    });
+    })
 
-    setValidationErrors(errors);
-    return isValid;
-  };
+    setValidationErrors(errors)
+    return isValid
+  }
 
   const save_product_details = async (event) => {
-    event.preventDefault();
-    setLoading(true);
+    event.preventDefault()
+    setLoading(true)
 
-    const isValid = validateFields();
+    const isValid = validateFields()
     if (!isValid) {
-      setLoading(false);
-      return;
+      setLoading(false)
+      return
     }
 
     function generateSlug(title) {
@@ -189,14 +161,13 @@ export default function ProductsPage({
         .replace(/[^a-z0-9 -]/g, "")
         .replace(/\s+/g, "-")
         .replace(/-+/g, "-")
-        .replace(/^-+|-+$/g, "");
+        .replace(/^-+|-+$/g, "")
     }
 
-    const { title, description, grid_image, existing_product, price } =
-      formValues;
-    const slug = generateSlug(title);
+    const { title, description, grid_image, existing_product, price } = formValues
+    const slug = generateSlug(title)
 
-    let optionIds = [];
+    let optionIds = []
     if (allSelectedChildren?.length) {
       try {
         const optionRes = await strapiGet("options", {
@@ -210,25 +181,25 @@ export default function ProductsPage({
             pagination: { pageSize: 1000 },
           },
           token: themeConfig.TOKEN,
-        });
-        optionIds = optionRes?.data?.map((opt) => opt.id) || [];
+        })
+        optionIds = optionRes?.data?.map((opt) => opt.id) || []
       } catch (err) {
-        console.error("Failed to fetch options:", err);
-        toast.error("Failed to fetch selected options.");
-        setLoading(false);
-        return;
+        console.error("Failed to fetch options:", err)
+        toast.error("Failed to fetch selected options.")
+        setLoading(false)
+        return
       }
     }
 
     // Extract dynamic field values
-    const dynamicFieldValues = {};
-    dynamicCategoryFields.forEach(field => {
+    const dynamicFieldValues = {}
+    dynamicCategoryFields.forEach((field) => {
       if (formValues[field.name]) {
-        dynamicFieldValues[field.name] = formValues[field.name];
+        dynamicFieldValues[field.name] = formValues[field.name]
       }
-    });
+    })
 
-    let data = {
+    const data = {
       ...formValues,
       title,
       slug,
@@ -250,90 +221,70 @@ export default function ProductsPage({
       options: optionIds,
       // Save dynamic field values separately
       ...dynamicFieldValues,
-    };
+    }
 
     try {
-      let response = {};
-      const { id } = (await params) || {};
+      let response = {}
+      const { id } = (await params) || {}
       if (id) {
-        if (
-          defaultValueData?.grid_image !== null &&
-          defaultValueData?.grid_image?.id !== grid_image
-        ) {
-          await strapiDelete(
-            `upload/files/${defaultValueData?.grid_image?.id}`,
-            themeConfig.TOKEN
-          );
+        if (defaultValueData?.grid_image !== null && defaultValueData?.grid_image?.id !== grid_image) {
+          await strapiDelete(`upload/files/${defaultValueData?.grid_image?.id}`, themeConfig.TOKEN)
         }
 
         const removedImages = defaultValueData?.gallery_image.filter(
-          (img) => !formValues.gallery_image.includes(img.id)
-        );
-
+          (img) => !formValues.gallery_image.includes(img.id),
+        )
         for (const imgId of removedImages) {
-          await strapiDelete(`upload/files/${imgId.id}`, themeConfig.TOKEN);
+          await strapiDelete(`upload/files/${imgId.id}`, themeConfig.TOKEN)
         }
 
-
-
-        response = await strapiPut(
-          "products/" + defaultValueData.id,
-          data,
-          themeConfig.TOKEN
-        );
+        response = await strapiPut("products/" + defaultValueData.id, data, themeConfig.TOKEN)
       } else {
-        response = await strapiPost("products", data, themeConfig.TOKEN);
+        response = await strapiPost("products", data, themeConfig.TOKEN)
       }
 
       if (response?.data?.documentId) {
-        toast.success(response.message);
+        toast.success(response.message)
         if (!id) {
-          router.push(
-            `/user/${authUser?.username}/products/edit/${response?.data?.documentId}`
-          );
+          router.push(`/user/${authUser?.username}/products/edit/${response?.data?.documentId}`)
         }
       } else {
-        toast.error("Unexpected response from server.");
+        toast.error("Unexpected response from server.")
       }
     } catch (error) {
-      console.error("Product creation failed:", error);
-      toast.error(
-        error?.response?.data?.error?.message ||
-        "An error occurred while creating the product."
-      );
+      console.error("Product creation failed:", error)
+      toast.error(error?.response?.data?.error?.message || "An error occurred while creating the product.")
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   const handleFieldChange = async (name, value) => {
     // 1. Update form values
     const updatedFormValues = {
       ...formValues,
       [name]: value,
-    };
-    setFormValues(updatedFormValues);
+    }
+    setFormValues(updatedFormValues)
 
     // 2. Clear validation error for this field
     setValidationErrors((prevErrors) => ({
       ...prevErrors,
       [name]: "",
-    }));
+    }))
 
     // 3. Update show fields if zip is selected
     if (name === "product_zip_select") {
-      setShowFiels([value]);
+      setShowFiels([value])
     }
 
     // 4. Update combined selected children array across all dynamic multiselect fields
     const combinedSelectedChildren = Object.entries(updatedFormValues)
-      .filter(([key]) =>
-        dynamicCategoryFields.some((field) => field.name === key)
-      )
-      .flatMap(([, values]) => values || []); // flatten all selected values
+      .filter(([key]) => dynamicCategoryFields.some((field) => field.name === key))
+      .flatMap(([, values]) => values || []) // flatten all selected values
 
-    setAllSelectedChildren(combinedSelectedChildren);
-  };
+    setAllSelectedChildren(combinedSelectedChildren)
+  }
 
   const getFieldDefinitions = () => [
     {
@@ -466,7 +417,12 @@ export default function ProductsPage({
         required: "Product zip url is require",
         url: "Product zip url is unvalid",
       },
-      rules: showFiels.includes("product_zip_url") && !isEditMode ? ["required", "url"] : showFiels.includes("product_zip_url") ? ["url"] : [],
+      rules:
+        showFiels.includes("product_zip_url") && !isEditMode
+          ? ["required", "url"]
+          : showFiels.includes("product_zip_url")
+            ? ["url"]
+            : [],
       className: "mb-5",
     },
     {
@@ -525,8 +481,7 @@ export default function ProductsPage({
           value: true,
         },
         {
-          label:
-            "I will sell my products on WebbyTemplate and other marketplaces.",
+          label: "I will sell my products on WebbyTemplate and other marketplaces.",
           value: false,
         },
       ],
@@ -545,7 +500,7 @@ export default function ProductsPage({
       rules: ["required"],
       className: "mb-5",
     },
-  ];
+  ]
 
   const getImageFields = () => [
     {
@@ -569,21 +524,18 @@ export default function ProductsPage({
       type: "file",
       html: "dropzone",
       multiple: true,
-      description:
-        "Minimum resolution: 440x560px or 868x554px; max file size: 2MB/per image",
+      description: "Minimum resolution: 440x560px or 868x554px; max file size: 2MB/per image",
       support: "JPG, PNG, or GIF",
       validation: { required: "Gallery image is require" },
       rules: isEditMode ? [] : ["required"],
     },
-  ];
+  ]
 
   const getFields = (data) => {
-    if (
-      ["product_zip", "product_zip_url"].includes(data.name) &&
-      !showFiels.includes(data.name)
-    ) {
-      return null; // Skip rendering if the field is not selected
+    if (["product_zip", "product_zip_url"].includes(data.name) && !showFiels.includes(data.name)) {
+      return null // Skip rendering if the field is not selected
     }
+
     switch (data.html) {
       case "input":
         return (
@@ -591,14 +543,9 @@ export default function ProductsPage({
             data={data}
             onChange={handleFieldChange}
             error={validationErrors[data.name]}
-            defaultValueData={
-              (data.name === "product_zip_url" && isEditMode)
-                ? undefined
-                : defaultValueData[data.name]
-            }
+            defaultValueData={data.name === "product_zip_url" && isEditMode ? undefined : defaultValueData[data.name]}
           />
-        );
-
+        )
       case "textarea":
         return (
           <FormTextArea
@@ -607,22 +554,16 @@ export default function ProductsPage({
             error={validationErrors[data.name]}
             defaultValueData={defaultValueData[data.name]}
           />
-        );
-
+        )
       case "upload":
         return (
           <FormSingleFile
             data={data}
             onChange={handleFieldChange}
             error={validationErrors[data.name]}
-            defaultValueData={
-              (data.name === "product_zip" && isEditMode)
-                ? undefined
-                : defaultValueData[data.name]
-            }
+            defaultValueData={data.name === "product_zip" && isEditMode ? undefined : defaultValueData[data.name]}
           />
-        );
-
+        )
       case "radio":
         return (
           <FormRadio
@@ -630,13 +571,10 @@ export default function ProductsPage({
             onChange={handleFieldChange}
             error={validationErrors[data.name]}
             defaultValueData={
-              data.name === "product_zip_select" && isEditMode
-                ? undefined
-                : defaultValueData[data.name]
+              data.name === "product_zip_select" && isEditMode ? undefined : defaultValueData[data.name]
             }
           />
-        );
-
+        )
       case "multiselect":
         return (
           <FormMultiSelect
@@ -645,8 +583,7 @@ export default function ProductsPage({
             error={validationErrors[data.name]}
             defaultValueData={defaultValueData[data.name]}
           />
-        );
-
+        )
       case "select":
         return (
           <FormSelect
@@ -655,8 +592,7 @@ export default function ProductsPage({
             error={validationErrors[data.name]}
             defaultValueData={defaultValueData[data.name]}
           />
-        );
-
+        )
       case "dropzone":
         return (
           <FormDropzone
@@ -666,8 +602,7 @@ export default function ProductsPage({
             error={validationErrors[data.name]}
             defaultValueData={defaultValueData[data.name]}
           />
-        );
-
+        )
       case "groupselect":
         return (
           <GroupSelect
@@ -676,85 +611,75 @@ export default function ProductsPage({
             error={validationErrors[data.name]}
             defaultValueData={defaultValueData[data.name]}
           />
-        );
+        )
       default:
-        break;
+        break
     }
-  };
+  }
 
   useEffect(() => {
     if (formValues.categories && !isEditMode) {
-      getFormatAndCompatibleList(formValues.categories);
+      getFormatAndCompatibleList(formValues.categories)
     }
-  }, [formValues.categories, isEditMode]);
+  }, [formValues.categories, isEditMode])
 
   useEffect(() => {
     if (authUser?.documentId || formValues.short_title) {
-      getProductList(authUser?.documentId, formValues.short_title);
+      getProductList(authUser?.documentId, formValues.short_title)
     }
-  }, [formValues.short_title]);
+  }, [formValues.short_title])
 
   useEffect(() => {
-    getOptionsList();
-
+    getOptionsList()
     const init = async () => {
-      const { id } = (await params) || {};
-      setIsEditMode(!!id);
+      const { id } = (await params) || {}
+      setIsEditMode(!!id)
       if (id) {
-        await getProductData(id);
+        await getProductData(id)
       }
-    };
-    init();
-  }, [params, authUser]);
+    }
+    init()
+  }, [params, authUser])
 
   const extractIds = (items) => {
-    if (!Array.isArray(items)) return [];
-    return items.map((item) => item.documentId);
-  };
+    if (!Array.isArray(items)) return []
+    return items.map((item) => item.documentId)
+  }
 
+  // Updated function to handle dynamic field values properly
   const getFormatAndCompatibleList = async (id, existingProductData = null) => {
     try {
-      const productData = await strapiGet(`format/${id}`, {
-        params: { populate: "*" },
-        token: themeConfig.TOKEN,
-      });
-
       const technologyData = await strapiGet(`technologies`, {
         params: { populate: "*" },
         token: themeConfig.TOKEN,
-      });
+      })
 
       if (technologyData.data) {
-        setTechnologyList(technologyData.data || []);
+        setTechnologyList(technologyData.data || [])
       }
-
-
 
       // fetch topics from category
       const topicsData = await strapiGet(`category-topics/${id}`, {
-        // params: { populate: "*" },
         token: themeConfig.TOKEN,
-      });
-
-
-
+      })
       if (topicsData?.topics) {
-        setTopicsData(topicsData?.topics);
+        setTopicsData(topicsData?.topics)
       }
 
       // Fetch dynamic category options
       const categoryOptionsData = await strapiGet(`category-options/${id}`, {
         token: themeConfig.TOKEN,
-      });
+      })
+
       if (categoryOptionsData?.options) {
         const dynamicFields = categoryOptionsData.options.map((option) => {
           const childOptions = (option.childs || []).map((child) => {
             return {
-              ...child, // 🔁 Spread all properties of child
-              label: child.title, // Override label (used by FormMultiSelect)
-              value: child.documentId, // Override value (used by FormMultiSelect)
-            };
-          });
+              ...child,
+              label: child.title,
+              value: child.documentId,
+            }
+          })
 
           return {
             position: 100,
@@ -768,67 +693,97 @@ export default function ProductsPage({
             validation: { required: `${option.title} is required` },
             rules: ["required"],
             className: "mb-5",
-          };
-        });
-        setDynamicCategoryFields(dynamicFields);
+          }
+        })
+
+        setDynamicCategoryFields(dynamicFields)
+
+        // **KEY FIX**: Set default values for dynamic fields when in edit mode
+        if (isEditMode && existingProductData) {
+          const dynamicFieldValues = {}
+
+          // Extract selected option IDs from the existing product data
+          const selectedOptionIds = existingProductData.options?.map((opt) => opt.documentId) || []
+
+          // Map selected options to their respective dynamic fields
+          dynamicFields.forEach((field) => {
+            const fieldSelectedOptions = []
+
+            // Find which options belong to this field
+            field.options.forEach((option) => {
+              if (selectedOptionIds.includes(option.documentId)) {
+                fieldSelectedOptions.push(option.documentId)
+              }
+            })
+
+            if (fieldSelectedOptions.length > 0) {
+              dynamicFieldValues[field.name] = fieldSelectedOptions
+            }
+          })
+
+          // Update form values with dynamic field values
+          setFormValues((prevValues) => ({
+            ...prevValues,
+            ...dynamicFieldValues,
+          }))
+
+          // Update defaultValueData with dynamic field values
+          setDefaultValueData((prevData) => ({
+            ...prevData,
+            ...dynamicFieldValues,
+          }))
+        }
       }
     } catch (err) {
-      console.error("Failed to fetch product data:", err);
-      toast.error("Failed to load product data.");
+      console.error("Failed to fetch product data:", err)
+      toast.error("Failed to load product data.")
     }
-  };
+  }
 
   useEffect(() => {
-    let categoryId = null;
-
+    let categoryId = null
     if (typeof defaultValueData?.categories === "string") {
-      categoryId = defaultValueData.categories;
+      categoryId = defaultValueData.categories
     } else if (Array.isArray(defaultValueData?.categories)) {
-      categoryId = defaultValueData.categories?.[0]?.documentId;
+      categoryId = defaultValueData.categories?.[0]?.documentId
     } else if (typeof defaultValueData?.categories === "object") {
-      categoryId = defaultValueData.categories?.documentId;
+      categoryId = defaultValueData.categories?.documentId
     }
 
-    if (categoryId && !isEditMode) {
-      getFormatAndCompatibleList(categoryId);
+    if (categoryId) {
+      // Pass the existing product data when in edit mode
+      getFormatAndCompatibleList(categoryId, isEditMode ? defaultValueData : null)
     }
-  }, [defaultValueData, isEditMode]);
+  }, [defaultValueData.categories, isEditMode])
 
   const getProductList = async (id, short_title) => {
     try {
       const payload = {
         search: short_title,
-      };
-
+      }
       const productData = await strapiPost(`author-product/${id}`, {
         params: { populate: "*" },
         ...payload,
         token: themeConfig.TOKEN,
-      });
-
+      })
       if (productData?.data) {
-        setExistingProduct(productData.data);
+        setExistingProduct(productData.data)
       }
     } catch (err) {
-      console.error("Failed to fetch product data:", err);
-      toast.error("Failed to load product data.");
+      console.error("Failed to fetch product data:", err)
+      toast.error("Failed to load product data.")
     }
-  };
-
-
+  }
 
   const getProductData = async (id) => {
     try {
       const productData = await strapiGet(`products/${id}`, {
         params: { populate: "*" },
         token: themeConfig.TOKEN,
-      });
+      })
 
       if (productData?.data) {
-        const firstVendorProduct = productData.data?.vendor_given_products?.[0];
-
-        // Don't automatically select zip fields in edit mode
-        // setShowFiels([]); // Keep empty to not show any zip fields by default
+        const firstVendorProduct = productData.data?.vendor_given_products?.[0]
 
         const processedVendorProducts =
           productData.data?.vendor_given_products?.map((item) => {
@@ -836,79 +791,49 @@ export default function ProductsPage({
               return {
                 ...item,
                 type: "zip",
-                value: item.zip, // or item.zip.url or .documentId based on use
-              };
+                value: item.zip,
+              }
             } else if (item.url) {
               return {
                 ...item,
                 type: "url",
                 value: item.url,
-              };
-            }
-            return item;
-          }) || [];
-
-        // Extract dynamic field values from saved data
-        const dynamicFieldValues = {};
-
-        // Get dynamic field values directly from product data
-        // These should be saved as separate fields when the product was created/updated
-        if (productData.data) {
-          // Check for dynamic field values in the product data
-          Object.keys(productData.data).forEach(key => {
-            // Check if this key matches a dynamic field name pattern
-            if (key.includes('-') || key === 'compatibility') {
-              const value = productData.data[key];
-              if (Array.isArray(value)) {
-                dynamicFieldValues[key] = value;
               }
             }
-          });
-        }
+            return item
+          }) || []
 
         const finalDefaultValueData = {
           ...productData.data,
-          // Don't set product_zip_select in edit mode - let user choose
           categories: extractIds(productData.data?.categories)?.[0],
           tags: extractIds(productData.data?.tags),
           topics: extractIds(productData.data?.topics),
           file_format: extractIds(productData.data?.file_format),
           compatible_with: extractIds(productData.data?.compatible_with),
           technology: productData.data?.all_technology?.technology?.documentId,
-          existing_product: extractIds(
-            productData.data?.all_technology?.products
-          ),
+          existing_product: extractIds(productData.data?.all_technology?.products),
           price: productData.data?.price?.sales_price,
           vendor_given_products: processedVendorProducts,
-          // Keep the existing values but don't pre-select the radio button
           product_zip: firstVendorProduct?.zip || null,
           product_zip_url: firstVendorProduct?.url || "",
-          // Add dynamic field values
-          ...dynamicFieldValues,
-        };
-
-        setDefaultValueData((prev) => finalDefaultValueData);
-
-        // If we have categories, fetch dynamic fields with existing data
-        if (productData.data?.categories) {
-          const categoryId = extractIds(productData.data?.categories)?.[0];
-          if (categoryId) {
-            await getFormatAndCompatibleList(categoryId, productData.data);
-          }
         }
+
+        setDefaultValueData(finalDefaultValueData)
+
+        // Set initial form values
+        setFormValues(finalDefaultValueData)
       }
     } catch (err) {
-      console.error("Failed to fetch product data:", err);
-      toast.error("Failed to load product data.");
+      console.error("Failed to fetch product data:", err)
+      toast.error("Failed to load product data.")
     }
-  };
+  }
 
   return (
     <div>
       <div className="flex items-center justify-between w-full">
         <h1 className="h2 py-[30px]">{title}</h1>
       </div>
-
       <div className="overflow-hidden">
         <div className="flex gap-4 md:flex-row flex-col items-start justify-between">
           {form && (
@@ -916,52 +841,34 @@ export default function ProductsPage({
               <div className="border-b border-primary/10 bg-white">
                 <p className="text-black py-[6px] px-5">{sub_title}</p>
               </div>
-              <form
-                className="pt-4 pb-9 px-5"
-                id="product_details_form"
-                onSubmit={save_product_details}
-              >
+              <form className="pt-4 pb-9 px-5" id="product_details_form" onSubmit={save_product_details}>
                 <div className="flex flex-col">
                   {getFieldDefinitions()?.map((data, index) => {
                     return (
                       getFields(data) && (
-                        <div
-                          key={data.name || index}
-                          className={data.className}
-                        >
+                        <div key={data.name || index} className={data.className}>
                           {getFields(data)}
                         </div>
                       )
-                    );
+                    )
                   })}
-
                   {dynamicCategoryFields?.map((data) => {
                     return (
                       getFields(data) && (
-                        <div
-                          key={`dynamic-${data.name}`}
-                          className={data.className}
-                        >
+                        <div key={`dynamic-${data.name}`} className={data.className}>
                           {getFields(data)}
                         </div>
                       )
-                    );
+                    )
                   })}
                 </div>
-
                 {button && (
                   <Button
                     disabled={loading}
                     type="submit"
                     startContent={
                       loading && (
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          width="20"
-                          height="20"
-                          viewBox="0 0 50 50"
-                          fill="none"
-                        >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 50 50" fill="none">
                           <circle cx="40" cy="25" r="3" fill="currentColor">
                             <animate
                               attributeName="opacity"
@@ -971,12 +878,7 @@ export default function ProductsPage({
                               repeatCount="indefinite"
                             />
                           </circle>
-                          <circle
-                            cx="37.99038105676658"
-                            cy="32.5"
-                            r="3"
-                            fill="currentColor"
-                          >
+                          <circle cx="37.99038105676658" cy="32.5" r="3" fill="currentColor">
                             <animate
                               attributeName="opacity"
                               values="1;0.2;1"
@@ -985,12 +887,7 @@ export default function ProductsPage({
                               repeatCount="indefinite"
                             />
                           </circle>
-                          <circle
-                            cx="32.5"
-                            cy="37.99038105676658"
-                            r="3"
-                            fill="currentColor"
-                          >
+                          <circle cx="32.5" cy="37.99038105676658" r="3" fill="currentColor">
                             <animate
                               attributeName="opacity"
                               values="1;0.2;1"
@@ -1008,12 +905,7 @@ export default function ProductsPage({
                               repeatCount="indefinite"
                             />
                           </circle>
-                          <circle
-                            cx="17.500000000000004"
-                            cy="37.99038105676658"
-                            r="3"
-                            fill="currentColor"
-                          >
+                          <circle cx="17.500000000000004" cy="37.99038105676658" r="3" fill="currentColor">
                             <animate
                               attributeName="opacity"
                               values="1;0.2;1"
@@ -1022,12 +914,7 @@ export default function ProductsPage({
                               repeatCount="indefinite"
                             />
                           </circle>
-                          <circle
-                            cx="12.00961894323342"
-                            cy="32.5"
-                            r="3"
-                            fill="currentColor"
-                          >
+                          <circle cx="12.00961894323342" cy="32.5" r="3" fill="currentColor">
                             <animate
                               attributeName="opacity"
                               values="1;0.2;1"
@@ -1036,12 +923,7 @@ export default function ProductsPage({
                               repeatCount="indefinite"
                             />
                           </circle>
-                          <circle
-                            cx="10"
-                            cy="25.000000000000004"
-                            r="3"
-                            fill="currentColor"
-                          >
+                          <circle cx="10" cy="25.000000000000004" r="3" fill="currentColor">
                             <animate
                               attributeName="opacity"
                               values="1;0.2;1"
@@ -1050,12 +932,7 @@ export default function ProductsPage({
                               repeatCount="indefinite"
                             />
                           </circle>
-                          <circle
-                            cx="12.009618943233418"
-                            cy="17.500000000000004"
-                            r="3"
-                            fill="currentColor"
-                          >
+                          <circle cx="12.009618943233418" cy="17.500000000000004" r="3" fill="currentColor">
                             <animate
                               attributeName="opacity"
                               values="1;0.2;1"
@@ -1064,12 +941,7 @@ export default function ProductsPage({
                               repeatCount="indefinite"
                             />
                           </circle>
-                          <circle
-                            cx="17.499999999999993"
-                            cy="12.009618943233423"
-                            r="3"
-                            fill="currentColor"
-                          >
+                          <circle cx="17.499999999999993" cy="12.009618943233423" r="3" fill="currentColor">
                             <animate
                               attributeName="opacity"
                               values="1;0.2;1"
@@ -1078,12 +950,7 @@ export default function ProductsPage({
                               repeatCount="indefinite"
                             />
                           </circle>
-                          <circle
-                            cx="24.999999999999996"
-                            cy="10"
-                            r="3"
-                            fill="currentColor"
-                          >
+                          <circle cx="24.999999999999996" cy="10" r="3" fill="currentColor">
                             <animate
                               attributeName="opacity"
                               values="1;0.2;1"
@@ -1092,12 +959,7 @@ export default function ProductsPage({
                               repeatCount="indefinite"
                             />
                           </circle>
-                          <circle
-                            cx="32.5"
-                            cy="12.009618943233422"
-                            r="3"
-                            fill="currentColor"
-                          >
+                          <circle cx="32.5" cy="12.009618943233422" r="3" fill="currentColor">
                             <animate
                               attributeName="opacity"
                               values="1;0.2;1"
@@ -1106,12 +968,7 @@ export default function ProductsPage({
                               repeatCount="indefinite"
                             />
                           </circle>
-                          <circle
-                            cx="37.99038105676658"
-                            cy="17.499999999999993"
-                            r="3"
-                            fill="currentColor"
-                          >
+                          <circle cx="37.99038105676658" cy="17.499999999999993" r="3" fill="currentColor">
                             <animate
                               attributeName="opacity"
                               values="1;0.2;1"
@@ -1131,7 +988,6 @@ export default function ProductsPage({
               </form>
             </div>
           )}
-
           {images && (
             <div className="border border-primary/10 rounded-md overflow-hidden bg-white xl:w-1/3 md:w-[40%] w-full">
               {/* sub heading */}
@@ -1139,12 +995,12 @@ export default function ProductsPage({
                 <p className="text-black py-[6px] px-5">{sub_title}</p>
               </div>
               {getImageFields()?.map((data, index) => {
-                return <div key={index}>{getFields(data)}</div>;
+                return <div key={index}>{getFields(data)}</div>
               })}
             </div>
           )}
         </div>
       </div>
     </div>
-  );
+  )
 }
