@@ -1,5 +1,5 @@
-"use client";
 
+"use client";
 import { useEffect, useState } from "react";
 import { UploadCloud, X } from "lucide-react";
 import { strapiDelete, strapiPost } from "@/lib/api/strapiClient";
@@ -13,6 +13,7 @@ export default function FormDropzone({
   defaultValueData,
   type = "add",
 }) {
+
   const [localError, setLocalError] = useState("");
   const [value, setValue] = useState(
     defaultValueData || (data.multiple ? [] : "")
@@ -21,16 +22,13 @@ export default function FormDropzone({
     defaultValueData || (data.multiple ? [] : "")
   );
   const [isDragging, setIsDragging] = useState(false);
-  const [imageLoading, setImageLoading] = useState(false);
-  const [correctImage, setCorrectImage] = useState(false);
 
   const isInvalid = !!(localError && localError.length > 0);
   const errorMessage = isInvalid ? localError[0] : "";
 
   useEffect(() => {
-    if (value) {
-      onChange(data.name, value);
-    }
+    // Always call onChange, even with empty values to trigger validation
+    onChange(data.name, value);
   }, [value]);
 
   useEffect(() => {
@@ -43,7 +41,6 @@ export default function FormDropzone({
         }));
         setImage(formatedData);
         setValue(formatedData.map((file) => file.id));
-        // setValue((prev) => [...prev, ...formattedFiles]);
       } else {
         setImage([defaultValueData]);
         setValue(defaultValueData?.id);
@@ -70,7 +67,6 @@ export default function FormDropzone({
   const handleFileSelection = async (files) => {
     if (!files.length) return;
 
-    setImageLoading(true);
     const formData = new FormData();
 
     if (data.multiple) {
@@ -97,17 +93,15 @@ export default function FormDropzone({
       }));
 
       console.log(formattedFiles);
+
       if (data.multiple) {
         setImage((prev) => [...prev, ...formattedFiles]);
         setValue((prev) => [...prev, ...formattedFiles.map((file) => file.id)]);
-        // setValue((prev) => [...prev, ...formattedFiles]);
       } else {
         setImage(formattedFiles);
         setValue(formattedFiles?.[0]?.id);
       }
 
-      setCorrectImage(true);
-      setTimeout(() => setCorrectImage(false), 2000);
     } catch (error) {
       console.error(error);
       if (error.status === 413 && error.response?.data?.error?.message) {
@@ -115,8 +109,6 @@ export default function FormDropzone({
       } else {
         toast.error("Upload failed. Please try again.");
       }
-    } finally {
-      setImageLoading(false);
     }
   };
 
@@ -124,13 +116,16 @@ export default function FormDropzone({
     if (type === "add") {
       await strapiDelete(`upload/files/${index}`, themeConfig.TOKEN);
     }
+
     const updatedImages = image.filter((_, i) => _.id !== index);
+
     if (data.multiple) {
       setImage(updatedImages);
       setValue(updatedImages.map((file) => file.id));
     } else {
-      setImage(updatedImages);
-      setValue(updatedImages?.[0]?.id);
+      // For single images, set to empty array and null/empty value
+      setImage([]);
+      setValue(null); // Set to null to trigger validation
     }
   };
 
@@ -144,13 +139,10 @@ export default function FormDropzone({
           {data.label}
         </label>
       </div>
-
       <div
-        className={`border-2 border-dashed ${
-          isInvalid ? "border-red-300" : "border-gray-300"
-        } rounded-md h-[200px] flex items-center justify-center cursor-pointer transition-all ${
-          isDragging ? "bg-blue-50" : ""
-        }`}
+        className={`border-2 border-dashed ${isInvalid ? "border-red-300" : "border-gray-300"
+          } rounded-md h-[200px] flex items-center justify-center cursor-pointer transition-all ${isDragging ? "bg-blue-50" : ""
+          }`}
         onDragOver={(e) => {
           e.preventDefault();
           setIsDragging(true);
@@ -179,7 +171,6 @@ export default function FormDropzone({
           )}
         </div>
       </div>
-
       <div className="flex items-center gap-1.5 mt-2">
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -205,11 +196,9 @@ export default function FormDropzone({
         </svg>
         <p className="text-xs text-gray-500"> {data.description}</p>
       </div>
-
       {isInvalid && (
         <p className="text-xs text-red-500 font-medium mt-1">{errorMessage}</p>
       )}
-
       {image.length > 0 && (
         <div className="flex flex-wrap gap-4 mt-4">
           {image.map((item, index) => (

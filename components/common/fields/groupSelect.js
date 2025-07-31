@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { Check } from "lucide-react";
+import { Check, ChevronDown } from "lucide-react";
 
 export default function GroupSelect({
     data,
@@ -9,7 +9,6 @@ export default function GroupSelect({
     error,
     defaultValueData,
 }) {
-    
     const dropdownRef = useRef(null);
     const [isOpen, setIsOpen] = useState(false);
     const [selected, setSelected] = useState(defaultValueData || []);
@@ -40,6 +39,10 @@ export default function GroupSelect({
         }
     };
 
+    const handleRemove = (id) => {
+        setSelected((prev) => prev.filter((item) => item !== id));
+    };
+
     useEffect(() => {
         const handleClickOutside = (event) => {
             if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -51,10 +54,9 @@ export default function GroupSelect({
         return () => document.removeEventListener("mousedown", handleClickOutside);
     }, []);
 
-    const selectedTitles = data.options
-        .filter((option) => selected.includes(option.documentId))
-        .map((opt) => opt.title)
-        .join(", ");
+    const selectedObjects = data.options.filter((option) =>
+        selected.includes(option.documentId)
+    );
 
     return (
         <div className="relative w-full" ref={dropdownRef}>
@@ -62,32 +64,57 @@ export default function GroupSelect({
                 {data.label}
                 {Array.isArray(data.rules) && data.rules.includes("required") && "*"}
             </label>
+
+            {/* Dropdown toggle */}
             <div
                 onClick={toggleDropdown}
-                className={`w-full h-[42px] px-4 py-2 border ${isInvalid ? "border-[#F31260]" : "border-gray-300"
-                    } rounded cursor-pointer bg-white flex items-center justify-between`}
+                className={`w-full min-h-[42px] px-4 py-2 border ${isInvalid ? "border-[#F31260]" : "border-gray-100"
+                    } rounded cursor-pointer bg-white flex items-center flex-wrap gap-2 relative`}
             >
-                <span className="text-sm text-gray-700 truncate">
-                    {selectedTitles || `Select ${data.label}...`}
-                </span>
-                <svg
-                    className={`w-4 h-4 transition-transform ${isOpen ? "rotate-180" : ""
+                {/* Render selected items */}
+                {selectedObjects.length > 0 ? (
+                    selectedObjects.map((option) => (
+                        <span
+                            key={option.documentId}
+                            className="text-sm text-white bg-primary px-2 py-1 rounded flex items-center gap-1"
+                        >
+                            {option.title}
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                width="14"
+                                height="14"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                className="lucide lucide-x cursor-pointer"
+                                aria-hidden="true"
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleRemove(option.documentId);
+                                }}
+                            >
+                                <path d="M18 6 6 18"></path>
+                                <path d="m6 6 12 12"></path>
+                            </svg>
+                        </span>
+                    ))
+                ) : (
+                    <span className="text-gray-400 text-sm">Select {data.label}...</span>
+                )}
+
+                {/* Chevron Arrow */}
+                <ChevronDown
+                    className={`w-4 h-4 ml-auto transition-transform duration-200 ${isOpen ? "rotate-180" : "rotate-0"
                         }`}
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    viewBox="0 0 24 24"
-                >
-                    <path
-                        d="M19 9l-7 7-7-7"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                    />
-                </svg>
+                />
             </div>
 
+            {/* Dropdown Menu */}
             {isOpen && (
-                <div className="absolute z-10 mt-1 w-full max-h-60 overflow-y-auto bg-white border border-gray-300 rounded shadow">
+                <div className="absolute z-10 mt-1 w-full max-h-60 overflow-y-auto bg-white border border-gray-100 rounded shadow">
                     {Object.entries(
                         data.options.reduce((acc, option) => {
                             const parentTitle =
@@ -98,12 +125,10 @@ export default function GroupSelect({
                         }, {})
                     ).map(([groupTitle, groupOptions]) => (
                         <div key={groupTitle}>
-                            {/* ✅ Render parent name as unclickable heading */}
                             <div className="px-4 py-2 font-semibold text-sm text-gray-700 bg-gray-100 cursor-default select-none">
                                 {groupTitle}
                             </div>
 
-                            {/* ✅ Render only the children as selectable */}
                             {groupOptions.map((option) => (
                                 <div
                                     key={option.documentId}
