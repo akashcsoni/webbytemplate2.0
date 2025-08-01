@@ -1,3 +1,5 @@
+"use client";
+
 import { strapiGet, strapiPost, strapiPut } from "@/lib/api/strapiClient";
 import { Input, Button, Image } from "@heroui/react";
 import {
@@ -8,7 +10,7 @@ import {
   FormDropzone,
   FormMultiSelect,
 } from "@/comman/fields";
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { themeConfig } from "@/config/theamConfig";
 import toast from "react-hot-toast";
 
@@ -21,6 +23,7 @@ const profileSetting = ({ title, sub_title, form, image, button }) => {
   const [formValues, setFormValues] = useState({});
   const [validationErrors, setValidationErrors] = useState({});
   const [defaultValueData, setDefaultValueData] = useState({});
+  const [hasNewImage, setHasNewImage] = useState(false); // Track if new image was uploaded
 
   const handleImageUpload = async (e) => {
     setImageLoading(true);
@@ -32,8 +35,7 @@ const profileSetting = ({ title, sub_title, form, image, button }) => {
       const fileData = await strapiPost(`upload`, formData, themeConfig.TOKEN);
       setImageId(fileData[0].id);
       setProfileImage(fileData[0].url);
-
-      
+      setHasNewImage(true); // Mark that a new image was uploaded
       setImageLoading(false);
     } catch (error) {
       setImageLoading(false);
@@ -140,7 +142,6 @@ const profileSetting = ({ title, sub_title, form, image, button }) => {
         },
         message: field.validation.required,
       }),
-
       url: () => ({
         validate: (value) => {
           if (!value) return true;
@@ -150,7 +151,6 @@ const profileSetting = ({ title, sub_title, form, image, button }) => {
         },
         message: field.validation.url,
       }),
-
       phone_no: () => ({
         validate: (value) => {
           if (!value) return true;
@@ -161,7 +161,6 @@ const profileSetting = ({ title, sub_title, form, image, button }) => {
         },
         message: field.validation.phone_no || "Invalid phone number format.",
       }),
-
       pin_code: () => ({
         validate: (value) => {
           if (!value) return true;
@@ -175,7 +174,6 @@ const profileSetting = ({ title, sub_title, form, image, button }) => {
     };
 
     const fieldValidators = {};
-
     if (field.rules) {
       field.rules.forEach((rule) => {
         if (validators[rule]) {
@@ -183,7 +181,6 @@ const profileSetting = ({ title, sub_title, form, image, button }) => {
         }
       });
     }
-
     return fieldValidators;
   };
 
@@ -200,13 +197,10 @@ const profileSetting = ({ title, sub_title, form, image, button }) => {
     // Iterate through field groups and validate each field
     field.forEach((field_data) => {
       const fieldValue = formValues[field_data.name];
-
       if (field_data.name in rules) {
         const validators = rules[field_data.name];
-
         for (const validatorName in validators) {
           const { validate, message } = validators[validatorName];
-
           if (!validate(fieldValue)) {
             if (!errors[field_data.name]) {
               errors[field_data.name] = [];
@@ -224,12 +218,15 @@ const profileSetting = ({ title, sub_title, form, image, button }) => {
 
   const save_user_details = async (event) => {
     event.preventDefault();
+    setFromSaveLoading(true);
 
     const isValid = validateFields();
-    if (!isValid) return;
+    if (!isValid) {
+      setFromSaveLoading(false);
+      return;
+    }
 
     const updatedData = {};
-
     // Track if anything has changed
     let hasChanges = false;
 
@@ -237,7 +234,6 @@ const profileSetting = ({ title, sub_title, form, image, button }) => {
     Object.keys(formValues).forEach((key) => {
       const newValue = formValues[key];
       const oldValue = defaultValueData[key];
-
       if (newValue !== oldValue) {
         updatedData[key] = newValue;
         hasChanges = true;
@@ -254,31 +250,33 @@ const profileSetting = ({ title, sub_title, form, image, button }) => {
       hasChanges = true;
     }
 
-    // Check if image changed
-    const defaultImageId = defaultValueData.image?.id || null;
-    const newImageId = imageId || null;
-    if (newImageId !== defaultImageId) {
-      updatedData.image = newImageId;
-      hasChanges = true;
-    } else {
-      updatedData.image = defaultImageId;
+    // Only update image if a new image was actually uploaded
+    if (hasNewImage && imageId !== null) {
+      updatedData.image = imageId;
       hasChanges = true;
     }
+    // Sanitize numeric fields
+    // ["pincode", "phone_no"].forEach((field) => {
+    // if (updatedData.hasOwnProperty(field)) {
+    // const val = updatedData[field];
+    // if (val === "") {
+    // updatedData[field] = null;
+    // } else if (!isNaN(val)) {
+    // updatedData[field] = Number(val);
+    // }
+    // }
+    // });
 
-    // Sanitize numeric fields (convert "" to null, and ensure numbers)
     ["pincode", "phone_no"].forEach((field) => {
       if (updatedData.hasOwnProperty(field)) {
         const val = updatedData[field];
-        if (val === "") {
-          updatedData[field] = null;
-        } else if (!isNaN(val)) {
-          updatedData[field] = Number(val);
-        }
+        updatedData[field] = val === "" ? null : String(val).trim();
       }
     });
 
     if (!hasChanges) {
       toast.info("No changes detected.");
+      setFromSaveLoading(false);
       return;
     }
 
@@ -288,15 +286,18 @@ const profileSetting = ({ title, sub_title, form, image, button }) => {
         updatedData,
         themeConfig.TOKEN
       );
-
       if (updateUserData) {
         toast.success("User updated successfully!");
+        setHasNewImage(false); // Reset the flag after successful update
         getUserData();
       } else {
         toast.error("User update failed!");
       }
     } catch (error) {
+      console.error("Update error:", error);
       toast.error("User update failed!");
+    } finally {
+      setFromSaveLoading(false);
     }
   };
 
@@ -305,7 +306,6 @@ const profileSetting = ({ title, sub_title, form, image, button }) => {
       ...prevValues,
       [name]: value,
     }));
-
     setValidationErrors((prevErrors) => ({
       ...prevErrors,
       [name]: "",
@@ -315,18 +315,19 @@ const profileSetting = ({ title, sub_title, form, image, button }) => {
   const getUserData = async () => {
     setFromSetLoading(true);
     const { authToken } = await getTokenData();
-
     if (authToken) {
       const userData = await strapiGet(`users/me`, {
         params: { populate: "*" },
         token: authToken,
       });
-
       if (userData) {
         setDefaultValueData(userData);
+        setFormValues(userData); // Initialize form values with user data
         setProfileImage(
           userData?.image?.url ? userData?.image?.url : "/images/no-image.svg"
         );
+        setImageId(userData?.image?.id || null); // Set the current image ID
+        setHasNewImage(false); // Reset the flag when loading existing data
         setFromSetLoading(false);
       }
     }
@@ -346,7 +347,7 @@ const profileSetting = ({ title, sub_title, form, image, button }) => {
   };
 
   useEffect(() => {
-    getUserData();
+    getUserData(); //call first time on page load for take all data from user profile
   }, []);
 
   const field = [
@@ -525,7 +526,6 @@ const profileSetting = ({ title, sub_title, form, image, button }) => {
             formValues={formValues}
           />
         );
-
       case "textarea":
         return (
           <FormTextArea
@@ -536,7 +536,6 @@ const profileSetting = ({ title, sub_title, form, image, button }) => {
             formValues={formValues}
           />
         );
-
       case "upload":
         return (
           <FormSingleFile
@@ -547,7 +546,6 @@ const profileSetting = ({ title, sub_title, form, image, button }) => {
             formValues={formValues}
           />
         );
-
       case "multiselect":
         return (
           <FormMultiSelect
@@ -559,7 +557,6 @@ const profileSetting = ({ title, sub_title, form, image, button }) => {
             formValues={formValues}
           />
         );
-
       case "select":
         return (
           <FormSelect
@@ -570,7 +567,6 @@ const profileSetting = ({ title, sub_title, form, image, button }) => {
             formValues={formValues}
           />
         );
-
       case "dropzone":
         return (
           <FormDropzone
@@ -581,7 +577,6 @@ const profileSetting = ({ title, sub_title, form, image, button }) => {
             formValues={formValues}
           />
         );
-
       default:
         break;
     }
@@ -609,7 +604,7 @@ const profileSetting = ({ title, sub_title, form, image, button }) => {
                             profileImage !== undefined &&
                             profileImage !== "" ? (
                             <Image
-                              src={profileImage}
+                              src={profileImage || "/placeholder.svg"}
                               alt="Profile"
                               width={100}
                               height={100}
@@ -846,7 +841,6 @@ const profileSetting = ({ title, sub_title, form, image, button }) => {
                       </div>
                     </div>
                   )}
-
                   <div className="flex flex-wrap">
                     {field?.map((data, index) => {
                       return (
@@ -856,7 +850,6 @@ const profileSetting = ({ title, sub_title, form, image, button }) => {
                       );
                     })}
                   </div>
-
                   {/* Submit Button */}
                   {button && (
                     <Button
