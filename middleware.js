@@ -6,6 +6,7 @@ export async function middleware(request) {
 
   // Only apply authentication checks for /user/* routes
   const isUserPath = pathname.startsWith("/user/");
+  const isThankYouPage = pathname.startsWith("/thank-you/");
   const urlWorkspace = isUserPath
     ? url.pathname.split("/user/")[1]?.split("/")[0]
     : null;
@@ -18,6 +19,10 @@ export async function middleware(request) {
   let isLogin = false;
   let apiValidation = null;
   let position = false; // default
+
+  if (isThankYouPage && !accessToken) {
+    return NextResponse.redirect(new URL("/", request.url));
+  }
 
   if (isUserPath) {
     isLogin = Boolean(accessToken && userData);
@@ -113,8 +118,7 @@ export async function middleware(request) {
     }
 
     const isAuthorTryingToBecomeAuthor =
-      position === true &&
-      pathname === `/user/${username}/become-an-author`;
+      position === true && pathname === `/user/${username}/become-an-author`;
 
     if (isAuthorTryingToBecomeAuthor) {
       return NextResponse.redirect(

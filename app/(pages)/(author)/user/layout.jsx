@@ -11,7 +11,6 @@ import { useEffect, useState } from "react";
 import { strapiGet } from "@/lib/api/strapiClient";
 
 export default function Layout({ children }) {
-  
   const [authUser, setAuthUser] = useState({});
   const pathname = usePathname();
 
@@ -40,6 +39,7 @@ export default function Layout({ children }) {
 
   const getUserData = async (authToken) => {
     if (authToken) {
+      console.log(authToken, "authtoken");
       const userData = await strapiGet(`users/me`, {
         params: { populate: "*" },
         token: authToken,
@@ -72,7 +72,7 @@ export default function Layout({ children }) {
       >
         <Providers themeProps={{ attribute: "class", defaultTheme: "dark" }}>
           <AuthorHeader authUser={authUser} />
-          {(authUser) && (
+          {authUser && (
             <section className="2xl:pb-20 lg:pb-[70px] md:pb-[60px] sm:pb-[50px] pb-10">
               <div className="">
                 {/* Sidebar */}
