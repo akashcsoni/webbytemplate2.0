@@ -1,7 +1,6 @@
 'use client';
 
 import Image from 'next/image';
-import Link from 'next/link';
 import React from 'react'
 
 const FeatureProductGrid = ({ link = '', image = {}, title = '', description = '' }) => {
@@ -9,8 +8,7 @@ const FeatureProductGrid = ({ link = '', image = {}, title = '', description = '
     const fallbackImage = '/images/404.png';
 
     return (
-        <Link
-            href={link}
+        <div
             className="border border-primary/10 rounded-[9px] transition overflow-hidden"
         >
             <div className="flex items-center justify-center text-gray-400 text-sm digital-products">
@@ -36,7 +34,7 @@ const FeatureProductGrid = ({ link = '', image = {}, title = '', description = '
                 {title && <h3 className="mb-2">{title}</h3>}
                 {description && <p className="">{description}</p>}
             </div>
-        </Link>
+        </div>
     )
 }
 

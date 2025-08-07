@@ -1,35 +1,35 @@
-"use client"
+"use client";
 
-import { useState, useRef, useEffect } from "react"
-import { Listbox } from "@headlessui/react"
-import Image from "next/image"
-import { useCart } from "@/contexts/CartContext"
-import { useRouter } from "next/navigation"
-import { countries } from "@/lib/data/countries"
-import { useAuth } from "@/contexts/AuthContext"
-import { Button } from "@heroui/react"
-import { strapiGet, strapiPost } from "@/lib/api/strapiClient"
-import Cookies from "js-cookie"
-import { themeConfig } from "@/config/theamConfig"
+import { useState, useRef, useEffect } from "react";
+import { Listbox } from "@headlessui/react";
+import Image from "next/image";
+import { useCart } from "@/contexts/CartContext";
+import { useRouter } from "next/navigation";
+import { countries } from "@/lib/data/countries";
+import { useAuth } from "@/contexts/AuthContext";
+import { Button } from "@heroui/react";
+import { strapiGet, strapiPost } from "@/lib/api/strapiClient";
+import Cookies from "js-cookie";
+import { themeConfig } from "@/config/theamConfig";
 
 export default function CheckoutPage() {
-  const router = useRouter()
-  const { isLoading, cartItems = [], totalPrice = 0 } = useCart() || {}
-  const { openAuth, authLoading, isAuthenticated } = useAuth()
+  const router = useRouter();
+  const { isLoading, cartItems = [], totalPrice = 0 } = useCart() || {};
+  const { openAuth, authLoading, isAuthenticated } = useAuth();
 
-  const [selectedCountryCode, setSelectedCountryCode] = useState(countries[14]) // Default to India
-  const [isCountryDropdownOpen, setIsCountryDropdownOpen] = useState(false)
-  const [isStateDropdownOpen, setIsStateDropdownOpen] = useState(false)
-  const [selectedState, setSelectedState] = useState("")
-  const [selectedCountry, setSelectedCountry] = useState("")
-  const [filteredStates, setFilteredStates] = useState([])
-  const [stateSearchTerm, setStateSearchTerm] = useState("")
-  const [countrySearchTerm, setCountrySearchTerm] = useState("")
-  const [userDataLoading, setUserDataLoading] = useState(true)
-  const [payNowLoading, setpayNowLoading] = useState(false)
+  const [selectedCountryCode, setSelectedCountryCode] = useState(countries[14]); // Default to India
+  const [isCountryDropdownOpen, setIsCountryDropdownOpen] = useState(false);
+  const [isStateDropdownOpen, setIsStateDropdownOpen] = useState(false);
+  const [selectedState, setSelectedState] = useState("");
+  const [selectedCountry, setSelectedCountry] = useState("");
+  const [filteredStates, setFilteredStates] = useState([]);
+  const [stateSearchTerm, setStateSearchTerm] = useState("");
+  const [countrySearchTerm, setCountrySearchTerm] = useState("");
+  const [userDataLoading, setUserDataLoading] = useState(true);
+  const [payNowLoading, setpayNowLoading] = useState(false);
 
-  const countryRef = useRef(null)
-  const stateRef = useRef(null)
+  const countryRef = useRef(null);
+  const stateRef = useRef(null);
 
   const [form, setForm] = useState({
     first_name: "",
@@ -43,50 +43,58 @@ export default function CheckoutPage() {
     country: "",
     phone_no: "",
     agreed: false,
-  })
+  });
 
-  const [errors, setErrors] = useState({})
+  const [errors, setErrors] = useState({});
 
   // Redirect to home if cart is empty
   useEffect(() => {
     if (!isLoading && cartItems.length === 0) {
-      console.log("Cart is empty, redirecting to home page...")
-      router.push("/")
+      console.log("Cart is empty, redirecting to home page...");
+      router.push("/");
     }
-  }, [cartItems, isLoading, router])
+  }, [cartItems, isLoading, router]);
 
   // Filter states based on selected country for billing
   useEffect(() => {
     if (selectedCountry) {
-      const selectedCountryData = countries.find((country) => country.name === selectedCountry)
+      const selectedCountryData = countries.find(
+        (country) => country.name === selectedCountry
+      );
       if (selectedCountryData && selectedCountryData.states) {
-        const countryStates = selectedCountryData.states
+        const countryStates = selectedCountryData.states;
         if (stateSearchTerm) {
           setFilteredStates(
-            countryStates.filter((state) => state.toLowerCase().includes(stateSearchTerm.toLowerCase())),
-          )
+            countryStates.filter((state) =>
+              state.toLowerCase().includes(stateSearchTerm.toLowerCase())
+            )
+          );
         } else {
-          setFilteredStates(countryStates)
+          setFilteredStates(countryStates);
         }
 
         // Only reset selected state if it's not valid for the current country
         // and if we don't have user data state
-        if (selectedState && !countryStates.includes(selectedState) && !form.state) {
-          setSelectedState("")
-          setForm((prev) => ({ ...prev, state: "" }))
+        if (
+          selectedState &&
+          !countryStates.includes(selectedState) &&
+          !form.state
+        ) {
+          setSelectedState("");
+          setForm((prev) => ({ ...prev, state: "" }));
         }
       } else {
-        setFilteredStates([])
+        setFilteredStates([]);
         // Only reset if we don't have user data
         if (!form.state) {
-          setSelectedState("")
-          setForm((prev) => ({ ...prev, state: "" }))
+          setSelectedState("");
+          setForm((prev) => ({ ...prev, state: "" }));
         }
       }
     } else {
-      setFilteredStates([])
+      setFilteredStates([]);
     }
-  }, [selectedCountry, stateSearchTerm]) // Remove selectedState from dependencies to avoid infinite loops
+  }, [selectedCountry, stateSearchTerm]); // Remove selectedState from dependencies to avoid infinite loops
 
   useEffect(() => {
     const fetchLoginUserData = async () => {
@@ -108,10 +116,17 @@ export default function CheckoutPage() {
           let detectedCountry = null;
 
           // Try to detect country from phone number
-          if (phoneNumber && typeof phoneNumber === 'string' && phoneNumber.startsWith("+")) {
+          if (
+            phoneNumber &&
+            typeof phoneNumber === "string" &&
+            phoneNumber.startsWith("+")
+          ) {
             // Find country by dial code
             for (const country of countries) {
-              if (country.dialCode && phoneNumber.startsWith(country.dialCode)) {
+              if (
+                country.dialCode &&
+                phoneNumber.startsWith(country.dialCode)
+              ) {
                 detectedCountry = country;
                 // Remove country code from phone number
                 phoneNumber = phoneNumber.replace(country.dialCode, "").trim();
@@ -132,7 +147,7 @@ export default function CheckoutPage() {
             setSelectedCountryCode(detectedCountry);
           } else {
             // Default to India
-            const indiaCountry = countries.find(c => c.name === "India");
+            const indiaCountry = countries.find((c) => c.name === "India");
             if (indiaCountry) {
               setSelectedCountry("India");
               setSelectedCountryCode(indiaCountry);
@@ -164,25 +179,28 @@ export default function CheckoutPage() {
 
           // Set state if available and country is set
           if (userData.state && (detectedCountry?.name || "India")) {
-            const currentCountry = detectedCountry || countries.find(c => c.name === "India");
+            const currentCountry =
+              detectedCountry || countries.find((c) => c.name === "India");
             if (currentCountry?.states?.includes(userData.state)) {
               setTimeout(() => {
                 setSelectedState(userData.state);
               }, 100);
             } else {
-              console.warn(`State ${userData.state} not found in country ${currentCountry?.name}`);
+              console.warn(
+                `State ${userData.state} not found in country ${currentCountry?.name}`
+              );
             }
           }
         }
       } catch (error) {
         console.error("Error fetching user data:", error);
         // Set default values in case of error
-        const indiaCountry = countries.find(c => c.name === "India");
+        const indiaCountry = countries.find((c) => c.name === "India");
         if (indiaCountry) {
           setSelectedCountry("India");
           setSelectedCountryCode(indiaCountry);
         }
-        setForm(prev => ({
+        setForm((prev) => ({
           ...prev,
           country: "India",
           phone_no: "",
@@ -200,53 +218,54 @@ export default function CheckoutPage() {
     }
   }, []);
 
-  const toggleCountryDropdown = () => setIsCountryDropdownOpen(!isCountryDropdownOpen)
+  const toggleCountryDropdown = () =>
+    setIsCountryDropdownOpen(!isCountryDropdownOpen);
   const toggleStateDropdown = (e) => {
     if (e) {
-      e.preventDefault()
-      e.stopPropagation()
+      e.preventDefault();
+      e.stopPropagation();
     }
-    setIsStateDropdownOpen(!isStateDropdownOpen)
-  }
+    setIsStateDropdownOpen(!isStateDropdownOpen);
+  };
 
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (countryRef.current && !countryRef.current.contains(event.target)) {
-        setIsCountryDropdownOpen(false)
-        setCountrySearchTerm("")
+        setIsCountryDropdownOpen(false);
+        setCountrySearchTerm("");
       }
       if (stateRef.current && !stateRef.current.contains(event.target)) {
-        setIsStateDropdownOpen(false)
-        setStateSearchTerm("")
+        setIsStateDropdownOpen(false);
+        setStateSearchTerm("");
       }
-    }
-    document.addEventListener("mousedown", handleClickOutside)
-    return () => document.removeEventListener("mousedown", handleClickOutside)
-  }, [])
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   const validateEmail = (email) => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-    return emailRegex.test(email)
-  }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
 
   const validatePhone = (phone, countryCode) => {
-    if (!phone || !countryCode) return false
+    if (!phone || !countryCode) return false;
 
-    const country = countries.find((c) => c.code === countryCode.code)
-    if (!country) return false
+    const country = countries.find((c) => c.code === countryCode.code);
+    if (!country) return false;
 
     // Remove any non-digit characters
-    const cleanPhone = phone.replace(/\D/g, "")
+    const cleanPhone = phone.replace(/\D/g, "");
 
     // Check if phone length matches expected length for the country
-    const isValidLength = country.phoneLength.includes(cleanPhone.length)
-    const isValidPattern = country.phonePattern.test(cleanPhone)
+    const isValidLength = country.phoneLength.includes(cleanPhone.length);
+    const isValidPattern = country.phonePattern.test(cleanPhone);
 
-    return isValidLength && isValidPattern
-  }
+    return isValidLength && isValidPattern;
+  };
 
   const validateZipCode = (zip, countryName) => {
-    if (!zip) return false
+    if (!zip) return false;
 
     const zipPatterns = {
       "United States": /^\d{5}(-\d{4})?$/,
@@ -259,94 +278,95 @@ export default function CheckoutPage() {
       Japan: /^\d{3}-\d{4}$/,
       Brazil: /^\d{5}-?\d{3}$/,
       China: /^\d{6}$/,
-    }
+    };
 
-    const pattern = zipPatterns[countryName]
+    const pattern = zipPatterns[countryName];
     if (pattern) {
-      return pattern.test(zip)
+      return pattern.test(zip);
     }
 
     // Default validation for other countries (3-10 alphanumeric characters)
-    return /^[A-Za-z0-9\s-]{3,10}$/.test(zip)
-  }
+    return /^[A-Za-z0-9\s-]{3,10}$/.test(zip);
+  };
 
   const validateForm = () => {
-    const newErrors = {}
+    const newErrors = {};
 
     // Helper function to safely get string value
     const getStringValue = (value) => {
-      return value != null ? String(value) : ""
-    }
+      return value != null ? String(value) : "";
+    };
 
     // Name validations
-    const firstName = getStringValue(form.first_name).trim()
+    const firstName = getStringValue(form.first_name).trim();
     if (!firstName) {
-      newErrors.first_name = "First name is required."
+      newErrors.first_name = "First name is required.";
     } else if (firstName.length < 2) {
-      newErrors.first_name = "First name must be at least 2 characters."
+      newErrors.first_name = "First name must be at least 2 characters.";
     } else if (!/^[a-zA-Z\s]+$/.test(firstName)) {
-      newErrors.first_name = "First name can only contain letters and spaces."
+      newErrors.first_name = "First name can only contain letters and spaces.";
     }
 
-    const lastName = getStringValue(form.last_name).trim()
+    const lastName = getStringValue(form.last_name).trim();
     if (!lastName) {
-      newErrors.last_name = "Last name is required."
+      newErrors.last_name = "Last name is required.";
     } else if (lastName.length < 2) {
-      newErrors.last_name = "Last name must be at least 2 characters."
+      newErrors.last_name = "Last name must be at least 2 characters.";
     } else if (!/^[a-zA-Z\s]+$/.test(lastName)) {
-      newErrors.last_name = "Last name can only contain letters and spaces."
+      newErrors.last_name = "Last name can only contain letters and spaces.";
     }
 
     // Company validation (optional but if provided, should be valid)
-    const companyName = getStringValue(form.company_name).trim()
+    const companyName = getStringValue(form.company_name).trim();
     if (companyName && companyName.length < 2) {
-      newErrors.company_name = "Company name must be at least 2 characters."
+      newErrors.company_name = "Company name must be at least 2 characters.";
     }
 
     // Email validation
-    const email = getStringValue(form.email).trim()
+    const email = getStringValue(form.email).trim();
     if (!email) {
-      newErrors.email = "Email is required."
+      newErrors.email = "Email is required.";
     } else if (!validateEmail(email)) {
-      newErrors.email = "Please enter a valid email address."
+      newErrors.email = "Please enter a valid email address.";
     }
 
     // Address validation
-    const address = getStringValue(form.address).trim()
+    const address = getStringValue(form.address).trim();
     if (!address) {
-      newErrors.address = "Street address is required."
+      newErrors.address = "Street address is required.";
     } else if (address.length < 5) {
-      newErrors.address = "Please enter a complete address."
+      newErrors.address = "Please enter a complete address.";
     }
 
     // City validation
-    const city = getStringValue(form.city).trim()
+    const city = getStringValue(form.city).trim();
     if (!city) {
-      newErrors.city = "City is required."
+      newErrors.city = "City is required.";
     } else if (city.length < 2) {
-      newErrors.city = "City name must be at least 2 characters."
+      newErrors.city = "City name must be at least 2 characters.";
     } else if (!/^[a-zA-Z\s.-]+$/.test(city)) {
-      newErrors.city = "City name can only contain letters, spaces, dots, and hyphens."
+      newErrors.city =
+        "City name can only contain letters, spaces, dots, and hyphens.";
     }
 
     // ZIP code validation
-    const pincode = getStringValue(form.pincode).trim()
+    const pincode = getStringValue(form.pincode).trim();
     if (!pincode) {
-      newErrors.pincode = "ZIP/Postal code is required."
+      newErrors.pincode = "ZIP/Postal code is required.";
     } else if (!validateZipCode(pincode, selectedCountry)) {
-      newErrors.pincode = `Please enter a valid ZIP/Postal code for ${selectedCountry || "the selected country"}.`
+      newErrors.pincode = `Please enter a valid ZIP/Postal code for ${selectedCountry || "the selected country"}.`;
     }
 
     // State validation
-    const state = getStringValue(form.state).trim()
+    const state = getStringValue(form.state).trim();
     if (!state) {
-      newErrors.state = "State/Province is required."
+      newErrors.state = "State/Province is required.";
     }
 
     // Country validation
-    const country = getStringValue(form.country).trim()
+    const country = getStringValue(form.country).trim();
     if (!country) {
-      newErrors.country = "Country is required."
+      newErrors.country = "Country is required.";
     }
 
     // Phone validation with better error handling
@@ -354,11 +374,16 @@ export default function CheckoutPage() {
     if (!phoneNo) {
       newErrors.phone_no = "Phone number is required.";
     } else {
-      const selectedCountryData = countries.find((c) => c.name === selectedCountry);
+      const selectedCountryData = countries.find(
+        (c) => c.name === selectedCountry
+      );
       if (selectedCountryData) {
         const cleanPhone = phoneNo.replace(/\D/g, "");
-        const isValidLength = selectedCountryData.phoneLength.includes(cleanPhone.length);
-        const isValidPattern = selectedCountryData.phonePattern.test(cleanPhone);
+        const isValidLength = selectedCountryData.phoneLength.includes(
+          cleanPhone.length
+        );
+        const isValidPattern =
+          selectedCountryData.phonePattern.test(cleanPhone);
 
         if (!isValidLength || !isValidPattern) {
           const expectedLength = selectedCountryData.phoneLength.join(" or ");
@@ -371,57 +396,68 @@ export default function CheckoutPage() {
 
     // Terms agreement validation
     if (!form.agreed) {
-      newErrors.agreed = "You must agree to the Terms of Service and Privacy Policy."
+      newErrors.agreed =
+        "You must agree to the Terms of Service and Privacy Policy.";
     }
 
-    setErrors(newErrors)
-    return Object.keys(newErrors).length === 0
-  }
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  // razorpay form append
+
+  useEffect(() => {
+    const script = document.createElement("script");
+    script.src = "https://checkout.razorpay.com/v1/checkout.js";
+    script.async = true;
+    document.body.appendChild(script);
+  }, []);
+
+  // handle pay button with sripe and razorpay integration
 
   const handlePayNow = async () => {
     setpayNowLoading(true);
 
     if (!isAuthenticated) {
-      openAuth("login")
-      return
+      openAuth("login");
+      return;
     }
 
     if (!cartItems || cartItems.length === 0) {
-      router.push("/")
-      return
+      router.push("/");
+      return;
     }
 
-    const isBillingValid = validateForm()
-
+    const isBillingValid = validateForm();
     if (!isBillingValid) {
-      console.warn("Billing form is invalid.")
-      return
+      console.warn("Billing form is invalid.");
+      return;
     }
 
-    const getStringValue = (value) => {
-      return typeof value === "string" ? value.trim() : value ? String(value).trim() : ""
-    }
+    const getStringValue = (value) =>
+      typeof value === "string"
+        ? value.trim()
+        : value
+          ? String(value).trim()
+          : "";
 
-    const cart_id = Cookies.get("cart_id")
-    const authUserStr = Cookies.get("authUser")
+    const cart_id = Cookies.get("cart_id");
+    const authUserStr = Cookies.get("authUser");
 
     if (!cart_id || !authUserStr) {
-      console.error("Missing cart_id or user info.")
-      return
+      console.error("Missing cart_id or user info.");
+      return;
     }
 
-    let authUser
+    let authUser;
     try {
-      authUser = JSON.parse(authUserStr)
-      if (!authUser?.id) {
-        throw new Error("Invalid user ID.")
-      }
+      authUser = JSON.parse(authUserStr);
+      if (!authUser?.id) throw new Error("Invalid user ID.");
     } catch (err) {
-      console.error("Failed to parse user data:", err.message)
-      return
+      console.error("Failed to parse user data:", err.message);
+      return;
     }
 
-    // Safe phone formatting
     const phoneCode = filteredflag?.[0]?.dialCode || "";
     const phoneNumber = getStringValue(form.phone_no);
     const fullPhone = phoneCode + phoneNumber;
@@ -437,82 +473,259 @@ export default function CheckoutPage() {
       state: getStringValue(form.state),
       country: getStringValue(form.country),
       phone_no: fullPhone,
-    }
+    };
 
-    // Optional: validate email/phone format here before proceeding
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(shippingAddress.email)) {
-      console.warn("Invalid email format.")
-      return
+      console.warn("Invalid email format.");
+      return;
     }
 
     const checkoutData = {
       user: authUser.id,
       cart_id,
       shipping_address: shippingAddress,
-    }
+    };
 
     try {
-      const response = await strapiPost("orders", checkoutData, themeConfig.TOKEN)
+      // 1. Create order in Strapi (your Orders collection)
+      const response = await strapiPost(
+        "orders",
+        checkoutData,
+        themeConfig.TOKEN
+      );
 
       if (response?.result && response?.data) {
-        setpayNowLoading(false);
-        router.push('/thank-you')
+        const orderData = response.data;
+        console.log(orderData, "✅ orderData from Strapi");
+        console.log(orderData);
+
+        // 2. Create Razorpay order in backend
+        if (selectedCountry === "India") {
+          // ✅ Razorpay Flow
+          const razorpayOrderRes = await strapiPost("razorpay/create-order", {
+            amount: orderData.total_price || 500, // ₹500 = 50000 paise
+            strapi_order_id: orderData.id,
+            user_id: orderData?.user?.id,
+          });
+          const razorpayOrder = razorpayOrderRes.order;
+          const razorpayKey = razorpayOrderRes.key_id;
+          console.log(razorpayOrder, "✅ Razorpay Order");
+          console.log(razorpayKey, "✅ Razorpay Key");
+          // 3. Setup Razorpay options
+          const options = {
+            key: razorpayKey, // From backend
+            amount: razorpayOrder.amount,
+            currency: razorpayOrder.currency,
+            name: "Your Shop",
+            description: "Order Payment",
+            order_id: razorpayOrder.id,
+            handler: async function (razorpayResponse) {
+              console.log("✅ Razorpay Success", razorpayResponse);
+              // 4. Verify payment
+              await strapiPost("razorpay/verify", {
+                ...razorpayResponse,
+                strapi_order_id: orderData.id,
+                user_id: orderData?.user?.id,
+              });
+              router.push("/thank-you");
+            },
+            modal: {
+              ondismiss: function () {
+                // 🚫 User closed popup without doing anything
+                // 👉 DO NOT call backend. Leave status as pending.
+                console.log("User closed the payment popup");
+              },
+            },
+            prefill: {
+              name: "Webby Template",
+              email: "webby@example.com",
+              contact: "9876543210",
+            },
+            theme: {
+              color: "#3399cc",
+            },
+          };
+          // 5. Open Razorpay Checkout
+          const rzp = new Razorpay(options);
+          console.log(rzp, "rzp");
+
+          rzp.on("payment.failed", async function (response) {
+            const orderId = response.error.metadata?.order_id;
+
+            if (orderId) {
+              await strapiPost("razorpay/fail", {
+                razorpay_order_id: orderId,
+                reason: response.error.description || "Payment failed",
+                strapi_order_id: orderData.id,
+              });
+            }
+
+            console.log("❌ Razorpay payment failed", response);
+          });
+
+          rzp.open();
+        } else {
+          // ✅ Stripe Flow
+          const stripeRes = await strapiPost("stripe/create-checkout-session", {
+            amount: orderData.total_price,
+            strapi_order_id: orderData.id, // ✅ Required for metadata
+            user_id: orderData.user?.id,
+          });
+
+          console.log(stripeRes);
+
+          if (stripeRes?.url) {
+            window.location.href = stripeRes.url;
+          } else {
+            throw new Error("Stripe session creation failed");
+          }
+        }
       } else {
-        setpayNowLoading(false);
-        console.log(response)
+        console.log("❌ Order creation failed:", response);
       }
     } catch (error) {
-      setpayNowLoading(false);
-      console.log(error, 'error')
+      console.error("❌ Payment Error:", error);
     } finally {
       setpayNowLoading(false);
-      console.log('finally')
     }
-  }
+  };
+
+  // const handlePayNow = async () => {
+  //   setpayNowLoading(true);
+
+  //   if (!isAuthenticated) {
+  //     openAuth("login")
+  //     return
+  //   }
+
+  //   if (!cartItems || cartItems.length === 0) {
+  //     router.push("/")
+  //     return
+  //   }
+
+  //   const isBillingValid = validateForm()
+
+  //   if (!isBillingValid) {
+  //     console.warn("Billing form is invalid.")
+  //     return
+  //   }
+
+  //   const getStringValue = (value) => {
+  //     return typeof value === "string" ? value.trim() : value ? String(value).trim() : ""
+  //   }
+
+  //   const cart_id = Cookies.get("cart_id")
+  //   const authUserStr = Cookies.get("authUser")
+
+  //   if (!cart_id || !authUserStr) {
+  //     console.error("Missing cart_id or user info.")
+  //     return
+  //   }
+
+  //   let authUser
+  //   try {
+  //     authUser = JSON.parse(authUserStr)
+  //     if (!authUser?.id) {
+  //       throw new Error("Invalid user ID.")
+  //     }
+  //   } catch (err) {
+  //     console.error("Failed to parse user data:", err.message)
+  //     return
+  //   }
+
+  //   // Safe phone formatting
+  //   const phoneCode = filteredflag?.[0]?.dialCode || "";
+  //   const phoneNumber = getStringValue(form.phone_no);
+  //   const fullPhone = phoneCode + phoneNumber;
+
+  //   const shippingAddress = {
+  //     first_name: getStringValue(form.first_name),
+  //     last_name: getStringValue(form.last_name),
+  //     company_name: getStringValue(form.company_name),
+  //     email: getStringValue(form.email),
+  //     address: getStringValue(form.address),
+  //     city: getStringValue(form.city),
+  //     pincode: getStringValue(form.pincode),
+  //     state: getStringValue(form.state),
+  //     country: getStringValue(form.country),
+  //     phone_no: fullPhone,
+  //   }
+
+  //   // Optional: validate email/phone format here before proceeding
+  //   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+  //   if (!emailRegex.test(shippingAddress.email)) {
+  //     console.warn("Invalid email format.")
+  //     return
+  //   }
+
+  //   const checkoutData = {
+  //     user: authUser.id,
+  //     cart_id,
+  //     shipping_address: shippingAddress,
+  //   }
+
+  //   try {
+  //     const response = await strapiPost("orders", checkoutData, themeConfig.TOKEN)
+
+  //     if (response?.result && response?.data) {
+  //       setpayNowLoading(false);
+  //       router.push('/thank-you')
+  //     } else {
+  //       setpayNowLoading(false);
+  //       console.log(response)
+  //     }
+  //   } catch (error) {
+  //     setpayNowLoading(false);
+  //     console.log(error, 'error')
+  //   } finally {
+  //     setpayNowLoading(false);
+  //     console.log('finally')
+  //   }
+  // }
 
   const handleStateSelect = (state, e) => {
     // Prevent event propagation to avoid dropdown toggle conflicts
     if (e) {
-      e.preventDefault()
-      e.stopPropagation()
+      e.preventDefault();
+      e.stopPropagation();
     }
 
     // Update state in a single batch to prevent race conditions
-    setSelectedState(state)
-    setForm((prev) => ({ ...prev, state: state }))
-    setStateSearchTerm("")
-    setErrors((prev) => ({ ...prev, state: "" }))
+    setSelectedState(state);
+    setForm((prev) => ({ ...prev, state: state }));
+    setStateSearchTerm("");
+    setErrors((prev) => ({ ...prev, state: "" }));
 
     // Close dropdown after a small delay to ensure state is set
     setTimeout(() => {
-      setIsStateDropdownOpen(false)
-    }, 50)
-  }
+      setIsStateDropdownOpen(false);
+    }, 50);
+  };
 
   const handleCountrySelect = (country) => {
-    setSelectedCountry(country)
-    setForm((prev) => ({ ...prev, country: country }))
-    setIsCountryDropdownOpen(false)
-    setCountrySearchTerm("")
-    setErrors((prev) => ({ ...prev, country: "" }))
-  }
+    setSelectedCountry(country);
+    setForm((prev) => ({ ...prev, country: country }));
+    setIsCountryDropdownOpen(false);
+    setCountrySearchTerm("");
+    setErrors((prev) => ({ ...prev, country: "" }));
+  };
 
   const inputClass = (name) =>
-    `p2 border ${errors[name] ? "border-red-500" : "border-gray-100"} text-gray-300 placeholder:text-gray-300 2xl:py-[11px] py-[10px] rounded-[5px] 1xl:px-5 px-3 w-full outline-none`
+    `p2 border ${errors[name] ? "border-red-500" : "border-gray-100"} text-gray-300 placeholder:text-gray-300 2xl:py-[11px] py-[10px] rounded-[5px] 1xl:px-5 px-3 w-full outline-none`;
 
   const handleChange = (name, value) => {
-    setForm((prev) => ({ ...prev, [name]: value }))
-    setErrors((prev) => ({ ...prev, [name]: undefined }))
-  }
+    setForm((prev) => ({ ...prev, [name]: value }));
+    setErrors((prev) => ({ ...prev, [name]: undefined }));
+  };
 
   const filteredCountries = countries.filter((country) =>
-    country.name.toLowerCase().includes(countrySearchTerm.toLowerCase()),
-  )
+    country.name.toLowerCase().includes(countrySearchTerm.toLowerCase())
+  );
 
   const filteredflag = countries.filter((country) =>
-    country.name.toLowerCase().includes(selectedCountry.toLowerCase()),
-  )
+    country.name.toLowerCase().includes(selectedCountry.toLowerCase())
+  );
 
   // Show loading state while checking cart
   if (userDataLoading) {
@@ -525,12 +738,12 @@ export default function CheckoutPage() {
           </div>
         </div>
       </div>
-    )
+    );
   }
 
   // Don't render the component if cart is empty (will redirect)
   if (!cartItems || cartItems.length === 0) {
-    return null
+    return null;
   }
 
   return (
@@ -540,7 +753,10 @@ export default function CheckoutPage() {
         <div className="m-3">
           <div className="text-lg w-full rounded-1xl border border-green-100 font-bold leading-tight bg-[#d8efff] p-4 pr-8 relative">
             Returning customer?{" "}
-            <button onClick={() => openAuth("login")} className="underline underline-offset-1">
+            <button
+              onClick={() => openAuth("login")}
+              className="underline underline-offset-1"
+            >
               Click here to login
             </button>
           </div>
@@ -548,7 +764,7 @@ export default function CheckoutPage() {
       )}
 
       {/* Show user status if authenticated */}
-      
+
       {/* {!authLoading && isAuthenticated && (
         <div className="m-3">
           <div className="text-lg w-full rounded-1xl border border-green-100 font-bold leading-tight bg-[#e8f5e8] p-4 pr-8 relative">
@@ -558,14 +774,17 @@ export default function CheckoutPage() {
       )} */}
 
       {/* Checkout Title */}
-      <h1 className="h2 border-b border-primary/10 xl:pb-[30px] pb-4">Checkout</h1>
+      <h1 className="h2 border-b border-primary/10 xl:pb-[30px] pb-4">
+        Checkout
+      </h1>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 lg:gap-[45px] sm:gap-7 gap-5 sm:mt-[25px] mt-4">
         {/* Billing Details */}
         <div className="lg:col-span-2">
           <h2 className="h3 mb-[6px]">Billing Detail</h2>
           <p className="p2 md:mb-[30px] mb-5">
-            Discover the most in-demand top-downloaded items trusted by top businesses.
+            Discover the most in-demand top-downloaded items trusted by top
+            businesses.
           </p>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 2xl:gap-y-5 gap-y-4">
@@ -580,7 +799,9 @@ export default function CheckoutPage() {
                 className={inputClass("first_name")}
                 maxLength={50}
               />
-              {errors.first_name && <p className="text-red-500 text-xs mt-1">{errors.first_name}</p>}
+              {errors.first_name && (
+                <p className="text-red-500 text-xs mt-1">{errors.first_name}</p>
+              )}
             </div>
 
             {/* Last Name */}
@@ -594,12 +815,16 @@ export default function CheckoutPage() {
                 className={inputClass("last_name")}
                 maxLength={50}
               />
-              {errors.last_name && <p className="text-red-500 text-xs mt-1">{errors.last_name}</p>}
+              {errors.last_name && (
+                <p className="text-red-500 text-xs mt-1">{errors.last_name}</p>
+              )}
             </div>
 
             {/* Company Name */}
             <div>
-              <label className="p2 !text-black mb-[6px]">Company name (optional)</label>
+              <label className="p2 !text-black mb-[6px]">
+                Company name (optional)
+              </label>
               <input
                 type="text"
                 placeholder="Company Name"
@@ -608,7 +833,11 @@ export default function CheckoutPage() {
                 className={inputClass("company_name")}
                 maxLength={100}
               />
-              {errors.company_name && <p className="text-red-500 text-xs mt-1">{errors.company_name}</p>}
+              {errors.company_name && (
+                <p className="text-red-500 text-xs mt-1">
+                  {errors.company_name}
+                </p>
+              )}
             </div>
 
             {/* Email Address */}
@@ -622,12 +851,16 @@ export default function CheckoutPage() {
                 className={inputClass("email")}
                 maxLength={100}
               />
-              {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
+              {errors.email && (
+                <p className="text-red-500 text-xs mt-1">{errors.email}</p>
+              )}
             </div>
 
             {/* Address */}
             <div>
-              <label className="p2 !text-black mb-[6px]">Street address *</label>
+              <label className="p2 !text-black mb-[6px]">
+                Street address *
+              </label>
               <input
                 type="text"
                 placeholder="Street Address"
@@ -636,7 +869,9 @@ export default function CheckoutPage() {
                 className={inputClass("address")}
                 maxLength={200}
               />
-              {errors.address && <p className="text-red-500 text-xs mt-1">{errors.address}</p>}
+              {errors.address && (
+                <p className="text-red-500 text-xs mt-1">{errors.address}</p>
+              )}
             </div>
 
             {/* City */}
@@ -650,12 +885,16 @@ export default function CheckoutPage() {
                 className={inputClass("city")}
                 maxLength={50}
               />
-              {errors.city && <p className="text-red-500 text-xs mt-1">{errors.city}</p>}
+              {errors.city && (
+                <p className="text-red-500 text-xs mt-1">{errors.city}</p>
+              )}
             </div>
 
             {/* ZIP/Postal Code */}
             <div>
-              <label className="p2 !text-black mb-[6px]">Postcode / ZIP *</label>
+              <label className="p2 !text-black mb-[6px]">
+                Postcode / ZIP *
+              </label>
               <input
                 type="text"
                 placeholder="ZIP/Postal Code"
@@ -664,15 +903,18 @@ export default function CheckoutPage() {
                 className={inputClass("pincode")}
                 maxLength={20}
               />
-              {errors.pincode && <p className="text-red-500 text-xs mt-1">{errors.pincode}</p>}
+              {errors.pincode && (
+                <p className="text-red-500 text-xs mt-1">{errors.pincode}</p>
+              )}
             </div>
 
             {/* Phone Number */}
             <div>
               <label className="p2 !text-black block">Phone Number *</label>
               <div
-                className={`flex items-center border rounded-md overflow-visible py-[11px] px-2 bg-white ${errors.phone_no ? "border-red-500" : "border-gray-100"
-                  }`}
+                className={`flex items-center border rounded-md overflow-visible py-[11px] px-2 bg-white ${
+                  errors.phone_no ? "border-red-500" : "border-gray-100"
+                }`}
               >
                 {/* Custom flag-only dropdown */}
                 <Listbox
@@ -683,14 +925,25 @@ export default function CheckoutPage() {
                   <div className="relative">
                     <Listbox.Button className="relative w-full flex items-center justify-center cursor-pointer">
                       <Image
-                        src={filteredflag?.[0]?.flag || "/placeholder.svg?height=16&width=24"}
+                        src={
+                          filteredflag?.[0]?.flag ||
+                          "/placeholder.svg?height=16&width=24"
+                        }
                         alt={`${filteredflag?.[0]?.name} flag`}
                         width={24}
                         height={16}
                         className="rounded-sm mr-2"
                       />
-                      <span className="text-xs text-gray-600 mr-1">{filteredflag?.[0]?.dialCode}</span>
-                      <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 9 9" fill="none">
+                      <span className="text-xs text-gray-600 mr-1">
+                        {filteredflag?.[0]?.dialCode}
+                      </span>
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="15"
+                        height="15"
+                        viewBox="0 0 9 9"
+                        fill="none"
+                      >
                         <g clipPath="url(#clip0_1233_287)">
                           <path
                             d="M4.11673 7.15175C4.33218 7.35027 4.66391 7.35027 4.87937 7.15175L8.81858 3.52223C8.93421 3.41568 9 3.26561 9 3.10837V2.78716C9 2.29637 8.4156 2.04078 8.05523 2.37395L4.88007 5.30948C4.66441 5.50886 4.33168 5.50886 4.11602 5.30948L0.940859 2.37395C0.58049 2.04078 -0.00390625 2.29637 -0.00390625 2.78716V3.10837C-0.00390625 3.26561 0.0618803 3.41568 0.177518 3.52223L4.11673 7.15175Z"
@@ -735,9 +988,12 @@ export default function CheckoutPage() {
                   maxLength={15}
                 />
               </div>
-              {errors.phone_no && <p className="text-red-500 text-xs mt-1">{errors.phone_no}</p>}
+              {errors.phone_no && (
+                <p className="text-red-500 text-xs mt-1">{errors.phone_no}</p>
+              )}
               <p className="text-xs text-gray-500 mt-1">
-                Expected format: {filteredflag?.[0]?.phoneLength.join(" or ")} digits
+                Expected format: {filteredflag?.[0]?.phoneLength.join(" or ")}{" "}
+                digits
               </p>
             </div>
 
@@ -750,14 +1006,18 @@ export default function CheckoutPage() {
                   onClick={toggleCountryDropdown}
                 >
                   <div className="relative w-full flex gap-2 items-center justify-start cursor-pointer">
-                    {filteredflag?.[0] && <Image
-                      src={filteredflag?.[0]?.flag || ""}
-                      alt={`${selectedCountry} flag`}
-                      width={30}
-                      height={30}
-                      className="rounded-sm !drop-shadow-2xl"
-                    />}
-                    <span className="text-gray-200">{selectedCountry || "Select Country"}</span>
+                    {filteredflag?.[0] && (
+                      <Image
+                        src={filteredflag?.[0]?.flag || ""}
+                        alt={`${selectedCountry} flag`}
+                        width={30}
+                        height={30}
+                        className="rounded-sm !drop-shadow-2xl"
+                      />
+                    )}
+                    <span className="text-gray-200">
+                      {selectedCountry || "Select Country"}
+                    </span>
                   </div>
                   <div className="flex items-center">
                     <svg
@@ -767,7 +1027,11 @@ export default function CheckoutPage() {
                       strokeWidth="2"
                       viewBox="0 0 24 24"
                     >
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M19 9l-7 7-7-7"
+                      />
                     </svg>
                   </div>
                 </div>
@@ -793,7 +1057,10 @@ export default function CheckoutPage() {
                           className="px-4 py-2 hover:bg-primary hover:text-white cursor-pointer flex items-center gap-2"
                         >
                           <Image
-                            src={country.flag || "/placeholder.svg?height=14&width=20"}
+                            src={
+                              country.flag ||
+                              "/placeholder.svg?height=14&width=20"
+                            }
                             alt={`${country.name} flag`}
                             width={20}
                             height={14}
@@ -803,26 +1070,37 @@ export default function CheckoutPage() {
                         </li>
                       ))}
                       {filteredCountries.length === 0 && (
-                        <li className="px-4 py-2 text-gray-500">No countries found</li>
+                        <li className="px-4 py-2 text-gray-500">
+                          No countries found
+                        </li>
                       )}
                     </ul>
                   </div>
                 )}
               </div>
 
-              {errors.country && <p className="text-red-500 text-xs mt-1">{errors.country}</p>}
+              {errors.country && (
+                <p className="text-red-500 text-xs mt-1">{errors.country}</p>
+              )}
             </div>
 
             {/* State Dropdown */}
             <div className="relative" ref={stateRef}>
-              <label className="p2 !text-black mb-[6px]">State/Province *</label>
+              <label className="p2 !text-black mb-[6px]">
+                State/Province *
+              </label>
               <div className="relative">
                 <div
                   className={`border p2 ${errors.state ? "border-red-500" : "border-gray-100"} !text-gray-300 placeholder:!text-gray-300 2xl:py-[11px] py-[10px] rounded-[5px] 1xl:px-5 px-3 w-full ${selectedCountry ? "cursor-pointer" : "cursor-not-allowed opacity-50"} flex justify-between items-center`}
-                  onClick={(e) => (selectedCountry ? toggleStateDropdown(e) : null)}
+                  onClick={(e) =>
+                    selectedCountry ? toggleStateDropdown(e) : null
+                  }
                 >
                   <span className="text-gray-200">
-                    {selectedState || (selectedCountry ? "Select State/Province" : "Select Country First")}
+                    {selectedState ||
+                      (selectedCountry
+                        ? "Select State/Province"
+                        : "Select Country First")}
                   </span>
                   <div className="flex items-center">
                     <svg
@@ -832,7 +1110,11 @@ export default function CheckoutPage() {
                       strokeWidth="2"
                       viewBox="0 0 24 24"
                     >
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M19 9l-7 7-7-7"
+                      />
                     </svg>
                   </div>
                 </div>
@@ -857,8 +1139,8 @@ export default function CheckoutPage() {
                           onClick={(e) => handleStateSelect(state, e)}
                           onKeyDown={(e) => {
                             if (e.key === "Enter" || e.key === " ") {
-                              e.preventDefault()
-                              handleStateSelect(state, e)
+                              e.preventDefault();
+                              handleStateSelect(state, e);
                             }
                           }}
                           tabIndex={0}
@@ -869,7 +1151,9 @@ export default function CheckoutPage() {
                       ))}
                       {filteredStates.length === 0 && (
                         <li className="px-4 py-2 text-gray-500">
-                          {selectedCountry ? "No states found for this country" : "Please select a country first"}
+                          {selectedCountry
+                            ? "No states found for this country"
+                            : "Please select a country first"}
                         </li>
                       )}
                     </ul>
@@ -877,7 +1161,9 @@ export default function CheckoutPage() {
                 )}
               </div>
 
-              {errors.state && <p className="text-red-500 text-xs mt-1">{errors.state}</p>}
+              {errors.state && (
+                <p className="text-red-500 text-xs mt-1">{errors.state}</p>
+              )}
             </div>
           </div>
 
@@ -902,7 +1188,9 @@ export default function CheckoutPage() {
                 </a>
               </label>
             </div>
-            {errors.agreed && <p className="text-red-500 text-xs mt-1 ml-8">{errors.agreed}</p>}
+            {errors.agreed && (
+              <p className="text-red-500 text-xs mt-1 ml-8">{errors.agreed}</p>
+            )}
           </div>
 
           <Button
@@ -910,8 +1198,12 @@ export default function CheckoutPage() {
             className="group btn btn-primary flex items-center justify-center gap-[10px] w-[220px] xl:!py-[11px] py-[10px] h-auto sm:mt-7 mt-5"
           >
             {isLoading
-              ? (!isAuthenticated ? "Logging in..." : "Paying...")
-              : (!isAuthenticated ? "Login to Pay" : "Pay Now")}
+              ? !isAuthenticated
+                ? "Logging in..."
+                : "Paying..."
+              : !isAuthenticated
+                ? "Login to Pay"
+                : "Pay Now"}
             <svg
               xmlns="http://www.w3.org/2000/svg"
               width="16"
@@ -931,7 +1223,8 @@ export default function CheckoutPage() {
           {/* Authentication status message */}
           {!isAuthenticated && (
             <p className="text-sm text-gray-600 mt-2">
-              You need to be logged in to complete your purchase. Click the button above to login or register.
+              You need to be logged in to complete your purchase. Click the
+              button above to login or register.
             </p>
           )}
         </div>
@@ -942,31 +1235,46 @@ export default function CheckoutPage() {
           <div className="text-sm text-gray-700 sm:space-y-4 space-y-2 mt-[18px] mb-[22px] pt-[18px]">
             {cartItems?.map((item, index) => {
               return (
-                <div key={index} className="flex justify-between py-1 1xl:gap-20 xl:gap-12 gap-4">
+                <div
+                  key={index}
+                  className="flex justify-between py-1 1xl:gap-20 xl:gap-12 gap-4"
+                >
                   <span className="p2">{item?.product?.title}</span>
-                  <span className="p2 !text-black !font-medium">${item?.total?.toFixed(2)}</span>
+                  <span className="p2 !text-black !font-medium">
+                    ${item?.total?.toFixed(2)}
+                  </span>
                 </div>
-              )
+              );
             })}
           </div>
 
           <div>
             <div className="flex justify-between py-2 font-semibold">
               <p className="font-medium !text-black">Total</p>
-              <p className="font-medium !text-black">${totalPrice?.toFixed(2)}</p>
+              <p className="font-medium !text-black">
+                ${totalPrice?.toFixed(2)}
+              </p>
             </div>
             <div className="flex items-center gap-2 xl:mt-2">
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+              >
                 <path
                   d="M22 3.93994L12 0.439941L2 3.93994V11.9999C2 16.1269 4.534 19.0119 6.896 20.8029C8.32208 21.8734 9.88622 22.7463 11.546 23.3979C11.6593 23.4406 11.7733 23.4813 11.888 23.5199L12 23.5599L12.114 23.5199C12.3327 23.444 12.5494 23.3626 12.764 23.2759C14.3097 22.6391 15.7681 21.8081 17.104 20.8029C19.467 19.0119 22 16.1269 22 11.9999V3.93994ZM11.001 15.4149L6.76 11.1719L8.174 9.75694L11.002 12.5859L16.659 6.92894L18.074 8.34294L11.001 15.4149Z"
                   fill="#0156D5"
                 />
               </svg>
-              <p className="text-black font-medium">10 day money back guarantee.</p>
+              <p className="text-black font-medium">
+                10 day money back guarantee.
+              </p>
             </div>
           </div>
         </div>
       </div>
     </div>
-  )
+  );
 }
