@@ -89,7 +89,7 @@ export default function AuthorHeader({ authUser }) {
     };
   }, [isMenuOpen, closeMenu]);
 
-  const isAuthor = authUser?.position === "author";
+  const isAuthor = authUser?.author === true;
 
   const commonItems = [
     {

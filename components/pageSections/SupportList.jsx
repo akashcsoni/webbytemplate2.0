@@ -27,11 +27,9 @@ const ticketSupportPage = ({ title }) => {
   const { authUser } = useAuth();
   const [file, setFile] = useState(null);
   const fileInputRef = useRef(null);
-  const fileInputAuthorRef = useRef(null);
   const [fileName, setFileName] = useState("");
   const [errors, setErrors] = useState("");
   const [filterData, setFilterData] = useState({});
-  const [filterAuthorData, setFilterAuthorData] = useState({});
   const [filteredSupport, setFilteredSupport] = useState([]);
   const [filteredSupportAuthor, setFilteredSupportAuthor] = useState([]);
   const [TabsSelected, setTabsSelected] = useState("checkTicketStatus");
@@ -39,7 +37,6 @@ const ticketSupportPage = ({ title }) => {
   const [orderData, setOrderData] = useState([]);
   const [openTicket, setOpenTicket] = useState(null);
   const [openTicketData, setOpenTicketData] = useState({});
-
   const [submitFormData, setSubmitFormData] = useState({});
 
   const handleClick = () => {
@@ -172,7 +169,7 @@ const ticketSupportPage = ({ title }) => {
             setTabsSelected("checkTicketStatus");
             setOpenTicket(null);
             setOpenTicketData(null);
-            fetchSupportData(authUser?.documentId, authUser?.position);
+            fetchSupportData(authUser?.documentId, authUser?.author);
           }, 1000);
         }
       } catch (error) {
@@ -215,6 +212,7 @@ const ticketSupportPage = ({ title }) => {
       },
       cellClick: async (e, cell) => {
         const orderData = cell.getRow().getData();
+        console.log(orderData);
         if (orderData.id) {
           await setOpenTicket(orderData?.id);
         } else {
@@ -277,9 +275,8 @@ const ticketSupportPage = ({ title }) => {
   const page_size = 10;
 
   const fetchSupportData = async (id, position) => {
-    // console.log(id, position, 'SupportData')
     // setLoading(true);
-    if (id && position === false) {
+    if (id && position) {
       try {
         const payload = {
           page_size,
@@ -320,16 +317,13 @@ const ticketSupportPage = ({ title }) => {
   };
 
   useEffect(() => {
-    if (authUser) {
-      fetchSupportData(authUser?.documentId, authUser?.author);
-    }
+    fetchSupportData(authUser?.documentId, authUser?.author);
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, [filterData, authUser?.documentId]);
 
   useEffect(() => {
     const fetchSupportAuthorData = async (id, position) => {
       // setLoading(true);
-      // console.log(id, position, 'SupportAuthorData')
       if (id && position === true) {
         try {
           const payload = {
@@ -371,9 +365,8 @@ const ticketSupportPage = ({ title }) => {
         }
       }
     };
-    if (authUser) {
-      fetchSupportAuthorData(authUser?.documentId, authUser?.author);
-    }
+
+    fetchSupportAuthorData(authUser?.documentId, authUser?.author);
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, [filterData, authUser?.documentId]);
 
@@ -898,13 +891,13 @@ const ticketSupportPage = ({ title }) => {
   return (
     <div className="py-[27px] min-h-[717px]">
       <h1
-        className={`h2 ${authUser?.position === "author" ? "sm:absolute" : ""} mb-4`}
+        className={`h2 ${authUser?.author === true ? "sm:absolute" : ""} mb-4`}
       >
         {title}
       </h1>
       <div className="flex w-full flex-col">
         {/* main-content */}
-        {authUser?.position === "author" ? (
+        {authUser?.author === true ? (
           <Tabs
             aria-label="Options"
             classNames={{
@@ -1244,38 +1237,38 @@ const ticketSupportPage = ({ title }) => {
                             <Card className="shadow-none !max-w-full">
                               <CardBody className="sm:px-5 px-4 py-5">
                                 {/* {loading && (
-<div className="p-4">
-<div className="overflow-x-auto rounded-lg border border-gray-100">
-<table className="min-w-full divide-y divide-gray-100 bg-white text-sm">
-<tbody className="divide-y divide-gray-100">
-{[...Array(10)].map((_, idx) => (
-<tr
-key={idx}
-className="hover:bg-gray-50"
->
-<td className="px-4 py-3">
-<div className="h-4 w-24 bg-gray-100 animate-pulse rounded" />
-</td>
-<td className="px-4 py-3">
-<div className="h-4 w-64 bg-gray-100 animate-pulse rounded mb-1" />
-<div className="h-4 w-56 bg-gray-100 animate-pulse rounded" />
-</td>
-<td className="px-4 py-3">
-<div className="h-8 w-20 bg-gray-100 animate-pulse rounded" />
-</td>
-<td className="px-4 py-3">
-<div className="h-8 w-28 bg-gray-100 animate-pulse rounded" />
-</td>
-<td className="px-4 py-3">
-<div className="h-4 w-20 bg-gray-100 animate-pulse rounded" />
-</td>
-</tr>
-))}
-</tbody>
-</table>
-</div>
-</div>
-)} */}
+                            <div className="p-4">
+                              <div className="overflow-x-auto rounded-lg border border-gray-100">
+                                <table className="min-w-full divide-y divide-gray-100 bg-white text-sm">
+                                  <tbody className="divide-y divide-gray-100">
+                                    {[...Array(10)].map((_, idx) => (
+                                      <tr
+                                        key={idx}
+                                        className="hover:bg-gray-50"
+                                      >
+                                        <td className="px-4 py-3">
+                                          <div className="h-4 w-24 bg-gray-100 animate-pulse rounded" />
+                                        </td>
+                                        <td className="px-4 py-3">
+                                          <div className="h-4 w-64 bg-gray-100 animate-pulse rounded mb-1" />
+                                          <div className="h-4 w-56 bg-gray-100 animate-pulse rounded" />
+                                        </td>
+                                        <td className="px-4 py-3">
+                                          <div className="h-8 w-20 bg-gray-100 animate-pulse rounded" />
+                                        </td>
+                                        <td className="px-4 py-3">
+                                          <div className="h-8 w-28 bg-gray-100 animate-pulse rounded" />
+                                        </td>
+                                        <td className="px-4 py-3">
+                                          <div className="h-4 w-20 bg-gray-100 animate-pulse rounded" />
+                                        </td>
+                                      </tr>
+                                    ))}
+                                  </tbody>
+                                </table>
+                              </div>
+                            </div>
+                          )} */}
                                 {filteredSupport ? (
                                   <DynamicTable
                                     // id={loading}
