@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 
-export default function RichText({ body, read_more }) {
+export default function RichText({ body, read_more, with_bg }) {
 
     const [isExpanded, setIsExpanded] = useState(false);
     const [displayContent, setDisplayContent] = useState(body);
@@ -110,7 +110,7 @@ export default function RichText({ body, read_more }) {
 
     return (
         <section className="xl:py-[35px] sm:py-[30px] py-5 RichText">
-            <div className="bg-blue-300">
+            <div className={(with_bg === true || with_bg === null) ? "bg-blue-300" : ""}>
                 <div className="rich-text container 2xl:py-[60px] xl:py-[50px] md:py-[45px] sm:py-9 py-7">
                     <div
                         className="prose mb-4"
