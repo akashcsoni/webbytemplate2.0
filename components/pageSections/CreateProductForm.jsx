@@ -506,7 +506,7 @@ export default function ProductsPage({
       html: "groupselect",
       options: topicsData,
       description: "Comma-separated grouptable to describe product",
-      validation: { required: "grouptable is require" },
+      validation: { required: "Topics is require" },
       rules: ["required"],
       className: "mb-5",
     },
