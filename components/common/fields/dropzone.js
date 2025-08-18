@@ -1,4 +1,3 @@
-
 "use client";
 import { useEffect, useState } from "react";
 import { UploadCloud, X } from "lucide-react";
@@ -13,7 +12,6 @@ export default function FormDropzone({
   defaultValueData,
   type = "add",
 }) {
-
   const [localError, setLocalError] = useState("");
   const [value, setValue] = useState(
     defaultValueData || (data.multiple ? [] : "")
@@ -22,12 +20,13 @@ export default function FormDropzone({
     defaultValueData || (data.multiple ? [] : "")
   );
   const [isDragging, setIsDragging] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [uploadSuccess, setUploadSuccess] = useState(false);
 
   const isInvalid = !!(localError && localError.length > 0);
   const errorMessage = isInvalid ? localError[0] : "";
 
   useEffect(() => {
-    // Always call onChange, even with empty values to trigger validation
     onChange(data.name, value);
   }, [value]);
 
@@ -76,6 +75,9 @@ export default function FormDropzone({
     }
 
     try {
+      setUploading(true);
+      setUploadSuccess(false);
+
       const uploadedFiles = await strapiPost(
         "upload",
         formData,
@@ -92,8 +94,6 @@ export default function FormDropzone({
         id: file.id,
       }));
 
-      console.log(formattedFiles);
-
       if (data.multiple) {
         setImage((prev) => [...prev, ...formattedFiles]);
         setValue((prev) => [...prev, ...formattedFiles.map((file) => file.id)]);
@@ -102,6 +102,8 @@ export default function FormDropzone({
         setValue(formattedFiles?.[0]?.id);
       }
 
+      setUploadSuccess(true);
+      setTimeout(() => setUploadSuccess(false), 2000);
     } catch (error) {
       console.error(error);
       if (error.status === 413 && error.response?.data?.error?.message) {
@@ -109,6 +111,8 @@ export default function FormDropzone({
       } else {
         toast.error("Upload failed. Please try again.");
       }
+    } finally {
+      setUploading(false);
     }
   };
 
@@ -123,9 +127,8 @@ export default function FormDropzone({
       setImage(updatedImages);
       setValue(updatedImages.map((file) => file.id));
     } else {
-      // For single images, set to empty array and null/empty value
       setImage([]);
-      setValue(null); // Set to null to trigger validation
+      setValue(null);
     }
   };
 
@@ -139,10 +142,13 @@ export default function FormDropzone({
           {data.label}
         </label>
       </div>
+
       <div
-        className={`border-2 border-dashed ${isInvalid ? "border-red-300" : "border-gray-300"
-          } rounded-md h-[200px] flex items-center justify-center cursor-pointer transition-all ${isDragging ? "bg-blue-50" : ""
-          }`}
+        className={`border-2 border-dashed ${
+          isInvalid ? "border-red-300" : "border-gray-300"
+        } rounded-md h-[200px] flex items-center justify-center cursor-pointer transition-all ${
+          isDragging ? "bg-blue-50" : ""
+        }`}
         onDragOver={(e) => {
           e.preventDefault();
           setIsDragging(true);
@@ -171,6 +177,17 @@ export default function FormDropzone({
           )}
         </div>
       </div>
+
+      {/* Upload Status */}
+      <div className="mt-2">
+        {uploading ? (
+          <span className="animate-spin text-blue-500">⏳ Uploading...</span>
+        ) : uploadSuccess ? (
+          <span className="text-green-500">✔️ Upload successful</span>
+        ) : null}
+      </div>
+
+      {/* Description */}
       <div className="flex items-center gap-1.5 mt-2">
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -196,9 +213,13 @@ export default function FormDropzone({
         </svg>
         <p className="text-xs text-gray-500"> {data.description}</p>
       </div>
+
+      {/* Error Message */}
       {isInvalid && (
         <p className="text-xs text-red-500 font-medium mt-1">{errorMessage}</p>
       )}
+
+      {/* Uploaded Image Previews */}
       {image.length > 0 && (
         <div className="flex flex-wrap gap-4 mt-4">
           {image.map((item, index) => (
