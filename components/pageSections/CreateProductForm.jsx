@@ -33,7 +33,6 @@ export default function ProductsPage({
   const { authUser } = useAuth();
   const router = useRouter();
   const [formValues, setFormValues] = useState({});
-  console.log(formValues);
   const [validationErrors, setValidationErrors] = useState({});
   const [loading, setLoading] = useState(false);
   const [defaultValueData, setDefaultValueData] = useState({});
@@ -710,10 +709,6 @@ export default function ProductsPage({
 
   const getFormatAndCompatibleList = async (id, existingProductData = null) => {
     try {
-      const productData = await strapiGet(`format/${id}`, {
-        params: { populate: "*" },
-        token: themeConfig.TOKEN,
-      });
       const technologyData = await strapiGet(`technologies`, {
         params: { populate: "*" },
         token: themeConfig.TOKEN,
