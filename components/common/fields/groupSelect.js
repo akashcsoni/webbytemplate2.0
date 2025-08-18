@@ -118,46 +118,29 @@ export default function GroupSelect({
       </div>
 
       {/* Dropdown Menu */}
+
       {isOpen && (
         <div className="absolute z-10 mt-1 w-full max-h-60 overflow-y-auto bg-white border border-gray-100 rounded shadow">
-          {Object.entries(
-            data.options.reduce((acc, option) => {
-              const parentTitle =
-                option.parent_topics?.[0]?.title || "Ungrouped Topics";
-              if (!acc[parentTitle]) acc[parentTitle] = [];
-              acc[parentTitle].push(option);
-              return acc;
-            }, {})
-          ).map(([groupTitle, groupOptions]) => (
-            <div key={groupTitle}>
-              <div className="px-4 py-2 font-semibold text-sm text-gray-700 bg-gray-100 cursor-default select-none">
-                {groupTitle}
-              </div>
-
-              {/* {groupOptions.map((option) => (
-                <div
-                  key={option.documentId}
-                  onClick={() => handleSelect(option)}
-                  className={`px-10 py-2 text-sm hover:bg-primary hover:text-white flex justify-between items-center cursor-pointer ${
-                    selected.includes(option.documentId)
-                      ? "bg-primary text-white"
-                      : ""
-                  }`}
-                >
-                  {console.log(groupOptions, "groupoption check")}
-                  <span>{option.title}</span>
-                  {selected.includes(option.documentId) && (
-                    <Check className="w-4 h-4" />
-                  )}
+          {data.options.length === 0 ? (
+            <div className="px-4 py-2 text-gray-500">
+              No {data?.label?.toLowerCase()} found
+            </div>
+          ) : (
+            Object.entries(
+              data.options.reduce((acc, option) => {
+                const parentTitle =
+                  option.parent_topics?.[0]?.title || "Ungrouped Topics";
+                if (!acc[parentTitle]) acc[parentTitle] = [];
+                acc[parentTitle].push(option);
+                return acc;
+              }, {})
+            ).map(([groupTitle, groupOptions]) => (
+              <div key={groupTitle}>
+                <div className="px-4 py-2 font-semibold text-sm text-gray-700 bg-gray-100 cursor-default select-none">
+                  {groupTitle}
                 </div>
-              ))} */}
 
-              {groupOptions.length === 0 ? (
-                <li className="px-4 py-2 text-gray-500">
-                  No {data?.label?.toLowerCase()} found
-                </li>
-              ) : (
-                groupOptions.map((option) => (
+                {groupOptions.map((option) => (
                   <div
                     key={option.documentId}
                     onClick={() => handleSelect(option)}
@@ -172,10 +155,10 @@ export default function GroupSelect({
                       <Check className="w-4 h-4" />
                     )}
                   </div>
-                ))
-              )}
-            </div>
-          ))}
+                ))}
+              </div>
+            ))
+          )}
         </div>
       )}
 
