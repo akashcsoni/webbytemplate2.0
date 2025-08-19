@@ -37,14 +37,15 @@ export default function FormTextArea({
   return (
     <Textarea
       name={data?.name}
+      disableAutosize
       classNames={{
         inputWrapper:
           "w-full border border-primary/10 xl:py-3 py-2 xl:px-5 md:px-4 px-3 lg:!h-[120px] md:!h-[110px] !h-[100px] focus:outline-none !bg-white rounded-[5px]",
         base: "!bg-white",
         input:
-          "xl:!text-base md:!text-[15px] !text-sm placeholder:!text-gray-300 !font-normal",
+          "xl:!text-base md:!text-[15px] !text-sm placeholder:!text-gray-300 !font-normal h-full",
         label: "2xl:text-base md:text-[15px] !text-black text-sm ",
-        errorMessage: "!text-red",
+        errorMessage: "!text-[#ef4444]",
       }}
       description={
         data?.description && (

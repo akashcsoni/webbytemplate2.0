@@ -1,4 +1,5 @@
 "use client";
+
 import { useEffect, useState } from "react";
 import { Button } from "@heroui/react";
 import {
@@ -36,6 +37,7 @@ export default function ProductsPage({
   const [validationErrors, setValidationErrors] = useState({});
   const [loading, setLoading] = useState(false);
   const [defaultValueData, setDefaultValueData] = useState({});
+  const [originalImageData, setOriginalImageData] = useState({}); // Track original images
   const [categoriesList, setCategoriesList] = useState([]);
   const [technologyList, setTechnologyList] = useState([]);
   const [existingProduct, setExistingProduct] = useState([]);
@@ -45,6 +47,111 @@ export default function ProductsPage({
   const [allSelectedChildren, setAllSelectedChildren] = useState([]);
   const [topicsData, setTopicsData] = useState([]);
   const [isEditMode, setIsEditMode] = useState(false);
+  const [hasSubmitted, setHasSubmitted] = useState(false);
+
+  console.log("🔍 Current defaultValueData:", defaultValueData);
+  console.log("🔍 Current formValues:", formValues);
+  console.log(
+    "🔍 Dynamic fields:",
+    dynamicCategoryFields.map((f) => f.name)
+  );
+
+  // Helper function to safely get image ID with better error handling
+  const getImageId = (image) => {
+    if (!image) return null;
+    if (typeof image === "number" && image > 0) return image;
+    if (typeof image === "object" && image !== null) {
+      if (typeof image.id === "number" && image.id > 0) return image.id;
+      if (typeof image.id === "string" && !isNaN(Number.parseInt(image.id))) {
+        const id = Number.parseInt(image.id);
+        return id > 0 ? id : null;
+      }
+    }
+    return null;
+  };
+
+  // Helper function to safely get array of image IDs with better filtering
+  const getImageIds = (images) => {
+    if (!Array.isArray(images)) return [];
+    return images
+      .map((img) => getImageId(img))
+      .filter((id) => id !== null && id !== undefined && id > 0);
+  };
+
+  // ✅ NEW: Helper function to format image data consistently
+  const formatImageData = (imageItem) => {
+    if (!imageItem) return null;
+
+    // If it's already a properly formatted object with URL
+    if (typeof imageItem === "object" && imageItem.url && imageItem.id) {
+      return {
+        id: imageItem.id,
+        url: imageItem.url,
+        name:
+          imageItem.name ||
+          imageItem.alternativeText ||
+          `image-${imageItem.id}`,
+      };
+    }
+
+    // If it's a Strapi media object with different structure
+    if (typeof imageItem === "object" && imageItem.id) {
+      const possibleUrl =
+        imageItem.url ||
+        imageItem.formats?.small?.url ||
+        imageItem.formats?.thumbnail?.url ||
+        imageItem.formats?.medium?.url ||
+        imageItem.formats?.large?.url ||
+        "";
+
+      return {
+        id: imageItem.id,
+        url: possibleUrl,
+        name:
+          imageItem.name ||
+          imageItem.alternativeText ||
+          `image-${imageItem.id}`,
+      };
+    }
+
+    // If it's just an ID, return minimal structure
+    if (typeof imageItem === "number" && imageItem > 0) {
+      return {
+        id: imageItem,
+        url: "",
+        name: `image-${imageItem}`,
+      };
+    }
+
+    return null;
+  };
+
+  // ✅ NEW: Helper function to format array of images
+  const formatImageArray = (images) => {
+    if (!Array.isArray(images)) return [];
+    return images.map(formatImageData).filter(Boolean);
+  };
+
+  // ✅ NEW: Helper function to get dynamic field names
+  const getDynamicFieldNames = () => {
+    return dynamicCategoryFields.map((field) => field.name);
+  };
+
+  // ✅ NEW: Helper function to preserve dynamic field data
+  const preserveDynamicFieldData = (currentFormValues, currentDefaultData) => {
+    const dynamicFieldNames = getDynamicFieldNames();
+    const preservedData = {};
+
+    dynamicFieldNames.forEach((fieldName) => {
+      if (currentFormValues[fieldName] !== undefined) {
+        preservedData[fieldName] = currentFormValues[fieldName];
+      } else if (currentDefaultData[fieldName] !== undefined) {
+        preservedData[fieldName] = currentDefaultData[fieldName];
+      }
+    });
+
+    return preservedData;
+  };
 
   const globalValidator = (field) => {
     const validators = {
@@ -71,28 +178,29 @@ export default function ProductsPage({
         },
         message: field.validation.url,
       }),
-      // Add a special validator for edit mode images
       editModeRequired: () => ({
         validate: (value) => {
-          // In edit mode, if there was a default value but now it's empty, show error
           const hasDefaultValue =
             defaultValueData[field.name] !== undefined &&
-            defaultValueData[field.name] !== null;
+            defaultValueData[field.name] !== null &&
+            (Array.isArray(defaultValueData[field.name])
+              ? defaultValueData[field.name].length > 0
+              : true);
+
           const isEmpty =
             value === undefined ||
             value === null ||
             value === "" ||
+            (Array.isArray(value) && value.length === 0) ||
             (typeof value === "object" &&
               value !== null &&
               "length" in value &&
               value.length === 0);
 
-          // If we had a default value but now it's empty, it's invalid
           if (hasDefaultValue && isEmpty) {
             return false;
           }
 
-          // If we never had a default value and it's still empty, it's invalid
           if (!hasDefaultValue && isEmpty) {
             return false;
           }
@@ -114,6 +222,28 @@ export default function ProductsPage({
     return fieldValidators;
   };
 
+  const validateSingleField = (fieldName, fieldValue) => {
+    const allFields = [
+      ...getFieldDefinitions(),
+      ...getImageFields(),
+      ...dynamicCategoryFields,
+    ];
+
+    const field = allFields.find((f) => f.name === fieldName);
+    if (!field) return null;
+
+    const validators = globalValidator(field);
+
+    for (const validatorName in validators) {
+      const { validate, message } = validators[validatorName];
+      if (!validate(fieldValue)) {
+        return [message];
+      }
+    }
+
+    return null;
+  };
+
   const getOptionsList = async () => {
     const categoriesData = await strapiGet(`categories`, {
       params: {
@@ -122,10 +252,12 @@ export default function ProductsPage({
       },
       token: themeConfig.TOKEN,
     });
+
     const tagData = await strapiGet(`tags`, {
       params: { populate: "*" },
       token: themeConfig.TOKEN,
     });
+
     if (categoriesData?.data && tagData?.data) {
       setCategoriesList(categoriesData?.data);
       setTagList(tagData?.data);
@@ -137,19 +269,16 @@ export default function ProductsPage({
     const errors = {};
     const rules = {};
 
-    // Get all field definitions including dynamic fields
     const allFields = [
       ...getFieldDefinitions(),
       ...getImageFields(),
-      ...dynamicCategoryFields, // Include dynamic fields in validation
+      ...dynamicCategoryFields,
     ];
 
-    // Dynamically create validation rules for all fields
     allFields.forEach((field_data) => {
       rules[field_data.name] = globalValidator(field_data);
     });
 
-    // Validate all fields
     allFields.forEach((field_data) => {
       const fieldValue = formValues[field_data.name];
       if (field_data.name in rules) {
@@ -174,6 +303,8 @@ export default function ProductsPage({
   const save_product_details = async (event) => {
     event.preventDefault();
     setLoading(true);
+    setHasSubmitted(true);
+
     const isValid = validateFields();
     if (!isValid) {
       setLoading(false);
@@ -218,7 +349,6 @@ export default function ProductsPage({
       }
     }
 
-    // Extract dynamic field values
     const dynamicFieldValues = {};
     dynamicCategoryFields.forEach((field) => {
       if (formValues[field.name]) {
@@ -252,26 +382,67 @@ export default function ProductsPage({
     try {
       let response = {};
       const { id } = (await params) || {};
+
       if (id) {
+        console.log("🔄 Edit mode - Processing image updates");
+
+        // Get current image IDs from formValues (most up-to-date)
+        const currentGridImageId = getImageId(formValues.grid_image);
+        const currentGalleryIds = getImageIds(formValues.gallery_image);
+
+        // Get original image IDs from when the form was loaded
+        const originalGridImageId = getImageId(originalImageData?.grid_image);
+        const originalGalleryIds = getImageIds(
+          originalImageData?.gallery_image
+        );
+
+        console.log("Image comparison:", {
+          currentGrid: currentGridImageId,
+          originalGrid: originalGridImageId,
+          currentGallery: currentGalleryIds,
+          originalGallery: originalGalleryIds,
+        });
+
+        // Handle grid_image deletion - only delete if there was an original and it's different
         if (
-          defaultValueData?.grid_image !== null &&
-          defaultValueData?.grid_image?.id !== grid_image?.id
+          originalGridImageId &&
+          originalGridImageId !== currentGridImageId &&
+          originalGridImageId > 0
         ) {
-          await strapiDelete(
-            `upload/files/${defaultValueData?.grid_image?.id}`,
-            themeConfig.TOKEN
-          );
+          console.log("🗑️ Deleting old grid image:", originalGridImageId);
+          try {
+            await strapiDelete(
+              `upload/files/${originalGridImageId}`,
+              themeConfig.TOKEN
+            );
+          } catch (deleteError) {
+            console.error("Error deleting grid image:", deleteError);
+          }
         }
-        const removedImages =
-          Array.isArray(defaultValueData?.gallery_image) &&
-            Array.isArray(formValues.gallery_image)
-            ? defaultValueData.gallery_image.filter(
-              (img) => !formValues.gallery_image.includes(img.id)
-            )
-            : [];
-        for (const imgId of removedImages) {
-          await strapiDelete(`upload/files/${imgId.id}`, themeConfig.TOKEN);
+
+        // Handle gallery_image deletion - only delete images that were removed
+        const imagesToDelete = originalGalleryIds.filter(
+          (originalId) =>
+            originalId > 0 && !currentGalleryIds.includes(originalId)
+        );
+
+        console.log("🖼️ Gallery image IDs to delete:", imagesToDelete);
+
+        // Delete removed images
+        for (const imageIdToDelete of imagesToDelete) {
+          if (imageIdToDelete > 0) {
+            try {
+              console.log("🗑️ Deleting gallery image:", imageIdToDelete);
+              await strapiDelete(
+                `upload/files/${imageIdToDelete}`,
+                themeConfig.TOKEN
+              );
+            } catch (deleteError) {
+              console.error("Error deleting gallery image:", deleteError);
+            }
+          }
         }
+
         response = await strapiPut(
           "products/" + defaultValueData.id,
           data,
@@ -280,8 +451,105 @@ export default function ProductsPage({
       } else {
         response = await strapiPost("products", data, themeConfig.TOKEN);
       }
+
       if (response?.data?.documentId) {
-        toast.success(response.message);
+        toast.success(response.message || "Product saved successfully!");
+
+        // ✅ CRITICAL FIX: Preserve dynamic field data before updating
+        const preservedDynamicData = preserveDynamicFieldData(
+          formValues,
+          defaultValueData
+        );
+        console.log("🔄 Preserved dynamic field data:", preservedDynamicData);
+
+        // ✅ CRITICAL FIX: Only update defaultValueData and preserve current formValues
+        try {
+          const updatedProductData = await strapiGet(
+            `products/${response.data.documentId}`,
+            {
+              params: { populate: "*" },
+              token: themeConfig.TOKEN,
+            }
+          );
+
+          if (updatedProductData?.data) {
+            console.log(
+              "📊 Fresh product data from server:",
+              updatedProductData.data
+            );
+
+            // Format the fresh data properly for defaultValueData (reference only)
+            const freshFormattedData = {
+              ...updatedProductData.data,
+              categories: extractIds(updatedProductData.data?.categories)?.[0],
+              tags: extractIds(updatedProductData.data?.tags),
+              topics: extractIds(updatedProductData.data?.topics),
+              file_format: extractIds(updatedProductData.data?.file_format),
+              compatible_with: extractIds(
+                updatedProductData.data?.compatible_with
+              ),
+              technology:
+                updatedProductData.data?.all_technology?.technology?.documentId,
+              existing_product: extractIds(
+                updatedProductData.data?.all_technology?.products
+              ),
+              price: updatedProductData.data?.price?.sales_price,
+              // ✅ CRITICAL: Properly format image data with URLs
+              grid_image: formatImageData(updatedProductData.data?.grid_image),
+              gallery_image: formatImageArray(
+                updatedProductData.data?.gallery_image
+              ),
+              // ✅ CRITICAL: Preserve dynamic field data
+              ...preservedDynamicData,
+            };
+
+            console.log(
+              "✅ Formatted fresh data with preserved dynamic fields:",
+              freshFormattedData
+            );
+
+            // ✅ CRITICAL FIX: Update defaultValueData with preserved dynamic data
+            setDefaultValueData(freshFormattedData);
+
+            // ✅ CRITICAL FIX: Only update formValues for image fields, preserve everything else
+            setFormValues((prevFormValues) => ({
+              ...prevFormValues, // Keep all existing form values including dynamic fields
+              // Only update image fields with proper URLs from server
+              grid_image: freshFormattedData.grid_image,
+              gallery_image: freshFormattedData.gallery_image,
+            }));
+
+            // Update original image data for future comparisons
+            setOriginalImageData({
+              grid_image: updatedProductData.data?.grid_image,
+              gallery_image: updatedProductData.data?.gallery_image,
+            });
+
+            console.log(
+              "✅ Form values after save (should preserve dynamic fields):",
+              {
+                ...formValues,
+                grid_image: freshFormattedData.grid_image,
+                gallery_image: freshFormattedData.gallery_image,
+              }
+            );
+          }
+        } catch (fetchError) {
+          console.error("Failed to fetch updated product data:", fetchError);
+          // Fallback: preserve dynamic data and update images
+          const preservedData = preserveDynamicFieldData(
+            formValues,
+            defaultValueData
+          );
+          setDefaultValueData((prevDefault) => ({
+            ...prevDefault,
+            ...formValues,
+            ...preservedData,
+            grid_image: formatImageData(formValues.grid_image),
+            gallery_image: formatImageArray(formValues.gallery_image),
+          }));
+        }
+
         if (!id) {
           router.push(
             `/user/${authUser?.username}/products/edit/${response?.data?.documentId}`
@@ -291,10 +559,10 @@ export default function ProductsPage({
         toast.error("Unexpected response from server.");
       }
     } catch (error) {
-      console.error("Product creation failed:", error);
+      console.error("Product save failed:", error);
       toast.error(
         error?.response?.data?.error?.message ||
-        "An error occurred while creating the product."
+          "An error occurred while saving the product."
       );
     } finally {
       setLoading(false);
@@ -302,25 +570,36 @@ export default function ProductsPage({
   };
 
   const handleFieldChange = async (name, value) => {
-    // 1. Update form values
+    console.log(`🔄 Field changed: ${name}`, value);
+
     const updatedFormValues = {
       ...formValues,
       [name]: value,
     };
     setFormValues(updatedFormValues);
 
-    // 2. Clear validation error for this field
-    setValidationErrors((prevErrors) => ({
-      ...prevErrors,
-      [name]: "",
-    }));
+    // Clear validation errors immediately for the changed field
+    if (validationErrors[name]) {
+      setValidationErrors((prevErrors) => ({
+        ...prevErrors,
+        [name]: null,
+      }));
+    }
 
-    // 3. Update show fields if zip is selected
+    // Validate field if form has been submitted
+    if (hasSubmitted) {
+      const fieldError = validateSingleField(name, value);
+      setValidationErrors((prevErrors) => ({
+        ...prevErrors,
+        [name]: fieldError,
+      }));
+    }
+
     if (name === "product_zip_select") {
       setShowFiels([value]);
     }
 
-    // 4. Update combined selected children array across all dynamic multiselect fields
+    // Handle dynamic category fields
     const combinedSelectedChildren = Object.entries(updatedFormValues)
       .filter(([key]) =>
         dynamicCategoryFields.some((field) => field.name === key)
@@ -338,7 +617,7 @@ export default function ProductsPage({
       type: "text",
       html: "input",
       description: "Maximum 50 characters; no special symbols",
-      validation: { required: "Title is require" },
+      validation: { required: "Title is required" },
       rules: ["required"],
       className: "mb-5",
     },
@@ -350,7 +629,7 @@ export default function ProductsPage({
       type: "text",
       html: "input",
       description: "Maximum 50 characters; no special symbols",
-      validation: { required: "Short name is require" },
+      validation: { required: "Short name is required" },
       rules: ["required"],
       className: "mb-5",
     },
@@ -362,7 +641,7 @@ export default function ProductsPage({
       type: "textarea",
       html: "textarea",
       description: "Provide a detailed description of the product",
-      validation: { required: "Description is require" },
+      validation: { required: "Description is required" },
       rules: ["required"],
       className: "mb-5",
     },
@@ -375,8 +654,8 @@ export default function ProductsPage({
       html: "input",
       description: "Must be a valid URL (e.g., https://example.com)",
       validation: {
-        required: "Preview link is require",
-        url: "URL is unvalid",
+        required: "Preview link is required",
+        url: "URL is invalid",
       },
       rules: ["required", "url"],
       className: "mb-5",
@@ -390,8 +669,8 @@ export default function ProductsPage({
       html: "select",
       options: categoriesList,
       startContent: true,
-      description: "Choose one relevant categories",
-      validation: { required: "Categories is require" },
+      description: "Choose one relevant category",
+      validation: { required: "Category is required" },
       rules: ["required"],
       className: "mb-5",
     },
@@ -405,18 +684,18 @@ export default function ProductsPage({
       options: technologyList,
       startContent: true,
       description: "Choose one relevant Technology",
-      validation: { required: "Technology is require" },
+      validation: { required: "Technology is required" },
       rules: ["required"],
       className: "mb-5",
     },
     {
       position: 4,
       name: "product_zip_select",
-      label: "Select your file preview ",
+      label: "Select your file preview",
       type: "radio",
       html: "radio",
       validation: {
-        required: "Select Correct Option for product zip",
+        required: "Select correct option for product zip",
       },
       options: [
         {
@@ -444,7 +723,7 @@ export default function ProductsPage({
       html: "upload",
       fileType: "zip",
       description: "Zip file containing the product assets",
-      validation: { required: "Product zip is require" },
+      validation: { required: "Product zip is required" },
       rules:
         showFiels.includes("product_zip") && !isEditMode ? ["required"] : [],
       className: "mb-5",
@@ -458,8 +737,8 @@ export default function ProductsPage({
       html: "input",
       description: "Alternative URL to access product zip",
       validation: {
-        required: "Product zip url is require",
-        url: "Product zip url is unvalid",
+        required: "Product zip url is required",
+        url: "Product zip url is invalid",
       },
       rules:
         showFiels.includes("product_zip_url") && !isEditMode
@@ -492,7 +771,7 @@ export default function ProductsPage({
       html: "multiselect",
       options: tagList,
       description: "Comma-separated tags to describe product",
-      validation: { required: "Tags is require" },
+      validation: { required: "Tags are required" },
       rules: ["required"],
       className: "mb-5",
     },
@@ -505,28 +784,28 @@ export default function ProductsPage({
       html: "groupselect",
       options: topicsData,
       description: "Comma-separated grouptable to describe product",
-      validation: { required: "Topics is require" },
+      validation: { required: "Topics are required" },
       rules: ["required"],
       className: "mb-5",
     },
     {
       position: 4,
       name: "sell_exclusivity",
-      label: "Sell Exclusivity.",
+      label: "Sell Exclusivity",
       type: "radio",
       html: "radio",
       description: "Select one option only",
       validation: {
-        required: "Select Correct Option for sell",
+        required: "Select correct option for sell exclusivity",
       },
       options: [
         {
-          label: "I will sell this products exclusively on WebbyTemplate.",
+          label: "I will sell this product exclusively on WebbyTemplate.",
           value: true,
         },
         {
           label:
-            "I will sell my products on WebbyTemplate and other marketplaces.",
+            "I will sell my product on WebbyTemplate and other marketplaces.",
           value: false,
         },
       ],
@@ -541,7 +820,7 @@ export default function ProductsPage({
       type: "number",
       html: "input",
       description: "Numeric value for the product price",
-      validation: { required: "Price is require" },
+      validation: { required: "Price is required" },
       rules: ["required"],
       className: "mb-5",
     },
@@ -558,8 +837,7 @@ export default function ProductsPage({
       multiple: false,
       description: "Minimum resolution: 271x345px; max file size: 2MB",
       support: "JPG or PNG",
-      validation: { required: "Grid image is require" },
-      // Use editModeRequired for edit mode, required for add mode
+      validation: { required: "Grid image is required" },
       rules: isEditMode ? ["editModeRequired"] : ["required"],
     },
     {
@@ -573,8 +851,7 @@ export default function ProductsPage({
       description:
         "Minimum resolution: 440x560px or 868x554px; max file size: 2MB/per image",
       support: "JPG, PNG, or GIF",
-      validation: { required: "Gallery image is require" },
-      // Use editModeRequired for edit mode, required for add mode
+      validation: { required: "Gallery images are required" },
       rules: isEditMode ? ["editModeRequired"] : ["required"],
     },
   ];
@@ -657,6 +934,7 @@ export default function ProductsPage({
       case "dropzone":
         return (
           <FormDropzone
+            key={`${data.name}-${JSON.stringify(defaultValueData[data.name])}`} // Force re-render when data changes
             type={isEditMode ? "edit" : "add"}
             data={data}
             onChange={handleFieldChange}
@@ -701,6 +979,16 @@ export default function ProductsPage({
     };
     init();
   }, [params, authUser]);
+
+  // Cleanup function to prevent memory leaks
+  useEffect(() => {
+    return () => {
+      setValidationErrors({});
+      setFormValues({});
+      setDefaultValueData({});
+      setOriginalImageData({});
+    };
+  }, []);
 
   const extractIds = (items) => {
     if (!Array.isArray(items)) return [];
@@ -834,6 +1122,8 @@ export default function ProductsPage({
         token: themeConfig.TOKEN,
       });
       if (productData?.data) {
+        console.log("📊 Raw product data from server:", productData.data);
+
         const firstVendorProduct = productData.data?.vendor_given_products?.[0];
         const processedVendorProducts =
           productData.data?.vendor_given_products?.map((item) => {
@@ -853,6 +1143,7 @@ export default function ProductsPage({
             return item;
           }) || [];
 
+        // ✅ CRITICAL FIX: Properly format image data with URLs
         const finalDefaultValueData = {
           ...productData.data,
           categories: extractIds(productData.data?.categories)?.[0],
@@ -866,7 +1157,22 @@ export default function ProductsPage({
           ),
           price: productData.data?.price?.sales_price,
           vendor_given_products: processedVendorProducts,
+          // ✅ CRITICAL: Format images properly with URLs
+          grid_image: formatImageData(productData.data?.grid_image),
+          gallery_image: formatImageArray(productData.data?.gallery_image),
         };
+
+        // Store original image data for comparison during updates
+        setOriginalImageData({
+          grid_image: productData.data?.grid_image,
+          gallery_image: productData.data?.gallery_image,
+        });
+
+        console.log("📊 Formatted product data:", finalDefaultValueData);
+        console.log(
+          "🖼️ Gallery images formatted:",
+          finalDefaultValueData.gallery_image
+        );
 
         setDefaultValueData(finalDefaultValueData);
         setFormValues(finalDefaultValueData);
@@ -907,7 +1213,6 @@ export default function ProductsPage({
                       )
                     );
                   })}
-                  {/* Download Zip Button - Only show in edit mode and when product_zip_url exists */}
                   {isEditMode && defaultValueData?.product_zip_url && (
                     <Button
                       type="button"

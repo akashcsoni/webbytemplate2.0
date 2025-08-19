@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect, useRef } from "react";
@@ -10,7 +9,6 @@ export default function FormMultiSelect({
   error,
   defaultValueData,
 }) {
-  
   const dropdownRef = useRef(null);
 
   const [localError, setLocalError] = useState("");
@@ -89,7 +87,7 @@ export default function FormMultiSelect({
       </label>
       <div className="relative">
         <div
-          className={`border p2 ${isInvalid ? "border-[#F31260]" : "border-gray-100 hover:border-[#a1a1aa] "} text-gray-300 placeholder:text-gray-300 2xl:py-[11px] py-[10px] rounded-[5px] 1xl:px-5 px-3 w-full h-[48px] cursor-pointer flex justify-between items-center flex-wrap gap-2`}
+          className={`border p2 ${isInvalid ? "border-[#ef4444]" : "border-gray-100 hover:border-[#a1a1aa] "} text-gray-300 placeholder:text-gray-300 2xl:py-[11px] py-[10px] rounded-[5px] 1xl:px-5 px-3 w-full min-h-[48px] cursor-pointer flex justify-between items-center flex-wrap gap-2`}
           onClick={toggleCountryDropdown}
         >
           <div className="flex flex-wrap gap-2 items-center">
@@ -123,15 +121,16 @@ export default function FormMultiSelect({
               </span>
             )}
           </div>
-          <div className="flex gap-3">
+          <div className="flex gap-3 ml-auto mr-0">
             {selectedCountries.length > 0 && (
               <button onClick={clearAll} className="w-4 h-4 text-xs text-black">
                 <X className="cursor-pointer font-normal w-4 h-4" />
               </button>
             )}
             <svg
-              className={`w-4 h-4 transform transition-transform duration-300 ${isCountryDropdownOpen ? "rotate-180" : "rotate-0"
-                }`}
+              className={`w-4 h-4 transform transition-transform duration-300 ${
+                isCountryDropdownOpen ? "rotate-180" : "rotate-0"
+              }`}
               fill="none"
               stroke="currentColor"
               strokeWidth="2"
@@ -147,7 +146,7 @@ export default function FormMultiSelect({
         </div>
 
         {isCountryDropdownOpen && (
-          <div className="p2 absolute left-0 right-0 mt-1 border border-gray-100 bg-white rounded-b-md shadow-lg z-10 max-h-60 overflow-hidden">
+          <div className="p2 absolute left-0 right-0 mt-1 border border-gray-100 bg-white rounded-b-md shadow-lg z-50 max-h-60 overflow-hidden">
             <div className="p-2 border-b border-gray-100">
               <input
                 type="text"
@@ -182,7 +181,7 @@ export default function FormMultiSelect({
       </div>
 
       {isInvalid && (
-        <p className="2xl:text-sm md:text-[13px] text-xs text-[#F31260] p-1">
+        <p className="2xl:text-sm md:text-[13px] text-xs !text-[#ef4444] p-1">
           {localError}
         </p>
       )}
