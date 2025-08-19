@@ -69,7 +69,12 @@
   font-style: normal;
   font-display: swap;
 }
-
+.text-danger{
+  @apply text-[#ef4444];
+}
+.border-danger{
+  @apply !border-[#ef4444];
+}
 h1,
 .h1 {
   @apply 2xl:text-5xl 1xl:text-[47px] xl:text-[43px] lg:text-[38px] md:text-[33px] sm:text-[28px] text-[25px] font-medium 2xl:leading-[70px] leading-tight;

@@ -12,7 +12,7 @@ export default function GroupSelect({
   const dropdownRef = useRef(null);
   const [isOpen, setIsOpen] = useState(false);
   const [selected, setSelected] = useState(defaultValueData || []);
-  console.log(selected, "selected value checking");
+  // console.log(selected, "selected value checking");
   const [localError, setLocalError] = useState("");
 
   useEffect(() => {
@@ -59,7 +59,7 @@ export default function GroupSelect({
     selected.includes(option.documentId)
   );
 
-  console.log(selectedObjects);
+  // console.log(selectedObjects);
 
   return (
     <div className="relative w-full" ref={dropdownRef}>
@@ -72,7 +72,7 @@ export default function GroupSelect({
       <div
         onClick={toggleDropdown}
         className={`w-full min-h-[42px] px-4 py-2 border ${
-          isInvalid ? "border-[#F31260]" : "border-gray-100"
+          isInvalid ? "border-[#ef4444]" : "border-gray-100"
         } rounded cursor-pointer bg-white flex items-center flex-wrap gap-2 relative`}
       >
         {/* Render selected items */}
@@ -120,7 +120,7 @@ export default function GroupSelect({
       {/* Dropdown Menu */}
 
       {isOpen && (
-        <div className="absolute z-10 mt-1 w-full max-h-60 overflow-y-auto bg-white border border-gray-100 rounded shadow">
+        <div className="absolute z-50 mt-1 w-full max-h-60 overflow-y-auto bg-white border border-gray-100 rounded shadow">
           {data.options.length === 0 ? (
             <div className="px-4 py-2 text-gray-500">
               No {data?.label?.toLowerCase()} found
@@ -162,7 +162,9 @@ export default function GroupSelect({
         </div>
       )}
 
-      {isInvalid && <p className="text-xs text-[#F31260] mt-1">{localError}</p>}
+      {isInvalid && (
+        <p className="text-xs !text-[#ef4444] mt-1">{localError}</p>
+      )}
     </div>
   );
 }
