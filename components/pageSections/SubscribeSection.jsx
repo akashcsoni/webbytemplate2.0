@@ -1,8 +1,6 @@
 'use client';
 
-import { themeConfig } from '@/config/theamConfig';
 import { strapiPost } from '@/lib/api/strapiClient';
-import Link from 'next/link';
 import React, { useState } from 'react';
 
 const SubscribeSection = ({
@@ -11,6 +9,7 @@ const SubscribeSection = ({
     check_box = 'I accept the Terms of Service and <a href="/privacy-policy" className="underline">Privacy Policy</a>.',
     email_input = true,
 }) => {
+
     const [loading, setloading] = useState(false)
     const [email, setEmail] = useState('');
     const [emailError, setEmailError] = useState('');
@@ -122,7 +121,13 @@ const SubscribeSection = ({
                                                 onChange={(e) => setCheckboxChecked(e.target.checked)}
                                                 className="1xl:w-5 1xl:h-5 w-4 h-4 rounded-full accent-white mt-[3px]"
                                             />
-                                            <label htmlFor='terms' className="p italic !text-white cursor-pointer">I accept the <Link href="/terms-of-service" className="underline underline-offset-1">Terms of Service</Link> and <Link href="/privacy-policy" className="underline underline-offset-1">Privacy Policy</Link>.</label>
+                                            {
+                                                check_box && (
+                                                    <div
+                                                        dangerouslySetInnerHTML={{ __html: check_box }}
+                                                    />
+                                                )
+                                            }
                                         </div>
                                     )}
                                     {checkboxError && (
