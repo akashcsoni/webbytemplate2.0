@@ -10,9 +10,11 @@ import {
   FormDropzone,
   FormMultiSelect,
 } from "@/comman/fields";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { themeConfig } from "@/config/theamConfig";
 import toast from "react-hot-toast";
+import { countries } from "@/lib/data/countries";
+import { Listbox } from "@headlessui/react";
 
 const profileSetting = ({ title, sub_title, form, image, button }) => {
   const [profileImage, setProfileImage] = useState(null);
@@ -21,9 +23,79 @@ const profileSetting = ({ title, sub_title, form, image, button }) => {
   const [fromSaveLoading, setFromSaveLoading] = useState(false);
   const [fromSetLoading, setFromSetLoading] = useState(true);
   const [formValues, setFormValues] = useState({});
+  // console.log(formValues);
   const [validationErrors, setValidationErrors] = useState({});
   const [defaultValueData, setDefaultValueData] = useState({});
-  const [hasNewImage, setHasNewImage] = useState(false); // Track if new image was uploaded
+  const [hasNewImage, setHasNewImage] = useState(false);
+
+  const [selectedCountry, setSelectedCountry] = useState("");
+  const [selectedState, setSelectedState] = useState("");
+  const [isCountryDropdownOpen, setIsCountryDropdownOpen] = useState(false);
+  const [isStateDropdownOpen, setIsStateDropdownOpen] = useState(false);
+  const [countrySearchTerm, setCountrySearchTerm] = useState("");
+  const [stateSearchTerm, setStateSearchTerm] = useState("");
+  const countryRef = useRef(null);
+  const stateRef = useRef(null);
+
+  const filteredCountries = countries.filter((country) =>
+    country.name.toLowerCase().includes(countrySearchTerm.toLowerCase())
+  );
+
+  const filteredflag = countries.filter(
+    (country) => country.name === selectedCountry
+  );
+
+  const filteredStates = selectedCountry
+    ? countries
+        .find((country) => country.name === selectedCountry)
+        ?.states?.filter((state) =>
+          state.toLowerCase().includes(stateSearchTerm.toLowerCase())
+        ) || []
+    : [];
+
+  const toggleCountryDropdown = () => {
+    setIsCountryDropdownOpen(!isCountryDropdownOpen);
+  };
+
+  const toggleStateDropdown = (e) => {
+    e.stopPropagation();
+    if (selectedCountry) {
+      setIsStateDropdownOpen(!isStateDropdownOpen);
+    }
+  };
+
+  const handleCountrySelect = (countryName) => {
+    setSelectedCountry(countryName);
+    setSelectedState(""); // Reset state when country changes
+    setIsCountryDropdownOpen(false);
+    setCountrySearchTerm("");
+    handleFieldChange("country", countryName);
+    handleFieldChange("state", ""); // Reset state in form values
+  };
+
+  const handleStateSelect = (stateName, e) => {
+    e.stopPropagation();
+    setSelectedState(stateName);
+    setIsStateDropdownOpen(false);
+    setStateSearchTerm("");
+    handleFieldChange("state", stateName);
+  };
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (countryRef.current && !countryRef.current.contains(event.target)) {
+        setIsCountryDropdownOpen(false);
+      }
+      if (stateRef.current && !stateRef.current.contains(event.target)) {
+        setIsStateDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   const handleImageUpload = async (e) => {
     setImageLoading(true);
@@ -35,7 +107,7 @@ const profileSetting = ({ title, sub_title, form, image, button }) => {
       const fileData = await strapiPost(`upload`, formData, themeConfig.TOKEN);
       setImageId(fileData[0].id);
       setProfileImage(fileData[0].url);
-      setHasNewImage(true); // Mark that a new image was uploaded
+      setHasNewImage(true);
       setImageLoading(false);
     } catch (error) {
       setImageLoading(false);
@@ -46,191 +118,19 @@ const profileSetting = ({ title, sub_title, form, image, button }) => {
     }
   };
 
-  const selectFlag = [
-    {
-      title: "India",
-      documentId: "India",
-      url: "https://flagcdn.com/in.svg",
-    },
-    {
-      title: "Argentina",
-      documentId: "Argentina",
-      url: "https://flagcdn.com/ar.svg",
-    },
-    {
-      title: "Venezuela",
-      documentId: "Venezuela",
-      url: "https://flagcdn.com/ve.svg",
-    },
-    {
-      title: "Brazil",
-      documentId: "Brazil",
-      url: "https://flagcdn.com/br.svg",
-    },
-    {
-      title: "Switzerland",
-      documentId: "Switzerland",
-      url: "https://flagcdn.com/ch.svg",
-    },
-    {
-      title: "Germany",
-      documentId: "Germany",
-      url: "https://flagcdn.com/de.svg",
-    },
-    {
-      title: "Spain",
-      documentId: "Spain",
-      url: "https://flagcdn.com/es.svg",
-    },
-    {
-      title: "France",
-      documentId: "France",
-      url: "https://flagcdn.com/fr.svg",
-    },
-    {
-      title: "Italy",
-      documentId: "Italy",
-      url: "https://flagcdn.com/it.svg",
-    },
-    {
-      title: "Mexico",
-      documentId: "Mexico",
-      url: "https://flagcdn.com/mx.svg",
-    },
-  ];
-
-  const globalValidator = (field) => {
-    // Country-specific phone number regex
-    const phoneRegexByCountry = {
-      India: /^\+91\d{10}$/,
-      Argentina: /^\+54\d{10,11}$/,
-      Venezuela: /^\+58\d{10}$/,
-      Brazil: /^\+55\d{10,11}$/,
-      Switzerland: /^\+41\d{9}$/,
-      Germany: /^\+49\d{10,11}$/,
-      Spain: /^\+34\d{9}$/,
-      France: /^\+33\d{9}$/,
-      Italy: /^\+39\d{9,10}$/,
-      Mexico: /^\+52\d{10}$/,
-    };
-
-    const pinCodeRegexByCountry = {
-      India: /^\d{6}$/,
-      Argentina: /^[A-Z]?\d{4}[A-Z]{0,3}$/, // e.g., "C1425ABC"
-      Venezuela: /^\d{4}$/,
-      Brazil: /^\d{5}-\d{3}$/, // e.g., "12345-678"
-      Switzerland: /^\d{4}$/,
-      Germany: /^\d{5}$/,
-      Spain: /^\d{5}$/,
-      France: /^\d{5}$/,
-      Italy: /^\d{5}$/,
-      Mexico: /^\d{5}$/,
-    };
-
-    const validators = {
-      required: () => ({
-        validate: (value) => {
-          const isEmpty =
-            value === undefined ||
-            value === null ||
-            value === "" ||
-            (typeof value === "object" &&
-              value !== null &&
-              "length" in value &&
-              value.length === 0);
-          return !isEmpty;
-        },
-        message: field.validation.required,
-      }),
-      url: () => ({
-        validate: (value) => {
-          if (!value) return true;
-          const urlRegex =
-            /^(https?:\/\/)?([^\s@]+)\.([^\s@]{2,})(\/[^\s@]*)?$/i;
-          return urlRegex.test(value);
-        },
-        message: field.validation.url,
-      }),
-      phone_no: () => ({
-        validate: (value) => {
-          if (!value) return true;
-          const country = formValues[field.relation] || "India"; // Should be one of the documentIds
-          const regex = phoneRegexByCountry[country];
-          if (!regex) return false; // Unknown country
-          return regex.test(value);
-        },
-        message: field.validation.phone_no || "Invalid phone number format.",
-      }),
-      pin_code: () => ({
-        validate: (value) => {
-          if (!value) return true;
-          const country = formValues[field.relation] || "India"; // Should be one of the documentIds
-          const regex = pinCodeRegexByCountry[country];
-          if (!regex) return false; // Unknown country
-          return regex.test(value);
-        },
-        message: field.validation.pin_code || "Invalid phone number format.",
-      }),
-    };
-
-    const fieldValidators = {};
-    if (field.rules) {
-      field.rules.forEach((rule) => {
-        if (validators[rule]) {
-          fieldValidators[rule] = validators[rule]();
-        }
-      });
-    }
-    return fieldValidators;
-  };
-
-  const validateFields = () => {
-    let isValid = true;
-    const errors = {};
-    const rules = {};
-
-    // Dynamically create validation rules
-    field.forEach((field_data) => {
-      rules[field_data.name] = globalValidator(field_data);
-    });
-
-    // Iterate through field groups and validate each field
-    field.forEach((field_data) => {
-      const fieldValue = formValues[field_data.name];
-      if (field_data.name in rules) {
-        const validators = rules[field_data.name];
-        for (const validatorName in validators) {
-          const { validate, message } = validators[validatorName];
-          if (!validate(fieldValue)) {
-            if (!errors[field_data.name]) {
-              errors[field_data.name] = [];
-            }
-            errors[field_data.name].push(message);
-            isValid = false;
-          }
-        }
-      }
-    });
-
-    setValidationErrors(errors);
-    return isValid;
-  };
-
   const save_user_details = async (event) => {
     event.preventDefault();
     setFromSaveLoading(true);
 
-    const isValid = validateFields();
+    const isValid = validateFields(formValues); // Use the validateFields function
     if (!isValid) {
       setFromSaveLoading(false);
       return;
     }
 
     const updatedData = {};
-    // Track if anything has changed
     let hasChanges = false;
 
-    // Compare and include only changed form values
     Object.keys(formValues).forEach((key) => {
       const newValue = formValues[key];
       const oldValue = defaultValueData[key];
@@ -240,7 +140,6 @@ const profileSetting = ({ title, sub_title, form, image, button }) => {
       }
     });
 
-    // Set full_name if first or last name changed
     if (
       formValues.first_name !== defaultValueData.first_name ||
       formValues.last_name !== defaultValueData.last_name
@@ -250,32 +149,43 @@ const profileSetting = ({ title, sub_title, form, image, button }) => {
       hasChanges = true;
     }
 
-    // Only update image if a new image was actually uploaded
     if (hasNewImage && imageId !== null) {
       updatedData.image = imageId;
       hasChanges = true;
     }
-    // Sanitize numeric fields
     // ["pincode", "phone_no"].forEach((field) => {
-    // if (updatedData.hasOwnProperty(field)) {
-    // const val = updatedData[field];
-    // if (val === "") {
-    // updatedData[field] = null;
-    // } else if (!isNaN(val)) {
-    // updatedData[field] = Number(val);
-    // }
-    // }
+    //   if (updatedData.hasOwnProperty(field)) {
+    //     const val = updatedData[field];
+    //     updatedData[field] = val === "" ? null : String(val).trim();
+    //   }
     // });
 
+    // For pincode and phone_no cleanup
     ["pincode", "phone_no"].forEach((field) => {
       if (updatedData.hasOwnProperty(field)) {
-        const val = updatedData[field];
-        updatedData[field] = val === "" ? null : String(val).trim();
+        let val = updatedData[field];
+
+        if (val === "") {
+          updatedData[field] = null;
+        } else {
+          updatedData[field] = String(val).trim();
+        }
       }
     });
 
+    // ✅ Ensure phone_no includes country code
+    if (updatedData.hasOwnProperty("phone_no")) {
+      // clean only digits
+      const purePhone = updatedData.phone_no.replace(/\D/g, "");
+
+      const countryDialCode = filteredflag?.[0]?.dialCode || "";
+
+      // final format => +11234567890
+      updatedData.phone_no = `${countryDialCode}${purePhone}`;
+    }
+
     if (!hasChanges) {
-      toast.info("No changes detected.");
+      toast.success("No changes detected.");
       setFromSaveLoading(false);
       return;
     }
@@ -288,7 +198,7 @@ const profileSetting = ({ title, sub_title, form, image, button }) => {
       );
       if (updateUserData) {
         toast.success("User updated successfully!");
-        setHasNewImage(false); // Reset the flag after successful update
+        setHasNewImage(false);
         getUserData();
       } else {
         toast.error("User update failed!");
@@ -322,12 +232,14 @@ const profileSetting = ({ title, sub_title, form, image, button }) => {
       });
       if (userData) {
         setDefaultValueData(userData);
-        setFormValues(userData); // Initialize form values with user data
+        setFormValues(userData);
+        setSelectedCountry(userData.country || "");
+        setSelectedState(userData.state || "");
         setProfileImage(
           userData?.image?.url ? userData?.image?.url : "/images/no-image.svg"
         );
-        setImageId(userData?.image?.id || null); // Set the current image ID
-        setHasNewImage(false); // Reset the flag when loading existing data
+        setImageId(userData?.image?.id || null);
+        setHasNewImage(false);
         setFromSetLoading(false);
       }
     }
@@ -335,19 +247,19 @@ const profileSetting = ({ title, sub_title, form, image, button }) => {
 
   const getTokenData = async () => {
     try {
-      const response = await fetch("/api/auth/session"); // replace with actual API URL
+      const response = await fetch("/api/auth/session");
       if (!response.ok) {
         throw new Error("Network response was not ok");
       }
       const data = await response.json();
-      return data; // Do something with the data
+      return data;
     } catch (error) {
       console.error("Error fetching token data:", error);
     }
   };
 
   useEffect(() => {
-    getUserData(); //call first time on page load for take all data from user profile
+    getUserData();
   }, []);
 
   const field = [
@@ -426,20 +338,6 @@ const profileSetting = ({ title, sub_title, form, image, button }) => {
       class: "w-full sm:w-full md:w-1/3 xl:w-1/3 !p-[5px]",
     },
     {
-      position: 7,
-      name: "country",
-      label: "Country",
-      placeholder: "Select Country",
-      type: "select",
-      html: "select",
-      options: selectFlag,
-      description: "Choose your country",
-      validation: { required: "Country is required" },
-      rules: [],
-      startContent: true,
-      class: "w-full sm:w-full md:w-1/3 xl:w-1/3 !p-[5px]",
-    },
-    {
       position: 8,
       name: "address",
       label: "Address",
@@ -464,19 +362,7 @@ const profileSetting = ({ title, sub_title, form, image, button }) => {
       class: "w-full sm:w-full md:w-1/3 xl:w-1/3 !p-[5px]",
     },
     {
-      position: 10,
-      name: "state",
-      label: "State / Province / Region",
-      placeholder: "Enter state / province / region",
-      type: "text",
-      html: "input",
-      description: "Maximum 100 characters",
-      validation: { required: "State is required" },
-      rules: [],
-      class: "w-full sm:w-full md:w-1/3 xl:w-1/3 !p-[5px]",
-    },
-    {
-      position: 11,
+      position: 12,
       name: "pincode",
       label: "Zip / Postal Code",
       placeholder: "Enter zip / postal code",
@@ -491,29 +377,12 @@ const profileSetting = ({ title, sub_title, form, image, button }) => {
       rules: ["pin_code"],
       class: "w-full sm:w-full md:w-1/3 xl:w-1/3 !p-[5px]",
     },
-    {
-      position: 12,
-      name: "phone_no",
-      label: "Phone number",
-      placeholder: "Phone number",
-      type: "tel",
-      html: "input",
-      description: "Valid phone number format",
-      validation: {
-        required: "Phone number is required",
-        phone_no: "Phone number is invalid",
-      },
-      rules: ["phone_no"],
-      startContent: true,
-      options: selectFlag,
-      relation: "country",
-      class: "w-full sm:w-full md:w-1/3 xl:w-1/3 !p-[5px]",
-    },
   ];
 
   const getFields = (data) => {
     const value = defaultValueData[data.name];
     const error = validationErrors[data.name];
+    // console.log(error);
 
     switch (data.html) {
       case "input":
@@ -582,6 +451,98 @@ const profileSetting = ({ title, sub_title, form, image, button }) => {
     }
   };
 
+  const validateFields = (formValues) => {
+    let isValid = true;
+    const errors = {};
+
+    if (!formValues.first_name?.trim()) {
+      if (!errors.first_name) errors.first_name = [];
+      errors.first_name.push("First name is required");
+      isValid = false;
+    }
+
+    // Lastname
+    if (!formValues.last_name?.trim()) {
+      if (!errors.last_name) errors.last_name = [];
+      errors.last_name.push("Last name is required");
+      isValid = false;
+    }
+
+    // Email
+    if (!formValues.email?.trim()) {
+      if (!errors.email) errors.email = [];
+      errors.email.push("Email is required");
+      isValid = false;
+    }
+
+    // Phone
+    if (!formValues.phone_no?.trim()) {
+      if (!errors.phone_no) errors.phone_no = [];
+      errors.phone_no.push("Phone number is required");
+      isValid = false;
+    } else if (selectedCountry) {
+      const countryObj =
+        typeof selectedCountry === "string"
+          ? countries.find((c) => c.name === selectedCountry)
+          : selectedCountry;
+
+      if (countryObj && countryObj.phonePattern) {
+        const phoneRegex = new RegExp(countryObj.phonePattern);
+        if (!phoneRegex.test(formValues.phone_no)) {
+          if (!errors.phone_no) errors.phone_no = [];
+          errors.phone_no.push(
+            `Invalid phone number format for ${countryObj.name}`
+          );
+          isValid = false;
+        }
+      } else if (countryObj && countryObj.phoneLength) {
+        const phoneLength = formValues.phone_no.replace(/\D/g, "").length;
+        const validLengths = Array.isArray(countryObj.phoneLength)
+          ? countryObj.phoneLength
+          : [countryObj.phoneLength];
+        if (!validLengths.includes(phoneLength)) {
+          if (!errors.phone_no) errors.phone_no = [];
+          errors.phone_no.push(
+            `Phone number should be ${validLengths.join(" or ")} digits for ${countryObj.name}`
+          );
+          isValid = false;
+        }
+      }
+    }
+
+    // Country required
+    if (!selectedCountry) {
+      if (!errors.country) errors.country = [];
+      errors.country.push("Country is required");
+      isValid = false;
+    }
+
+    // State required
+    if (!selectedState) {
+      if (!errors.state) errors.state = [];
+      errors.state.push("State is required");
+      isValid = false;
+    }
+
+    // Postal / Zip validation
+    if (formValues.pincode?.trim()) {
+      const country = countries.find((c) => c.name === selectedCountry);
+      const postalRegex =
+        country?.postalCodePattern || /^[A-Za-z0-9\s-]{3,10}$/;
+
+      if (!postalRegex.test(formValues.pincode.trim())) {
+        if (!errors.pincode) errors.pincode = [];
+        errors.pincode.push(
+          `Invalid postal code format for ${selectedCountry}`
+        );
+        isValid = false;
+      }
+    }
+
+    setValidationErrors(errors);
+    return isValid;
+  };
+
   return (
     <div>
       {title && <h1 className="h2 mb-5 mt-[30px]">{title}</h1>}
@@ -601,8 +562,8 @@ const profileSetting = ({ title, sub_title, form, image, button }) => {
                       <div className="flex items-center sm:flex-row flex-col sm:gap-[22px] gap-1.5">
                         <div className="1xl:w-[100px] 1xl:h-[100px] md:w-[90px] md:h-[90px] sm:w-[85px] sm:h-[85px] w-20 h-20 flex-shrink-0 rounded-full bg-transparent flex items-center justify-center profile-picture">
                           {profileImage !== null &&
-                            profileImage !== undefined &&
-                            profileImage !== "" ? (
+                          profileImage !== undefined &&
+                          profileImage !== "" ? (
                             <Image
                               src={profileImage || "/placeholder.svg"}
                               alt="Profile"
@@ -616,7 +577,7 @@ const profileSetting = ({ title, sub_title, form, image, button }) => {
                               alt="No Profile"
                               width={100}
                               height={100}
-                              className="1xl:!h-[100px] 1xl:w-[100px] md:w-[90px] md:!h-[90px] sm:w-[85px] sm:!h-[85px] w-20 !h-20 object-cover rounded-full"
+                              className="1xl:!h-[100px] 1xl:w-[100px] md:w-[90px] md!:h-[90px] sm:w-[85px] sm:!h-[85px] w-20 !h-20 object-cover rounded-full"
                             />
                           )}
                         </div>
@@ -642,6 +603,7 @@ const profileSetting = ({ title, sub_title, form, image, button }) => {
                           className="absolute inset-0 opacity-0 cursor-pointer"
                           onChange={handleImageUpload}
                         />
+
                         <Button
                           disabled={imageLoading}
                           onPress={(e) => {
@@ -841,16 +803,312 @@ const profileSetting = ({ title, sub_title, form, image, button }) => {
                       </div>
                     </div>
                   )}
-                  <div className="flex flex-wrap">
-                    {field?.map((data, index) => {
-                      return (
-                        <div className={data?.class} key={index}>
-                          {getFields(data)}
-                        </div>
-                      );
-                    })}
+
+                  <div className="flex flex-wrap ">
+                    {field
+                      .sort((a, b) => a.position - b.position)
+                      .map((data, index) => {
+                        const elements = [];
+
+                        // Add the regular field
+                        elements.push(
+                          <div key={`field-${index}`} className={data.class}>
+                            {getFields(data)}
+                          </div>
+                        );
+
+                        // Add phone number after company name (position 6)
+                        if (data.position === 9) {
+                          elements.push(
+                            <div
+                              key="phone-field"
+                              className="w-full sm:w-full md:w-1/3 xl:w-1/3 !p-[5px]"
+                            >
+                              <label className="p2 !text-black block pb-1">
+                                Phone Number *
+                              </label>
+                              <div
+                                className={`flex items-center border rounded-md overflow-visible py-[11px] px-2 bg-white ${
+                                  validationErrors.phone_no
+                                    ? "border-red-500"
+                                    : "border-gray-100"
+                                }`}
+                              >
+                                <Listbox className="border-r border-gray-100 pr-[10px]">
+                                  <div className="relative">
+                                    <Listbox.Button className="relative w-full flex items-center justify-center cursor-pointer">
+                                      <Image
+                                        src={
+                                          filteredflag?.[0]?.flag ||
+                                          "/placeholder.svg?height=16&width=24"
+                                        }
+                                        alt={`${filteredflag?.[0]?.name || "Country"} flag`}
+                                        width={24}
+                                        height={16}
+                                        className="rounded-sm mr-2"
+                                      />
+                                      <span className="text-xs text-gray-600 mr-1">
+                                        {filteredflag?.[0]?.dialCode || "+1"}
+                                      </span>
+                                      <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        width="15"
+                                        height="15"
+                                        viewBox="0 0 9 9"
+                                        fill="none"
+                                      >
+                                        <g clipPath="url(#clip0_1233_287)">
+                                          <path
+                                            d="M4.11673 7.15175C4.33218 7.35027 4.66391 7.35027 4.87937 7.15175L8.81858 3.52223C8.93421 3.41568 9 3.26561 9 3.10837V2.78716C9 2.29637 8.4156 2.04078 8.05523 2.37395L4.88007 5.30948C4.66441 5.50886 4.33168 5.50886 4.11602 5.30948L0.940859 2.37395C0.58049 2.04078 -0.00390625 2.29637 -0.00390625 2.78716V3.10837C-0.00390625 3.26561 0.0618803 3.41568 0.177518 3.52223L4.11673 7.15175Z"
+                                            fill="#808080"
+                                          />
+                                        </g>
+                                      </svg>
+                                    </Listbox.Button>
+                                  </div>
+                                </Listbox>
+
+                                <input
+                                  type="tel"
+                                  placeholder="Phone Number"
+                                  value={formValues.phone_no || ""}
+                                  onChange={(e) => {
+                                    const value = e.target.value.replace(
+                                      /\D/g,
+                                      ""
+                                    );
+                                    handleFieldChange("phone_no", value);
+                                  }}
+                                  className="outline-none w-full ml-2 text-gray-200"
+                                  maxLength={15}
+                                />
+                              </div>
+                              {validationErrors.phone_no && (
+                                <p className="text-red-500 text-xs mt-1">
+                                  {validationErrors.phone_no}
+                                </p>
+                              )}
+                              <p className="text-xs text-gray-500 mt-1">
+                                Expected format:{" "}
+                                {filteredflag?.[0]?.phoneLength?.join(" or ") ||
+                                  "10-15"}{" "}
+                                digits
+                              </p>
+                            </div>
+                          );
+                        }
+
+                        // Add country after city (position 9)
+                        if (data.position === 6) {
+                          elements.push(
+                            <div
+                              key="country-field"
+                              className="w-full sm:w-full md:w-1/3 xl:w-1/3 !p-[5px] relative"
+                              ref={countryRef}
+                            >
+                              <label className="p2 !text-black mb-[6px]">
+                                Country *
+                              </label>
+                              <div className="relative">
+                                <div
+                                  className={`border p2 ${validationErrors.country ? "border-red-500" : "border-gray-100"} text-gray-300 placeholder:text-gray-300 2xl:py-[11px] py-[10px] rounded-[5px] 1xl:px-5 px-3 w-full cursor-pointer flex justify-between items-center`}
+                                  onClick={toggleCountryDropdown}
+                                >
+                                  <div className="relative w-full flex gap-2 items-center justify-start cursor-pointer">
+                                    {filteredflag?.[0] && (
+                                      <Image
+                                        src={
+                                          filteredflag?.[0]?.flag ||
+                                          "/placeholder.svg?width=30"
+                                        }
+                                        alt={`${selectedCountry} flag`}
+                                        width={30}
+                                        height={30}
+                                        className="rounded-sm !drop-shadow-2xl !h-auto"
+                                      />
+                                    )}
+                                    <span className="text-gray-200">
+                                      {selectedCountry || "Select Country"}
+                                    </span>
+                                  </div>
+                                  <div className="flex items-center">
+                                    <svg
+                                      className={`w-4 h-4 transform transition-transform duration-300 ${isCountryDropdownOpen ? "rotate-180" : "rotate-0"}`}
+                                      fill="none"
+                                      stroke="currentColor"
+                                      strokeWidth="2"
+                                      viewBox="0 0 24 24"
+                                    >
+                                      <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        d="M19 9l-7 7-7-7"
+                                      />
+                                    </svg>
+                                  </div>
+                                </div>
+
+                                {isCountryDropdownOpen && (
+                                  <div className="p2 absolute left-0 right-0 mt-1 border border-gray-100 bg-white rounded-b-md shadow-lg z-10 max-h-60 overflow-hidden">
+                                    <div className="p-2 border-b border-gray-100">
+                                      <input
+                                        type="text"
+                                        placeholder="Search countries..."
+                                        value={countrySearchTerm}
+                                        onChange={(e) =>
+                                          setCountrySearchTerm(e.target.value)
+                                        }
+                                        className="w-full px-3 py-2 border border-gray-200 rounded text-sm outline-none"
+                                        onClick={(e) => e.stopPropagation()}
+                                      />
+                                    </div>
+                                    <ul className="text-gray-800 max-h-40 overflow-y-auto">
+                                      {filteredCountries.map((country) => (
+                                        <li
+                                          key={country.code || country.name}
+                                          onClick={() =>
+                                            handleCountrySelect(country.name)
+                                          }
+                                          className="px-4 py-2 hover:bg-primary hover:text-white cursor-pointer flex items-center gap-2"
+                                        >
+                                          <Image
+                                            src={
+                                              country.flag ||
+                                              "/placeholder.svg?height=14&width=20"
+                                            }
+                                            alt={`${country.name || "Country"} flag`}
+                                            width={20}
+                                            height={14}
+                                            className="rounded-sm"
+                                          />
+                                          <span>
+                                            {country.name || "Unknown Country"}
+                                          </span>
+                                        </li>
+                                      ))}
+                                      {filteredCountries.length === 0 && (
+                                        <li className="px-4 py-2 text-gray-500">
+                                          No countries found
+                                        </li>
+                                      )}
+                                    </ul>
+                                  </div>
+                                )}
+                              </div>
+
+                              {validationErrors.country && (
+                                <p className="text-red-500 text-xs mt-1">
+                                  {validationErrors.country}
+                                </p>
+                              )}
+                            </div>
+                          );
+                        }
+
+                        // Add state after country (position 9, but after country field)
+                        if (data.position === 9) {
+                          elements.push(
+                            <div
+                              key="state-field"
+                              className="w-full sm:w-full md:w-1/3 xl:w-1/3 !p-[5px] relative"
+                              ref={stateRef}
+                            >
+                              <label className="p2 !text-black pb-1">
+                                State/Province *
+                              </label>
+                              <div className="relative">
+                                <div
+                                  className={`border p2 ${validationErrors.state ? "border-red-500" : "border-gray-100"} !text-gray-300 placeholder:!text-gray-300 2xl:py-[13px] py-[10px] rounded-[5px] 1xl:px-5 px-3 w-full ${selectedCountry ? "cursor-pointer" : "cursor-not-allowed opacity-50"} flex justify-between items-center`}
+                                  onClick={(e) =>
+                                    selectedCountry
+                                      ? toggleStateDropdown(e)
+                                      : undefined
+                                  }
+                                >
+                                  <span className="text-gray-200">
+                                    {selectedState ||
+                                      (selectedCountry
+                                        ? "Select State/Province"
+                                        : "Select Country First")}
+                                  </span>
+                                  <div className="flex items-center">
+                                    <svg
+                                      className={`w-4 h-4 transform transition-transform duration-300 ${isStateDropdownOpen ? "rotate-180" : "rotate-0"}`}
+                                      fill="none"
+                                      stroke="currentColor"
+                                      strokeWidth="2"
+                                      viewBox="0 0 24 24"
+                                    >
+                                      <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        d="M19 9l-7 7-7-7"
+                                      />
+                                    </svg>
+                                  </div>
+                                </div>
+
+                                {isStateDropdownOpen && (
+                                  <div className="p2 absolute left-0 right-0 mt-1 border border-gray-100 bg-white rounded-b-md shadow-lg z-10 max-h-60 overflow-hidden">
+                                    <div className="p-2 border-b border-gray-100">
+                                      <input
+                                        type="text"
+                                        placeholder="Search states..."
+                                        value={stateSearchTerm}
+                                        onChange={(e) =>
+                                          setStateSearchTerm(e.target.value)
+                                        }
+                                        className="w-full px-3 py-2 border border-gray-200 rounded text-sm outline-none"
+                                        onClick={(e) => e.stopPropagation()}
+                                      />
+                                    </div>
+                                    <ul className="text-gray-800 max-h-40 overflow-y-auto">
+                                      {filteredStates.map((state, index) => (
+                                        <li
+                                          key={state}
+                                          onClick={(e) =>
+                                            handleStateSelect(state, e)
+                                          }
+                                          onKeyDown={(e) => {
+                                            if (
+                                              e.key === "Enter" ||
+                                              e.key === " "
+                                            ) {
+                                              e.preventDefault();
+                                              handleStateSelect(state, e);
+                                            }
+                                          }}
+                                          tabIndex={0}
+                                          className="px-4 py-2 hover:bg-primary hover:text-white cursor-pointer focus:bg-primary focus:text-white outline-none"
+                                        >
+                                          {state}
+                                        </li>
+                                      ))}
+                                      {filteredStates.length === 0 && (
+                                        <li className="px-4 py-2 text-gray-500">
+                                          {selectedCountry
+                                            ? "No states found for this country"
+                                            : "Please select a country first"}
+                                        </li>
+                                      )}
+                                    </ul>
+                                  </div>
+                                )}
+                              </div>
+
+                              {validationErrors.state && (
+                                <p className="text-red-500 text-xs mt-1">
+                                  {validationErrors.state}
+                                </p>
+                              )}
+                            </div>
+                          );
+                        }
+
+                        return elements;
+                      })}
                   </div>
-                  {/* Submit Button */}
+
                   {button && (
                     <Button
                       type={button.link}
