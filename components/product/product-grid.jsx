@@ -39,30 +39,30 @@ export default function ({ product }) {
             alt={productTitle}
             width={270}
             height={345}
-            className="w-full h-auto object-cover aspect-[1/1.2]"
+            className="w-full h-auto aspect-[1/1.2]"
             onError={(e) => {
               e.currentTarget.src = NO_FOUND_PRODUCT_GRID_IMAGE;
             }}
           />
           <div className="absolute top-0 w-full h-full items-center justify-center bg-black/60 hidden group-hover:flex transition-all">
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="40"
-          height="40"
-          viewBox="0 0 40 40"
-          fill="none"
-        >
-          <g clipPath="url(#clip0_5061_42)">
-            <path
-              d="M9 31L32.0001 8.00011M32.0001 8.00011L32 30M32.0001 8.00011L9.99976 8.00024"
-              stroke="white"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </g>
-        </svg>
-      </div>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="40"
+              height="40"
+              viewBox="0 0 40 40"
+              fill="none"
+            >
+              <g clipPath="url(#clip0_5061_42)">
+                <path
+                  d="M9 31L32.0001 8.00011M32.0001 8.00011L32 30M32.0001 8.00011L9.99976 8.00024"
+                  stroke="white"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </g>
+            </svg>
+          </div>
         </div>
       </Link>
       <div className="flex items-center justify-between">
@@ -72,14 +72,14 @@ export default function ({ product }) {
             alt={authorName}
             width={270}
             height={345}
-            className="object-cover aspect-[1/1.2] rounded-full w-7 h-7 flex items-center justify-center text-xs mr-[10px]"
+            className="object-cover aspect-[1/1.2] rounded-full w-7 h-7 flex items-center justify-center text-xs mr-[10px] flex-shrink-0"
             onError={(e) => {
               e.currentTarget.src = NO_FOUND_PRODUCT_GRID_IMAGE;
             }}
           />
           <div>
             <Link href={`/product/${encodeURIComponent(productSlug)}`}>
-              <h3 className="text-base !text-black cursor-pointer">
+              <h3 className="text-base !text-black cursor-pointer line-clamp-1">
                 {productTitle}
               </h3>
             </Link>
@@ -106,7 +106,7 @@ export default function ({ product }) {
           </div>
         )}
       </div>
-      
+
     </div>
   );
 }
