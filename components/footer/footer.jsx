@@ -223,15 +223,15 @@ export function Footer({ footerMenu = [], footerSettings = {} }) {
     <footer className="bg-gray-600 text-white">
       {/* Top section with logo and buttons */}
       <div className="border-b border-gray-500">
-        <div className="container mx-auto sm:py-9 py-7 flex flex-col md:flex-row justify-between items-center">
-          <div className="mb-4 md:mb-0">
+        <div className="container mx-auto sm:py-9 py-7 flex flex-col sm:flex-row justify-between items-center">
+          <div className="mb-4 sm:mb-0">
             <Link href="/" className="flex items-center">
               <Image
                 src={logo.url}
                 alt="WebbyTemplate Logo"
                 width={logo.width}
                 height={logo.height}
-                className="sm:h-10 h-8 w-auto"
+                className="2xl:h-[60px] lg:h-[55px] md:h-[50px] sm:h-10 h-[35px] w-auto"
               />
             </Link>
           </div>

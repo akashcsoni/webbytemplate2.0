@@ -3,6 +3,16 @@ import { useRef, useEffect, useState } from "react";
 import Image from "next/image";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation, Mousewheel, Keyboard } from "swiper/modules";
+import {
+  Modal,
+  ModalContent,
+  ModalHeader,
+  ModalBody,
+  ModalFooter,
+  Button,
+  useDisclosure,
+} from "@heroui/react";
+
 import "swiper/css";
 import "swiper/css/navigation";
 // import { cn } from "@/lib/utils"
@@ -12,8 +22,8 @@ import { containsTargetURL } from "@/lib/containsTargetURL";
 const SinglePageSwiper = ({
   gallery_images = [],
   className = "",
-  imageWidth = 440,
-  imageHeight = 560,
+  imageWidth = 868,
+  imageHeight = 554,
   showSocialShare = true,
   breakpoints,
 }) => {
@@ -22,22 +32,25 @@ const SinglePageSwiper = ({
   const swiperRef = useRef(null);
   const [isBeginning, setIsBeginning] = useState(true);
   const [isEnd, setIsEnd] = useState(false);
-
   const [imagesLoaded, setImagesLoaded] = useState(false);
 
   // Default breakpoints if not provided
   const defaultBreakpoints = {
-    350: {
-      slidesPerView: 1.5,
+    0: {
+      slidesPerView: 1,
       spaceBetween: 15,
     },
-    425: {
-      slidesPerView: 2,
+    426: {
+      slidesPerView: 1.4,
       spaceBetween: 15,
     },
     640: {
-      slidesPerView: 2.5,
-      spaceBetween: 25,
+      slidesPerView: 1.4,
+      spaceBetween: 20,
+    },
+    992: {
+      slidesPerView: 1.4,
+      spaceBetween: 30,
     },
   };
 
@@ -99,9 +112,50 @@ const SinglePageSwiper = ({
     },
   ];
 
+  const { isOpen, onOpen, onOpenChange } = useDisclosure();
+  // const scrollContainerRef = useRef(null);
+  // const [scrollProgress, setScrollProgress] = useState(0);
+  // const handleScroll = () => {
+  //   const el = scrollContainerRef.current;
+  //   if (!el) return;
+  //   const max = el.scrollHeight - el.clientHeight;
+  //   if (max <= 0) {            // nothing to scroll
+  //     setScrollProgress(100);
+  //     return;
+  //   }
+  //   setScrollProgress((el.scrollTop / max) * 100);
+  // };
+
+  // // reset when modal opens
+  // useEffect(() => {
+  //   if (!isOpen) return;
+  //   setScrollProgress(0);
+  //   requestAnimationFrame(() => {
+  //     const el = scrollContainerRef.current;
+  //     if (el) { el.scrollTop = 0; handleScroll(); }
+  //   });
+  // }, [isOpen]);
+  const modalBodyRef = useRef(null);
+  const [progress, setProgress] = useState(0);
+
+  useEffect(() => {
+    const el = modalBodyRef.current;
+    if (!el) return;
+
+    const handleScroll = () => {
+      const scrollTop = el.scrollTop;
+      const scrollHeight = el.scrollHeight - el.clientHeight;
+      const scrolled = (scrollTop / scrollHeight) * 100;
+      setProgress(scrolled);
+    };
+
+    el.addEventListener("scroll", handleScroll);
+    return () => el.removeEventListener("scroll", handleScroll);
+  }, [isOpen]);
+
   return (
     <div className={("relative w-full pb-5", className)}>
-      <div className="2xl:w-[59vw] lg:w-[68vw] w-[98vw] [@media(max-width:350px)]:w-full">
+      <div className="2xl:w-[59vw] lg:w-[68vw] w-[98vw] [@media(max-width:426px)]:w-full">
         {hasImages ? (
           <Swiper
             onBeforeInit={(swiper) => {
@@ -134,14 +188,190 @@ const SinglePageSwiper = ({
           >
             {gallery_images.map((img, i) => (
               <SwiperSlide key={i}>
-                <div className="relative w-full h-full">
+                <div className="relative group w-full h-full lg:before:pt-[69%] before:pt-[64%] before:block overflow-hidden">
                   <Image
                     src={containsTargetURL(img?.url) ? img?.url : `${img?.url}`}
                     alt={`Product ${i + 1}`}
                     width={imageWidth}
                     height={imageHeight}
-                    className="flex-shrink-0 object-cover w-full h-full"
+                    className="flex-shrink-0 object-cover w-full h-full absolute top-0 left-0 bottom-0 right-0"
                   />
+                  <div className="group-hover:flex hidden items-center justify-center absolute top-0 left-0 w-full h-full group-hover:bg-black/50 transition-all duration-300 ease-in-out">
+                    <Button
+                      onPress={onOpen}
+                      className="border border-white 2xl:py-2 2xl:px-10 1xl:py-[6px] 1xl:px-8 py-1 xl:px-6 px-4 h-fit w-fit flex items-center justify-center sm:gap-3 gap-1.5 bg-transparent"
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="20"
+                        height="21"
+                        viewBox="0 0 20 21"
+                        fill="none"
+                        className="1xl:w-[20px] 1xl:h-[21px] sm:w-[18px] sm:h-[19px] w-[16px] h-[17px]"
+                      >
+                        <path
+                          d="M17.1094 2.67969H2.89062C1.71271 2.67969 0.757812 3.63458 0.757812 4.8125V16.1875C0.757812 17.3654 1.71271 18.3203 2.89062 18.3203H17.1094C18.2873 18.3203 19.2422 17.3654 19.2422 16.1875V4.8125C19.2422 3.63458 18.2873 2.67969 17.1094 2.67969Z"
+                          stroke="white"
+                          strokeWidth="1.47875"
+                          strokeLinejoin="round"
+                        />
+                        <path
+                          d="M13.5547 8.36719C14.34 8.36719 14.9766 7.73059 14.9766 6.94531C14.9766 6.16003 14.34 5.52344 13.5547 5.52344C12.7694 5.52344 12.1328 6.16003 12.1328 6.94531C12.1328 7.73059 12.7694 8.36719 13.5547 8.36719Z"
+                          stroke="white"
+                          strokeWidth="1.47875"
+                          strokeMiterlimit="10"
+                        />
+                        <path
+                          d="M12.1328 14.0451L8.10446 10.0243C7.84813 9.76798 7.50359 9.61927 7.14127 9.60853C6.77896 9.5978 6.42622 9.72584 6.15516 9.96649L0.757812 14.7653M8.57812 18.32L14.0586 12.8396C14.3092 12.5884 14.6447 12.4401 14.9991 12.4236C15.3535 12.4072 15.7013 12.5238 15.9741 12.7507L19.2422 15.4763"
+                          stroke="white"
+                          strokeWidth="1.47875"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
+                      <p className="text-white">Screenshots</p>
+                    </Button>
+
+                    {/* modal start */}
+                    <Modal
+                      backdrop="opaque"
+                      size="full"
+                      hideCloseButton
+                      classNames={{
+                        backdrop: "bg-white w-screen h-screen",
+                      }}
+                      scrollBehavior="inside"
+                      isOpen={isOpen}
+                      onOpenChange={onOpenChange}
+                    >
+                      <ModalContent className="shadow-none ">
+                        {(onClose) => (
+                          <>
+                            <ModalHeader className="bg-[#E6EFFB80] flex 2xl:flex-row flex-col px-4">
+                              <div className="max-w-[1120px] mx-auto w-full gap-2">
+                                <Button
+                                  variant="light"
+                                  onPress={onClose}
+                                  className="flex items-center justify-start gap-[6px] 2xl:absolute relative 2xl:top-5 2xl:left-5 z-10"
+                                >
+                                  <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    width="14"
+                                    height="14"
+                                    viewBox="0 0 14 14"
+                                    fill="none"
+                                  >
+                                    <g clipPath="url(#clip0_1348_11)">
+                                      <path
+                                        d="M6.2619 1.58984L1 7M1 7L6.2619 12.4102M1 7L12.9023 7"
+                                        stroke="black"
+                                        strokeWidth="1.6"
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                      />
+                                    </g>
+                                  </svg>
+                                  <p>Back</p>
+                                </Button>
+                                <div className=" flex md:flex-row flex-col md:items-center items-start justify-between gap-2">
+                                  <div className="flex flex-col items-start gap-2">
+                                    <h2>
+                                      Diazelo: Fashion & Clothing eCommerce XD
+                                      Template...
+                                    </h2>
+                                    <div className="flex items-center justify-start gap-2">
+                                      <div className="rounded-full overflow-hidden">
+                                        <Image
+                                          src="/images/author-logo.png"
+                                          alt="Author Logo"
+                                          width="28"
+                                          height="28"
+                                          className="flex-shrink-0 object-cover rounded-full"
+                                        />
+                                      </div>
+                                      <p className="p2 text-[#505050]">
+                                        WebbyCrown
+                                      </p>
+                                    </div>
+                                  </div>
+                                  <button className="btn btn-primary gap-[10px] sm:w-auto w-full">
+                                    <svg
+                                      xmlns="http://www.w3.org/2000/svg"
+                                      width="18"
+                                      height="21"
+                                      viewBox="0 0 18 21"
+                                      fill="none"
+                                    >
+                                      <path
+                                        d="M5.7474 7.25V4C5.7474 2.20507 7.20247 0.75 8.9974 0.75C10.7923 0.75 12.2474 2.20507 12.2474 4V7.25M2.4974 5.08333H15.4974L16.5807 19.1667H1.41406L2.4974 5.08333Z"
+                                        stroke="white"
+                                        strokeWidth="1.5"
+                                        strokeLinecap="round"
+                                      />
+                                    </svg>
+                                    Add to Cart
+                                  </button>
+                                </div>
+                                {/* Progress bar at top */}
+                              </div>
+                            </ModalHeader>
+                            <ModalBody
+
+                              className="p-0 h-full w-full"
+                            >
+                              <div className="sticky top-0 z-10 bg-gray-100 ">
+                                <div
+                                  className="h-2 bg-primary transition-all duration-200 w-full"
+                                  style={{ width: `${progress}%` }}
+                                />
+                              </div>
+                              <div ref={modalBodyRef} className="w-full h-full 2xl:my-[30px] my-[10px] max-w-[1120px] mx-auto px-4 overflow-y-auto ">
+                                <div className="w-full h-full ">
+                                  <div className="mb-[25px] relative group w-full before:content-[''] before:block before:pt-[64%] lg:before:pt-[66%] overflow-hidden">
+                                    <Image
+                                      src="/images/diazelo.png"
+                                      alt="Author Logo"
+                                      width="1120"
+                                      height="200"
+                                      className="absolute top-0 left-0 w-full h-full object-cover"
+                                    />
+                                  </div>
+                                  <div className="mb-[25px] relative group w-full before:content-[''] before:block before:pt-[64%] lg:before:pt-[66%] overflow-hidden">
+                                    <Image
+                                      src="/images/diazelo.png"
+                                      alt="Author Logo"
+                                      width="1120"
+                                      height="200"
+                                      className="absolute top-0 left-0 w-full h-full object-cover"
+                                    />
+                                  </div>
+                                  <div className="mb-[25px] relative group w-full before:content-[''] before:block before:pt-[64%] lg:before:pt-[66%] overflow-hidden">
+                                    <Image
+                                      src="/images/diazelo.png"
+                                      alt="Author Logo"
+                                      width="1120"
+                                      height="200"
+                                      className="absolute top-0 left-0 w-full h-full object-cover"
+                                    />
+                                  </div>
+                                  <div className="mb-[25px] relative group w-full before:content-[''] before:block before:pt-[64%] lg:before:pt-[66%] overflow-hidden">
+                                    <Image
+                                      src="/images/diazelo.png"
+                                      alt="Author Logo"
+                                      width="1120"
+                                      height="200"
+                                      className="absolute top-0 left-0 w-full h-full object-cover"
+                                    />
+                                  </div>
+                                </div>
+                              </div>
+                            </ModalBody>
+                          </>
+                        )}
+                      </ModalContent>
+                    </Modal>
+                    {/* modal end */}
+                  </div>
                 </div>
               </SwiperSlide>
             ))}
@@ -184,11 +414,8 @@ const SinglePageSwiper = ({
             <button
               ref={prevRef}
               aria-label="Previous slide"
-              className={` ${
-                isBeginning
-                  ? "opacity-50 cursor-not-allowed"
-                  : "opacity-100"
-              }`}
+              className={` ${isBeginning ? "opacity-50 cursor-not-allowed" : "opacity-100"
+                }`}
               disabled={isBeginning}
             >
               <svg
@@ -210,11 +437,8 @@ const SinglePageSwiper = ({
             <button
               ref={nextRef}
               aria-label="Next slide"
-              className={` ${
-                isEnd
-                   ? "opacity-50 cursor-not-allowed"
-                  : "opacity-100"
-              }`}
+              className={` ${isEnd ? "opacity-50 cursor-not-allowed" : "opacity-100"
+                }`}
               disabled={isEnd}
             >
               <svg
