@@ -69,10 +69,10 @@
   font-style: normal;
   font-display: swap;
 }
-.text-danger{
+.text-danger {
   @apply text-[#ef4444];
 }
-.border-danger{
+.border-danger {
   @apply !border-[#ef4444];
 }
 h1,
@@ -1059,64 +1059,59 @@ div[tabulator-field="dates"] {
     clip-path: inset(0 -1ch 0 0);
   }
 }
-.marketplace li::marker{
+.marketplace li::marker {
   @apply font-bold text-black 2xl:text-lg 1xl:text-[17px] sm:text-base text-[15px] 1xl:leading-[30px] lg:leading-7 sm:leading-6 leading-[1.45rem];
 }
-.rectangle{
-  @apply bg-white 2xl:w-[74px] 2xl:h-[74px] 1xl:w-[70px] 1xl:h-[70px] xl:w-16 xl:h-16 w-[55px] h-[55px] rounded-full absolute top-0 left-1/2 z-0; 
+.rectangle {
+  @apply bg-white 2xl:w-[74px] 2xl:h-[74px] 1xl:w-[70px] 1xl:h-[70px] xl:w-16 xl:h-16 w-[55px] h-[55px] rounded-full absolute top-0 left-1/2 z-0;
 }
-.digital-products div{
-  @apply !max-w-full
+.digital-products div {
+  @apply !max-w-full;
 }
-.site-map li:nth-child(1){
-  @apply ml-0 before:bg-primary
+.site-map li:nth-child(1) {
+  @apply ml-0 before:bg-primary;
 }
 
-.main-heading {
-@apply mb-[18px];
+.cms-content {
+  @apply mb-[18px];
 }
-.privacy-policy-content .policy-heading,
-.terms-condition-content .terms-heading {
-@apply 2xl:mt-[35px] 1xl:mt-[28px] mt-[22px];
+.cms-content h2 {
+  @apply 2xl:mt-[35px] 1xl:mt-[28px] mt-[22px];
 }
-.privacy-policy-content .policy-p,
-.terms-condition-content .terms-p {
-@apply 1xl:mt-[15px] mt-[10px];
+.cms-content p,
+.cms-content ul li,
+.terms-condition p {
+  @apply 1xl:mt-[15px] mt-[10px] text-gray-200;
 }
-.privacy-policy-content .policy-unorder-list .policy-list,
-.privacy-policy-content .policy-order-list .policy-list,
-.terms-condition-content .terms-unorder-list .terms-list,
-.terms-condition-content .terms-order-list .terms-list {
-@apply 1xl:mt-[12px] mt-[10px];
+.cms-content ul li,
+.cms-content ol li {
+  @apply 1xl:mt-[12px] mt-[10px] 2xl:text-lg 1xl:text-[17px] sm:text-base text-[15px] 2xl:leading-[30px] xl:leading-7 sm:leading-6 leading-[19px] text-gray-200;
 }
-.policy-heading,
-.terms-heading {
-@apply 2xl:text-2xl lg:text-[23px] text-xl font-medium xl:leading-[35px] leading-[30px];
+.cms-content h3,
+h4 {
+  @apply 1xl:mt-5 mt-4;
 }
-.policy-list-heading,
-.terms-list-heading {
-@apply 2xl:text-[22px] md:text-[20px] text-lg font-medium sm:leading-[32px] leading-[26px] 1xl:mt-5 mt-4;
+.cms-content ol li {
+  @apply list-[decimal] pl-[2px];
 }
-.policy-order-list .policy-list,
-.terms-order-list .terms-list {
-@apply list-[decimal] lg:text-lg sm:text-base text-[15px] pl-[2px];
+.cms-content ol {
+  @apply pl-4;
 }
-.polict-p,
-.terms-p {
-@apply 2xl:text-lg 1xl:text-[17px] sm:text-base text-[15px] 2xl:leading-[30px] xl:leading-7 sm:leading-6 leading-[19px] text-gray-200;
+.cms-content ul li {
+  @apply relative before:content-[''] before:absolute before:left-0 xl:pl-[30px] pl-[26px] xl:before:w-5 xl:before:h-5 lg:before:w-[18px] lg:before:h-[18px] before:w-4 before:h-4 before:bg-no-repeat before:bg-contain before:mt-[5px];
 }
-.policy-order-list,
-.terms-order-list {
-@apply pl-4;
+.cms-content ul li::before {
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20' fill='none'><g clip-path='url(%23clip0_1668_2776)'><path opacity='0.4' fill-rule='evenodd' clip-rule='evenodd' d='M10.002 1.53876C5.32786 1.53876 1.53876 5.32786 1.53876 10.002C1.53876 14.6761 5.32786 18.4651 10.002 18.4651C14.6761 18.4651 18.4651 14.6761 18.4651 10.002C18.4651 5.32786 14.6761 1.53876 10.002 1.53876ZM0 10.002C0 4.47803 4.47803 0 10.002 0C15.526 0 20.0039 4.47803 20.0039 10.002C20.0039 15.526 15.526 20.0039 10.002 20.0039C4.47803 20.0039 0 15.526 0 10.002Z' fill='%230156D5'/><path fill-rule='evenodd' clip-rule='evenodd' d='M15.9375 6.6994L9.0131 13.6238C8.86881 13.7681 8.67311 13.8491 8.46906 13.8491C8.265 13.8491 8.06932 13.7681 7.92503 13.6238L4.07812 9.77693L5.1662 8.68887L8.46906 11.9917L14.8495 5.61133L15.9375 6.6994Z' fill='%230156D5'/></g></svg>");
 }
-.policy-unorder-list .policy-list,
-.terms-unorder-list .terms-list {
-@apply relative after:content-[''] after:absolute after:left-0 xl:pl-[30px] pl-[26px] xl:after:w-5 xl:after:h-5 lg:after:w-[18px] lg:after:h-[18px] after:w-4 after:h-4 after:bg-no-repeat after:bg-contain flex items-center;
+.cms-content table {
+  @apply w-full border-collapse text-left 2xl:text-lg 1xl:text-[17px] sm:text-base text-[14x] 2xl:leading-[30px] sm:leading-6 leading-[19px] my-[25px]
 }
-.policy-unorder-list .policy-list::after,
-.terms-unorder-list .terms-list::after {
-background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20' fill='none'><g clip-path='url(%23clip0_1668_2776)'><path opacity='0.4' fill-rule='evenodd' clip-rule='evenodd' d='M10.002 1.53876C5.32786 1.53876 1.53876 5.32786 1.53876 10.002C1.53876 14.6761 5.32786 18.4651 10.002 18.4651C14.6761 18.4651 18.4651 14.6761 18.4651 10.002C18.4651 5.32786 14.6761 1.53876 10.002 1.53876ZM0 10.002C0 4.47803 4.47803 0 10.002 0C15.526 0 20.0039 4.47803 20.0039 10.002C20.0039 15.526 15.526 20.0039 10.002 20.0039C4.47803 20.0039 0 15.526 0 10.002Z' fill='%230156D5'/><path fill-rule='evenodd' clip-rule='evenodd' d='M15.9375 6.6994L9.0131 13.6238C8.86881 13.7681 8.67311 13.8491 8.46906 13.8491C8.265 13.8491 8.06932 13.7681 7.92503 13.6238L4.07812 9.77693L5.1662 8.68887L8.46906 11.9917L14.8495 5.61133L15.9375 6.6994Z' fill='%230156D5'/></g></svg>");
+
+.cms-content table th,
+.cms-content table td {
+  @apply border border-black 1xl:p-[14px] sm:p-[12px] p-[10px];
 }
-.terms-sub-list-heading{
-@apply 2xl:text-xl xl:text-[19px] md:text-lg sm:text-[17px] text-base font-medium sm:leading-[30px] leading-6 1xl:mt-[22px] mt-[20px];
+
+.cms-content table thead th {
+  @apply font-bold;
 }
