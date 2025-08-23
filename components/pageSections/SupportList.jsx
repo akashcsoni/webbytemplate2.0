@@ -930,11 +930,7 @@ const ticketSupportPage = ({ title }) => {
                   {checkStatus(data?.support_status)}
                 </div>
 
-                {/* if (openTicketData?.support_status === "Closed"){} */}
-
-                {openTicketData?.support_status === "Closed" ? (
-                  ""
-                ) : (
+                {openTicketData?.support_status !== "Closed" && (
                   <div className="flex flex-col items-start lg:gap-4 sm:gap-2 gap-1 lg:mb-[55px]">
                     <Button
                       type="submit"
@@ -944,13 +940,6 @@ const ticketSupportPage = ({ title }) => {
                     >
                       Send and Resolve
                     </Button>
-                    {/* <Button
-                    type="button" // important to stop form submit
-                    className="!py-3 !px-[36px] w-full btn btn-outline-primary opacity-100"
-                    onClick={onClosed}
-                  >
-                    Close
-                  </Button> */}
                     <Button
                       type="button" // ✅ ensures it won’t trigger onSubmit
                       className="!py-3 !px-[36px] w-full btn btn-outline-primary opacity-100"
