@@ -37,6 +37,7 @@ const ticketSupportPage = ({ title }) => {
   const [orderData, setOrderData] = useState([]);
   const [openTicket, setOpenTicket] = useState(null);
   const [openTicketData, setOpenTicketData] = useState({});
+  console.log(openTicketData, "ticket data ");
   const [submitFormData, setSubmitFormData] = useState({});
 
   const handleClick = () => {
@@ -137,7 +138,8 @@ const ticketSupportPage = ({ title }) => {
               formData,
               themeConfig.TOKEN
             );
-            if (fileData) {
+            if (fileData && fileData[0]) {
+              console.log(fileData, "file data upload check");
               attachments = fileData[0].id;
             }
           } catch (error) {
@@ -157,13 +159,23 @@ const ticketSupportPage = ({ title }) => {
             customer: formData?.custommerDocumentId,
             author: formData?.authorDocumentId,
             order: formData?.orderDocumentId,
-            attachments,
+            attachments: attachments ? [attachments] : [],
             support_status: "Pending",
           },
           themeConfig.TOKEN
         );
         if (submitData) {
           setFormSubmitLoading(false);
+          setSubmitFormData({
+            productDocumentId: "",
+            // title: "",
+            message: "",
+            custommerDocumentId: "",
+            authorDocumentId: "",
+            orderDocumentId: "",
+          });
+          setFile(null);
+          setFileName(null);
           toast.success("Your Ticket submit successfully...!");
           setTimeout(() => {
             setTabsSelected("checkTicketStatus");
@@ -194,8 +206,8 @@ const ticketSupportPage = ({ title }) => {
       color: "text-[#ED9A12]",
     },
     {
-      label: "Rejected",
-      value: "Rejected",
+      label: "Closed",
+      value: "Closed",
       color: "text-[#C32D0B]",
     },
   ];
@@ -599,6 +611,47 @@ const ticketSupportPage = ({ title }) => {
       }
     };
 
+    // const onClosed = async () => {
+    //   // e.preventDefault();
+
+    //   try {
+    //     await strapiPost(
+    //       `supports/${data.id}/add-comment`,
+    //       {
+    //         support_status: "Closed",
+    //       },
+    //       themeConfig.TOKEN
+    //     );
+
+    //     toast.success("Your ticket has been closed!");
+    //     setIsClosed(true); // ✅ hide buttons after success
+    //     // optionally trigger reload or toast
+    //   } catch (err) {
+    //     console.error("Error closing support:", err);
+    //   }
+    // };
+
+    const onClosed = async () => {
+      try {
+        await strapiPost(
+          `supports/${data.id}/add-comment`,
+          { support_status: "Closed" },
+          themeConfig.TOKEN
+        );
+
+        toast.success("Your ticket has been closed!");
+
+        // ✅ update local state so UI hides without refresh
+        setOpenTicketData({
+          ...openTicketData,
+          support_status: "Closed",
+        });
+      } catch (err) {
+        console.error("Error closing support:", err);
+        toast.error("Failed to close ticket. Try again.");
+      }
+    };
+
     return (
       <Card className="shadow-none px-0">
         <CardBody className="p-12">
@@ -690,12 +743,21 @@ const ticketSupportPage = ({ title }) => {
                             <div className="sm:py-[10px] sm:px-5 py-1 px-2">
                               <span className="p2">
                                 Attachment link :{" "}
-                                {item.attachments?.[0]?.url ? <Link href={item.attachments?.[0]?.url} target="_blank" className="!text-primary p2">
-                                  {item.attachments?.[0]?.url || "No Attachment Link"}
-                                </Link> :
+                                {item.attachments?.[0]?.url ? (
+                                  <Link
+                                    href={item.attachments?.[0]?.url}
+                                    target="_blank"
+                                    className="!text-primary p2"
+                                  >
+                                    {item.attachments?.[0]?.url ||
+                                      "No Attachment Link"}
+                                  </Link>
+                                ) : (
                                   <span className="!text-primary p2">
-                                    {item.attachments?.[0]?.url || "No Attachment Link"}
-                                  </span>}
+                                    {item.attachments?.[0]?.url ||
+                                      "No Attachment Link"}
+                                  </span>
+                                )}
                               </span>
                             </div>
                           </div>
@@ -867,19 +929,37 @@ const ticketSupportPage = ({ title }) => {
                   <h3 className="lg:mb-[47px] sm:mb-3 mb-2">Status</h3>
                   {checkStatus(data?.support_status)}
                 </div>
-                <div className="flex flex-col items-start lg:gap-4 sm:gap-2 gap-1 lg:mb-[55px]">
-                  <Button
-                    type="submit"
-                    disabled={formSubmitLoading}
-                    isLoading={formSubmitLoading}
-                    className="!py-3 !px-[36px] btn btn-primary "
+
+                {/* if (openTicketData?.support_status === "Closed"){} */}
+
+                {openTicketData?.support_status === "Closed" ? (
+                  ""
+                ) : (
+                  <div className="flex flex-col items-start lg:gap-4 sm:gap-2 gap-1 lg:mb-[55px]">
+                    <Button
+                      type="submit"
+                      disabled={formSubmitLoading}
+                      isLoading={formSubmitLoading}
+                      className="!py-3 !px-[36px] btn btn-primary "
+                    >
+                      Send and Resolve
+                    </Button>
+                    {/* <Button
+                    type="button" // important to stop form submit
+                    className="!py-3 !px-[36px] w-full btn btn-outline-primary opacity-100"
+                    onClick={onClosed}
                   >
-                    Send and Resolve
-                  </Button>
-                  <Button className="!py-3 !px-[36px] w-full btn btn-outline-primary opacity-100">
                     Close
-                  </Button>
-                </div>
+                  </Button> */}
+                    <Button
+                      type="button" // ✅ ensures it won’t trigger onSubmit
+                      className="!py-3 !px-[36px] w-full btn btn-outline-primary opacity-100"
+                      onClick={onClosed} // ✅ only calls this
+                    >
+                      Close
+                    </Button>
+                  </div>
+                )}
               </div>
             </form>
           </div>
