@@ -4,7 +4,7 @@ import React, { use, useEffect, useState } from "react";
 import { strapiPost } from "@/lib/api/strapiClient";
 import { themeConfig } from "@/config/theamConfig";
 import Cookies from "js-cookie";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 export default function CheckoutPage({ params }) {
   const router = useRouter();
@@ -12,6 +12,10 @@ export default function CheckoutPage({ params }) {
   const [order, setOrder] = useState({});
   const authToken = Cookies.get("authToken");
   console.log(authToken, "auth token is required");
+  const searchParams = useSearchParams();
+  const sessionId = searchParams.get("session_id");
+  console.log(sessionId);
+  const [status, setStatus] = useState("Verifying payment...");
 
   const formatDate = (isoDateString) => {
     const date = new Date(isoDateString);
@@ -50,6 +54,34 @@ export default function CheckoutPage({ params }) {
   useEffect(() => {
     getProductList();
   }, []);
+
+  useEffect(() => {
+    const verifyStripePayment = async () => {
+      if (!sessionId) {
+        setStatus("❌ Missing session ID");
+        return;
+      }
+
+      try {
+        const res = await strapiPost(
+          "stripe/verify", // ✅ no /api prefix
+          { session_id: sessionId },
+          themeConfig.TOKEN // ❗optional, only if auth required
+        );
+
+        // if (res?.success) {
+        //   setStatus("✅ Payment successful! Transaction saved.");
+        // } else {
+        //   setStatus("⚠️ Payment verified but something went wrong.");
+        // }
+      } catch (err) {
+        console.error("Stripe verification failed:", err);
+        setStatus("❌ Stripe verification failed.");
+      }
+    };
+
+    verifyStripePayment();
+  }, [sessionId]);
 
   return (
     <div className="container">
@@ -278,7 +310,7 @@ export default function CheckoutPage({ params }) {
                 <p className="text-black">Billing Address</p>
               </div>
               <div className="2xl:py-[30px] 2xl:px-[35px] sm:py-[25px] xl:px-[30px] sm:px-6 p-4 rounded-b-[5px] overflow-hidden border border-[#00193E1A]">
-                <h4 className="font-bold mb-[10px]">Rohit Ghoghari</h4>
+                <h4 className="font-bold mb-[10px]">{order?.user?.username}</h4>
                 <p>{order?.billing_address?.address},</p>
                 <p>{order?.billing_address?.city},</p>
                 <p>{order?.billing_address?.state}</p>
@@ -295,10 +327,10 @@ export default function CheckoutPage({ params }) {
                     <span className="text-black sm:mr-[18px] mr-3">Phone:</span>{" "}
                     {order?.user?.phone_no}
                   </p>
-                  <p>
+                  {/* <p>
                     <span className="text-black sm:mr-[18px] mr-3">GSTIN:</span>{" "}
                     22AAAA00051Z25
-                  </p>
+                  </p> */}
                 </div>
               </div>
             </div>
@@ -314,17 +346,18 @@ export default function CheckoutPage({ params }) {
                     Payment by:
                   </span>{" "}
                   {order?.payment_type ? order?.payment_type : "Paypal"}
-                  <img
+                  {/* <img
                     src="/images/paypal.svg"
                     alt="PayPal"
                     className="xl:w-[84px] w-[70px] ml-3"
-                  />
+                  /> */}
                 </p>
                 <p>
                   {" "}
                   <span className="text-black sm:mr-[18px] mr-3">
                     Payment Gateway:
                   </span>
+                  {order?.payment_type ? order?.payment_type : "Paypal"}
                 </p>
               </div>
             </div>

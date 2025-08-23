@@ -47,10 +47,10 @@ const profileSetting = ({ title, sub_title, form, image, button }) => {
 
   const filteredStates = selectedCountry
     ? countries
-        .find((country) => country.name === selectedCountry)
-        ?.states?.filter((state) =>
-          state.toLowerCase().includes(stateSearchTerm.toLowerCase())
-        ) || []
+      .find((country) => country.name === selectedCountry)
+      ?.states?.filter((state) =>
+        state.toLowerCase().includes(stateSearchTerm.toLowerCase())
+      ) || []
     : [];
 
   const toggleCountryDropdown = () => {
@@ -562,8 +562,8 @@ const profileSetting = ({ title, sub_title, form, image, button }) => {
                       <div className="flex items-center sm:flex-row flex-col sm:gap-[22px] gap-1.5">
                         <div className="1xl:w-[100px] 1xl:h-[100px] md:w-[90px] md:h-[90px] sm:w-[85px] sm:h-[85px] w-20 h-20 flex-shrink-0 rounded-full bg-transparent flex items-center justify-center profile-picture">
                           {profileImage !== null &&
-                          profileImage !== undefined &&
-                          profileImage !== "" ? (
+                            profileImage !== undefined &&
+                            profileImage !== "" ? (
                             <Image
                               src={profileImage || "/placeholder.svg"}
                               alt="Profile"
@@ -828,11 +828,10 @@ const profileSetting = ({ title, sub_title, form, image, button }) => {
                                 Phone Number *
                               </label>
                               <div
-                                className={`flex items-center border rounded-md overflow-visible py-[11px] px-2 bg-white ${
-                                  validationErrors.phone_no
-                                    ? "border-red-500"
-                                    : "border-gray-100"
-                                }`}
+                                className={`flex items-center border rounded-md overflow-visible py-[11px] px-2 bg-white ${validationErrors.phone_no
+                                  ? "border-red-500"
+                                  : "border-gray-100"
+                                  }`}
                               >
                                 <Listbox className="border-r border-gray-100 pr-[10px]">
                                   <div className="relative">

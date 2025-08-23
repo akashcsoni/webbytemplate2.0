@@ -420,17 +420,20 @@ export default function CheckoutPage() {
 
     if (!isAuthenticated) {
       openAuth("login");
+      setpayNowLoading(false);
       return;
     }
 
     if (!cartItems || cartItems.length === 0) {
       router.push("/");
+      setpayNowLoading(false);
       return;
     }
 
     const isBillingValid = validateForm();
     if (!isBillingValid) {
       console.warn("Billing form is invalid.");
+      setpayNowLoading(false);
       return;
     }
 
@@ -446,6 +449,7 @@ export default function CheckoutPage() {
 
     if (!cart_id || !authUserStr) {
       console.error("Missing cart_id or user info.");
+      setpayNowLoading(false);
       return;
     }
 
@@ -455,6 +459,7 @@ export default function CheckoutPage() {
       if (!authUser?.id) throw new Error("Invalid user ID.");
     } catch (err) {
       console.error("Failed to parse user data:", err.message);
+      setpayNowLoading(false);
       return;
     }
 
@@ -528,7 +533,7 @@ export default function CheckoutPage() {
                 strapi_order_id: orderData.id,
                 user_id: orderData?.user?.id,
               });
-              router.push("/thank-you");
+              router.push(`/thank-you/${orderData?.documentId}`);
             },
             modal: {
               ondismiss: function () {
@@ -571,6 +576,7 @@ export default function CheckoutPage() {
             amount: orderData.total_price,
             strapi_order_id: orderData.id, // ✅ Required for metadata
             user_id: orderData.user?.id,
+            redirect_id: orderData?.documentId,
           });
 
           console.log(stripeRes);
@@ -586,6 +592,7 @@ export default function CheckoutPage() {
       }
     } catch (error) {
       console.error("❌ Payment Error:", error);
+      setpayNowLoading(false);
     } finally {
       setpayNowLoading(false);
     }
@@ -912,9 +919,8 @@ export default function CheckoutPage() {
             <div>
               <label className="p2 !text-black block">Phone Number *</label>
               <div
-                className={`flex items-center border rounded-md overflow-visible py-[11px] px-2 bg-white ${
-                  errors.phone_no ? "border-red-500" : "border-gray-100"
-                }`}
+                className={`flex items-center border rounded-md overflow-visible py-[11px] px-2 bg-white ${errors.phone_no ? "border-red-500" : "border-gray-100"
+                  }`}
               >
                 {/* Custom flag-only dropdown */}
                 <Listbox
@@ -1197,13 +1203,20 @@ export default function CheckoutPage() {
             onPress={handlePayNow}
             className="group btn btn-primary flex items-center justify-center gap-[10px] w-[220px] xl:!py-[11px] py-[10px] h-auto sm:mt-7 mt-5"
           >
-            {isLoading
+            {/* {isLoading
               ? !isAuthenticated
                 ? "Logging in..."
                 : "Paying..."
               : !isAuthenticated
                 ? "Login to Pay"
-                : "Pay Now"}
+                : "Pay Now"} */}
+            {payNowLoading
+              ? "Paying..."
+              : isLoading
+                ? "Loading cart..."
+                : !isAuthenticated
+                  ? "Login to Pay"
+                  : "Pay Now"}
             <svg
               xmlns="http://www.w3.org/2000/svg"
               width="16"

@@ -248,13 +248,13 @@ export default function ProductsPage({
     const categoriesData = await strapiGet(`categories`, {
       params: {
         populate: "*",
-        "pagination[pageSize]": 200,
+        "pagination[pageSize]": 1000,
       },
       token: themeConfig.TOKEN,
     });
 
     const tagData = await strapiGet(`tags`, {
-      params: { populate: "*" },
+      params: { populate: "*", "pagination[pageSize]": 1000 },
       token: themeConfig.TOKEN,
     });
 
@@ -562,7 +562,7 @@ export default function ProductsPage({
       console.error("Product save failed:", error);
       toast.error(
         error?.response?.data?.error?.message ||
-          "An error occurred while saving the product."
+        "An error occurred while saving the product."
       );
     } finally {
       setLoading(false);
@@ -998,7 +998,7 @@ export default function ProductsPage({
   const getFormatAndCompatibleList = async (id, existingProductData = null) => {
     try {
       const technologyData = await strapiGet(`technologies`, {
-        params: { populate: "*" },
+        params: { populate: "*", "pagination[pageSize]": 1000 },
         token: themeConfig.TOKEN,
       });
 
@@ -1007,6 +1007,7 @@ export default function ProductsPage({
       }
 
       const topicsData = await strapiGet(`category-topics/${id}`, {
+        // params: { "pagination[pageSize]": 1000 },
         token: themeConfig.TOKEN,
       });
       if (topicsData?.topics) {
