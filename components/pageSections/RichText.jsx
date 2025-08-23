@@ -110,62 +110,64 @@ export default function RichText({ body, read_more, with_bg }) {
 
     return (
         <section className="xl:py-[35px] sm:py-[30px] py-5 RichText">
-            <div className={(with_bg === true || with_bg === null) ? "bg-blue-300" : ""}>
-                <div className="rich-text container 2xl:py-[60px] xl:py-[50px] md:py-[45px] sm:py-9 py-7">
-                    <div
-                        className="prose mb-4"
-                        dangerouslySetInnerHTML={{ __html: displayContent }}
-                    />
-                    <div className="relative z-50">
-                        {showToggle && (
-                            <button
-                                onClick={() => setIsExpanded(!isExpanded)}
-                                className={`inline-flex items-end text-primary font-medium hover:underline absolute inset-x-0 bottom-0 transition-all duration-300 underline-offset-4 ${!isExpanded
-                                    ? "bg-gradient-to-t from-blue-300 via-blue-300/80 to-transparent h-32"
-                                    : "relative h-full"
-                                    }`}
-                            >
-                                <span className="flex items-center">
-                                    {isExpanded ? (
-                                        <>
-                                            <p className="text-primary">Read less</p>
-                                            <svg
-                                                xmlns="http://www.w3.org/2000/svg"
-                                                width="16"
-                                                height="16"
-                                                viewBox="0 0 24 24"
-                                                fill="none"
-                                                stroke="currentColor"
-                                                strokeWidth="2"
-                                                strokeLinecap="round"
-                                                strokeLinejoin="round"
-                                                className="ml-1 h-4 w-4"
-                                            >
-                                                <path d="m18 15-6-6-6 6" />
-                                            </svg>
-                                        </>
-                                    ) : (
-                                        <>
-                                            Read more
-                                            <svg
-                                                xmlns="http://www.w3.org/2000/svg"
-                                                width="16"
-                                                height="16"
-                                                viewBox="0 0 24 24"
-                                                fill="none"
-                                                stroke="currentColor"
-                                                strokeWidth="2"
-                                                strokeLinecap="round"
-                                                strokeLinejoin="round"
-                                                className="ml-1 h-4 w-4"
-                                            >
-                                                <path d="m6 9 6 6 6-6" />
-                                            </svg>
-                                        </>
-                                    )}
-                                </span>
-                            </button>
-                        )}
+            <div className="cms-content" >
+                <div className={(with_bg === true || with_bg === null) ? "bg-blue-300" : null}>
+                    <div className={(with_bg === true || with_bg === null) ? "rich-text container 2xl:py-[60px] xl:py-[50px] md:py-[45px] sm:py-9 py-7" : "rich-text container"}>
+                        <div
+                            className="prose mb-4"
+                            dangerouslySetInnerHTML={{ __html: displayContent }}
+                        />
+                        <div className="relative z-50">
+                            {showToggle && (
+                                <button
+                                    onClick={() => setIsExpanded(!isExpanded)}
+                                    className={`inline-flex items-end text-primary font-medium hover:underline absolute inset-x-0 bottom-0 transition-all duration-300 underline-offset-4 ${!isExpanded
+                                        ? "bg-gradient-to-t from-blue-300 via-blue-300/80 to-transparent h-32"
+                                        : "relative h-full"
+                                        }`}
+                                >
+                                    <span className="flex items-center">
+                                        {isExpanded ? (
+                                            <>
+                                                <p className="text-primary">Read less</p>
+                                                <svg
+                                                    xmlns="http://www.w3.org/2000/svg"
+                                                    width="16"
+                                                    height="16"
+                                                    viewBox="0 0 24 24"
+                                                    fill="none"
+                                                    stroke="currentColor"
+                                                    strokeWidth="2"
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    className="ml-1 h-4 w-4"
+                                                >
+                                                    <path d="m18 15-6-6-6 6" />
+                                                </svg>
+                                            </>
+                                        ) : (
+                                            <>
+                                                Read more
+                                                <svg
+                                                    xmlns="http://www.w3.org/2000/svg"
+                                                    width="16"
+                                                    height="16"
+                                                    viewBox="0 0 24 24"
+                                                    fill="none"
+                                                    stroke="currentColor"
+                                                    strokeWidth="2"
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    className="ml-1 h-4 w-4"
+                                                >
+                                                    <path d="m6 9 6 6 6-6" />
+                                                </svg>
+                                            </>
+                                        )}
+                                    </span>
+                                </button>
+                            )}
+                        </div>
                     </div>
                 </div>
             </div>
