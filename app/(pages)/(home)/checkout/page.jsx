@@ -27,6 +27,7 @@ export default function CheckoutPage() {
   const [countrySearchTerm, setCountrySearchTerm] = useState("");
   const [userDataLoading, setUserDataLoading] = useState(true);
   const [payNowLoading, setpayNowLoading] = useState(false);
+  console.log(selectedCountry === "India");
 
   const countryRef = useRef(null);
   const stateRef = useRef(null);
@@ -44,6 +45,8 @@ export default function CheckoutPage() {
     phone_no: "",
     agreed: false,
   });
+
+  console.log(form, "all form data");
 
   const [errors, setErrors] = useState({});
 
@@ -111,6 +114,7 @@ export default function CheckoutPage() {
         });
 
         if (userData) {
+          console.log(userData, "this is for userdata");
           // Handle phone number and country detection
           let phoneNumber = userData.phone_no || "";
           let detectedCountry = null;
@@ -174,6 +178,7 @@ export default function CheckoutPage() {
             state: userData.state || "",
             country: detectedCountry?.name || "India",
             phone_no: phoneNumber || "",
+            gst_number: userData.gst_number || "",
             agreed: false,
           });
 
@@ -509,7 +514,7 @@ export default function CheckoutPage() {
         if (selectedCountry === "India") {
           // ✅ Razorpay Flow
           const razorpayOrderRes = await strapiPost("razorpay/create-order", {
-            amount: orderData.total_price || 500, // ₹500 = 50000 paise
+            amount: orderData.total_price + orderData.tax_amount || 500, // ₹500 = 50000 paise
             strapi_order_id: orderData.id,
             user_id: orderData?.user?.id,
           });
@@ -539,6 +544,7 @@ export default function CheckoutPage() {
               ondismiss: function () {
                 // 🚫 User closed popup without doing anything
                 // 👉 DO NOT call backend. Leave status as pending.
+                router.push("/");
                 console.log("User closed the payment popup");
               },
             },
@@ -597,99 +603,6 @@ export default function CheckoutPage() {
       setpayNowLoading(false);
     }
   };
-
-  // const handlePayNow = async () => {
-  //   setpayNowLoading(true);
-
-  //   if (!isAuthenticated) {
-  //     openAuth("login")
-  //     return
-  //   }
-
-  //   if (!cartItems || cartItems.length === 0) {
-  //     router.push("/")
-  //     return
-  //   }
-
-  //   const isBillingValid = validateForm()
-
-  //   if (!isBillingValid) {
-  //     console.warn("Billing form is invalid.")
-  //     return
-  //   }
-
-  //   const getStringValue = (value) => {
-  //     return typeof value === "string" ? value.trim() : value ? String(value).trim() : ""
-  //   }
-
-  //   const cart_id = Cookies.get("cart_id")
-  //   const authUserStr = Cookies.get("authUser")
-
-  //   if (!cart_id || !authUserStr) {
-  //     console.error("Missing cart_id or user info.")
-  //     return
-  //   }
-
-  //   let authUser
-  //   try {
-  //     authUser = JSON.parse(authUserStr)
-  //     if (!authUser?.id) {
-  //       throw new Error("Invalid user ID.")
-  //     }
-  //   } catch (err) {
-  //     console.error("Failed to parse user data:", err.message)
-  //     return
-  //   }
-
-  //   // Safe phone formatting
-  //   const phoneCode = filteredflag?.[0]?.dialCode || "";
-  //   const phoneNumber = getStringValue(form.phone_no);
-  //   const fullPhone = phoneCode + phoneNumber;
-
-  //   const shippingAddress = {
-  //     first_name: getStringValue(form.first_name),
-  //     last_name: getStringValue(form.last_name),
-  //     company_name: getStringValue(form.company_name),
-  //     email: getStringValue(form.email),
-  //     address: getStringValue(form.address),
-  //     city: getStringValue(form.city),
-  //     pincode: getStringValue(form.pincode),
-  //     state: getStringValue(form.state),
-  //     country: getStringValue(form.country),
-  //     phone_no: fullPhone,
-  //   }
-
-  //   // Optional: validate email/phone format here before proceeding
-  //   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-  //   if (!emailRegex.test(shippingAddress.email)) {
-  //     console.warn("Invalid email format.")
-  //     return
-  //   }
-
-  //   const checkoutData = {
-  //     user: authUser.id,
-  //     cart_id,
-  //     shipping_address: shippingAddress,
-  //   }
-
-  //   try {
-  //     const response = await strapiPost("orders", checkoutData, themeConfig.TOKEN)
-
-  //     if (response?.result && response?.data) {
-  //       setpayNowLoading(false);
-  //       router.push('/thank-you')
-  //     } else {
-  //       setpayNowLoading(false);
-  //       console.log(response)
-  //     }
-  //   } catch (error) {
-  //     setpayNowLoading(false);
-  //     console.log(error, 'error')
-  //   } finally {
-  //     setpayNowLoading(false);
-  //     console.log('finally')
-  //   }
-  // }
 
   const handleStateSelect = (state, e) => {
     // Prevent event propagation to avoid dropdown toggle conflicts
@@ -810,6 +723,27 @@ export default function CheckoutPage() {
                 <p className="text-red-500 text-xs mt-1">{errors.first_name}</p>
               )}
             </div>
+
+            {/* gst number field */}
+            {selectedCountry === "India" && (
+              <div>
+                <label className="p2 !text-black mb-[6px]">GST Number *</label>
+                <input
+                  type="text"
+                  placeholder="First Name"
+                  value={form.gst_number || ""}
+                  onChange={(e) => handleChange("first_name", e.target.value)}
+                  className={inputClass("first_name")}
+                  maxLength={50}
+                />
+                {errors.first_name && (
+                  <p className="text-red-500 text-xs mt-1">
+                    {errors.first_name}
+                  </p>
+                )}
+              </div>
+            )}
+            {/* gst number field */}
 
             {/* Last Name */}
             <div>
@@ -1256,16 +1190,35 @@ export default function CheckoutPage() {
                   <span className="p2 !text-black !font-medium">
                     ${item?.total?.toFixed(2)}
                   </span>
+                  {/* <span className="p2">GST ()</span> */}
                 </div>
               );
             })}
+            {selectedCountry === "India" && (
+              <div className="flex justify-between py-1 1xl:gap-20 xl:gap-12 gap-4">
+                {/* <span className="p2">{item?.product?.title}</span>
+              <span className="p2 !text-black !font-medium">
+                ${item?.total?.toFixed(2)}
+              </span> */}
+                <span className="p2">GST (18%)</span>
+                <span className="p2 !text-black !font-medium">
+                  ${Math.floor(totalPrice * 0.18)}
+                </span>
+              </div>
+            )}
           </div>
 
           <div>
             <div className="flex justify-between py-2 font-semibold">
               <p className="font-medium !text-black">Total</p>
               <p className="font-medium !text-black">
-                ${totalPrice?.toFixed(2)}
+                {/* ${(totalPrice + totalPrice * 0.18).toFixed(2)} */}
+                {/* ${Math.floor(totalPrice + totalPrice * 0.18)} */}$
+                {Math.floor(
+                  selectedCountry === "India"
+                    ? totalPrice + totalPrice * 0.18
+                    : totalPrice
+                )}
               </p>
             </div>
             <div className="flex items-center gap-2 xl:mt-2">
