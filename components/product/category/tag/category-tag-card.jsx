@@ -4,7 +4,7 @@ import React from "react";
 
 const CategoryTagCard = ({ category }) => {
   const { title, slug, cover } = category;
-  const imageUrl = cover?.url || "/placeholder.svg?height=40&width=40";
+  const imageUrl = cover?.url || "/images/place_holder.png?height=40&width=40";
 
   return (
     <Link
