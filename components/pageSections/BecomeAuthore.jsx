@@ -77,7 +77,7 @@ const BecomeAuthore = ({ button_link = '', button_name = '', description = '', t
                     </div>
                     <div className="md:w-1/2 w-full">
                         <div className="relative overflow-hidden">
-                            {video_embed_code ? (
+                            {/* {video_embed_code ? (
                                 <video
                                     ref={videoRef}
                                     className="w-full h-auto"
@@ -98,8 +98,17 @@ const BecomeAuthore = ({ button_link = '', button_name = '', description = '', t
                                     alt="Become an Author"
                                     className="w-full h-auto"
                                 />
-                            )}
-                            {!isPlaying && video_embed_code && (
+                            )} */}
+                            {
+                                posterUrl && (
+                                    <img
+                                        src={posterUrl}
+                                        alt="Become an Author"
+                                        className="w-full h-auto"
+                                    />
+                                )
+                            }
+                            {/* {!isPlaying && video_embed_code && (
                                 <div className="absolute inset-0 flex items-center justify-center transition ">
                                     <button
                                         onClick={toggleVideo}
@@ -121,7 +130,7 @@ const BecomeAuthore = ({ button_link = '', button_name = '', description = '', t
                                         </svg>
                                     </button>
                                 </div>
-                            )}
+                            )} */}
                         </div>
                     </div>
                 </div>
