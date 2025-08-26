@@ -194,7 +194,7 @@ const SinglePageSwiper = ({
                     alt={`Product ${i + 1}`}
                     width={imageWidth}
                     height={imageHeight}
-                    className="flex-shrink-0 object-cover w-full h-full absolute top-0 left-0 bottom-0 right-0"
+                    className="flex-shrink-0 w-full h-full absolute top-0 left-0 bottom-0 right-0"
                   />
                   <div className="group-hover:flex hidden items-center justify-center absolute top-0 left-0 w-full h-full group-hover:bg-black/50 transition-all duration-300 ease-in-out">
                     <Button
@@ -286,7 +286,7 @@ const SinglePageSwiper = ({
                                           alt="Author Logo"
                                           width="28"
                                           height="28"
-                                          className="flex-shrink-0 object-cover rounded-full"
+                                          className="flex-shrink-0 rounded-full"
                                         />
                                       </div>
                                       <p className="p2 text-[#505050]">
@@ -333,7 +333,7 @@ const SinglePageSwiper = ({
                                       alt="Author Logo"
                                       width="1120"
                                       height="200"
-                                      className="absolute top-0 left-0 w-full h-full object-cover"
+                                      className="absolute top-0 left-0 w-full h-full"
                                     />
                                   </div>
                                   <div className="mb-[25px] relative group w-full before:content-[''] before:block before:pt-[64%] lg:before:pt-[66%] overflow-hidden">
@@ -342,7 +342,7 @@ const SinglePageSwiper = ({
                                       alt="Author Logo"
                                       width="1120"
                                       height="200"
-                                      className="absolute top-0 left-0 w-full h-full object-cover"
+                                      className="absolute top-0 left-0 w-full h-full"
                                     />
                                   </div>
                                   <div className="mb-[25px] relative group w-full before:content-[''] before:block before:pt-[64%] lg:before:pt-[66%] overflow-hidden">
@@ -351,7 +351,7 @@ const SinglePageSwiper = ({
                                       alt="Author Logo"
                                       width="1120"
                                       height="200"
-                                      className="absolute top-0 left-0 w-full h-full object-cover"
+                                      className="absolute top-0 left-0 w-full h-full"
                                     />
                                   </div>
                                   <div className="mb-[25px] relative group w-full before:content-[''] before:block before:pt-[64%] lg:before:pt-[66%] overflow-hidden">
@@ -360,7 +360,7 @@ const SinglePageSwiper = ({
                                       alt="Author Logo"
                                       width="1120"
                                       height="200"
-                                      className="absolute top-0 left-0 w-full h-full object-cover"
+                                      className="absolute top-0 left-0 w-full h-full"
                                     />
                                   </div>
                                 </div>
