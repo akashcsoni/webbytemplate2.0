@@ -1115,3 +1115,7 @@ h4 {
 .cms-content table thead th {
   @apply font-bold;
 }
+
+.reactstar span{
+  @apply md:!text-[37px] !text-[32px];
+}

@@ -46,8 +46,6 @@ export default function CheckoutPage() {
     agreed: false,
   });
 
-  console.log(form, "all form data");
-
   const [errors, setErrors] = useState({});
 
   // Redirect to home if cart is empty
