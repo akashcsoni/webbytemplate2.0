@@ -20,6 +20,7 @@ export default function ReviewModal({ isOpen, onClose, product }) {
     const [rating, setRating] = useState(0);
     const [review, setReview] = useState("");
     const [errors, setErrors] = useState({});
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     const validateForm = () => {
         let tempErrors = {};
@@ -49,6 +50,8 @@ export default function ReviewModal({ isOpen, onClose, product }) {
             return;
         }
 
+        setIsSubmitting(true);
+
         try {
             const payload = {
                 rating: rating,
@@ -76,6 +79,8 @@ export default function ReviewModal({ isOpen, onClose, product }) {
         } catch (err) {
             console.error("Failed to submit review:", err);
             toast.error("Review could not be submitted.");
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
@@ -150,8 +155,10 @@ export default function ReviewModal({ isOpen, onClose, product }) {
                                 onPress={handleSubmit}
                                 color="primary"
                                 className="w-fit btn btn-primary"
+                                isLoading={isSubmitting}
+                                disabled={isSubmitting}
                             >
-                                Submit Review
+                                {isSubmitting ? "Submitting..." : "Submit Review"}
                             </Button>
                         </div>
                     </div>
