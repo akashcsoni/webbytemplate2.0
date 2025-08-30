@@ -140,7 +140,9 @@ p,
 .btn-secondary {
   @apply bg-blue-300 text-primary border border-blue-300 hover:border-primary focus:border-primary active:border-primary hover:text-white focus:text-white active:text-white hover:bg-primary focus:bg-primary active:bg-primary transition-all duration-400 ease-in-out;
 }
-
+.black-btn{
+  @apply bg-white text-black border border-[#00193E1A] hover:text-white focus:text-white active:text-white hover:bg-primary focus:bg-primary active:bg-primary transition-all duration-400 ease-in-out;
+}
 .full_bg {
   @apply 2xl:h-[500px] h-[480px] left-0 w-full bg-blue-300 absolute z-0;
 }
