@@ -46,7 +46,6 @@ function FeatureItem({ text }) {
 }
 
 export default function SinglePage({ pageData }) {
-
   const { addToCart, openCart, cartItems } = useCart();
   const { addToWishlist, wishlistItems } = useWishlist();
   const [wishlistLoading, setWishlistLoading] = useState(false);
@@ -57,7 +56,7 @@ export default function SinglePage({ pageData }) {
       item.product?.documentId === pageData?.documentId ||
       item.product?.id === pageData?.id ||
       item.product?.documentId === pageData?.id ||
-      item.product?.id === pageData?.documentId,
+      item.product?.id === pageData?.documentId
   );
 
   // Check if current product is in wishlist
@@ -66,14 +65,14 @@ export default function SinglePage({ pageData }) {
       item.product?.documentId === pageData?.documentId ||
       item.product?.id === pageData?.id ||
       item.product?.documentId === pageData?.id ||
-      item.product?.id === pageData?.documentId,
+      item.product?.id === pageData?.documentId
   );
 
   // Function to extract technologies with custom slug and price
   function extractTechnologiesWithProductSlugs(
     data,
     defaultSlug = "",
-    defaultPrice = null,
+    defaultPrice = null
   ) {
     const technologies = [];
     const techMap = new Map(); // To track technologies by ID
@@ -108,7 +107,7 @@ export default function SinglePage({ pageData }) {
 
           // Create a deep copy of the technology object
           const tech = JSON.parse(
-            JSON.stringify(product.all_technology.technology),
+            JSON.stringify(product.all_technology.technology)
           );
 
           // Replace technology slug with product slug
@@ -131,7 +130,7 @@ export default function SinglePage({ pageData }) {
   const [totalPrice, setTotalPrice] = useState(
     pageData?.price?.sales_price === null
       ? pageData?.price?.regular_price
-      : pageData?.price?.sales_price,
+      : pageData?.price?.sales_price
   );
   const [isWhiteLabel, setIsWhiteLabel] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -151,13 +150,13 @@ export default function SinglePage({ pageData }) {
 
       // Get the selected license object
       const selectedLicenseObj = allLicenses.find(
-        (license) => license.id === selectedLicense,
+        (license) => license.id === selectedLicense
       );
 
       // Get all selected addon objects
       const selectedAddonObjs = allLicenses.filter(
         (license) =>
-          Array.isArray(selectedAddons) && selectedAddons.includes(license.id),
+          Array.isArray(selectedAddons) && selectedAddons.includes(license.id)
       );
 
       // Create the extra_info array with license IDs and prices
@@ -201,8 +200,8 @@ export default function SinglePage({ pageData }) {
   // Add state to track selected license and addons
   const [selectedLicense, setSelectedLicense] = useState(
     pageData?.all_license?.find(
-      (license) => license.license_type === "choose_a_license",
-    )?.id || null,
+      (license) => license.license_type === "choose_a_license"
+    )?.id || null
   );
   const [selectedAddons, setSelectedAddons] = useState([]);
 
@@ -218,41 +217,41 @@ export default function SinglePage({ pageData }) {
   const allTechnologies = extractTechnologiesWithProductSlugs(
     pageData?.all_technology,
     pageData?.slug,
-    pageData?.price,
+    pageData?.price
   );
 
   const handleAddToWishlist = async () => {
     if (!pageData) {
-      console.error("Page data is missing.")
-      return
+      console.error("Page data is missing.");
+      return;
     }
 
-    setWishlistLoading(true)
+    setWishlistLoading(true);
 
     try {
       const allLicenses = Array.isArray(pageData.all_license)
         ? pageData.all_license
-        : []
+        : [];
 
       // Get the selected license object
       const selectedLicenseObj = allLicenses.find(
-        (license) => license.id === selectedLicense,
-      )
+        (license) => license.id === selectedLicense
+      );
 
       // Get all selected addon objects
       const selectedAddonObjs = allLicenses.filter(
         (license) =>
-          Array.isArray(selectedAddons) && selectedAddons.includes(license.id),
-      )
+          Array.isArray(selectedAddons) && selectedAddons.includes(license.id)
+      );
 
       // Create the extra_info array with license IDs and prices
-      const extraInfo = []
+      const extraInfo = [];
 
       if (selectedLicenseObj && selectedLicenseObj.license?.documentId) {
         extraInfo.push({
           price: selectedLicenseObj.sales_price ?? 0,
           license: selectedLicenseObj.license.documentId,
-        })
+        });
       }
 
       selectedAddonObjs.forEach((addon) => {
@@ -260,27 +259,27 @@ export default function SinglePage({ pageData }) {
           extraInfo.push({
             price: addon.sales_price ?? 0,
             license: addon.license.documentId,
-          })
+          });
         }
-      })
+      });
 
       const wishlistData = {
         product: pageData.documentId || pageData.id || null,
         extra_info: extraInfo,
-      }
+      };
 
       if (!wishlistData.product) {
-        console.error("Product ID is missing.")
-        return
+        console.error("Product ID is missing.");
+        return;
       }
 
-      await addToWishlist(wishlistData)
+      await addToWishlist(wishlistData);
     } catch (error) {
-      console.error("Add to wishlist failed:", error)
+      console.error("Add to wishlist failed:", error);
     } finally {
-      setWishlistLoading(false)
+      setWishlistLoading(false);
     }
-  }
+  };
 
   return (
     <div className="overflow-hidden">
@@ -306,7 +305,6 @@ export default function SinglePage({ pageData }) {
           <span className="mx-2 text-gray-500">&gt;</span>
           <span className="text-[#505050]">{pageData?.title}</span>
         </nav>
-
 
         {/* Main Header */}
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-5 md:mb-10">
@@ -492,7 +490,7 @@ export default function SinglePage({ pageData }) {
         </div>
 
         <div className="lg:hidden block">
-          {pageData?.gallery_image && pageData?.gallery_image.length > 0 && (
+          {pageData?.gallery_image && pageData?.gallery_image?.length > 0 && (
             <SinglePageSwiper gallery_images={pageData?.gallery_image} />
           )}
         </div>
@@ -545,11 +543,8 @@ export default function SinglePage({ pageData }) {
 
             {/* Add to Cart Button */}
 
-
-
             <div className="!mt-0">
               <div className="lg:py-5 py-4 grid gap-5">
-
                 {pageData?.all_license && pageData?.all_license.length > 0 && (
                   <>
                     {!isWhiteLabel && (
@@ -558,8 +553,8 @@ export default function SinglePage({ pageData }) {
                           <div className="w-full ">
                             <button
                               className={`w-full btn flex items-center justify-center transition-all duration-200 ${isProductInCart
-                                ? "btn-secondary border-2 border-primary text-primary hover:btn-primary"
-                                : "btn-primary"
+                                  ? "btn-secondary border-2 border-primary text-primary hover:btn-primary"
+                                  : "btn-primary"
                                 }`}
                               onClick={handleAddToCart}
                               disabled={loading}
@@ -655,7 +650,9 @@ export default function SinglePage({ pageData }) {
                 )}
 
                 {/* contact sales */}
-                {isWhiteLabel && <SinglePageModal product_id={pageData?.documentId} />}
+                {isWhiteLabel && (
+                  <SinglePageModal product_id={pageData?.documentId} />
+                )}
               </div>
 
               {/* Related Topics */}
@@ -753,24 +750,24 @@ export default function SinglePage({ pageData }) {
           <div className="lg:w-[60%] relative">
             {/* discription */}
             <>
+              {console.log(pageData)}
               <div className="lg:block hidden mb-5">
-                {pageData?.gallery_image &&
-                  pageData?.gallery_image.length > 0 && (
-                    <SinglePageSwiper
-                      gallery_images={pageData?.gallery_image}
-                    />
-                  )}
+                {pageData && pageData && (
+                  <SinglePageSwiper
+                    gallery_images={pageData?.gallery_image}
+                    title={pageData?.title}
+                    author={pageData?.author}
+                    pageData={pageData}
+                  />
+                )}
               </div>
-
               {pageData?.description && (
                 <span
                   className="sm:space-y-5 space-y-2 sm:mb-[50px] mb-4"
                   dangerouslySetInnerHTML={{ __html: pageData?.description }}
                 />
               )}
-
               <hr className="border border-primary/10 xl:my-[25px] sm:my-5 my-2" />
-
               <SinglePageTab data={pageData} />
             </>
           </div>

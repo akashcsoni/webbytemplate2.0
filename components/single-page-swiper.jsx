@@ -18,6 +18,7 @@ import "swiper/css/navigation";
 // import { cn } from "@/lib/utils"
 // import { URL } from "@/config/theamConfig"
 import { containsTargetURL } from "@/lib/containsTargetURL";
+import { useCart } from "@/contexts/CartContext";
 
 const SinglePageSwiper = ({
   gallery_images = [],
@@ -26,6 +27,9 @@ const SinglePageSwiper = ({
   imageHeight = 554,
   showSocialShare = true,
   breakpoints,
+  title,
+  author,
+  pageData,
 }) => {
   const prevRef = useRef(null);
   const nextRef = useRef(null);
@@ -33,6 +37,16 @@ const SinglePageSwiper = ({
   const [isBeginning, setIsBeginning] = useState(true);
   const [isEnd, setIsEnd] = useState(false);
   const [imagesLoaded, setImagesLoaded] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const { addToCart, openCart, cartItems } = useCart();
+
+  const isProductInCart = cartItems?.some(
+    (item) =>
+      item.product?.documentId === pageData?.documentId ||
+      item.product?.id === pageData?.id ||
+      item.product?.documentId === pageData?.id ||
+      item.product?.id === pageData?.documentId
+  );
 
   // Default breakpoints if not provided
   const defaultBreakpoints = {
@@ -116,24 +130,24 @@ const SinglePageSwiper = ({
   // const scrollContainerRef = useRef(null);
   // const [scrollProgress, setScrollProgress] = useState(0);
   // const handleScroll = () => {
-  //   const el = scrollContainerRef.current;
-  //   if (!el) return;
-  //   const max = el.scrollHeight - el.clientHeight;
-  //   if (max <= 0) {            // nothing to scroll
-  //     setScrollProgress(100);
-  //     return;
-  //   }
-  //   setScrollProgress((el.scrollTop / max) * 100);
+  // const el = scrollContainerRef.current;
+  // if (!el) return;
+  // const max = el.scrollHeight - el.clientHeight;
+  // if (max <= 0) { // nothing to scroll
+  // setScrollProgress(100);
+  // return;
+  // }
+  // setScrollProgress((el.scrollTop / max) * 100);
   // };
 
   // // reset when modal opens
   // useEffect(() => {
-  //   if (!isOpen) return;
-  //   setScrollProgress(0);
-  //   requestAnimationFrame(() => {
-  //     const el = scrollContainerRef.current;
-  //     if (el) { el.scrollTop = 0; handleScroll(); }
-  //   });
+  // if (!isOpen) return;
+  // setScrollProgress(0);
+  // requestAnimationFrame(() => {
+  // const el = scrollContainerRef.current;
+  // if (el) { el.scrollTop = 0; handleScroll(); }
+  // });
   // }, [isOpen]);
   const modalBodyRef = useRef(null);
   const [progress, setProgress] = useState(0);
@@ -152,6 +166,75 @@ const SinglePageSwiper = ({
     el.addEventListener("scroll", handleScroll);
     return () => el.removeEventListener("scroll", handleScroll);
   }, [isOpen]);
+
+  const handleAddToCart = async () => {
+    if (!pageData) {
+      console.error("Page data is missing.");
+      return;
+    }
+
+    setLoading(true); // START loader
+
+    try {
+      const allLicenses = Array.isArray(pageData.all_license)
+        ? pageData.all_license
+        : [];
+
+      // Get the selected license object
+      const selectedLicenseObj = allLicenses.find(
+        (license) => license.id === selectedLicense
+      );
+
+      // Get all selected addon objects
+      const selectedAddonObjs = allLicenses.filter(
+        (license) =>
+          Array.isArray(selectedAddons) && selectedAddons.includes(license.id)
+      );
+
+      // Create the extra_info array with license IDs and prices
+      const extraInfo = [];
+
+      if (selectedLicenseObj && selectedLicenseObj.license?.documentId) {
+        extraInfo.push({
+          price: selectedLicenseObj.sales_price ?? 0,
+          license: selectedLicenseObj.license.documentId,
+        });
+      }
+
+      selectedAddonObjs.forEach((addon) => {
+        if (addon.license?.documentId) {
+          extraInfo.push({
+            price: addon.sales_price ?? 0,
+            license: addon.license.documentId,
+          });
+        }
+      });
+
+      const cartData = {
+        product: pageData.documentId || pageData.id || null,
+        extra_info: extraInfo,
+      };
+
+      if (!cartData.product) {
+        console.error("Product ID is missing.");
+        return;
+      }
+
+      await addToCart(cartData); // Wait for addToCart to finish
+    } catch (error) {
+      console.error("Add to cart failed:", error);
+    } finally {
+      setLoading(false); // STOP loader no matter success or failure
+      openCart(true);
+    }
+  };
+
+  const [selectedLicense, setSelectedLicense] = useState(
+    pageData?.all_license?.find(
+      (license) => license.license_type === "choose_a_license"
+    )?.id || null
+  );
+  const [selectedAddons, setSelectedAddons] = useState([]);
 
   return (
     <div className={("relative w-full pb-5", className)}>
@@ -188,6 +271,7 @@ const SinglePageSwiper = ({
           >
             {gallery_images.map((img, i) => (
               <SwiperSlide key={i}>
+                {/* {console.log(img)} */}
                 <div className="relative group w-full h-full lg:before:pt-[69%] before:pt-[64%] before:block overflow-hidden">
                   <Image
                     src={containsTargetURL(img?.url) ? img?.url : `${img?.url}`}
@@ -275,14 +359,11 @@ const SinglePageSwiper = ({
                                 </Button>
                                 <div className=" flex md:flex-row flex-col md:items-center items-start justify-between gap-2">
                                   <div className="flex flex-col items-start gap-2">
-                                    <h2>
-                                      Diazelo: Fashion & Clothing eCommerce XD
-                                      Template...
-                                    </h2>
+                                    <h2>{title}</h2>
                                     <div className="flex items-center justify-start gap-2">
                                       <div className="rounded-full overflow-hidden">
                                         <Image
-                                          src="/images/author-logo.png"
+                                          src={author?.image?.url}
                                           alt="Author Logo"
                                           width="28"
                                           height="28"
@@ -290,11 +371,15 @@ const SinglePageSwiper = ({
                                         />
                                       </div>
                                       <p className="p2 text-[#505050]">
-                                        WebbyCrown
+                                        {author?.full_name}
                                       </p>
                                     </div>
                                   </div>
-                                  <button className="btn btn-primary gap-[10px] sm:w-auto w-full">
+                                  <button
+                                    className="btn btn-primary gap-[10px] sm:w-auto w-full"
+                                    onClick={handleAddToCart}
+                                    disabled={loading}
+                                  >
                                     <svg
                                       xmlns="http://www.w3.org/2000/svg"
                                       width="18"
@@ -309,60 +394,45 @@ const SinglePageSwiper = ({
                                         strokeLinecap="round"
                                       />
                                     </svg>
-                                    Add to Cart
+                                    {loading
+                                      ? "Processing..."
+                                      : isProductInCart
+                                        ? "Update Cart"
+                                        : "Add to Cart"}
                                   </button>
                                 </div>
                                 {/* Progress bar at top */}
                               </div>
                             </ModalHeader>
-                            <ModalBody
-
-                              className="p-0 h-full w-full"
-                            >
+                            <ModalBody className="p-0 h-full w-full">
                               <div className="sticky top-0 z-10 bg-gray-100 ">
                                 <div
                                   className="h-2 bg-primary transition-all duration-200 w-full"
                                   style={{ width: `${progress}%` }}
                                 />
                               </div>
-                              <div ref={modalBodyRef} className="w-full h-full 2xl:my-[30px] my-[10px] max-w-[1120px] mx-auto px-4 overflow-y-auto ">
+                              <div
+                                ref={modalBodyRef}
+                                className="w-full h-full 2xl:my-[30px] my-[10px] max-w-[1120px] mx-auto px-4 overflow-y-auto "
+                              >
                                 <div className="w-full h-full ">
-                                  <div className="mb-[25px] relative group w-full before:content-[''] before:block before:pt-[64%] lg:before:pt-[66%] overflow-hidden">
-                                    <Image
-                                      src="/images/diazelo.png"
-                                      alt="Author Logo"
-                                      width="1120"
-                                      height="200"
-                                      className="absolute top-0 left-0 w-full h-full"
-                                    />
-                                  </div>
-                                  <div className="mb-[25px] relative group w-full before:content-[''] before:block before:pt-[64%] lg:before:pt-[66%] overflow-hidden">
-                                    <Image
-                                      src="/images/diazelo.png"
-                                      alt="Author Logo"
-                                      width="1120"
-                                      height="200"
-                                      className="absolute top-0 left-0 w-full h-full"
-                                    />
-                                  </div>
-                                  <div className="mb-[25px] relative group w-full before:content-[''] before:block before:pt-[64%] lg:before:pt-[66%] overflow-hidden">
-                                    <Image
-                                      src="/images/diazelo.png"
-                                      alt="Author Logo"
-                                      width="1120"
-                                      height="200"
-                                      className="absolute top-0 left-0 w-full h-full"
-                                    />
-                                  </div>
-                                  <div className="mb-[25px] relative group w-full before:content-[''] before:block before:pt-[64%] lg:before:pt-[66%] overflow-hidden">
-                                    <Image
-                                      src="/images/diazelo.png"
-                                      alt="Author Logo"
-                                      width="1120"
-                                      height="200"
-                                      className="absolute top-0 left-0 w-full h-full"
-                                    />
-                                  </div>
+                                  {gallery_images &&
+                                    gallery_images.map((image, index) => {
+                                      return (
+                                        <div
+                                          className="mb-[25px] relative group w-full before:content-[''] before:block before:pt-[64%] lg:before:pt-[66%] overflow-hidden"
+                                          key={index}
+                                        >
+                                          <Image
+                                            src={image?.url}
+                                            alt="Author Logo"
+                                            width={image?.width}
+                                            height={image?.height}
+                                            className="absolute top-0 left-0 w-full h-full"
+                                          />
+                                        </div>
+                                      );
+                                    })}
                                 </div>
                               </div>
                             </ModalBody>
