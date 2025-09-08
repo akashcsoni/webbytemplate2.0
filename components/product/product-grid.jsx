@@ -11,10 +11,12 @@ const sanitizeText = (text) =>
     : "";
 
 export default function ({ product }) {
+  console.log(product, "this is for p=roduct");
+
   const productSlug = product?.slug ?? "";
   const productTitle = sanitizeText(product?.short_title || product?.title);
   const authorName = sanitizeText(
-    product?.author?.full_name || product?.author?.username,
+    product?.author?.full_name || product?.author?.username
   );
   const productImage = product?.grid_image?.url
     ? `${product.grid_image.url}`
@@ -106,7 +108,6 @@ export default function ({ product }) {
           </div>
         )}
       </div>
-
     </div>
   );
 }

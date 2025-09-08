@@ -130,24 +130,24 @@ const SinglePageSwiper = ({
   // const scrollContainerRef = useRef(null);
   // const [scrollProgress, setScrollProgress] = useState(0);
   // const handleScroll = () => {
-  // const el = scrollContainerRef.current;
-  // if (!el) return;
-  // const max = el.scrollHeight - el.clientHeight;
-  // if (max <= 0) { // nothing to scroll
-  // setScrollProgress(100);
-  // return;
-  // }
-  // setScrollProgress((el.scrollTop / max) * 100);
+  //   const el = scrollContainerRef.current;
+  //   if (!el) return;
+  //   const max = el.scrollHeight - el.clientHeight;
+  //   if (max <= 0) {            // nothing to scroll
+  //     setScrollProgress(100);
+  //     return;
+  //   }
+  //   setScrollProgress((el.scrollTop / max) * 100);
   // };
 
   // // reset when modal opens
   // useEffect(() => {
-  // if (!isOpen) return;
-  // setScrollProgress(0);
-  // requestAnimationFrame(() => {
-  // const el = scrollContainerRef.current;
-  // if (el) { el.scrollTop = 0; handleScroll(); }
-  // });
+  //   if (!isOpen) return;
+  //   setScrollProgress(0);
+  //   requestAnimationFrame(() => {
+  //     const el = scrollContainerRef.current;
+  //     if (el) { el.scrollTop = 0; handleScroll(); }
+  //   });
   // }, [isOpen]);
   const modalBodyRef = useRef(null);
   const [progress, setProgress] = useState(0);
@@ -484,8 +484,9 @@ const SinglePageSwiper = ({
             <button
               ref={prevRef}
               aria-label="Previous slide"
-              className={` ${isBeginning ? "opacity-50 cursor-not-allowed" : "opacity-100"
-                }`}
+              className={` ${
+                isBeginning ? "opacity-50 cursor-not-allowed" : "opacity-100"
+              }`}
               disabled={isBeginning}
             >
               <svg
@@ -507,8 +508,9 @@ const SinglePageSwiper = ({
             <button
               ref={nextRef}
               aria-label="Next slide"
-              className={` ${isEnd ? "opacity-50 cursor-not-allowed" : "opacity-100"
-                }`}
+              className={` ${
+                isEnd ? "opacity-50 cursor-not-allowed" : "opacity-100"
+              }`}
               disabled={isEnd}
             >
               <svg

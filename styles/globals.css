@@ -82,12 +82,12 @@ h1,
 
 h2,
 .h2 {
-  @apply 2xl:text-3xl xl:text-[32px] lg:text-[30px] sm:text-[28px] text-[22px] font-medium sm:leading-[45px] leading-8;
+  @apply 2xl:text-3xl xl:text-[32px] lg:text-[30px] sm:text-[28px] text-[22px] font-medium xl:leading-[45px] md:leading-[40px] sm:leading-9 leading-8;
 }
 
 h3,
 .h3 {
-  @apply 2xl:text-2xl sm:text-[23px] text-xl font-medium sm:leading-[35px] leading-[30px];
+@apply 2xl:text-2xl sm:text-[23px] text-xl font-medium 1xl:leading-[35px] sm:leading-[33px] leading-[30px];
 }
 
 h4,
@@ -140,7 +140,9 @@ p,
 .btn-secondary {
   @apply bg-blue-300 text-primary border border-blue-300 hover:border-primary focus:border-primary active:border-primary hover:text-white focus:text-white active:text-white hover:bg-primary focus:bg-primary active:bg-primary transition-all duration-400 ease-in-out;
 }
-
+.black-btn{
+  @apply bg-white text-black border border-[#00193E1A] hover:text-white focus:text-white active:text-white hover:bg-primary focus:bg-primary active:bg-primary transition-all duration-400 ease-in-out;
+}
 .full_bg {
   @apply 2xl:h-[500px] h-[480px] left-0 w-full bg-blue-300 absolute z-0;
 }
