@@ -1643,9 +1643,8 @@ export default function AuthModal() {
               </p>
               {inputMode === "mobile" ? (
                 <div
-                  className={`flex items-center border ${
-                    error ? "border-red-500" : "border-gray-200"
-                  } rounded-md py-[11px] px-2 relative country-dropdown`}
+                  className={`flex items-center border ${error ? "border-red-500" : "border-gray-200"
+                    } rounded-md py-[11px] px-2 relative country-dropdown`}
                 >
                   <div className="relative z-10">
                     <button
@@ -1664,9 +1663,8 @@ export default function AuthModal() {
                         height="11"
                         viewBox="0 0 9 11"
                         fill="none"
-                        className={`ml-2 transition-transform duration-300 flex-shrink-0 ${
-                          isDropdownOpen ? "rotate-0" : "rotate-180"
-                        }`}
+                        className={`ml-2 transition-transform duration-300 flex-shrink-0 ${isDropdownOpen ? "rotate-0" : "rotate-180"
+                          }`}
                       >
                         <path
                           d="M4.1612 2.31217C4.35263 2.13578 4.64737 2.13578 4.8388 2.31217L8.8388 5.9977C8.94155 6.09237 9 6.22571 9 6.36541V6.85679C9 7.29285 8.48076 7.51995 8.16057 7.22393L4.83943 4.15343C4.64781 3.97628 4.35219 3.97628 4.16057 4.15343L0.839427 7.22393C0.519237 7.51995 0 7.29285 0 6.85679V6.36541C0 6.22571 0.0584515 6.09237 0.161196 5.9977L4.1612 2.31217Z"
@@ -1680,11 +1678,10 @@ export default function AuthModal() {
                           <li
                             key={country.short_name}
                             onClick={() => selectCountry(country)}
-                            className={`cursor-pointer px-4 py-2 text-sm hover:bg-gray-100 transition-colors ${
-                              selectedCountry.code === country.code
+                            className={`cursor-pointer px-4 py-2 text-sm hover:bg-gray-100 transition-colors ${selectedCountry.code === country.code
                                 ? "bg-blue-500 text-white hover:bg-blue-600"
                                 : ""
-                            }`}
+                              }`}
                           >
                             {country.name} {country.code}
                           </li>
@@ -1706,9 +1703,8 @@ export default function AuthModal() {
                 </div>
               ) : (
                 <div
-                  className={`flex items-center border ${
-                    error ? "border-red-500" : "border-gray-200"
-                  } rounded-md py-[11px] px-2`}
+                  className={`flex items-center border ${error ? "border-red-500" : "border-gray-200"
+                    } rounded-md py-[11px] px-2`}
                 >
                   <input
                     ref={inputRef}
@@ -1921,7 +1917,7 @@ function OtpModal({ isOpen, onClose, identifier, type }) {
     } catch (error) {
       setOtpError(
         error?.response?.data?.error?.message ||
-          "An error occurred. Please try again later."
+        "An error occurred. Please try again later."
       );
     } finally {
       setIsSubmitting(false);
@@ -2036,9 +2032,8 @@ function OtpModal({ isOpen, onClose, identifier, type }) {
                     onKeyDown={(e) => handleKeyDown(index, e)}
                     onPaste={index === 0 ? handlePaste : undefined}
                     ref={index === 0 ? firstInputRef : null}
-                    className={`2xl:w-[60px] 2xl:h-[60px] xl:w-[55px] xl:h-[55px] md:w-[50px] md:h-[50px] w-[45px] h-[45px] text-center text-lg font-medium border ${
-                      otpError ? "border-red-500" : "border-gray-200"
-                    } text-black placeholder:text-gray-400 rounded-[5px] focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent transition-all`}
+                    className={`2xl:w-[60px] 2xl:h-[60px] xl:w-[55px] xl:h-[55px] md:w-[50px] md:h-[50px] w-[45px] h-[45px] text-center text-lg font-medium border ${otpError ? "border-red-500" : "border-gray-200"
+                      } text-black placeholder:text-gray-400 rounded-[5px] focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent transition-all`}
                     aria-label={`OTP digit ${index + 1}`}
                   />
                 ))}
@@ -2060,11 +2055,10 @@ function OtpModal({ isOpen, onClose, identifier, type }) {
                 <p className="text-sm text-gray-500">
                   {"Didn't receive the code? "}
                   <button
-                    className={`font-medium transition-colors ${
-                      resendCooldown > 0
+                    className={`font-medium transition-colors ${resendCooldown > 0
                         ? "text-gray-400 cursor-not-allowed"
                         : "text-blue-600 hover:text-blue-800 hover:underline"
-                    }`}
+                      }`}
                     onClick={handleResendOtp}
                     disabled={resendCooldown > 0}
                   >

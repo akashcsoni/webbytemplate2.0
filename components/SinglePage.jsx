@@ -552,10 +552,11 @@ export default function SinglePage({ pageData }) {
                         <div className="flex items-center gap-4">
                           <div className="w-full ">
                             <button
-                              className={`w-full btn flex items-center justify-center transition-all duration-200 ${isProductInCart
+                              className={`w-full btn flex items-center justify-center transition-all duration-200 ${
+                                isProductInCart
                                   ? "btn-secondary border-2 border-primary text-primary hover:btn-primary"
                                   : "btn-primary"
-                                }`}
+                              }`}
                               onClick={handleAddToCart}
                               disabled={loading}
                             >

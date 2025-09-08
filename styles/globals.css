@@ -82,12 +82,12 @@ h1,
 
 h2,
 .h2 {
-  @apply 2xl:text-3xl xl:text-[32px] lg:text-[30px] sm:text-[28px] text-[22px] font-medium sm:leading-[45px] leading-8;
+  @apply 2xl:text-3xl xl:text-[32px] lg:text-[30px] sm:text-[28px] text-[22px] font-medium xl:leading-[45px] md:leading-[40px] sm:leading-9 leading-8;
 }
 
 h3,
 .h3 {
-  @apply 2xl:text-2xl sm:text-[23px] text-xl font-medium sm:leading-[35px] leading-[30px];
+@apply 2xl:text-2xl sm:text-[23px] text-xl font-medium 1xl:leading-[35px] sm:leading-[33px] leading-[30px];
 }
 
 h4,
