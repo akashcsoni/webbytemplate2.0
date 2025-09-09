@@ -1,7 +1,15 @@
 "use client";
 
-import React, { useRef, useState, useEffect } from "react";
-import { Tabs, Tab, Card, CardBody, Input } from "@heroui/react";
+import React, { useRef, useState, useEffect, useCallback } from "react";
+import {
+  Tabs,
+  Tab,
+  Card,
+  CardBody,
+  Input,
+  Autocomplete,
+  AutocompleteItem,
+} from "@heroui/react";
 import Link from "next/link";
 import "react-tabulator/lib/styles.css";
 import "tabulator-tables/dist/css/tabulator.min.css"; //import Tabulator stylesheet
@@ -27,6 +35,11 @@ import {
 
 import { ReactTabulator } from "react-tabulator";
 import DynamicTable from "../common/table";
+import { strapiGet, strapiPost } from "@/lib/api/strapiClient";
+import { themeConfig } from "@/config/theamConfig";
+import toast from "react-hot-toast";
+import { useAuth } from "@/contexts/AuthContext";
+import { debounce } from "lodash";
 
 const ChartContainers = ({ children, config, className }) => {
   return <div className={`bg-white p-4 ${className}`}>{children}</div>;
@@ -63,8 +76,9 @@ const TimeDropdown = ({ selectedTime, setSelectedTime }) => {
         >
           <span className="text-gray-200">{selectedTime || "This Month"}</span>
           <svg
-            className={`w-4 h-4 transform transition-transform duration-300 ${isOpen ? "rotate-180" : "rotate-0"
-              }`}
+            className={`w-4 h-4 transform transition-transform duration-300 ${
+              isOpen ? "rotate-180" : "rotate-0"
+            }`}
             fill="none"
             stroke="currentColor"
             strokeWidth="2"
@@ -85,8 +99,9 @@ const TimeDropdown = ({ selectedTime, setSelectedTime }) => {
                 <li
                   key={time}
                   onClick={() => handleTimeSelect(time)}
-                  className={`px-3 py-1.5 cursor-pointer hover:bg-primary hover:text-white text-[15px] ${selectedTime === time ? "bg-primary text-white" : ""
-                    }`}
+                  className={`px-3 py-1.5 cursor-pointer hover:bg-primary hover:text-white text-[15px] ${
+                    selectedTime === time ? "bg-primary text-white" : ""
+                  }`}
                 >
                   {time}
                 </li>
@@ -102,6 +117,20 @@ const TimeDropdown = ({ selectedTime, setSelectedTime }) => {
 
 export default function DashboardPage({ title }) {
   const [selectedTime, setSelectedTime] = useState("");
+
+  const [activePage, setActivePage] = useState(1);
+  const [filterData, setFilterData] = useState({});
+  const [SummaryOrderData, setSummaryOrderData] = useState([]);
+  const [wallet, setWallet] = useState({});
+  // console.log(wallet);
+
+  const [filteredProducts, setFilteredProducts] = useState([]);
+  // console.log(filteredProducts, "filteredProducts data");
+  const { authUser } = useAuth();
+  const formRef = useRef(null);
+
+  const loginUserId = authUser?.id;
+
   // line-chart
   const data = [
     { day: "01", sales: 120, traffic: 150 },
@@ -172,6 +201,136 @@ export default function DashboardPage({ title }) {
     );
   };
 
+  // Debounced setter using useCallback to ensure it's stable
+  const debouncedInputChange = useCallback(
+    debounce((name, value) => {
+      setFilterData((prev) => ({ ...prev, [name]: value }));
+      setActivePage(1);
+    }, 300),
+    [] // you can add dependencies if needed
+  );
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    // console.log(name);
+    // console.log(value);
+    debouncedInputChange(name, value);
+  };
+
+  const handleStatusChange = (value) => {
+    // console.log(value);
+    if (value !== undefined) {
+      setFilterData((prev) => ({ ...prev, feetype: value }));
+      setActivePage(1);
+    }
+  };
+
+  const removeFilter = (key) => {
+    setFilterData((prev) => {
+      const newData = { ...prev };
+      delete newData[key];
+      return newData;
+    });
+  };
+
+  const clearAllFilters = (e) => {
+    e.preventDefault();
+    setFilterData({});
+    if (formRef.current) {
+      formRef.current.reset();
+    }
+  };
+
+  const page_size = 10;
+
+  useEffect(() => {
+    const fetchProductData = async (id) => {
+      // console.log(id);
+      try {
+        setFilteredProducts([]);
+
+        // Prepare the payload as JSON
+        const payload = {
+          page_size,
+          ...filterData,
+        };
+
+        // Call the API using the utility function
+        const response = await strapiPost(
+          `/wallet/user/${id}/find`,
+          payload,
+          themeConfig.TOKEN
+        );
+
+        if (response.data) {
+          const productsData = response.data || [];
+
+          console.log(productsData, "productdata for amount");
+
+          // console.log(productsData, "this is for product data");
+
+          const userWallets = productsData.filter(
+            (item) => item?.vendor_id?.id === loginUserId
+          );
+
+          setFilteredProducts(userWallets);
+        }
+      } catch (err) {
+        console.error("Error fetching products:", err);
+        setFilteredProducts([]);
+      }
+    };
+
+    if (authUser?.documentId) {
+      fetchProductData(authUser?.documentId);
+    }
+  }, [filterData, authUser, activePage]);
+
+  useEffect(() => {
+    const fetchSummaryProductData = async (id) => {
+      // console.log(id);
+      try {
+        // setFilteredProducts([]);
+
+        // Prepare the payload as JSON
+        const payload = {
+          page_size,
+          ...filterData,
+        };
+
+        // Call the API using the utility function
+        const response = await strapiPost(
+          `/orders/products/2`,
+          payload,
+          themeConfig.TOKEN
+        );
+
+        // console.log(response, "this is for checkingresponse");
+
+        setSummaryOrderData(response);
+
+        if (response.data) {
+          const productsData = response || [];
+
+          console.log(productsData, "this is for summmary product data");
+
+          // const userWallets = productsData.filter(
+          //   (item) => item?.vendor_id?.id === loginUserId
+          // );
+
+          // setFilteredProducts(userWallets);
+        }
+      } catch (err) {
+        console.error("Error fetching products:", err);
+        // setFilteredProducts([]);
+      }
+    };
+
+    if (authUser?.documentId) {
+      fetchSummaryProductData(authUser?.documentId);
+    }
+  }, [filterData, authUser, activePage]);
+
   const CustomLegend = (props) => {
     const { payload } = props;
 
@@ -190,8 +349,108 @@ export default function DashboardPage({ title }) {
     );
   };
 
+  // const getWalletData = async (userId) => {
+  //   try {
+  //     const walletData = await strapiGet(`wallets`, {
+  //       params: { populate: "*" },
+  //       token: themeConfig.TOKEN,
+  //     });
+
+  //     console.log(walletData, "wallet data");
+
+  //     const allWallets = walletData || [];
+
+  //     const userWallets = allWallets.filter(
+  //       (item) => item?.vendor_id?.id === userId
+  //     );
+
+  //     setwalletData(userWallets);
+  //   } catch (error) {
+  //     toast.error("Failed to load product data.");
+  //     console.log(error);
+  //   }
+  // };
+
+  // useEffect(() => {
+  //   if (loginUserId) {
+  //     getWalletData(loginUserId);
+  //   }
+  // }, [loginUserId]);
+
   // table
   const columns = [
+    {
+      title: "No.",
+      field: "no",
+      hozAlign: "center",
+      width: 50,
+      formatter: function (cell) {
+        return `<div class="number">${cell.getValue()}</div>`;
+      },
+    },
+    {
+      title: "Date",
+      field: "date",
+      hozAlign: "center",
+      widthGrow: 2,
+    },
+    {
+      title: "Order ID",
+      field: "order_id",
+      hozAlign: "center",
+      widthGrow: 2,
+    },
+    {
+      title: "Type",
+      field: "type",
+      hozAlign: "center",
+      widthGrow: 2,
+    },
+    {
+      title: "Product Name",
+      field: "product",
+      hozAlign: "center",
+      widthGrow: 2,
+    },
+    { title: "Price", field: "price", hozAlign: "center", widthGrow: 1.5 },
+    { title: "Amount", field: "amount", hozAlign: "center", widthGrow: 1.5 },
+  ];
+
+  const tableData = filteredProducts.map((item, index) => ({
+    no: index + 1,
+    date: new Date(item.createdAt).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    }),
+    order_id: item.order_id?.documentId || "N/A",
+    type: item?.for || "N/A",
+    product: item?.product_id?.title, // static for now
+    price: `$${item.amounts?.toFixed(2) || "0.00"}`,
+    amount: `$${item.amounts?.toFixed(2) || "0.00"}`,
+  }));
+
+  const statuses = [
+    {
+      label: "Author Fee",
+      value: "author fee",
+      color: "text-primary",
+    },
+    {
+      label: "Sell",
+      value: "sell",
+      color: "text-[#ED9A12]",
+    },
+    {
+      label: "Payout",
+      value: "payout",
+      color: "text-[#257C65]",
+    },
+  ];
+
+  // order summary logic
+
+  const summarycolums = [
     {
       title: "No.",
       field: "no",
@@ -207,112 +466,85 @@ export default function DashboardPage({ title }) {
       hozAlign: "center",
       widthGrow: 2,
     },
-    { title: "Buyer Name", field: "buyer", hozAlign: "center", widthGrow: 1 },
     {
-      title: "License Type",
-      field: "license",
+      title: "Buyer Name",
+      field: "buyer",
       hozAlign: "center",
-      widthGrow: 1.5,
+      widthGrow: 2,
+    },
+    {
+      title: "License-Type",
+      field: "liIcense",
+      hozAlign: "center",
+      widthGrow: 2,
     },
     { title: "Price", field: "price", hozAlign: "center", widthGrow: 1.5 },
-    { title: "Date Sold", field: "date", hozAlign: "center" },
+    {
+      title: "Date-Sold",
+      field: "date",
+      hozAlign: "center",
+      widthGrow: 2,
+    },
     {
       title: "Status",
       field: "status",
       hozAlign: "center",
-      width: 100,
-      formatter: function (cell) {
-        const value = cell.getValue();
-        const style =
-          value === "Completed"
-            ? "bg-emerald-100 text-emerald-700"
-            : "bg-red-100 text-red-600";
-        return `<span class="px-3 py-1 text-xs font-medium rounded-full ${style}">${value}</span>`;
-      },
+      widthGrow: 2,
     },
-    { title: "Earnings", field: "earnings", hozAlign: "center" },
   ];
-  // table data
-  const recent_selling_products_data = [
+
+  const tableSummaryData = SummaryOrderData.map((item, index) => ({
+    no: index + 1,
+    date: new Date(item?.date_sold).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    }),
+    product: item?.productTitle, // static for now
+    buyer: item?.buyer_name,
+    liIcense: item?.license_title,
+    status: item?.status,
+    price: `$${item?.price?.toFixed(2) || "0.00"}`,
+    // order_id: item.order_id?.documentId || "N/A",
+    // type: item?.for || "N/A",
+    // amount: `$${item.amounts?.toFixed(2) || "0.00"}`,
+  }));
+
+  const getUserData = async () => {
+    // console.log(authToken, "authtoken");
+    const userData = await strapiGet(`users/2`, {
+      params: { populate: "*" },
+      token: themeConfig.TOKEN,
+    });
+
+    // console.log(userData);
+    setWallet(userData?.wallet_setting);
+    // const userDataById = await strapiGet(`users/me`, {
+    //   params: { populate: "*" },
+    //   token: authToken,
+    // });
+  };
+
+  useEffect(() => {
+    getUserData();
+  }, []);
+
+  const WalletSetting = [
     {
-      no: 1,
-      product: "Modern Portfolio Template",
-      buyer: "Sarah J.",
-      license: "Regular License",
-      price: "$19.00",
-      date: "Apr 20, 2025",
-      status: "Completed",
-      earnings: "$15.20",
+      title: "Open Amount",
+      value: wallet?.open_amount,
     },
     {
-      no: 2,
-      product: "eCommerce UI Kit",
-      buyer: "Mark T.",
-      license: "Extended License",
-      price: "$120.00",
-      date: "Apr 19, 2025",
-      status: "Completed",
-      earnings: "$96.00",
+      title: "Review Amount",
+      value: wallet?.review_amount,
     },
     {
-      no: 3,
-      product: "Minimal Blog Template",
-      buyer: "Laura K.",
-      license: "Regular License",
-      price: "$15.00",
-      date: "Apr 19, 2025",
-      status: "Refunded",
-      earnings: "$0.00",
+      title: "Hold Amount",
+      value: wallet?.hold_amount,
     },
     {
-      no: 4,
-      product: "Dashboard Admin Panel",
-      buyer: "DevCorp Ltd.",
-      license: "Extended License",
-      price: "$150.00",
-      date: "Apr 18, 2025",
-      status: "Completed",
-      earnings: "$120.00",
-    },
-    {
-      no: 7,
-      product: "Creative Agency Template",
-      buyer: "Alan W.",
-      license: "Regular License",
-      price: "$22.00",
-      date: "Apr 16, 2025",
-      status: "Completed",
-      earnings: "$17.60",
-    },
-    {
-      no: 6,
-      product: "Multi-Purpose Template Pack",
-      buyer: "Emma G.",
-      license: "Regular License",
-      price: "$25.00",
-      date: "Apr 16, 2025",
-      status: "Completed",
-      earnings: "$20.00",
-    },
-    {
-      no: 5,
-      product: "Startup Landing Page",
-      buyer: "Jason B.",
-      license: "Regular License",
-      price: "$17.00",
-      date: "Apr 17, 2025",
-      status: "Refunded",
-      earnings: "$0.00",
-    },
-    {
-      no: 8,
-      product: "Crypto Dashboard UI",
-      buyer: "Binance Labs",
-      license: "Extended License",
-      price: "$180.00",
-      date: "Apr 15, 2025",
-      status: "Completed",
-      earnings: "$144.00",
+      title: "Refund Amount",
+      value: wallet?.refund_amount,
     },
   ];
 
@@ -352,87 +584,42 @@ export default function DashboardPage({ title }) {
                         </p>
                       </div>
                       <div className="flex flex-wrap lg:flex-nowrap lg:divide-x divide-primary/10 2xl:py-7 lg:py-6 2xl:px-5 lg:px-4">
-                        <div className="w-full sm:w-1/2 lg:w-[23%] sm:p-4 p-3 lg:py-0">
-                          <div className="flex flex-col gap-2">
-                            <p className="p2">This month</p>
-                            <div className="flex items-center justify-between w-full">
-                              <p className="font-bold text-black">
-                                $12,256,000
-                              </p>
-                              <div className="flex items-center gap-[3px]">
-                                <svg
-                                  xmlns="http://www.w3.org/2000/svg"
-                                  width="22"
-                                  height="22"
-                                  viewBox="0 0 22 22"
-                                  fill="none"
-                                >
-                                  <path
-                                    d="M7.7474 7.75V4.5C7.7474 2.70507 9.20247 1.25 10.9974 1.25C12.7923 1.25 14.2474 2.70507 14.2474 4.5V7.75M4.4974 5.58333H17.4974L18.5807 19.6667H3.41406L4.4974 5.58333Z"
-                                    stroke="#0156D5"
-                                    strokeWidth="1.5"
-                                    strokeLinecap="round"
-                                  />
-                                </svg>
-                                <p className="p2">960</p>
+                        {WalletSetting &&
+                          WalletSetting.map((data, index) => {
+                            // console.log(data?.value);
+                            return (
+                              <div
+                                className="w-full sm:w-1/2 lg:w-[23%] sm:p-4 p-3 lg:py-0"
+                                key={index}
+                              >
+                                <div className="flex flex-col gap-2">
+                                  <p className="p2">{data?.title}</p>
+                                  <div className="flex items-center justify-between w-full">
+                                    <p className="font-bold text-black">
+                                      ${data?.value}
+                                    </p>
+                                    <div className="flex items-center gap-[3px]">
+                                      <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        width="22"
+                                        height="22"
+                                        viewBox="0 0 22 22"
+                                        fill="none"
+                                      >
+                                        <path
+                                          d="M7.7474 7.75V4.5C7.7474 2.70507 9.20247 1.25 10.9974 1.25C12.7923 1.25 14.2474 2.70507 14.2474 4.5V7.75M4.4974 5.58333H17.4974L18.5807 19.6667H3.41406L4.4974 5.58333Z"
+                                          stroke="#0156D5"
+                                          strokeWidth="1.5"
+                                          strokeLinecap="round"
+                                        />
+                                      </svg>
+                                      <p className="p2">960</p>
+                                    </div>
+                                  </div>
+                                </div>
                               </div>
-                            </div>
-                          </div>
-                        </div>
-
-                        <div className="w-full sm:w-1/2 lg:w-[25%] sm:p-4 p-3 lg:py-0 lg:pl-4 lg:border-0 sm:border-l sm:border-t-0 border-t border-primary/10">
-                          <div className="flex flex-col gap-2">
-                            <p className="p2">Last 30 days</p>
-                            <div className="flex items-center justify-between w-full">
-                              <p className="font-bold text-black">$60,561.55</p>
-                              <div className="flex items-center gap-[3px]">
-                                <svg
-                                  xmlns="http://www.w3.org/2000/svg"
-                                  width="22"
-                                  height="22"
-                                  viewBox="0 0 22 22"
-                                  fill="none"
-                                >
-                                  <path
-                                    d="M7.7474 7.75V4.5C7.7474 2.70507 9.20247 1.25 10.9974 1.25C12.7923 1.25 14.2474 2.70507 14.2474 4.5V7.75M4.4974 5.58333H17.4974L18.5807 19.6667H3.41406L4.4974 5.58333Z"
-                                    stroke="#0156D5"
-                                    strokeWidth="1.5"
-                                    strokeLinecap="round"
-                                  />
-                                </svg>
-                                <p className="p2">719</p>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-
-                        <div className="w-full sm:w-1/2 lg:w-[25%] sm:p-4 p-3 lg:py-0 lg:pl-4 lg:border-0 border-t border-primary/10">
-                          <div className="flex flex-col gap-2">
-                            <p className="p2">Total Earnings</p>
-                            <div className="flex items-center justify-between w-full">
-                              <p className="font-bold text-black">
-                                $32,158.377
-                              </p>
-                              <div className="flex items-center gap-[3px]">
-                                <svg
-                                  xmlns="http://www.w3.org/2000/svg"
-                                  width="22"
-                                  height="22"
-                                  viewBox="0 0 22 22"
-                                  fill="none"
-                                >
-                                  <path
-                                    d="M7.7474 7.75V4.5C7.7474 2.70507 9.20247 1.25 10.9974 1.25C12.7923 1.25 14.2474 2.70507 14.2474 4.5V7.75M4.4974 5.58333H17.4974L18.5807 19.6667H3.41406L4.4974 5.58333Z"
-                                    stroke="#0156D5"
-                                    strokeWidth="1.5"
-                                    strokeLinecap="round"
-                                  />
-                                </svg>
-                                <p className="p2">523</p>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
+                            );
+                          })}
 
                         <div className="w-full sm:w-1/2 lg:w-[28%] sm:p-4 p-3 lg:py-0 lg:pl-4 lg:border-0 sm:border-l border-t border-primary/10">
                           <div className="flex items-center justify-between w-full">
@@ -626,10 +813,10 @@ export default function DashboardPage({ title }) {
                         </div>
                       </div>
 
-                      <div className="bg-white rounded-md shadow overflow-x-auto md:py-5 py-4">
+                      <div className="bg-white rounded-md shadow overflow-x-auto">
                         <DynamicTable
-                          data={recent_selling_products_data}
-                          columns={columns}
+                          data={tableSummaryData}
+                          columns={summarycolums}
                         />
                       </div>
                     </div>
@@ -641,11 +828,14 @@ export default function DashboardPage({ title }) {
               <Card>
                 <CardBody>
                   {/* Filter Fields */}
-                  <div className="grid items-end lg:grid-cols-3 sm:grid-cols-2 grid-cols-1 gap-4 sm:px-5 px-4 pt-[18px]">
+                  <form
+                    ref={formRef}
+                    className="grid items-end lg:grid-cols-3 sm:grid-cols-2 grid-cols-1 gap-4 sm:px-5 px-4 pt-[18px]"
+                  >
                     <div>
                       <Input
                         isRequired={false}
-                        name="orderId"
+                        name="orderid"
                         classNames={{
                           input:
                             "xl:!text-base sm:!text-sm placeholder:!text-gray-300 placeholder:!font-light",
@@ -654,6 +844,7 @@ export default function DashboardPage({ title }) {
                           label:
                             "2xl:text-base md:text-[15px] sm:text-sm !text-black block !pb-1 !font-normal",
                         }}
+                        onChange={handleInputChange}
                         label="Order Id "
                         labelPlacement="outside"
                         placeholder="Enter order id"
@@ -664,7 +855,7 @@ export default function DashboardPage({ title }) {
                     <div>
                       <Input
                         isRequired={false}
-                        name="product"
+                        name="search"
                         classNames={{
                           input:
                             "xl:!text-base sm:!text-sm placeholder:!text-gray-300 placeholder:!font-light",
@@ -673,98 +864,126 @@ export default function DashboardPage({ title }) {
                           label:
                             "2xl:text-base md:text-[15px] sm:text-sm !text-black block !pb-1 !font-normal",
                         }}
-                        label="Product Name or Number"
+                        onChange={handleInputChange}
+                        label="Product Name"
                         labelPlacement="outside"
                         placeholder="Enter product name"
                         type="text"
                         variant="bordered"
                       />
                     </div>
-                  </div>
+                    <div>
+                      <Autocomplete
+                        name="feetype"
+                        className="!bg-white custom-auto-complete"
+                        classNames={{
+                          mainWrapper: "!bg-white",
+                          innerWrapper:
+                            "border !border-gray-100 !bg-white 2xl:py-[11px] py-[10px] rounded-[5px] 1xl:px-5 px-3 w-full cursor-pointer flex justify-between items-center",
+                          input:
+                            "!2xl:text-base md:text-[15px] sm:text-sm !text-gray-300 placeholder:text-gray-300",
+                          inputWrapper: "!bg-transparent",
+                        }}
+                        label="State"
+                        items={statuses}
+                        labelPlacement="outside"
+                        placeholder="Select State"
+                        // selectedKey={filterData?.status || ""}
+                        onSelectionChange={handleStatusChange}
+                      >
+                        {(item) => (
+                          <AutocompleteItem key={item.value} value={item.value}>
+                            {item.label}
+                          </AutocompleteItem>
+                        )}
+                      </Autocomplete>
+                    </div>
+                  </form>
 
                   {/* Filter tags */}
-                  <div className="flex items-center justify-start w-full gap-2 sm:px-5 px-4 flex-wrap py-[26px]">
-                    <p className=" 2xl:text-base 1xl:text-[15px] text-sm leading-5  !text-black">
-                      Applied Filters:
-                    </p>
-                    <div className="flex items-center justify-center divide-x divide-primary/10 bg-blue-300 border border-primary/10 p-[1px] rounded-[4px] flex-shrink-0">
-                      <p className=" 2xl:text-base 1xl:text-[15px] text-sm leading-5 text-gray-200 sm:px-2 px-1">
-                        Order Id: <span className="!text-black"> #67890</span>
-                      </p>
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="27"
-                        height="27"
-                        viewBox="0 0 9 9"
-                        fill="none"
-                        className="px-2 flex-shrink-0 cursor-pointer"
-                      >
-                        <path
-                          d="M8.80065 0.206172C8.7375 0.142889 8.66249 0.0926821 8.5799 0.0584261C8.49732 0.02417 8.40879 0.00653721 8.31939 0.00653721C8.22999 0.00653721 8.14146 0.02417 8.05888 0.0584261C7.97629 0.0926821 7.90128 0.142889 7.83813 0.206172L4.5 3.53747L1.16187 0.199346C1.09867 0.136145 1.02364 0.086012 0.941068 0.0518081C0.858492 0.0176043 0.769989 6.65925e-10 0.68061 0C0.591231 -6.65925e-10 0.502727 0.0176043 0.420151 0.0518081C0.337576 0.086012 0.262546 0.136145 0.199346 0.199346C0.136145 0.262546 0.086012 0.337576 0.0518081 0.420151C0.0176043 0.502727 -6.65925e-10 0.591231 0 0.68061C6.65925e-10 0.769989 0.0176043 0.858492 0.0518081 0.941068C0.086012 1.02364 0.136145 1.09867 0.199346 1.16187L3.53747 4.5L0.199346 7.83813C0.136145 7.90133 0.086012 7.97636 0.0518081 8.05893C0.0176043 8.14151 0 8.23001 0 8.31939C0 8.40877 0.0176043 8.49727 0.0518081 8.57985C0.086012 8.66242 0.136145 8.73745 0.199346 8.80065C0.262546 8.86385 0.337576 8.91399 0.420151 8.94819C0.502727 8.9824 0.591231 9 0.68061 9C0.769989 9 0.858492 8.9824 0.941068 8.94819C1.02364 8.91399 1.09867 8.86385 1.16187 8.80065L4.5 5.46253L7.83813 8.80065C7.90133 8.86385 7.97636 8.91399 8.05893 8.94819C8.14151 8.9824 8.23001 9 8.31939 9C8.40877 9 8.49727 8.9824 8.57985 8.94819C8.66242 8.91399 8.73745 8.86385 8.80065 8.80065C8.86385 8.73745 8.91399 8.66242 8.94819 8.57985C8.9824 8.49727 9 8.40877 9 8.31939C9 8.23001 8.9824 8.14151 8.94819 8.05893C8.91399 7.97636 8.86385 7.90133 8.80065 7.83813L5.46253 4.5L8.80065 1.16187C9.06006 0.902469 9.06006 0.465577 8.80065 0.206172Z"
-                          fill="black"
-                        />
-                      </svg>
-                    </div>
-                    <div className="flex items-center justify-center divide-x divide-primary/10 bg-blue-300 border border-primary/10 p-[1px] rounded-[4px] flex-shrink-0">
-                      <p className=" 2xl:text-base 1xl:text-[15px] text-sm leading-5 text-gray-200 sm:px-2 px-1">
-                        P. Name/No:{" "}
-                        <span className="!text-black">QuickBasket</span>
-                      </p>
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="27"
-                        height="27"
-                        viewBox="0 0 9 9"
-                        fill="none"
-                        className="px-2 flex-shrink-0 cursor-pointer"
-                      >
-                        <path
-                          d="M8.80065 0.206172C8.7375 0.142889 8.66249 0.0926821 8.5799 0.0584261C8.49732 0.02417 8.40879 0.00653721 8.31939 0.00653721C8.22999 0.00653721 8.14146 0.02417 8.05888 0.0584261C7.97629 0.0926821 7.90128 0.142889 7.83813 0.206172L4.5 3.53747L1.16187 0.199346C1.09867 0.136145 1.02364 0.086012 0.941068 0.0518081C0.858492 0.0176043 0.769989 6.65925e-10 0.68061 0C0.591231 -6.65925e-10 0.502727 0.0176043 0.420151 0.0518081C0.337576 0.086012 0.262546 0.136145 0.199346 0.199346C0.136145 0.262546 0.086012 0.337576 0.0518081 0.420151C0.0176043 0.502727 -6.65925e-10 0.591231 0 0.68061C6.65925e-10 0.769989 0.0176043 0.858492 0.0518081 0.941068C0.086012 1.02364 0.136145 1.09867 0.199346 1.16187L3.53747 4.5L0.199346 7.83813C0.136145 7.90133 0.086012 7.97636 0.0518081 8.05893C0.0176043 8.14151 0 8.23001 0 8.31939C0 8.40877 0.0176043 8.49727 0.0518081 8.57985C0.086012 8.66242 0.136145 8.73745 0.199346 8.80065C0.262546 8.86385 0.337576 8.91399 0.420151 8.94819C0.502727 8.9824 0.591231 9 0.68061 9C0.769989 9 0.858492 8.9824 0.941068 8.94819C1.02364 8.91399 1.09867 8.86385 1.16187 8.80065L4.5 5.46253L7.83813 8.80065C7.90133 8.86385 7.97636 8.91399 8.05893 8.94819C8.14151 8.9824 8.23001 9 8.31939 9C8.40877 9 8.49727 8.9824 8.57985 8.94819C8.66242 8.91399 8.73745 8.86385 8.80065 8.80065C8.86385 8.73745 8.91399 8.66242 8.94819 8.57985C8.9824 8.49727 9 8.40877 9 8.31939C9 8.23001 8.9824 8.14151 8.94819 8.05893C8.91399 7.97636 8.86385 7.90133 8.80065 7.83813L5.46253 4.5L8.80065 1.16187C9.06006 0.902469 9.06006 0.465577 8.80065 0.206172Z"
-                          fill="black"
-                        />
-                      </svg>
-                    </div>
-                    <div className="flex items-center justify-center divide-x divide-primary/10 bg-blue-300 border border-primary/10 p-[1px] rounded-[4px] flex-shrink-0">
-                      <p className=" 2xl:text-base 1xl:text-[15px] text-sm leading-5 text-gray-200 sm:px-2 px-1">
-                        Date: <span className="!text-black">2 march, 2025</span>
-                      </p>
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="27"
-                        height="27"
-                        viewBox="0 0 9 9"
-                        fill="none"
-                        className="px-2 flex-shrink-0 cursor-pointer"
-                      >
-                        <path
-                          d="M8.80065 0.206172C8.7375 0.142889 8.66249 0.0926821 8.5799 0.0584261C8.49732 0.02417 8.40879 0.00653721 8.31939 0.00653721C8.22999 0.00653721 8.14146 0.02417 8.05888 0.0584261C7.97629 0.0926821 7.90128 0.142889 7.83813 0.206172L4.5 3.53747L1.16187 0.199346C1.09867 0.136145 1.02364 0.086012 0.941068 0.0518081C0.858492 0.0176043 0.769989 6.65925e-10 0.68061 0C0.591231 -6.65925e-10 0.502727 0.0176043 0.420151 0.0518081C0.337576 0.086012 0.262546 0.136145 0.199346 0.199346C0.136145 0.262546 0.086012 0.337576 0.0518081 0.420151C0.0176043 0.502727 -6.65925e-10 0.591231 0 0.68061C6.65925e-10 0.769989 0.0176043 0.858492 0.0518081 0.941068C0.086012 1.02364 0.136145 1.09867 0.199346 1.16187L3.53747 4.5L0.199346 7.83813C0.136145 7.90133 0.086012 7.97636 0.0518081 8.05893C0.0176043 8.14151 0 8.23001 0 8.31939C0 8.40877 0.0176043 8.49727 0.0518081 8.57985C0.086012 8.66242 0.136145 8.73745 0.199346 8.80065C0.262546 8.86385 0.337576 8.91399 0.420151 8.94819C0.502727 8.9824 0.591231 9 0.68061 9C0.769989 9 0.858492 8.9824 0.941068 8.94819C1.02364 8.91399 1.09867 8.86385 1.16187 8.80065L4.5 5.46253L7.83813 8.80065C7.90133 8.86385 7.97636 8.91399 8.05893 8.94819C8.14151 8.9824 8.23001 9 8.31939 9C8.40877 9 8.49727 8.9824 8.57985 8.94819C8.66242 8.91399 8.73745 8.86385 8.80065 8.80065C8.86385 8.73745 8.91399 8.66242 8.94819 8.57985C8.9824 8.49727 9 8.40877 9 8.31939C9 8.23001 8.9824 8.14151 8.94819 8.05893C8.91399 7.97636 8.86385 7.90133 8.80065 7.83813L5.46253 4.5L8.80065 1.16187C9.06006 0.902469 9.06006 0.465577 8.80065 0.206172Z"
-                          fill="black"
-                        />
-                      </svg>
-                    </div>
-                    <Link
-                      href="javascript:;"
-                      className="2xl:!text-base sm:!text-[15px] !text-sm all-btn inline-flex items-center border-b border-transparent hover:border-primary gap-2 hover:opaimages-100"
-                    >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="9"
-                        height="9"
-                        viewBox="0 0 9 9"
-                        fill="none"
-                      >
-                        <path
-                          d="M8.80065 0.206172C8.7375 0.142889 8.66249 0.0926821 8.5799 0.0584261C8.49732 0.02417 8.40879 0.00653721 8.31939 0.00653721C8.22999 0.00653721 8.14146 0.02417 8.05888 0.0584261C7.97629 0.0926821 7.90128 0.142889 7.83813 0.206172L4.5 3.53747L1.16187 0.199346C1.09867 0.136145 1.02364 0.086012 0.941068 0.0518081C0.858492 0.0176043 0.769989 6.65925e-10 0.68061 0C0.591231 -6.65925e-10 0.502727 0.0176043 0.420151 0.0518081C0.337576 0.086012 0.262546 0.136145 0.199346 0.199346C0.136145 0.262546 0.086012 0.337576 0.0518081 0.420151C0.0176043 0.502727 -6.65925e-10 0.591231 0 0.68061C6.65925e-10 0.769989 0.0176043 0.858492 0.0518081 0.941068C0.086012 1.02364 0.136145 1.09867 0.199346 1.16187L3.53747 4.5L0.199346 7.83813C0.136145 7.90133 0.086012 7.97636 0.0518081 8.05893C0.0176043 8.14151 0 8.23001 0 8.31939C0 8.40877 0.0176043 8.49727 0.0518081 8.57985C0.086012 8.66242 0.136145 8.73745 0.199346 8.80065C0.262546 8.86385 0.337576 8.91399 0.420151 8.94819C0.502727 8.9824 0.591231 9 0.68061 9C0.769989 9 0.858492 8.9824 0.941068 8.94819C1.02364 8.91399 1.09867 8.86385 1.16187 8.80065L4.5 5.46253L7.83813 8.80065C7.90133 8.86385 7.97636 8.91399 8.05893 8.94819C8.14151 8.9824 8.23001 9 8.31939 9C8.40877 9 8.49727 8.9824 8.57985 8.94819C8.66242 8.91399 8.73745 8.86385 8.80065 8.80065C8.86385 8.73745 8.91399 8.66242 8.94819 8.57985C8.9824 8.49727 9 8.40877 9 8.31939C9 8.23001 8.9824 8.14151 8.94819 8.05893C8.91399 7.97636 8.86385 7.90133 8.80065 7.83813L5.46253 4.5L8.80065 1.16187C9.06006 0.902469 9.06006 0.465577 8.80065 0.206172Z"
-                          fill="#0156D5"
-                        />
-                      </svg>
-                      Clear All
-                    </Link>
-                  </div>
+
+                  {filterData &&
+                    Object.values(filterData).some(
+                      (value) =>
+                        value !== null && value !== "" && value !== undefined
+                    ) && (
+                      <div className="flex items-center justify-start w-full gap-2 sm:px-5 px-4 flex-wrap py-[26px]">
+                        <p className=" 2xl:text-base 1xl:text-[15px] text-sm leading-5  !text-black">
+                          Applied Filters:
+                        </p>
+
+                        {Object.entries(filterData).map(([key, value]) => {
+                          if (
+                            !value ||
+                            value === undefined ||
+                            value === null ||
+                            value === ""
+                          )
+                            return null;
+                          return (
+                            <div
+                              key={key}
+                              className="flex items-center justify-center divide-x divide-primary/10 bg-blue-300 border border-primary/10 p-[1px] rounded-[4px] flex-shrink-0"
+                            >
+                              <p className="2xl:text-base 1xl:text-[15px] text-sm leading-5 text-gray-200 sm:px-2 px-1">
+                                {key}:{" "}
+                                <span className="!text-black">{value}</span>
+                              </p>
+                              <button onClick={() => removeFilter(key)}>
+                                <svg
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  width="27"
+                                  height="27"
+                                  viewBox="0 0 9 9"
+                                  fill="none"
+                                  className="px-2 flex-shrink-0 cursor-pointer"
+                                >
+                                  <path
+                                    d="M8.80065 0.206172C8.7375 0.142889 8.66249 0.0926821 8.5799 0.0584261C8.49732 0.02417 8.40879 0.00653721 8.31939 0.00653721C8.22999 0.00653721 8.14146 0.02417 8.05888 0.0584261C7.97629 0.0926821 7.90128 0.142889 7.83813 0.206172L4.5 3.53747L1.16187 0.199346C1.09867 0.136145 1.02364 0.086012 0.941068 0.0518081C0.858492 0.0176043 0.769989 6.65925e-10 0.68061 0C0.591231 -6.65925e-10 0.502727 0.0176043 0.420151 0.0518081C0.337576 0.086012 0.262546 0.136145 0.199346 0.199346C0.136145 0.262546 0.086012 0.337576 0.0518081 0.420151C0.0176043 0.502727 -6.65925e-10 0.591231 0 0.68061C6.65925e-10 0.769989 0.0176043 0.858492 0.0518081 0.941068C0.086012 1.02364 0.136145 1.09867 0.199346 1.16187L3.53747 4.5L0.199346 7.83813C0.136145 7.90133 0.086012 7.97636 0.0518081 8.05893C0.0176043 8.14151 0 8.23001 0 8.31939C0 8.40877 0.0176043 8.49727 0.0518081 8.57985C0.086012 8.66242 0.136145 8.73745 0.199346 8.80065C0.262546 8.86385 0.337576 8.91399 0.420151 8.94819C0.502727 8.9824 0.591231 9 0.68061 9C0.769989 9 0.858492 8.9824 0.941068 8.94819C1.02364 8.91399 1.09867 8.86385 1.16187 8.80065L4.5 5.46253L7.83813 8.80065C7.90133 8.86385 7.97636 8.91399 8.05893 8.94819C8.14151 8.9824 8.23001 9 8.31939 9C8.40877 9 8.49727 8.9824 8.57985 8.94819C8.66242 8.91399 8.73745 8.86385 8.80065 8.80065C8.86385 8.73745 8.91399 8.66242 8.94819 8.57985C8.9824 8.49727 9 8.40877 9 8.31939C9 8.23001 8.9824 8.14151 8.94819 8.05893C8.91399 7.97636 8.86385 7.90133 8.80065 7.83813L5.46253 4.5L8.80065 1.16187C9.06006 0.902469 9.06006 0.465577 8.80065 0.206172Z"
+                                    fill="black"
+                                  />
+                                </svg>
+                              </button>
+                            </div>
+                          );
+                        })}
+
+                        <Link
+                          href="/"
+                          onClick={clearAllFilters}
+                          className="2xl:!text-base sm:!text-[15px] !text-sm all-btn inline-flex items-center border-b border-transparent hover:border-primary gap-2 hover:opacity-100"
+                        >
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="9"
+                            height="9"
+                            viewBox="0 0 9 9"
+                            fill="none"
+                          >
+                            <path
+                              d="M8.80065 0.206172C8.7375 0.142889 8.66249 0.0926821 8.5799 0.0584261C8.49732 0.02417 8.40879 0.00653721 8.31939 0.00653721C8.22999 0.00653721 8.14146 0.02417 8.05888 0.0584261C7.97629 0.0926821 7.90128 0.142889 7.83813 0.206172L4.5 3.53747L1.16187 0.199346C1.09867 0.136145 1.02364 0.086012 0.941068 0.0518081C0.858492 0.0176043 0.769989 6.65925e-10 0.68061 0C0.591231 -6.65925e-10 0.502727 0.0176043 0.420151 0.0518081C0.337576 0.086012 0.262546 0.136145 0.199346 0.199346C0.136145 0.262546 0.086012 0.337576 0.0518081 0.420151C0.0176043 0.502727 -6.65925e-10 0.591231 0 0.68061C6.65925e-10 0.769989 0.0176043 0.858492 0.0518081 0.941068C0.086012 1.02364 0.136145 1.09867 0.199346 1.16187L3.53747 4.5L0.199346 7.83813C0.136145 7.90133 0.086012 7.97636 0.0518081 8.05893C0.0176043 8.14151 0 8.23001 0 8.31939C0 8.40877 0.0176043 8.49727 0.0518081 8.57985C0.086012 8.66242 0.136145 8.73745 0.199346 8.80065C0.262546 8.86385 0.337576 8.91399 0.420151 8.94819C0.502727 8.9824 0.591231 9 0.68061 9C0.769989 9 0.858492 8.9824 0.941068 8.94819C1.02364 8.91399 1.09867 8.86385 1.16187 8.80065L4.5 5.46253L7.83813 8.80065C7.90133 8.86385 7.97636 8.91399 8.05893 8.94819C8.14151 8.9824 8.23001 9 8.31939 9C8.40877 9 8.49727 8.9824 8.57985 8.94819C8.66242 8.91399 8.73745 8.86385 8.80065 8.80065C8.86385 8.73745 8.91399 8.66242 8.94819 8.57985C8.9824 8.49727 9 8.40877 9 8.31939C9 8.23001 8.9824 8.14151 8.94819 8.05893C8.91399 7.97636 8.86385 7.90133 8.80065 7.83813L5.46253 4.5L8.80065 1.16187C9.06006 0.902469 9.06006 0.465577 8.80065 0.206172Z"
+                              fill="#0156D5"
+                            />
+                          </svg>{" "}
+                          Clear All
+                        </Link>
+                      </div>
+                    )}
 
                   <DynamicTable
-                    data={recent_selling_products_data}
+                    data={tableData}
                     columns={columns}
+                    options={{
+                      responsiveLayout: true,
+                      rowHeader: {
+                        formatter: "rownum",
+                        headerSort: false,
+                        hozAlign: "center",
+                        resizable: false,
+                        frozen: true,
+                      },
+                    }}
+                    className="pt-5"
                   />
                 </CardBody>
               </Card>
