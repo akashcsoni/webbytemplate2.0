@@ -6,6 +6,7 @@ import {
   DropdownMenu,
   DropdownItem,
   Button,
+  Skeleton,
 } from "@heroui/react";
 import { strapiPost } from "@/lib/api/strapiClient";
 import { NO_FOUND_PRODUCT_GRID_IMAGE, themeConfig } from "@/config/theamConfig";
@@ -121,17 +122,75 @@ const page = ({ params }) => {
       <div className="container">
         {loading ? (
           <>
-            <div className="flex items-center space-x-4">
-              <div className="w-[70px] h-[70px] rounded-full bg-gray-200/30 animate-pulse"></div>
-              <div className="flex flex-col gap-2">
-                <div className="h-4 w-32 bg-gray-200/30 rounded animate-pulse"></div>
-                <div className="h-3 w-20 bg-gray-200/30 rounded animate-pulse"></div>
+            <div className="flex items-center text-sm xl:mb-[14px] mb-3 gap-2">
+              <Skeleton className="h-4 w-16 rounded" /> {/* Home link */}
+              <Skeleton className="h-4 w-4 rounded" /> {/* arrow icon */}
+              <Skeleton className="h-4 w-24 rounded" /> {/* Author name */}
+            </div>
+
+            {/* Author info */}
+            <div className="flex items-stretch lg:gap-[22px] gap-4 sm:flex-row flex-col">
+              <Skeleton className="rounded-full 2xl:w-[90px] 2xl:h-[90px] xl:w-20 xl:h-20 w-[70px] h-[70px]" />
+
+              <div className="flex flex-col justify-between gap-1 flex-1">
+                <Skeleton className="h-6 w-48 rounded" /> {/* Author name */}
+                <div className="flex items-center gap-4 flex-wrap">
+                  <Skeleton className="h-3 w-32 rounded" /> {/* joined date */}
+                  <Skeleton className="h-6 w-20 rounded" />{" "}
+                  {/* total sales badge */}
+                </div>
               </div>
             </div>
 
+            {/* Author description */}
+            <Skeleton className="h-4 w-full rounded mt-4" />
+
+            {/* Categories / dropdown menus */}
+            <div className="flex items-center justify-between w-full sm:flex-row flex-col gap-4 mt-[42px]">
+              <div className="flex flex-wrap gap-3 mb-6">
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <Skeleton key={i} className="h-8 w-24 rounded" />
+                ))}
+              </div>
+              <div className="flex gap-3 mb-6">
+                <Skeleton className="h-8 w-32 rounded" /> {/* sort dropdown */}
+              </div>
+            </div>
+
+            {/* Product grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 1xl:grid-cols-5 gap-[26px] mt-[35px]">
               {Array.from({ length: 10 }).map((_, i) => (
-                <SkeletonCard key={i} />
+                <div key={i} className="flex flex-col gap-2 animate-pulse">
+                  {/* Product image */}
+                  <Skeleton className="rounded-lg h-[300px] w-full" />
+
+                  {/* Product title */}
+
+                  <div className="flex items-center justify-between gap-2">
+                    {/* Author avatar + name */}
+                    <div className="flex items-center gap-2">
+                      <Skeleton className="rounded-full h-7 w-7" />
+                      <div className="flex flex-col gap-1.5">
+                        <Skeleton className="h-4 w-24 rounded" />
+                        <Skeleton className="h-3 w-20 rounded" />
+                      </div>
+                    </div>
+                    <div className="flex flex-col gap-1.5">
+                      {/* Price */}
+                      <Skeleton className="h-4 w-16 rounded mt-1" />
+
+                      {/* Optional sale price line */}
+                      <Skeleton className="h-3 w-12 rounded" />
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Pagination skeleton */}
+            <div className="flex justify-center sm:mt-[50px] mt-[30px] gap-2 text-sm">
+              {Array.from({ length: 5 }).map((_, i) => (
+                <Skeleton key={i} className="h-10 w-10 rounded" />
               ))}
             </div>
           </>

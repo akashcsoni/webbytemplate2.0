@@ -39,7 +39,7 @@ export default function Layout({ children }) {
 
   const getUserData = async (authToken) => {
     if (authToken) {
-      // console.log(authToken, "authtoken");
+      console.log(authToken, "authtoken");
       const userData = await strapiGet(`users/me`, {
         params: { populate: "*" },
         token: authToken,
