@@ -55,19 +55,19 @@ const TopAuthor = ({ title, description }) => {
 
   const filters = [
     {
-      name: "A to Z",
+      name: "Name: A → Z",
       value: "a_to_z",
     },
     {
-      name: "Z to A",
+      name: "Name: Z → A",
       value: "z_to_a",
     },
     {
-      name: "By-sells",
+      name: "Top Sellers (Highest Sales)",
       value: "by_sales",
     },
     {
-      name: "By-product",
+      name: "Most Products Published",
       value: "by_product",
     },
   ];

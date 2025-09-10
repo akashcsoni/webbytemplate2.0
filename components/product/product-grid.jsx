@@ -11,7 +11,7 @@ const sanitizeText = (text) =>
     : "";
 
 export default function ({ product }) {
-  console.log(product, "this is for p=roduct");
+  // console.log(product, "this is for p=roduct");
 
   const productSlug = product?.slug ?? "";
   const productTitle = sanitizeText(product?.short_title || product?.title);
