@@ -163,11 +163,11 @@ p,
 }
 
 .nav-logo {
-  @apply flex-shrink-0 lg:border-r border-primary/10 sm:pr-[35px] sm:py-2;
+  @apply flex-shrink-0 lg:border-r border-primary/10 2xl:pr-[35px] 1xl:pr-6 pr-3 sm:py-2;
 }
 
 .links-content {
-  @apply lg:flex hidden space-x-5 py-[27px] pr-2 w-[59%];
+  @apply lg:flex hidden space-x-5 py-[27px] pr-2 2xl:pl-8 1xl:pl-5 pl-2 w-[59%];
 }
 .schedule-skeleton {
   @apply 1xl:h-[40px];
@@ -440,9 +440,7 @@ p,
     @apply w-[150px] 1xl:h-[40px];
   }
 
-  .nav-logo {
-    @apply sm:pr-2;
-  }
+ 
 }
 @media (max-width: 1615px) {
   .author-links-content {
@@ -556,7 +554,7 @@ p,
   }
 
   .links-content {
-    @apply ps-2 w-[54%];
+    @apply w-[54%];
   }
   .navigation-links {
     @apply gap-2;
@@ -655,7 +653,7 @@ p,
 
 @media (max-width: 1259px) {
   .links-content {
-    @apply w-[75%];
+    @apply w-full;
   }
   .author-badge {
     @apply -right-0;
@@ -724,7 +722,7 @@ p,
 
   .main-logo,
   .main-logo-skeleton {
-    @apply w-[160px];
+    @apply w-[140px];
   }
 
   .main-logo-skeleton {
@@ -1121,3 +1119,16 @@ h4 {
 .reactstar span{
   @apply md:!text-[37px] !text-[32px];
 }
+
+
+/* Custom scrollbar for a specific section */
+.scrollbar-custom::-webkit-scrollbar {
+  @apply w-[3px]; 
+}
+.scrollbar-custom::-webkit-scrollbar-thumb {
+  @apply bg-primary rounded-full;
+}
+.scrollbar-custom::-webkit-scrollbar-track {
+  @apply bg-blue-300;
+}
+

@@ -129,7 +129,7 @@ export default function RichText({ body, read_more, with_bg }) {
                                     <span className="flex items-center">
                                         {isExpanded ? (
                                             <>
-                                                <p className="text-primary">Read less</p>
+                                                <p className="text-primary !m-0">Read less</p>
                                                 <svg
                                                     xmlns="http://www.w3.org/2000/svg"
                                                     width="16"

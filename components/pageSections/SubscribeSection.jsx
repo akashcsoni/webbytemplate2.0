@@ -123,7 +123,7 @@ const SubscribeSection = ({
                                                     </button>
                                                 </div>
                                                 {emailError && (
-                                                    <p className="text-red-500 text-sm mt-1">{emailError}</p>
+                                                    <p className="text-red-500 text-sm mt-1 bg-white py-[2px] px-[11px] rounded-[5px] w-fit tracking-[0.5px]">{emailError}</p>
                                                 )}
                                             </div>
 
@@ -146,7 +146,7 @@ const SubscribeSection = ({
                                                 </div>
                                             )}
                                             {checkboxError && (
-                                                <p className="text-red-500 text-sm mt-1">{checkboxError}</p>
+                                                <p className="text-red-500 text-sm mt-1 bg-white py-[2px] px-[11px] rounded-[5px] w-fit">{checkboxError}</p>
                                             )}
                                         </form>
                                     </div>

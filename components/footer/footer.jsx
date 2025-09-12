@@ -184,7 +184,7 @@ export function Footer({ footerMenu = [], footerSettings = {} }) {
     }
 
     return (
-      <div>
+      <div className="md:max-w-full sm:max-w-[200px] w-full">
         <h5 className="font-bold xl:mb-4 mb-2">{menuItem.label}</h5>
         <ul className="lg:space-y-2 space-y-1">
           {menuItem.sub_menu.map((subItem, index) => {
@@ -283,18 +283,18 @@ export function Footer({ footerMenu = [], footerSettings = {} }) {
         <div className="container mx-auto">
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4">
             {/* First three columns */}
-            <div className="2xl:pe-20 xl:pe-10 lg:pe-8 sm:pe-4 xl:py-9 sm:py-5 py-3 sm:border-r border-gray-500 md:block grid sm:justify-items-center">
+            <div className="2xl:pe-20 xl:pe-10 lg:pe-8 sm:pe-4 xl:py-9 sm:py-5 py-3 sm:border-r border-gray-500 md:block grid sm:justify-items-start">
               {renderMenuColumn(productsAndPartners, "Products and Partners")}
             </div>
-            <div className="2xl:px-20 xl:px-10 lg:px-8 sm:px-4 xl:py-9 sm:py-5 py-3 md:border-r border-gray-500 md:block grid sm:justify-items-center">
+            <div className="2xl:px-20 xl:px-10 lg:px-8 sm:px-4 xl:py-9 sm:py-5 py-3 md:border-r border-gray-500 md:block grid md:justify-items-center sm:justify-items-end">
               {renderMenuColumn(topics, "Topics")}
             </div>
-            <div className="2xl:px-20 xl:px-10 lg:px-8 sm:px-4 xl:py-9 sm:py-5 py-3 sm:border-r border-gray-500 md:block grid sm:justify-items-center">
+            <div className="2xl:px-20 xl:px-10 lg:px-8 md:px-4 pr-4 xl:py-9 sm:py-5 py-3 sm:border-r border-gray-500 md:block grid md:justify-items-center sm:justify-items-start">
               {renderMenuColumn(company, "Company")}
             </div>
 
             {/* Fourth column with Earn and Support stacked */}
-            <div className="sm:space-y-8 space-y-4 2xl:ps-20 xl:ps-10 lg:ps-8 sm:ps-4 xl:py-9 sm:py-5 py-3 md:block grid sm:justify-items-center">
+            <div className="sm:space-y-8 space-y-4 2xl:ps-20 xl:ps-10 lg:ps-8 md:ps-4 sm:px-4 xl:py-9 sm:py-5 py-3 md:block grid md:justify-items-center sm:justify-items-end">
               {renderMenuColumn(earn, "Earn")}
               {renderMenuColumn(support, "Support")}
             </div>

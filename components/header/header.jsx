@@ -149,7 +149,6 @@ export default function Header() {
 
   // Add this code right before the `return` statement in the Header component
   const Menu = ({ loading }) => {
-
     const [menuActiveCategory, setMenuActiveCategory] = useState(null);
 
     // Handlers for mouse events
@@ -169,39 +168,41 @@ export default function Header() {
             <div className="flex">
               {!loading
                 ? apiMenu.map(({ name, label, slug }) => (
-                  <div
-                    key={name}
-                    className="relative xl:block hidden"
-                    onMouseEnter={() => handleMouseEnter(name)}
-                  >
                     <div
-                      className={cn(
-                        "cursor-pointer flex items-center space-x-1 py-4 px-3",
-                        menuActiveCategory === name &&
-                        "text-primary hover:text-primary border-b border-primary"
-                      )}
+                      key={name}
+                      className="relative xl:block hidden"
+                      onMouseEnter={() => handleMouseEnter(name)}
                     >
-                      <Link href={slug}><span className="p2 hover:text-primary">{label}</span></Link>
-                      <svg
-                        width="9"
-                        height="11"
-                        viewBox="0 0 9 11"
-                        fill="none"
+                      <div
+                        className={cn(
+                          "cursor-pointer flex items-center space-x-1 py-4 px-3",
+                          menuActiveCategory === name &&
+                            "text-primary hover:text-primary border-b border-primary",
+                        )}
                       >
-                        <path
-                          d="M4.1612 9.18783C4.35263 9.36422 4.64737 9.36422 4.8388 9.18783L8.8388 5.5023C8.94155 5.40763 9 5.27429 9 5.13459V4.64321C9 4.20715 8.48076 3.98005 8.16057 4.27607L4.83943 7.34657C4.64781 7.52372 4.35219 7.52372 4.16057 7.34657L0.839427 4.27607C0.519237 3.98005 0 4.20715 0 4.64321V5.13459C0 5.27429 0.0584515 5.40763 0.161196 5.5023L4.1612 9.18783Z"
-                          fill="#505050"
-                        />
-                      </svg>
+                        <Link href={slug}>
+                          <span className="p2 hover:text-primary">{label}</span>
+                        </Link>
+                        <svg
+                          width="9"
+                          height="11"
+                          viewBox="0 0 9 11"
+                          fill="none"
+                        >
+                          <path
+                            d="M4.1612 9.18783C4.35263 9.36422 4.64737 9.36422 4.8388 9.18783L8.8388 5.5023C8.94155 5.40763 9 5.27429 9 5.13459V4.64321C9 4.20715 8.48076 3.98005 8.16057 4.27607L4.83943 7.34657C4.64781 7.52372 4.35219 7.52372 4.16057 7.34657L0.839427 4.27607C0.519237 3.98005 0 4.20715 0 4.64321V5.13459C0 5.27429 0.0584515 5.40763 0.161196 5.5023L4.1612 9.18783Z"
+                            fill="#505050"
+                          />
+                        </svg>
+                      </div>
                     </div>
-                  </div>
-                ))
+                  ))
                 : [...Array(9)].map((_, idx) => (
-                  <Skeleton
-                    className="my-4 h-5 2xl:w-[115px] xl:w-[100px] w-[85px] rounded-md 1xl:block hidden mr-3"
-                    key={idx}
-                  />
-                ))}
+                    <Skeleton
+                      className="my-4 h-5 2xl:w-[115px] xl:w-[100px] w-[85px] rounded-md 1xl:block hidden mr-3"
+                      key={idx}
+                    />
+                  ))}
             </div>
             <form
               onSubmit={handleSubmit}
@@ -239,7 +240,7 @@ export default function Header() {
             <div
               className={cn(
                 "absolute left-0 right-0 bg-white shadow-lg z-10 mt-[1px]",
-                menuActiveCategory ? "block" : "hidden"
+                menuActiveCategory ? "block" : "hidden",
               )}
               onMouseEnter={() =>
                 menuActiveCategory && setMenuActiveCategory(menuActiveCategory)
@@ -282,7 +283,7 @@ export default function Header() {
                       ))}
                     </div>
                   </div>
-                ) : null
+                ) : null,
               )}
             </div>
           </nav>
@@ -333,7 +334,7 @@ export default function Header() {
         <div className="flex items-center md:h-[75px] h-16 mx-auto px-4 sm:flex-nowrap flex-wrap w-full">
           {/* Mobile menu button */}
           <button
-            className="lg:hidden text-gray-700 sm:mr-3 mr-0.5"
+            className="lg:hidden text-gray-700 sm:mr-3 mr-2"
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
           >
             <svg
@@ -392,37 +393,37 @@ export default function Header() {
             <div className="navigation-links">
               {isSettingsLoading
                 ? // Skeletons based on actual menu length
-                [...Array(6)].map((_, index) => (
-                  <Skeleton
-                    key={index}
-                    className="h-5 2xl:w-[115px] xl:w-[100px] w-[85px] rounded-md navigation-skeleton"
-                  />
-                ))
+                  [...Array(6)].map((_, index) => (
+                    <Skeleton
+                      key={index}
+                      className="h-5 2xl:w-[115px] xl:w-[100px] w-[85px] rounded-md navigation-skeleton"
+                    />
+                  ))
                 : !isSettingsLoading && headerSettingData?.menu?.length > 0
                   ? // Render actual links
-                  headerSettingData.menu.map((menu, index) => {
-                    const isActive = menu?.active;
-                    const isCurrentPage = menu?.slug === pathname;
+                    headerSettingData.menu.map((menu, index) => {
+                      const isActive = menu?.active;
+                      const isCurrentPage = menu?.slug === pathname;
 
-                    return (
-                      <Link
-                        key={index}
-                        href={menu?.slug}
-                        className={`links
+                      return (
+                        <Link
+                          key={index}
+                          href={menu?.slug}
+                          className={`links
 ${isActive ? "!text-primary" : "!text-black hover:!text-primary"}
 ${isCurrentPage ? "!text-primary" : ""}
 `}
-                      >
-                        {menu?.label}
-                      </Link>
-                    );
-                  })
+                        >
+                          {menu?.label}
+                        </Link>
+                      );
+                    })
                   : [...Array(6)].map((_, index) => (
-                    <Skeleton
-                      key={index}
-                      className="h-5 w-[110px] rounded-md 1xl:block !hidden"
-                    />
-                  ))}
+                      <Skeleton
+                        key={index}
+                        className="h-5 w-[110px] rounded-md 1xl:block !hidden"
+                      />
+                    ))}
             </div>
 
             {/* Search Icon */}
@@ -457,10 +458,11 @@ ${isCurrentPage ? "!text-primary" : ""}
                   {/* Search Bar */}
                   <form
                     onSubmit={handleSubmit}
-                    className={`h-[74px] absolute z-50 bg-white overflow-hidden transition-all duration-400 ease-in-out flex items-center justify-between !m-0 ${isSearchOpen
-                      ? "w-full opacity-100 z-100 p-2 ps-[35px] right-0"
-                      : "w-0 opacity-0 z-0 p-0 right-0"
-                      }`}
+                    className={`h-[74px] absolute z-50 bg-white overflow-hidden transition-all duration-400 ease-in-out flex items-center justify-between !m-0 ${
+                      isSearchOpen
+                        ? "w-full opacity-100 z-100 p-2 ps-[35px] right-0"
+                        : "w-0 opacity-0 z-0 p-0 right-0"
+                    }`}
                   >
                     <div className="flex items-center justify-start w-full gap-5">
                       <svg
@@ -530,7 +532,7 @@ ${isCurrentPage ? "!text-primary" : ""}
                       height={20}
                       viewBox="0 0 20 20"
                       fill="none"
-                      className="sm:w-[22px] sm:h-[22px] w-5 h-5 icon"
+                      className="sm:w-[22px] sm:h-[22px] w-[18px] h-[18px] icon"
                     >
                       <path
                         d="M5.12938 9.99986V6.7961C5.1389 6.16635 5.27258 5.54467 5.52277 4.96667C5.77297 4.38868 6.13475 3.86573 6.5874 3.42779C7.04004 2.98986 7.57465 2.64554 8.1606 2.41458C8.74654 2.18361 9.3723 2.07053 10.002 2.08182C10.6317 2.07053 11.2575 2.18361 11.8434 2.41458C12.4294 2.64554 12.964 2.98986 13.4166 3.42779C13.8693 3.86573 14.2311 4.38868 14.4813 4.96667C14.7315 5.54467 14.8651 6.16635 14.8747 6.7961V9.99986M12.4383 16.3952C13.0845 16.3952 13.7042 16.1385 14.1611 15.6816C14.618 15.2247 14.8747 14.605 14.8747 13.9589V11.218M12.4383 16.3952C12.4383 16.799 12.2779 17.1864 11.9924 17.4719C11.7068 17.7575 11.3195 17.9179 10.9156 17.9179H9.0884C8.68456 17.9179 8.29725 17.7575 8.01169 17.4719C7.72613 17.1864 7.5657 16.799 7.5657 16.3952C7.5657 15.9914 7.72613 15.6041 8.01169 15.3185C8.29725 15.0329 8.68456 14.8725 9.0884 14.8725H10.9156C11.3195 14.8725 11.7068 15.0329 11.9924 15.3185C12.2779 15.6041 12.4383 15.9914 12.4383 16.3952ZM3.30214 8.17262H4.5203C4.68184 8.17262 4.83676 8.23679 4.95099 8.35102C5.06521 8.46524 5.12938 8.62017 5.12938 8.7817V12.4362C5.12938 12.5977 5.06521 12.7526 4.95099 12.8669C4.83676 12.9811 4.68184 13.0453 4.5203 13.0453H3.30214C2.97907 13.0453 2.66922 12.9169 2.44078 12.6885C2.21233 12.46 2.08398 12.1502 2.08398 11.8271V9.39078C2.08398 9.06771 2.21233 8.75786 2.44078 8.52941C2.66922 8.30097 2.97907 8.17262 3.30214 8.17262ZM16.7019 13.0453H15.4837C15.3222 13.0453 15.1673 12.9811 15.0531 12.8669C14.9388 12.7526 14.8747 12.5977 14.8747 12.4362V8.7817C14.8747 8.62017 14.9388 8.46524 15.0531 8.35102C15.1673 8.23679 15.3222 8.17262 15.4837 8.17262H16.7019C17.025 8.17262 17.3348 8.30097 17.5633 8.52941C17.7917 8.75786 17.9201 9.06771 17.9201 9.39078V11.8271C17.9201 12.1502 17.7917 12.46 17.5633 12.6885C17.3348 12.9169 17.025 13.0453 16.7019 13.0453Z"
@@ -717,7 +719,7 @@ before:shadow-md before:rounded-sm"
                         height={20}
                         viewBox="0 0 20 20"
                         fill="none"
-                        className="sm:w-[22px] sm:h-[22px] w-5 h-5 hidden login-svg"
+                        className="sm:w-[22px] sm:h-[22px] w-[18px] h-[18px] hidden login-svg"
                       >
                         <path
                           d="M16.3442 17.7023C16.3442 14.7013 12.9983 12.2618 9.99732 12.2618C6.99631 12.2618 3.65039 14.7013 3.65039 17.7023M9.99732 9.54245C10.9592 9.54245 11.8816 9.16036 12.5618 8.48022C13.2419 7.80008 13.624 6.87762 13.624 5.91576C13.624 4.9539 13.2419 4.03143 12.5618 3.3513C11.8816 2.67116 10.9592 2.28906 9.99732 2.28906C9.03546 2.28906 8.11299 2.67116 7.43286 3.3513C6.75272 4.03143 6.37062 4.9539 6.37062 5.91576C6.37062 6.87762 6.75272 7.80008 7.43286 8.48022C8.11299 9.16036 9.03546 9.54245 9.99732 9.54245Z"
