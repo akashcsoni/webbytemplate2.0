@@ -156,7 +156,7 @@ export default function HomeHero({
                     {isOpen && (
                       <div className="absolute sm:w-full w-40 2xl:mt-[55px] xl:mt-[51px] md:mt-[49px] sm:mt-[40px] mt-[38px] bg-white border border-[#d9dde2] rounded-md shadow-lg z-50">
                         <ul
-                          className="py-1 max-h-60 overflow-auto"
+                          className="py-1 max-h-60 overflow-auto scrollbar-custom"
                           role="listbox"
                           aria-label="Category List"
                         >

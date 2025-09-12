@@ -57,7 +57,7 @@ export default function ProductsList(props) {
         const response = await strapiPost(
           "/product/filter",
           { ...payload },
-          themeConfig.TOKEN
+          themeConfig.TOKEN,
         );
 
         const productsData = response.data || [];
@@ -169,11 +169,19 @@ export default function ProductsList(props) {
                 </button>
               </div>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 1xl:grid-cols-5 gap-[26px]">
-                {filteredProducts.map((product, index) => (
-                  <ProductGrid key={index} product={product} />
-                ))}
-              </div>
+              <>
+                {filteredProducts?.length > 0 ? (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 1xl:grid-cols-5 gap-[26px]">
+                    {filteredProducts?.map((product, index) => (
+                      <ProductGrid key={index} product={product} />
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-center">
+                    No products is currently available.
+                  </p>
+                )}
+              </>
             )}
           </div>
         </div>
