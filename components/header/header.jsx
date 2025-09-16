@@ -21,6 +21,7 @@ export default function Header() {
   const [open, setOpen] = useState(false);
   const dropdownRef = useRef(null);
   const toggleDropdown = () => setOpen(!open);
+  const inputRef = useRef(null);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -138,8 +139,21 @@ export default function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [headerSettingData, setheaderSettingData] = useState({});
 
+  // const toggleSearch = () => {
+  //   setIsSearchOpen((prev) => !prev);
+  // };
+
   const toggleSearch = () => {
-    setIsSearchOpen((prev) => !prev);
+    setIsSearchOpen((prev) => {
+      const newState = !prev;
+
+      if (!prev && inputRef.current) {
+        // Focus input after state update (with small delay so it renders)
+        setTimeout(() => inputRef.current.focus(), 50);
+      }
+
+      return newState;
+    });
   };
 
   const closeMenu = useCallback(() => {
@@ -177,7 +191,7 @@ export default function Header() {
                         className={cn(
                           "cursor-pointer flex items-center space-x-1 py-4 px-3",
                           menuActiveCategory === name &&
-                            "text-primary hover:text-primary border-b border-primary",
+                            "text-primary hover:text-primary border-b border-primary"
                         )}
                       >
                         <Link href={slug}>
@@ -240,7 +254,7 @@ export default function Header() {
             <div
               className={cn(
                 "absolute left-0 right-0 bg-white shadow-lg z-10 mt-[1px]",
-                menuActiveCategory ? "block" : "hidden",
+                menuActiveCategory ? "block" : "hidden"
               )}
               onMouseEnter={() =>
                 menuActiveCategory && setMenuActiveCategory(menuActiveCategory)
@@ -283,7 +297,7 @@ export default function Header() {
                       ))}
                     </div>
                   </div>
-                ) : null,
+                ) : null
               )}
             </div>
           </nav>
@@ -481,6 +495,7 @@ ${isCurrentPage ? "!text-primary" : ""}
                         />
                       </svg>
                       <input
+                        ref={inputRef}
                         type="text"
                         placeholder='Search for "Web Templates" and More.....'
                         className="w-full outline-none text-[#505050] placeholder:text-[#505050] text-base"
@@ -544,6 +559,21 @@ ${isCurrentPage ? "!text-primary" : ""}
                     </svg>
                   </Link>
 
+                  {/* <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="22"
+                    height="22"
+                    viewBox="0 0 22 22"
+                    fill="none"
+                  >
+                    <path
+                      d="M5.64365 11.0056V7.48067C5.65412 6.78779 5.8012 6.10379 6.07648 5.46785C6.35175 4.83192 6.7498 4.25655 7.24782 3.77471C7.74584 3.29288 8.33405 2.91404 8.97873 2.65993C9.62341 2.40581 10.3119 2.28139 11.0047 2.29382C11.6976 2.28139 12.3861 2.40581 13.0308 2.65993C13.6754 2.91404 14.2636 3.29288 14.7617 3.77471C15.2597 4.25655 15.6577 4.83192 15.933 5.46785C16.2083 6.10379 16.3554 6.78779 16.3658 7.48067V11.0056M13.6853 18.042C14.3962 18.042 15.078 17.7596 15.5807 17.2569C16.0834 16.7542 16.3658 16.0724 16.3658 15.3615V12.3459M13.6853 18.042C13.6853 18.4864 13.5088 18.9125 13.1946 19.2267C12.8804 19.5409 12.4543 19.7174 12.0099 19.7174H9.99954C9.55521 19.7174 9.12908 19.5409 8.81489 19.2267C8.50071 18.9125 8.3242 18.4864 8.3242 18.042C8.3242 17.5977 8.50071 17.1716 8.81489 16.8574C9.12908 16.5432 9.55521 16.3667 9.99954 16.3667H12.0099C12.4543 16.3667 12.8804 16.5432 13.1946 16.8574C13.5088 17.1716 13.6853 17.5977 13.6853 18.042ZM3.63324 8.99518H4.97352C5.15125 8.99518 5.3217 9.06578 5.44737 9.19146C5.57305 9.31713 5.64365 9.48759 5.64365 9.66532V13.6861C5.64365 13.8639 5.57305 14.0343 5.44737 14.16C5.3217 14.2857 5.15125 14.3563 4.97352 14.3563H3.63324C3.27778 14.3563 2.93688 14.2151 2.68553 13.9637C2.43418 13.7124 2.29297 13.3715 2.29297 13.016V10.3355C2.29297 9.97999 2.43418 9.63909 2.68553 9.38774C2.93688 9.13639 3.27778 8.99518 3.63324 8.99518ZM18.3762 14.3563H17.036C16.8582 14.3563 16.6878 14.2857 16.5621 14.16C16.4364 14.0343 16.3658 13.8639 16.3658 13.6861V9.66532C16.3658 9.48759 16.4364 9.31713 16.5621 9.19146C16.6878 9.06578 16.8582 8.99518 17.036 8.99518H18.3762C18.7317 8.99518 19.0726 9.13639 19.324 9.38774C19.5753 9.63909 19.7165 9.97999 19.7165 10.3355V13.016C19.7165 13.3715 19.5753 13.7124 19.324 13.9637C19.0726 14.2151 18.7317 14.3563 18.3762 14.3563Z"
+                      stroke="currentColor"
+                      strokeWidth="1.37561"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg> */}
                   <Link
                     href={headerSettingData?.right_menu?.slug}
                     className="schedule block"
