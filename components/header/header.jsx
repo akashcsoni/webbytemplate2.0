@@ -15,6 +15,7 @@ import AuthModal from "../AuthModal";
 import SideCart from "../SideCart";
 import { usePathname, useRouter } from "next/navigation";
 import { Skeleton } from "@heroui/react";
+import { useWishlist } from "@/contexts/WishListContext";
 
 export default function Header() {
   // for after login start
@@ -55,6 +56,7 @@ export default function Header() {
   const { openAuth, authLoading, isAuthenticated, logout, authUser } =
     useAuth();
   const { toggleCart, cartItems } = useCart();
+  const { wishlistItems } = useWishlist(); // wishlist count state
 
   useEffect(() => {
     const fetchMenuData = async () => {
@@ -182,41 +184,41 @@ export default function Header() {
             <div className="flex">
               {!loading
                 ? apiMenu.map(({ name, label, slug }) => (
+                  <div
+                    key={name}
+                    className="relative xl:block hidden"
+                    onMouseEnter={() => handleMouseEnter(name)}
+                  >
                     <div
-                      key={name}
-                      className="relative xl:block hidden"
-                      onMouseEnter={() => handleMouseEnter(name)}
+                      className={cn(
+                        "cursor-pointer flex items-center space-x-1 py-4 px-3",
+                        menuActiveCategory === name &&
+                        "text-primary hover:text-primary border-b border-primary"
+                      )}
                     >
-                      <div
-                        className={cn(
-                          "cursor-pointer flex items-center space-x-1 py-4 px-3",
-                          menuActiveCategory === name &&
-                            "text-primary hover:text-primary border-b border-primary"
-                        )}
+                      <Link href={slug}>
+                        <span className="p2 hover:text-primary">{label}</span>
+                      </Link>
+                      <svg
+                        width="9"
+                        height="11"
+                        viewBox="0 0 9 11"
+                        fill="none"
                       >
-                        <Link href={slug}>
-                          <span className="p2 hover:text-primary">{label}</span>
-                        </Link>
-                        <svg
-                          width="9"
-                          height="11"
-                          viewBox="0 0 9 11"
-                          fill="none"
-                        >
-                          <path
-                            d="M4.1612 9.18783C4.35263 9.36422 4.64737 9.36422 4.8388 9.18783L8.8388 5.5023C8.94155 5.40763 9 5.27429 9 5.13459V4.64321C9 4.20715 8.48076 3.98005 8.16057 4.27607L4.83943 7.34657C4.64781 7.52372 4.35219 7.52372 4.16057 7.34657L0.839427 4.27607C0.519237 3.98005 0 4.20715 0 4.64321V5.13459C0 5.27429 0.0584515 5.40763 0.161196 5.5023L4.1612 9.18783Z"
-                            fill="#505050"
-                          />
-                        </svg>
-                      </div>
+                        <path
+                          d="M4.1612 9.18783C4.35263 9.36422 4.64737 9.36422 4.8388 9.18783L8.8388 5.5023C8.94155 5.40763 9 5.27429 9 5.13459V4.64321C9 4.20715 8.48076 3.98005 8.16057 4.27607L4.83943 7.34657C4.64781 7.52372 4.35219 7.52372 4.16057 7.34657L0.839427 4.27607C0.519237 3.98005 0 4.20715 0 4.64321V5.13459C0 5.27429 0.0584515 5.40763 0.161196 5.5023L4.1612 9.18783Z"
+                          fill="#505050"
+                        />
+                      </svg>
                     </div>
-                  ))
+                  </div>
+                ))
                 : [...Array(9)].map((_, idx) => (
-                    <Skeleton
-                      className="my-4 h-5 2xl:w-[115px] xl:w-[100px] w-[85px] rounded-md 1xl:block hidden mr-3"
-                      key={idx}
-                    />
-                  ))}
+                  <Skeleton
+                    className="my-4 h-5 2xl:w-[115px] xl:w-[100px] w-[85px] rounded-md 1xl:block hidden mr-3"
+                    key={idx}
+                  />
+                ))}
             </div>
             <form
               onSubmit={handleSubmit}
@@ -407,37 +409,37 @@ export default function Header() {
             <div className="navigation-links">
               {isSettingsLoading
                 ? // Skeletons based on actual menu length
-                  [...Array(6)].map((_, index) => (
-                    <Skeleton
-                      key={index}
-                      className="h-5 2xl:w-[115px] xl:w-[100px] w-[85px] rounded-md navigation-skeleton"
-                    />
-                  ))
+                [...Array(6)].map((_, index) => (
+                  <Skeleton
+                    key={index}
+                    className="h-5 2xl:w-[115px] xl:w-[100px] w-[85px] rounded-md navigation-skeleton"
+                  />
+                ))
                 : !isSettingsLoading && headerSettingData?.menu?.length > 0
                   ? // Render actual links
-                    headerSettingData.menu.map((menu, index) => {
-                      const isActive = menu?.active;
-                      const isCurrentPage = menu?.slug === pathname;
+                  headerSettingData.menu.map((menu, index) => {
+                    const isActive = menu?.active;
+                    const isCurrentPage = menu?.slug === pathname;
 
-                      return (
-                        <Link
-                          key={index}
-                          href={menu?.slug}
-                          className={`links
+                    return (
+                      <Link
+                        key={index}
+                        href={menu?.slug}
+                        className={`links
 ${isActive ? "!text-primary" : "!text-black hover:!text-primary"}
 ${isCurrentPage ? "!text-primary" : ""}
 `}
-                        >
-                          {menu?.label}
-                        </Link>
-                      );
-                    })
+                      >
+                        {menu?.label}
+                      </Link>
+                    );
+                  })
                   : [...Array(6)].map((_, index) => (
-                      <Skeleton
-                        key={index}
-                        className="h-5 w-[110px] rounded-md 1xl:block !hidden"
-                      />
-                    ))}
+                    <Skeleton
+                      key={index}
+                      className="h-5 w-[110px] rounded-md 1xl:block !hidden"
+                    />
+                  ))}
             </div>
 
             {/* Search Icon */}
@@ -472,11 +474,10 @@ ${isCurrentPage ? "!text-primary" : ""}
                   {/* Search Bar */}
                   <form
                     onSubmit={handleSubmit}
-                    className={`h-[74px] absolute z-50 bg-white overflow-hidden transition-all duration-400 ease-in-out flex items-center justify-between !m-0 ${
-                      isSearchOpen
-                        ? "w-full opacity-100 z-100 p-2 ps-[35px] right-0"
-                        : "w-0 opacity-0 z-0 p-0 right-0"
-                    }`}
+                    className={`h-[74px] absolute z-50 bg-white overflow-hidden transition-all duration-400 ease-in-out flex items-center justify-between !m-0 ${isSearchOpen
+                      ? "w-full opacity-100 z-100 p-2 ps-[35px] right-0"
+                      : "w-0 opacity-0 z-0 p-0 right-0"
+                      }`}
                   >
                     <div className="flex items-center justify-start w-full gap-5">
                       <svg
@@ -768,7 +769,7 @@ before:shadow-md before:rounded-sm"
               {isSettingsLoading ? (
                 <Skeleton className="rounded-full sm:w-6 sm:h-6 w-4 h-4 mr-2 wishlist-svg " />
               ) : (
-                <Link className="heart" href="/wishlist">
+                <Link className="heart relative" href="/wishlist">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     width={20}
@@ -784,9 +785,14 @@ before:shadow-md before:rounded-sm"
                         strokeWidth="1.5"
                         strokeLinecap="round"
                         strokeLinejoin="round"
-                      ></path>
+                      />
                     </g>
                   </svg>
+
+                  {/* 🔹 Wishlist count badge */}
+                  <span className="badge absolute -top-1 -right-1 text-xs bg-red-500 text-white rounded-full px-1.5">
+                    {wishlistItems?.length || 0}
+                  </span>
                 </Link>
               )}
 
