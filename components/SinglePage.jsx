@@ -491,7 +491,7 @@ export default function SinglePage({ pageData }) {
 
         <div className="lg:hidden block">
           {pageData?.gallery_image && pageData?.gallery_image?.length > 0 && (
-            <SinglePageSwiper gallery_images={pageData?.gallery_image} />
+            <SinglePageSwiper gallery_images={pageData?.gallery_image} product={pageData} />
           )}
         </div>
 
@@ -552,11 +552,10 @@ export default function SinglePage({ pageData }) {
                         <div className="flex items-center gap-4">
                           <div className="w-full ">
                             <button
-                              className={`w-full btn flex items-center justify-center transition-all duration-200 ${
-                                isProductInCart
+                              className={`w-full btn flex items-center justify-center transition-all duration-200 ${isProductInCart
                                   ? "btn-secondary border-2 border-primary text-primary hover:btn-primary"
                                   : "btn-primary"
-                              }`}
+                                }`}
                               onClick={handleAddToCart}
                               disabled={loading}
                             >
@@ -720,13 +719,19 @@ export default function SinglePage({ pageData }) {
                     Tags:
                   </h5>
                   <div className="flex flex-wrap gap-3">
-                    {pageData.tags.map((tag) => (
-                      <TagPill
-                        key={tag.slug}
-                        text={tag.title}
-                        slug={tag.slug}
-                      />
-                    ))}
+                    {pageData.tags.map((tag) => {
+                      const title = tag.title
+                        .toLowerCase()
+                        .replace(/\b\w/g, (c) => c.toUpperCase());
+
+                      return (
+                        <TagPill
+                          key={tag.slug}
+                          text={title}
+                          slug={tag.slug}
+                        />
+                      );
+                    })}
                   </div>
                 </div>
               )}
@@ -751,7 +756,7 @@ export default function SinglePage({ pageData }) {
           <div className="lg:w-[60%] relative">
             {/* discription */}
             <>
-              {console.log(pageData)}
+              {/* {console.log(pageData)} */}
               <div className="lg:block hidden mb-5">
                 {pageData && pageData && (
                   <SinglePageSwiper

@@ -39,7 +39,9 @@ const ReviewGrid = ({ testimonial }) => {
 
           <Link
             href={`/product/${testimonial?.product?.slug}`}
-            className="p2 !text-base"
+            className="p2 !text-base hover:!text-primary"
+            target="_blank"
+            rel="noopener noreferrer" // ✅ security/best practice  
           >
             {testimonial?.product?.title}
           </Link>
