@@ -1053,7 +1053,7 @@ const SearchPageContent = ({ slug }) => {
         {formContent}
       </div>
     );
-  };  
+  };
 
   // Add this function after the createOrderedUrl function
   const createCategoryUrl = (
@@ -1112,6 +1112,14 @@ const SearchPageContent = ({ slug }) => {
   if (segments[1] === "category" && segments[2]) {
     // Use last part of the path (could be main or sub-category)
     heading = slugToTitle(segments[segments.length - 1]);
+  }
+
+  function formatLabel(value) {
+    if (!value) return "";
+    return value
+      .split("_") // split by underscore
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1)) // capitalize each word
+      .join(" "); // join back with space
   }
 
   return (
@@ -1654,7 +1662,7 @@ xl:relative xl:translate-x-0 z-20 xl:p-0 xl:shadow-none xl:block
                 <p className="p2 sm:px-2 px-1">
                   Sort :{" "}
                   <span className="!text-black">
-                    {searchParams.get("sort")}
+                    {formatLabel(searchParams.get("sort"))}
                   </span>
                 </p>
                 <svg
