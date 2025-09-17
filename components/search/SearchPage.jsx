@@ -167,6 +167,7 @@ const SearchPageContent = ({ slug }) => {
     } else {
       // Set new tab and default direction
       setSort(tab);
+      setSelected(tab);
       setSortDirection("desc");
     }
   };
@@ -244,7 +245,30 @@ const SearchPageContent = ({ slug }) => {
     tags: [],
   });
 
-  const options = ["Best Seller", "Newest", "Best Rated", "Tranding", "Price"];
+  // const options = ["Best Seller", "Newest", "Best Rated", "Tranding", "Price"];
+
+  const options = [
+    {
+      name: "Best Seller",
+      value: "best_seller",
+    },
+    {
+      name: "Newest",
+      value: "newest",
+    },
+    {
+      name: "Best Rated",
+      value: "best_rated",
+    },
+    {
+      name: "Tranding",
+      value: "trending",
+    },
+    {
+      name: "Price",
+      value: "price",
+    },
+  ];
 
   // Add function to convert title to clean slug
   const titleToSlug = (title) => {
@@ -306,6 +330,104 @@ const SearchPageContent = ({ slug }) => {
     return `${currentPath}${orderedParams.length > 0 ? "?" + orderedParams.join("&") : ""}`;
   };
 
+  // const removeFilter = (type, value) => {
+  //   const params = new URLSearchParams(searchParams.toString());
+
+  //   switch (type) {
+  //     case "sort":
+  //       params.delete("sort");
+  //       setSelectedType("");
+  //       break;
+  //     case "tags":
+  //       const currentTags = params.get("tags")?.split(",") || [];
+  //       const newTags = currentTags.filter((tag) => tag !== value);
+  //       if (newTags.length > 0) {
+  //         params.set("tags", newTags.join(","));
+  //       } else {
+  //         params.delete("tags");
+  //       }
+  //       break;
+  //     case "sales":
+  //       const currentSales = params.get("sales")?.split(",") || [];
+  //       const newSales = currentSales.filter((sale) => sale !== value);
+  //       if (newSales.length > 0) {
+  //         params.set("sales", newSales.join(","));
+  //       } else {
+  //         params.delete("sales");
+  //       }
+  //       break;
+  //     case "feature":
+  //       const currentFeatures = params.get("feature")?.split(",") || [];
+  //       const newFeatures = currentFeatures.filter(
+  //         (feature) => feature !== value
+  //       );
+  //       if (newFeatures.length > 0) {
+  //         params.set("feature", newFeatures.join(","));
+  //       } else {
+  //         params.delete("feature");
+  //       }
+  //       break;
+  //     case "price":
+  //       params.delete("price_min");
+  //       params.delete("price_max");
+  //       setPriceRange([0, 500]); // Reset price range when removing price filter
+  //       break;
+  //     // case "term": // New case for handling the search term
+  //     //   // Get the current path and remove the search term segment
+  //     //   const newPathname = "/search";
+  //     //   // Clear the input field state
+  //     //   setSearchQuery("");
+  //     //   // Clear the URLSearchParams, then rebuild from the remaining filters
+  //     //   // This is necessary to prevent any leftover search params from the old URL
+  //     //   const newParams = new URLSearchParams();
+  //     //   params.forEach((value, key) => {
+  //     //     // Exclude any parameters related to the search term
+  //     //     if (key !== "term" && key !== "initialSearchQuery") {
+  //     //       newParams.set(key, value);
+  //     //     }
+  //     //   });
+
+  //     //   const queryString = newParams.toString();
+  //     //   const newUrl = queryString
+  //     //     ? `${newPathname}?${queryString}`
+  //     //     : newPathname;
+  //     //   router.push(newUrl);
+  //     //   return; // Return to avoid the default router.push at the end
+
+  //     case "term":
+  //       setSearchQuery("");
+
+  //       const paramsCopy = new URLSearchParams(searchParams.toString());
+  //       console.log(paramsCopy, "paramsCopy");
+
+  //       // If term is present in query params, reset it to empty string
+  //       if (paramsCopy.has("term")) {
+  //         paramsCopy.set("term", "");
+  //       }
+
+  //       // If the pathname includes a search term (e.g., /search/glowist), strip it out
+  //       let newPath = pathname;
+  //       console.log(newPath, "newPath");
+  //       const parts = pathname.split("/");
+  //       console.log(parts, "parts");
+  //       if (parts[1] === "search" && parts.length > 2) {
+  //         newPath = "/search"; // reset to /search only
+  //       }
+
+  //       const queryString = paramsCopy.toString();
+  //       console.log(queryString, "queryString");
+  //       const newUrl = queryString ? `${newPath}?${queryString}` : newPath;
+  //       console.log(newUrl, "newUrl");
+
+  //       router.push(newUrl);
+  //       return;
+  //   }
+
+  //   router.push(createOrderedUrl(params));
+  // };
+
+  // for clear all category
+
   const removeFilter = (type, value) => {
     const params = new URLSearchParams(searchParams.toString());
 
@@ -314,6 +436,7 @@ const SearchPageContent = ({ slug }) => {
         params.delete("sort");
         setSelectedType("");
         break;
+
       case "tags":
         const currentTags = params.get("tags")?.split(",") || [];
         const newTags = currentTags.filter((tag) => tag !== value);
@@ -323,6 +446,7 @@ const SearchPageContent = ({ slug }) => {
           params.delete("tags");
         }
         break;
+
       case "sales":
         const currentSales = params.get("sales")?.split(",") || [];
         const newSales = currentSales.filter((sale) => sale !== value);
@@ -332,6 +456,7 @@ const SearchPageContent = ({ slug }) => {
           params.delete("sales");
         }
         break;
+
       case "feature":
         const currentFeatures = params.get("feature")?.split(",") || [];
         const newFeatures = currentFeatures.filter(
@@ -343,35 +468,49 @@ const SearchPageContent = ({ slug }) => {
           params.delete("feature");
         }
         break;
+
       case "price":
         params.delete("price_min");
         params.delete("price_max");
-        setPriceRange([0, 500]); // Reset price range when removing price filter
+        setPriceRange([0, 500]);
         break;
-      case "term": // New case for handling the search term
-        // Get the current path and remove the search term segment
-        const newPathname = "/search";
-        // Clear the input field state
-        setSearchQuery("");
-        // Clear the URLSearchParams, then rebuild from the remaining filters
-        // This is necessary to prevent any leftover search params from the old URL
-        const newParams = new URLSearchParams();
-        params.forEach((value, key) => {
-          // Exclude any parameters related to the search term
-          if (key !== "term" && key !== "initialSearchQuery") {
-            newParams.set(key, value);
-          }
-        });
 
-        const queryString = newParams.toString();
-        const newUrl = queryString
-          ? `${newPathname}?${queryString}`
-          : newPathname;
+      case "term":
+        setSearchQuery("");
+        const paramsCopy = new URLSearchParams(searchParams.toString());
+        if (paramsCopy.has("term")) {
+          paramsCopy.set("term", "");
+        }
+
+        let newPath = pathname;
+        const parts = pathname.split("/");
+        if (parts[1] === "search" && parts.length > 2) {
+          newPath = "/search";
+        }
+
+        const queryString = paramsCopy.toString();
+        const newUrl = queryString ? `${newPath}?${queryString}` : newPath;
         router.push(newUrl);
-        return; // Return to avoid the default router.push at the end
+        return;
     }
 
-    router.push(createOrderedUrl(params));
+    // ✅ Always force ?term= for category routes
+    let finalPath = pathname;
+    let finalQuery = params.toString();
+
+    if (pathname.startsWith("/category")) {
+      // Ensure ?term= exists, even if nothing else is left
+      if (!params.has("term")) {
+        params.set("term", "");
+      }
+      finalQuery = params.toString();
+    }
+
+    // console.log(finalQuery);
+
+    const newUrl = finalQuery ? `${finalPath}?${finalQuery}` : finalPath;
+    // console.log(newUrl);
+    router.push(newUrl);
   };
 
   // Function to clear all filters
@@ -619,6 +758,7 @@ const SearchPageContent = ({ slug }) => {
           shop: true,
           filter: sortOptions[sort] || "top_download",
           order: sortDirection,
+          sorting: selected,
         };
 
         if (sort) {
@@ -811,39 +951,90 @@ const SearchPageContent = ({ slug }) => {
   };
 
   // Function to update search in URL
+  // const updateSearchInUrl = () => {
+  //   const params = new URLSearchParams(searchParams.toString());
+
+  //   // Remove search from params as it will be in the path
+  //   params.delete("search");
+
+  //   // Create URL with ordered parameters
+  //   const orderedParams = [];
+
+  //   // Add other parameters in specific order
+  //   if (params.get("tags")) {
+  //     orderedParams.push(`tags=${params.get("tags")}`);
+  //   }
+  //   if (params.get("sales")) {
+  //     orderedParams.push(`sales=${params.get("sales")}`);
+  //   }
+  //   if (params.get("feature")) {
+  //     orderedParams.push(`feature=${params.get("feature")}`);
+  //   }
+  //   if (params.get("price_min")) {
+  //     orderedParams.push(`price_min=${params.get("price_min")}`);
+  //   }
+  //   if (params.get("price_max")) {
+  //     orderedParams.push(`price_max=${params.get("price_max")}`);
+  //   }
+
+  //   // Create URL with search term in path
+  //   const searchPath = searchQuery.trim()
+  //     ? `/search/${searchQuery.trim()}`
+  //     : "/search";
+  //   const queryString =
+  //     orderedParams.length > 0 ? "?" + orderedParams.join("&") : "";
+  //   const newUrl = `${searchPath}${queryString}`;
+
+  //   console.log(newUrl, "here is new url for search");
+
+  //   router.push(newUrl);
+  // };
+
   const updateSearchInUrl = () => {
     const params = new URLSearchParams(searchParams.toString());
 
-    // Remove search from params as it will be in the path
+    // Remove old 'search' param if it exists
     params.delete("search");
 
-    // Create URL with ordered parameters
+    // Add term in query for category pages
+    if (pathname.startsWith("/category")) {
+      if (searchQuery.trim()) {
+        params.set("term", searchQuery.trim());
+      } else {
+        params.set("term", "");
+      }
+    }
+
+    // Build query string with ordered parameters
     const orderedParams = [];
-
-    // Add other parameters in specific order
-    if (params.get("tags")) {
-      orderedParams.push(`tags=${params.get("tags")}`);
-    }
-    if (params.get("sales")) {
-      orderedParams.push(`sales=${params.get("sales")}`);
-    }
-    if (params.get("feature")) {
+    if (params.get("term")) orderedParams.push(`term=${params.get("term")}`);
+    if (params.get("tags")) orderedParams.push(`tags=${params.get("tags")}`);
+    if (params.get("sales")) orderedParams.push(`sales=${params.get("sales")}`);
+    if (params.get("feature"))
       orderedParams.push(`feature=${params.get("feature")}`);
-    }
-    if (params.get("price_min")) {
+    if (params.get("price_min"))
       orderedParams.push(`price_min=${params.get("price_min")}`);
-    }
-    if (params.get("price_max")) {
+    if (params.get("price_max"))
       orderedParams.push(`price_max=${params.get("price_max")}`);
-    }
 
-    // Create URL with search term in path
-    const searchPath = searchQuery.trim()
-      ? `/search/${searchQuery.trim()}`
-      : "/search";
     const queryString =
       orderedParams.length > 0 ? "?" + orderedParams.join("&") : "";
-    const newUrl = `${searchPath}${queryString}`;
+
+    console.log(queryString, "this is for queryString");
+
+    let newUrl = "";
+    if (pathname.startsWith("/category")) {
+      // ✅ Keep category path
+      newUrl = `${pathname}${queryString}`;
+    } else {
+      // ✅ Use /search path
+      const searchPath = searchQuery.trim()
+        ? `/search/${searchQuery.trim()}`
+        : "/search";
+      newUrl = `${searchPath}${queryString}`;
+    }
+
+    console.log(newUrl, "newurl part for url ");
 
     router.push(newUrl);
   };
@@ -1054,12 +1245,37 @@ xl:relative xl:translate-x-0 z-20 xl:p-0 xl:shadow-none xl:block
                 <DropdownSection title="Categories">
                   <ul className="text-sm 1xl:space-y-[14px] space-y-3 h-44 pr-2 overflow-auto tags">
                     <li className="flex justify-between items-center rounded cursor-pointer group">
-                      <Link
-                        href="/search"
-                        className={`p2 group-hover:text-primary flex-1 ${!searchParams.get("tags") && !searchParams.get("sales") && !searchParams.get("feature") && !searchParams.get("price_min") && !searchParams.get("price_max") ? "font-bold" : ""}`}
+                      <button
+                        onClick={() => {
+                          const params = new URLSearchParams(
+                            searchParams.toString()
+                          );
+
+                          // Remove only category-related stuff (base/subcategory if you use them)
+                          params.delete("base");
+                          params.delete("subcategory");
+
+                          // Build new URL with /search as the base
+                          const queryString = params.toString();
+                          const newUrl = queryString
+                            ? `/search?${queryString}`
+                            : "/search";
+
+                          router.push(newUrl);
+                        }}
+                        className={`p2 group-hover:text-primary flex-1 text-left ${
+                          !searchParams.get("tags") &&
+                          !searchParams.get("sales") &&
+                          !searchParams.get("feature") &&
+                          !searchParams.get("price_min") &&
+                          !searchParams.get("price_max")
+                            ? "font-bold"
+                            : ""
+                        }`}
                       >
                         All Categories
-                      </Link>
+                      </button>
+
                       <span className="p2">
                         {filterData?.categories?.reduce(
                           (total, cat) =>
@@ -1378,7 +1594,7 @@ xl:relative xl:translate-x-0 z-20 xl:p-0 xl:shadow-none xl:block
               </p>
             </div>
             <div className="xl:flex hidden gap-2">
-              {["Best seller", "Newest", "Best rated", "Trending", "Price"].map(
+              {/* {["Best seller", "Newest", "Best rated", "Trending", "Price"].map(
                 (tab) => (
                   <button
                     key={tab}
@@ -1425,7 +1641,54 @@ xl:relative xl:translate-x-0 z-20 xl:p-0 xl:shadow-none xl:block
                     )}
                   </button>
                 )
-              )}
+              )} */}
+
+              {options.map((opt) => (
+                <button
+                  key={opt.value}
+                  className={`btn rounded font-normal flex items-center justify-center gap-[6px] ${
+                    sort === opt.value
+                      ? "bg-primary text-white border border-primary"
+                      : "bg-white text-black border border-primary/10"
+                  }`}
+                  onClick={() => handleSortChange(opt.value)}
+                >
+                  {opt.name}
+                  {sort === opt.value && (
+                    <span>
+                      {sortDirection === "desc" ? (
+                        // Down Arrow
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="12"
+                          height="8"
+                          viewBox="0 0 9 6"
+                          fill="none"
+                        >
+                          <path
+                            d="M4.16979 5.07357C4.35861 5.23964 4.64139 5.23964 4.83021 5.07357L8.83021 1.55556C8.93814 1.46064 9 1.32385 9 1.18011V0.744831C9 0.314253 8.492 0.0850332 8.16916 0.369941L4.83084 3.31602C4.64182 3.48283 4.35818 3.48283 4.16916 3.31602L0.830842 0.36994C0.508002 0.0850325 0 0.314253 0 0.744832V1.18011C0 1.32385 0.061859 1.46064 0.169791 1.55556L4.16979 5.07357Z"
+                            fill="white"
+                          />
+                        </svg>
+                      ) : (
+                        // Up Arrow
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="12"
+                          height="8"
+                          viewBox="0 0 9 6"
+                          fill="none"
+                        >
+                          <path
+                            d="M4.83021 0.926427C4.64139 0.760364 4.35861 0.760364 4.16979 0.926427L0.169791 4.44444C0.061859 4.53936 0 4.67615 0 4.81989V5.25517C0 5.68575 0.508002 5.91497 0.830842 5.63006L4.16916 2.68398C4.35818 2.51717 4.64182 2.51717 4.83084 2.68398L8.16916 5.63006C8.492 5.91497 9 5.68575 9 5.25517V4.81989C9 4.67615 8.93814 4.53936 8.83021 4.44444L4.83021 0.926427Z"
+                            fill="white"
+                          />
+                        </svg>
+                      )}
+                    </span>
+                  )}
+                </button>
+              ))}
             </div>
           </div>
 
@@ -1558,12 +1821,45 @@ xl:relative xl:translate-x-0 z-20 xl:p-0 xl:shadow-none xl:block
                 </div>
               ))} */}
 
-            {console.log(
-              formatLabel(pathname.split("/")?.[2]),
-              "this is for form label"
-            )}
+            {/* {console.log(searchParams.get("term"), "this is for form label")} */}
 
-            {pathname.split("/")?.[1] === "search" &&
+            {/* {pathname.split("/")?.[1] === "search" &&
+              (searchParams.get("term") || pathname.split("/")?.[2]) && (
+                <div className="flex items-center justify-center divide-x divide-primary/10 bg-blue-300 border border-primary/10 p-[1px] rounded-[4px] flex-shrink-0">
+                  <p className="p2 sm:px-2 px-1">
+                    Term :{" "}
+                    <span className="!text-black">
+                      {console.log(
+                        searchParams.get("term"),
+                        "search parmas for condition"
+                      )}
+                      {searchParams.get("term")
+                        ? formatLabel(searchParams.get("term"))
+                        : formatLabel(pathname.split("/")?.[2]).replace(
+                            /%20/g,
+                            " "
+                          )}
+                    </span>
+                  </p>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="27"
+                    height="27"
+                    viewBox="0 0 9 9"
+                    fill="none"
+                    className="px-2 flex-shrink-0 cursor-pointer"
+                    onClick={() => removeFilter("term")}
+                  >
+                    <path
+                      d="M8.80065 0.206172C8.7375 0.142889 8.66249 0.0926821 8.5799 0.0584261C8.49732 0.02417 8.40879 0.00653721 8.31939 0.00653721C8.22999 0.00653721 8.14146 0.02417 8.05888 0.0584261C7.97629 0.0926821 7.90128 0.142889 7.83813 0.206172L4.5 3.53747L1.16187 0.199346C1.09867 0.136145 1.02364 0.086012 0.941068 0.0518081C0.858492 0.0176043 0.769989 6.65925e-10 0.68061 0C0.591231 -6.65925e-10 0.502727 0.0176043 0.420151 0.0518081C0.337576 0.086012 0.262546 0.136145 0.199346 0.199346C0.136145 0.262546 0.086012 0.337576 0.0518081 0.420151C0.0176043 0.502727 -6.65925e-10 0.591231 0 0.68061C6.65925e-10 0.769989 0.0176043 0.858492 0.0518081 0.941068C0.086012 1.02364 0.136145 1.09867 0.199346 1.16187L3.53747 4.5L0.199346 7.83813C0.136145 7.90133 0.086012 7.97636 0.0518081 8.05893C0.0176043 8.14151 0 8.23001 0 8.31939C0 8.40877 0.0176043 8.49727 0.0518081 8.57985C0.086012 8.66242 0.136145 8.73745 0.199346 8.80065C0.262546 8.86385 0.337576 8.91399 0.420151 8.94819C0.502727 8.9824 0.591231 9 0.68061 9C0.769989 9 0.858492 8.9824 0.941068 8.94819C1.02364 8.91399 1.09867 8.86385 1.16187 8.80065L4.5 5.46253L7.83813 8.80065C7.90133 8.86385 7.97636 8.91399 8.05893 8.94819C8.14151 8.9824 8.23001 9 8.31939 9C8.40877 9 8.49727 8.9824 8.57985 8.94819C8.66242 8.91399 8.73745 8.86385 8.80065 8.80065C8.86385 8.73745 8.91399 8.66242 8.94819 8.57985C8.9824 8.49727 9 8.40877 9 8.31939C9 8.23001 8.9824 8.14151 8.94819 8.05893C8.91399 7.97636 8.86385 7.90133 8.80065 7.83813L5.46253 4.5L8.80065 1.16187C9.06006 0.902469 9.06006 0.465577 8.80065 0.206172Z"
+                      fill="#0156D5"
+                    />
+                  </svg>
+                </div>
+              )} */}
+
+            {(pathname.split("/")?.[1] === "search" ||
+              searchParams.get("term")) &&
               (searchParams.get("term") || pathname.split("/")?.[2]) && (
                 <div className="flex items-center justify-center divide-x divide-primary/10 bg-blue-300 border border-primary/10 p-[1px] rounded-[4px] flex-shrink-0">
                   <p className="p2 sm:px-2 px-1">
