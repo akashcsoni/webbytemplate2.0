@@ -109,6 +109,7 @@ const SearchPageContent = ({ slug }) => {
   const searchParams = useSearchParams();
   // console.log(searchParams);
   const pathname = usePathname();
+  // console.log(pathname.split("/")?.[1] === "search");
   const prevFilterState = useRef({});
 
   // Add mounted state to handle client-side rendering
@@ -136,13 +137,15 @@ const SearchPageContent = ({ slug }) => {
   // Initialize search query from pathname
   const initialSearchQuery = (() => {
     const segments = pathname.split("/");
+    // console.log(segments, "this is for segment");
     return segments[2] || "";
   })();
 
-  console.log(initialSearchQuery, "initialSearchQueryinitialSearchQuery");
+  // console.log(initialSearchQuery, "initialSearchQueryinitialSearchQuery");
 
   const [searchQuery, setSearchQuery] = useState(initialSearchQuery);
-  console.log(searchQuery, "this is for search query");
+  // const filtteredSearchQuery = initialSearchQuery.replace(/%20/g, " ");
+  // console.log(filtteredSearchQuery, "this is for search query");
 
   // Add a ref to track if price was changed by user
   const priceChangedByUser = React.useRef(false);
@@ -303,7 +306,6 @@ const SearchPageContent = ({ slug }) => {
     return `${currentPath}${orderedParams.length > 0 ? "?" + orderedParams.join("&") : ""}`;
   };
 
-  // Function to remove a filter
   const removeFilter = (type, value) => {
     const params = new URLSearchParams(searchParams.toString());
 
@@ -346,6 +348,27 @@ const SearchPageContent = ({ slug }) => {
         params.delete("price_max");
         setPriceRange([0, 500]); // Reset price range when removing price filter
         break;
+      case "term": // New case for handling the search term
+        // Get the current path and remove the search term segment
+        const newPathname = "/search";
+        // Clear the input field state
+        setSearchQuery("");
+        // Clear the URLSearchParams, then rebuild from the remaining filters
+        // This is necessary to prevent any leftover search params from the old URL
+        const newParams = new URLSearchParams();
+        params.forEach((value, key) => {
+          // Exclude any parameters related to the search term
+          if (key !== "term" && key !== "initialSearchQuery") {
+            newParams.set(key, value);
+          }
+        });
+
+        const queryString = newParams.toString();
+        const newUrl = queryString
+          ? `${newPathname}?${queryString}`
+          : newPathname;
+        router.push(newUrl);
+        return; // Return to avoid the default router.push at the end
     }
 
     router.push(createOrderedUrl(params));
@@ -390,33 +413,7 @@ const SearchPageContent = ({ slug }) => {
     router.push(createOrderedUrl(params));
   };
 
-  // Update handleTagChange
-  // const handleTagChange = (tagTitle) => {
-  //   console.log(tagTitle, "this is for tag title");
-
-  //   const currentTags = searchParams.get("tags")?.split(",") || [];
-  //   const tagSlug = titleToSlug(tagTitle);
-  //   let newTags;
-
-  //   if (currentTags.includes(tagSlug)) {
-  //     newTags = currentTags.filter((tag) => tag !== tagSlug);
-  //   } else {
-  //     newTags = [...currentTags, tagSlug];
-  //   }
-
-  //   const params = new URLSearchParams(searchParams.toString());
-  //   if (newTags.length > 0) {
-  //     params.set("tags", newTags.join(","));
-  //   } else {
-  //     params.delete("tags");
-  //   }
-
-  //   router.push(createOrderedUrl(params));
-  // };
-
   const handleTagChange = (slug) => {
-    // console.log(slug, "this is for tag slug");
-
     const currentTags = searchParams.get("tags")?.split(",") || [];
     let newTags;
 
@@ -567,24 +564,10 @@ const SearchPageContent = ({ slug }) => {
 
         const urlTags = searchParams.get("tags")?.split(",") || [];
 
-        // console.log(urlTags, "this is for url tags");
-
         const priceMin = searchParams.get("price_min");
         const priceMax = searchParams.get("price_max");
 
-        // const sales =
-        //   searchParams
-        //     .get("sales")
-        //     ?.split(",")
-        //     .map((slug) => slugToTitle(slug)) || [];
-
         const sales = searchParams.get("sales")?.split(",") || [];
-
-        // const features =
-        //   searchParams
-        //     .get("feature")
-        //     ?.split(",")
-        //     .map((slug) => slugToTitle(slug)) || [];
 
         const features = searchParams.get("feature")?.split(",") || [];
 
@@ -601,27 +584,9 @@ const SearchPageContent = ({ slug }) => {
           }
         }
 
-        // Apply selected values from URL
-        // setSelectedSales(sales.map((slug) => titleToSlug(slug)));
-        // setSelectedFeatures(features.map((slug) => titleToSlug(slug)));
         setSelectedSales(sales);
         setSelectedFeatures(features);
         setSelectedType(sort || "");
-
-        // // 🚀 Reset page to 1 if filters are applied and we're not already on page 1
-        // const isFiltering =
-        //   urlTags.length > 0 ||
-        //   features.length > 0 ||
-        //   sales.length > 0 ||
-        //   priceMin ||
-        //   priceMax ||
-        //   sort ||
-        //   termQuery;
-
-        // if (isFiltering && activePage !== 1) {
-        //   setActivePage(1); // ✅ force reset to page 1
-        //   return; // ⚠️ exit this render — next useEffect will trigger fetch again with page=1
-        // }
 
         const currentFilterState = {
           tags: urlTags.join(","),
@@ -695,23 +660,6 @@ const SearchPageContent = ({ slug }) => {
         if (features.length > 0) {
           apiParams.feature = features.join(",");
         }
-
-        // console.log("Filter Parameters:", {
-        //   base: apiParams.base,
-        //   search: apiParams.search,
-        //   sort: sort,
-        //   tags: urlTags,
-        //   priceRange: {
-        //     min: priceMin ? parseInt(priceMin) : undefined,
-        //     max: priceMax ? parseInt(priceMax) : undefined,
-        //   },
-        //   sales: sales,
-        //   features: features,
-        //   sort: sortOptions[sort] || "top_download",
-        //   order: sortDirection,
-        //   page: activePage,
-        //   pageSize,
-        // });
 
         const [filterResponse] = await Promise.all([
           strapiPost("product/filter", apiParams, themeConfig.TOKEN),
@@ -806,7 +754,7 @@ const SearchPageContent = ({ slug }) => {
       item.title.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
-    console.log(filteredTags);
+    // console.log(filteredTags);
     // Update the filtered tags in the state
     setsearchFilterData((prevData) => ({
       ...prevData,
@@ -852,7 +800,7 @@ const SearchPageContent = ({ slug }) => {
   // Update search handler
   const handleSearch = (e) => {
     const searchValue = e.target.value;
-    console.log(searchValue, "this is for search value");
+    // console.log(searchValue, "this is for search value");
     setSearchQuery(searchValue);
   };
 
@@ -897,87 +845,8 @@ const SearchPageContent = ({ slug }) => {
       orderedParams.length > 0 ? "?" + orderedParams.join("&") : "";
     const newUrl = `${searchPath}${queryString}`;
 
-    console.log(
-      newUrl,
-      "newUrlnewUrlnewUrlnewUrlnewUrlnewUrlnewUrlnewUrlnewUrlnewUrlnewUrl"
-    );
-
     router.push(newUrl);
   };
-
-  // Update the search form JSX
-  // const renderSearchForm = () => {
-  //   const inputProps = {
-  //     type: "text",
-  //     placeholder: "Search for mockups, Web Templates and More.....",
-  //     className:
-  //       "w-full rounded-l sm:px-4 px-2.5 placeholder:text-gray-300 outline-none lg:h-10 h-9 p2",
-  //   };
-
-  //   if (mounted) {
-  //     console.log(searchQuery, "this for search query");
-  //     // Client-side rendering
-  //     Object.assign(inputProps, {
-  //       value: searchQuery,
-  //       onChange: handleSearch,
-  //       onKeyDown: (e) => {
-  //         if (e.key === "Enter") {
-  //           e.preventDefault();
-  //           updateSearchInUrl();
-  //         }
-  //       },
-  //     });
-  //   } else {
-  //     // Server-side rendering
-  //     Object.assign(inputProps, {
-  //       defaultValue: initialSearchQuery,
-  //       readOnly: true,
-  //     });
-  //   }
-
-  //   const formContent = (
-  //     <>
-  //       <input {...inputProps} />
-  //       <button
-  //         type={mounted ? "submit" : "button"}
-  //         className="bg-[#0156d5] text-white lg:py-3 py-2.5 px-[18px] rounded-r flex items-center justify-center"
-  //       >
-  //         <svg
-  //           xmlns="http://www.w3.org/2000/svg"
-  //           width="20"
-  //           height="20"
-  //           viewBox="0 0 24 24"
-  //           fill="none"
-  //           stroke="currentColor"
-  //           strokeWidth="2"
-  //           strokeLinecap="round"
-  //           strokeLinejoin="round"
-  //           aria-hidden="true"
-  //         >
-  //           <circle cx="11" cy="11" r="8"></circle>
-  //           <path d="m21 21-4.3-4.3"></path>
-  //         </svg>
-  //       </button>
-  //     </>
-  //   );
-
-  //   if (mounted) {
-  //     return (
-  //       <form
-  //         onSubmit={handleSearchSubmit}
-  //         className="relative flex items-center sm:mb-5 mb-2 border border-gray-100 rounded-[5px] overflow-hidden"
-  //       >
-  //         {formContent}
-  //       </form>
-  //     );
-  //   }
-
-  //   return (
-  //     <div className="relative flex items-center sm:mb-5 mb-2 border border-gray-100 rounded-[5px] overflow-hidden">
-  //       {formContent}
-  //     </div>
-  //   );
-  // };
 
   const renderSearchForm = () => {
     const inputProps = {
@@ -991,7 +860,7 @@ const SearchPageContent = ({ slug }) => {
     const cleanSearchQuery = searchQuery.replace(/%20/g, " ");
 
     if (mounted) {
-      console.log(cleanSearchQuery, "this for cleaned search query");
+      // console.log(cleanSearchQuery, "this for cleaned search query");
       // Client-side rendering
       Object.assign(inputProps, {
         value: cleanSearchQuery,
@@ -1107,11 +976,20 @@ const SearchPageContent = ({ slug }) => {
 
   // Inside your component
   const segments = pathname.split("/");
+  let query = "";
   let heading = "Website Templates";
+
+  // console.log(segments[2], "this is for segments");
 
   if (segments[1] === "category" && segments[2]) {
     // Use last part of the path (could be main or sub-category)
     heading = slugToTitle(segments[segments.length - 1]);
+  }
+
+  if (segments[1] === "search" && segments[2]) {
+    // Use last part of the path (could be main or sub-category)
+    query = slugToTitle(segments[segments.length - 1]);
+    heading = query.replace(/%20/g, " ");
   }
 
   function formatLabel(value) {
@@ -1359,44 +1237,6 @@ xl:relative xl:translate-x-0 z-20 xl:p-0 xl:shadow-none xl:block
               ) : filterData?.sales?.length > 0 ? (
                 <DropdownSection title="Sales">
                   <ul className="text-sm 1xl:space-y-[14px] space-y-3 h-44 pr-2 overflow-auto tags">
-                    {/* {filterData?.sales?.map((sale, index) => (
-                      <li
-                        key={index}
-                        className="flex items-center justify-between"
-                      >
-                        {console.log(sale, "checking for sales")}
-                        <label className="flex items-center 1xl:space-x-3 space-x-1.5 cursor-pointer">
-                          <div className="relative flex items-center justify-center">
-                            <input
-                              type="checkbox"
-                              value={sale.title}
-                              checked={selectedSales.includes(
-                                titleToSlug(sale.title)
-                              )}
-                              onChange={() => handleSalesChange(sale.title)}
-                              className="form-checkbox 1xl:h-[18px] 1xl:w-[18px] w-4 h-4 !rounded-[4px] border-gray-100 border appearance-none checked:bg-primary"
-                            />
-                            <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              width={11}
-                              height={11}
-                              viewBox="0 0 24 24"
-                              className="absolute"
-                            >
-                              <path
-                                fill="white"
-                                d="m9.55 17.308l-4.97-4.97l.714-.713l4.256 4.256l9.156-9.156l.713.714z"
-                                strokeWidth={3}
-                                stroke="white"
-                              ></path>
-                            </svg>
-                          </div>
-                          <span className="p2">{sale.title}</span>
-                        </label>
-                        <span className="p2">{sale.count}</span>
-                      </li>
-                    ))}  */}
-
                     {filterData?.sales?.map((sale, index) => {
                       const isDisabled = sale?.count === 0;
 
@@ -1518,6 +1358,9 @@ xl:relative xl:translate-x-0 z-20 xl:p-0 xl:shadow-none xl:block
         </div>
 
         {/* Main section */}
+
+        {/* {console.log(heading, "this is for heading")} */}
+
         <main className="w-full xl:w-4/5">
           <h1 className="h2 mb-4">{heading}</h1>
           {renderSearchForm()}
@@ -1681,7 +1524,77 @@ xl:relative xl:translate-x-0 z-20 xl:p-0 xl:shadow-none xl:block
                 </svg>
               </div>
             )}
+            {/* {console.log(searchParams.get("term"))} */}
+            {/* this is for serach querry add tag when user search */}
+            {/* {pathname.split("/")?.[1] === "search" ||
+              (searchParams.get("term") && (
+                <div className="flex items-center justify-center divide-x divide-primary/10 bg-blue-300 border border-primary/10 p-[1px] rounded-[4px] flex-shrink-0">
+                  <p className="p2 sm:px-2 px-1">
+                    Term :{" "}
+                    {console.log(
+                      filtteredSearchQuery,
+                      "this is for filttered search query"
+                    )}
+                    <span className="!text-black">
+                      {searchParams.get("term")
+                        ? formatLabel(searchParams.get("term"))
+                        : filtteredSearchQuery}
+                    </span>
+                  </p>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="27"
+                    height="27"
+                    viewBox="0 0 9 9"
+                    fill="none"
+                    className="px-2 flex-shrink-0 cursor-pointer"
+                    onClick={() => removeFilter("term")}
+                  >
+                    <path
+                      d="M8.80065 0.206172C8.7375 0.142889 8.66249 0.0926821 8.5799 0.0584261C8.49732 0.02417 8.40879 0.00653721 8.31939 0.00653721C8.22999 0.00653721 8.14146 0.02417 8.05888 0.0584261C7.97629 0.0926821 7.90128 0.142889 7.83813 0.206172L4.5 3.53747L1.16187 0.199346C1.09867 0.136145 1.02364 0.086012 0.941068 0.0518081C0.858492 0.0176043 0.769989 6.65925e-10 0.68061 0C0.591231 -6.65925e-10 0.502727 0.0176043 0.420151 0.0518081C0.337576 0.086012 0.262546 0.136145 0.199346 0.199346C0.136145 0.262546 0.086012 0.337576 0.0518081 0.420151C0.0176043 0.502727 -6.65925e-10 0.591231 0 0.68061C6.65925e-10 0.769989 0.0176043 0.858492 0.0518081 0.941068C0.086012 1.02364 0.136145 1.09867 0.199346 1.16187L3.53747 4.5L0.199346 7.83813C0.136145 7.90133 0.086012 7.97636 0.0518081 8.05893C0.0176043 8.14151 0 8.23001 0 8.31939C0 8.40877 0.0176043 8.49727 0.0518081 8.57985C0.086012 8.66242 0.136145 8.73745 0.199346 8.80065C0.262546 8.86385 0.337576 8.91399 0.420151 8.94819C0.502727 8.9824 0.591231 9 0.68061 9C0.769989 9 0.858492 8.9824 0.941068 8.94819C1.02364 8.91399 1.09867 8.86385 1.16187 8.80065L4.5 5.46253L7.83813 8.80065C7.90133 8.86385 7.97636 8.91399 8.05893 8.94819C8.14151 8.9824 8.23001 9 8.31939 9C8.40877 9 8.49727 8.9824 8.57985 8.94819C8.66242 8.91399 8.73745 8.86385 8.80065 8.80065C8.86385 8.73745 8.91399 8.66242 8.94819 8.57985C8.9824 8.49727 9 8.40877 9 8.31939C9 8.23001 8.9824 8.14151 8.94819 8.05893C8.91399 7.97636 8.86385 7.90133 8.80065 7.83813L5.46253 4.5L8.80065 1.16187C9.06006 0.902469 9.06006 0.465577 8.80065 0.206172Z"
+                      fill="#0156D5"
+                    />
+                  </svg>
+                </div>
+              ))} */}
 
+            {console.log(
+              formatLabel(pathname.split("/")?.[2]),
+              "this is for form label"
+            )}
+
+            {pathname.split("/")?.[1] === "search" &&
+              (searchParams.get("term") || pathname.split("/")?.[2]) && (
+                <div className="flex items-center justify-center divide-x divide-primary/10 bg-blue-300 border border-primary/10 p-[1px] rounded-[4px] flex-shrink-0">
+                  <p className="p2 sm:px-2 px-1">
+                    Term :{" "}
+                    <span className="!text-black">
+                      {searchParams.get("term")
+                        ? formatLabel(searchParams.get("term"))
+                        : formatLabel(pathname.split("/")?.[2]).replace(
+                            /%20/g,
+                            " "
+                          )}
+                    </span>
+                  </p>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="27"
+                    height="27"
+                    viewBox="0 0 9 9"
+                    fill="none"
+                    className="px-2 flex-shrink-0 cursor-pointer"
+                    onClick={() => removeFilter("term")}
+                  >
+                    <path
+                      d="M8.80065 0.206172C8.7375 0.142889 8.66249 0.0926821 8.5799 0.0584261C8.49732 0.02417 8.40879 0.00653721 8.31939 0.00653721C8.22999 0.00653721 8.14146 0.02417 8.05888 0.0584261C7.97629 0.0926821 7.90128 0.142889 7.83813 0.206172L4.5 3.53747L1.16187 0.199346C1.09867 0.136145 1.02364 0.086012 0.941068 0.0518081C0.858492 0.0176043 0.769989 6.65925e-10 0.68061 0C0.591231 -6.65925e-10 0.502727 0.0176043 0.420151 0.0518081C0.337576 0.086012 0.262546 0.136145 0.199346 0.199346C0.136145 0.262546 0.086012 0.337576 0.0518081 0.420151C0.0176043 0.502727 -6.65925e-10 0.591231 0 0.68061C6.65925e-10 0.769989 0.0176043 0.858492 0.0518081 0.941068C0.086012 1.02364 0.136145 1.09867 0.199346 1.16187L3.53747 4.5L0.199346 7.83813C0.136145 7.90133 0.086012 7.97636 0.0518081 8.05893C0.0176043 8.14151 0 8.23001 0 8.31939C0 8.40877 0.0176043 8.49727 0.0518081 8.57985C0.086012 8.66242 0.136145 8.73745 0.199346 8.80065C0.262546 8.86385 0.337576 8.91399 0.420151 8.94819C0.502727 8.9824 0.591231 9 0.68061 9C0.769989 9 0.858492 8.9824 0.941068 8.94819C1.02364 8.91399 1.09867 8.86385 1.16187 8.80065L4.5 5.46253L7.83813 8.80065C7.90133 8.86385 7.97636 8.91399 8.05893 8.94819C8.14151 8.9824 8.23001 9 8.31939 9C8.40877 9 8.49727 8.9824 8.57985 8.94819C8.66242 8.91399 8.73745 8.86385 8.80065 8.80065C8.86385 8.73745 8.91399 8.66242 8.94819 8.57985C8.9824 8.49727 9 8.40877 9 8.31939C9 8.23001 8.9824 8.14151 8.94819 8.05893C8.91399 7.97636 8.86385 7.90133 8.80065 7.83813L5.46253 4.5L8.80065 1.16187C9.06006 0.902469 9.06006 0.465577 8.80065 0.206172Z"
+                      fill="#0156D5"
+                    />
+                  </svg>
+                </div>
+              )}
+
+            {/* {console.log(searchParams, "this is for serach parmas")} */}
             {/* Tags */}
             {searchParams
               .get("tags")
@@ -1710,7 +1623,6 @@ xl:relative xl:translate-x-0 z-20 xl:p-0 xl:shadow-none xl:block
                   </svg>
                 </div>
               ))}
-
             {/* Sales */}
             {searchParams
               .get("sales")
@@ -1740,7 +1652,6 @@ xl:relative xl:translate-x-0 z-20 xl:p-0 xl:shadow-none xl:block
                   </svg>
                 </div>
               ))}
-
             {/* Features */}
             {searchParams
               .get("feature")
@@ -1770,7 +1681,6 @@ xl:relative xl:translate-x-0 z-20 xl:p-0 xl:shadow-none xl:block
                   </svg>
                 </div>
               ))}
-
             {/* Price Range */}
             {(searchParams.get("price_min") ||
               searchParams.get("price_max")) && (
@@ -1798,7 +1708,6 @@ xl:relative xl:translate-x-0 z-20 xl:p-0 xl:shadow-none xl:block
                 </svg>
               </div>
             )}
-
             {/* Clear All button - only show if there are any filters */}
             {(searchParams.get("sort") ||
               searchParams.get("tags") ||
