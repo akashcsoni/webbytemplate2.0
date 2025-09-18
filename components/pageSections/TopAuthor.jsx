@@ -260,7 +260,7 @@ const TopAuthor = ({ title, description }) => {
                   content: "rounded-[10px]",
                 }}
               >
-                <DropdownTrigger>
+                {/* <DropdownTrigger>
                   <Button className="btn black-btn opacity-1 hover:opacity-1 focus:opacity-1 active:opacity-1 flex items-center !justify-between w-full gap-10">
                     Sort-by :
                     {filters.find((f) => f.value === activeFilter)?.name ||
@@ -278,7 +278,27 @@ const TopAuthor = ({ title, description }) => {
                       />
                     </svg>
                   </Button>
+                </DropdownTrigger> */}
+
+                <DropdownTrigger>
+                  <Button className="btn black-btn opacity-1 hover:opacity-1 focus:opacity-1 active:opacity-1 flex items-center !justify-between w-full gap-10">
+                    {filters.find((f) => f.value === activeFilter)?.name ||
+                      "Select"}
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="9"
+                      height="9"
+                      viewBox="0 0 9 9"
+                      fill="none"
+                    >
+                      <path
+                        d="M4.16979 7.07357C4.35861 7.23964 4.64139 7.23964 4.83021 7.07357L8.83021 3.55556C8.93814 3.46064 9 3.32385 9 3.18011V2.74483C9 2.31425 8.492 2.08503 8.16916 2.36994L4.83084 5.31602C4.64182 5.48283 4.35818 5.48283 4.16916 5.31602L0.830842 2.36994C0.508002 2.08503 0 2.31425 0 2.74483V3.18011C0 3.32385 0.061859 3.46064 0.169791 3.55556L4.16979 7.07357Z"
+                        fill="currentColor"
+                      />
+                    </svg>
+                  </Button>
                 </DropdownTrigger>
+
                 <DropdownMenu
                   aria-label="Static Actions"
                   className="p-0 rounded"

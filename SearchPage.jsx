@@ -105,6 +105,8 @@ const SearchPageLoading = () => (
 
 // Main SearchPage component
 const SearchPageContent = ({ slug }) => {
+  console.log(slug, "this ios for checking slug");
+
   const router = useRouter();
   const searchParams = useSearchParams();
   // console.log(searchParams);
