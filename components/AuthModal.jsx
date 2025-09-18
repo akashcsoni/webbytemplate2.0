@@ -1646,7 +1646,7 @@ export default function AuthModal() {
                   className={`flex items-center border ${error ? "border-red-500" : "border-gray-200"
                     } rounded-md py-[11px] px-2 relative country-dropdown`}
                 >
-                  <div className="relative z-10">
+                  <div className="z-10">
                     <button
                       type="button"
                       onClick={toggleDropdown}
@@ -1673,13 +1673,13 @@ export default function AuthModal() {
                       </svg>
                     </button>
                     {isDropdownOpen && (
-                      <ul className="absolute z-20 bg-white border border-gray-200 rounded-[5px] shadow-lg max-h-36 overflow-y-auto w-full left-0 top-full mt-1">
+                      <ul className="absolute z-20 bg-white border border-[#D9DDE2] rounded-[5px] shadow-lg max-h-36 overflow-y-auto w-[180px] left-0 top-full mt-[1px] scrollbar-custom">
                         {countries.map((country) => (
                           <li
                             key={country.short_name}
                             onClick={() => selectCountry(country)}
-                            className={`cursor-pointer px-4 py-2 text-sm hover:bg-gray-100 transition-colors ${selectedCountry.code === country.code
-                              ? "bg-blue-500 text-white hover:bg-blue-600"
+                            className={`cursor-pointer px-4 py-2 text-sm font-normal text-[#505050] hover:bg-gray-100 transition-colors ${selectedCountry.code === country.code
+                              ? "bg-primary text-white hover:bg-primary"
                               : ""
                               }`}
                           >

@@ -105,6 +105,8 @@ const SearchPageLoading = () => (
 
 // Main SearchPage component
 const SearchPageContent = ({ slug }) => {
+  // console.log(slug, "this ios for checking slug");
+
   const router = useRouter();
   const searchParams = useSearchParams();
   // console.log(searchParams);
@@ -667,7 +669,7 @@ const SearchPageContent = ({ slug }) => {
           }
         }
 
-        console.log(sortOptions[sort]);
+        // console.log(sortOptions[sort]);
 
         // Prepare API parameters
         const apiParams = {
@@ -678,7 +680,7 @@ const SearchPageContent = ({ slug }) => {
           order: sortDirection,
           sorting: selected,
         };
-        console.log(searchParams.get("sort"), "this is for api params");
+        // console.log(searchParams.get("sort"), "this is for api params");
 
         if (sort) {
           apiParams.type = sort;
@@ -911,6 +913,7 @@ const SearchPageContent = ({ slug }) => {
 
   const updateSearchInUrl = () => {
     const params = new URLSearchParams(searchParams.toString());
+    // console.log(params, "this is for testing params");
 
     // Remove old 'search' param if it exists
     params.delete("search");
@@ -924,9 +927,15 @@ const SearchPageContent = ({ slug }) => {
       }
     }
 
+    // console.log(
+    //   searchParams.get("sort"),
+    //   "this is for set sort value test jdfksdfk"
+    // );
+
     // Build query string with ordered parameters
     const orderedParams = [];
     if (params.get("term")) orderedParams.push(`term=${params.get("term")}`);
+    if (params.get("sort")) orderedParams.push(`sort=${params.get("sort")}`);
     if (params.get("tags")) orderedParams.push(`tags=${params.get("tags")}`);
     if (params.get("sales")) orderedParams.push(`sales=${params.get("sales")}`);
     if (params.get("feature"))
@@ -953,7 +962,7 @@ const SearchPageContent = ({ slug }) => {
       newUrl = `${searchPath}${queryString}`;
     }
 
-    // console.log(newUrl, "newurl part for url ");
+    console.log(newUrl, "newurl part for url ");
 
     router.push(newUrl);
   };
@@ -1040,6 +1049,14 @@ const SearchPageContent = ({ slug }) => {
     searchTerm = "",
     existingParams = null
   ) => {
+    // console.log(
+    //   categorySlug,
+    //   "categorySlugcategorySlugcategorySlugcategorySlugcategorySlugcategorySlug"
+    // );
+    // console.log(
+    //   existingParams,
+    //   "existingParamsexistingParamsexistingParamsexistingParamsexistingParamsexistingParamsexistingParams"
+    // );
     // Create the base URL with category path
     let url = `/category/${categorySlug}`;
     const params = new URLSearchParams();
@@ -1073,6 +1090,11 @@ const SearchPageContent = ({ slug }) => {
       if (currentParams.get("price_max")) {
         params.set("price_max", currentParams.get("price_max"));
       }
+
+      // Add sort method
+      if (currentParams.get("sort")) {
+        params.set("sort", currentParams.get("sort"));
+      }
     }
 
     // Append query string if we have any parameters
@@ -1080,6 +1102,8 @@ const SearchPageContent = ({ slug }) => {
     if (queryString) {
       url += `?${queryString}`;
     }
+
+    // console.log(url, "url for get new redirect url");
 
     return url;
   };
@@ -1179,6 +1203,11 @@ xl:relative xl:translate-x-0 z-20 xl:p-0 xl:shadow-none xl:block
                           const newUrl = queryString
                             ? `/search?${queryString}`
                             : "/search";
+
+                          // console.log(
+                          //   newUrl,
+                          //   "all categories console for test redirects"
+                          // );
 
                           router.push(newUrl);
                         }}
@@ -1695,9 +1724,28 @@ xl:relative xl:translate-x-0 z-20 xl:p-0 xl:shadow-none xl:block
               searchParams.get("term")) && (
               <>
                 {categories.length > 0 && (
-                  <p className="text-md font-normal mr-3 font-medium whitespace-nowrap">
+                  <button
+                    onClick={() => {
+                      const params = new URLSearchParams(
+                        searchParams.toString()
+                      );
+
+                      // Remove only category-related stuff (base/subcategory if you use them)
+                      params.delete("base");
+                      params.delete("subcategory");
+
+                      // Build new URL with /search as the base
+                      const queryString = params.toString();
+                      const newUrl = queryString
+                        ? `/search?${queryString}`
+                        : "/search";
+
+                      router.push(newUrl);
+                    }}
+                    className="!text-lg font-medium whitespace-nowrap underline underline-offset-2"
+                  >
                     All Categories
-                  </p>
+                  </button>
                 )}
 
                 {categories.map((cat, idx) => (
@@ -1965,7 +2013,8 @@ xl:relative xl:translate-x-0 z-20 xl:p-0 xl:shadow-none xl:block
                 searchParams.get("sales") ||
                 searchParams.get("feature") ||
                 searchParams.get("price_min") ||
-                searchParams.get("price_max")) && (
+                searchParams.get("price_max") ||
+                searchParams.get("term")) && (
                 <Link
                   href="/search"
                   className="2xl:!text-base sm:!text-[15px] !text-sm all-btn inline-flex items-center border-b border-transparent hover:border-primary gap-2"
