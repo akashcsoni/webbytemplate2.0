@@ -1111,6 +1111,9 @@ h4 {
 .cms-content table td {
   @apply border border-black 1xl:p-[14px] sm:p-[12px] p-[10px];
 }
+.cms-content table tbody tr td{
+  @apply text-[#505050];
+}
 
 .cms-content table thead th {
   @apply font-bold;
@@ -1119,7 +1122,9 @@ h4 {
 .reactstar span{
   @apply md:!text-[37px] !text-[32px];
 }
-
+.cms-content a{
+  @apply text-primary hover:text-black focus:text-black active:text-black;
+}
 
 /* Custom scrollbar for a specific section */
 .scrollbar-custom::-webkit-scrollbar {
