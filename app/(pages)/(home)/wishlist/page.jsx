@@ -16,7 +16,9 @@ export default function wishlistPage() {
     clearToWishlist,
     wishlistTocart,
   } = useWishlist();
-  const { addToCart, openCart } = useCart();
+  // const { cartId } = useCart();
+  const { addToCart, openCart, cartId } = useCart();
+
   const [removingItemId, setRemovingItemId] = useState(null);
 
   const LoadingSkeleton = () => (
@@ -240,13 +242,11 @@ export default function wishlistPage() {
                         {item.product?.title}
                       </Link>
                     </td>
-                    <td className="xl:p-4 p-3">
-                      ${item.extra_info?.[0]?.price.toFixed(2)}
-                    </td>
+                    <td className="xl:p-4 p-3">${item.total.toFixed(2)}</td>
                     <td className="xl:p-4 p-3">
                       <button
                         onClick={() => handleAddToCart(item)}
-                        className="text-blue-500 hover:border-primary border-b border-white flex items-center gap-2"
+                        className="text-blue-500 hover:underline flex items-center gap-2"
                       >
                         Add to cart{" "}
                         <svg
