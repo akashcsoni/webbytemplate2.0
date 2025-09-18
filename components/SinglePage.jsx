@@ -336,7 +336,7 @@ export default function SinglePage({ pageData }) {
                         </span>
                       </div>
                     )}
-                    <span className="p2">{pageData.author.full_name}</span>
+                    <span className="p2 hover:text-primary" ><Link href={`/author/${pageData?.author?.username}`}>{pageData.author.full_name}</Link></span>
                   </div>
                 )}
 
@@ -491,7 +491,10 @@ export default function SinglePage({ pageData }) {
 
         <div className="lg:hidden block">
           {pageData?.gallery_image && pageData?.gallery_image?.length > 0 && (
-            <SinglePageSwiper gallery_images={pageData?.gallery_image} product={pageData} />
+            <SinglePageSwiper
+              gallery_images={pageData?.gallery_image}
+              product={pageData}
+            />
           )}
         </div>
 
@@ -553,8 +556,8 @@ export default function SinglePage({ pageData }) {
                           <div className="w-full ">
                             <button
                               className={`w-full btn flex items-center justify-center transition-all duration-200 ${isProductInCart
-                                  ? "btn-secondary border-2 border-primary text-primary hover:btn-primary"
-                                  : "btn-primary"
+                                ? "btn-secondary border-2 border-primary text-primary hover:btn-primary"
+                                : "btn-primary"
                                 }`}
                               onClick={handleAddToCart}
                               disabled={loading}
@@ -622,7 +625,7 @@ export default function SinglePage({ pageData }) {
                               <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
                               <polyline points="22 4 12 14.01 9 11.01" />
                             </svg>
-                            <span>Already in your cart</span>
+                            <span>Added to cart</span>
                           </div>
                         )}
 
@@ -641,7 +644,7 @@ export default function SinglePage({ pageData }) {
                               <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
                               <polyline points="22 4 12 14.01 9 11.01" />
                             </svg>
-                            <span>Already in your wishlist</span>
+                            <span>Wishlisted</span>
                           </div>
                         )}
                       </div>
@@ -725,11 +728,7 @@ export default function SinglePage({ pageData }) {
                         .replace(/\b\w/g, (c) => c.toUpperCase());
 
                       return (
-                        <TagPill
-                          key={tag.slug}
-                          text={title}
-                          slug={tag.slug}
-                        />
+                        <TagPill key={tag.slug} text={title} slug={tag.slug} />
                       );
                     })}
                   </div>

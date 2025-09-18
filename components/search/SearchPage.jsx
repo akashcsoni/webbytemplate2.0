@@ -1742,7 +1742,7 @@ xl:relative xl:translate-x-0 z-20 xl:p-0 xl:shadow-none xl:block
 
                       router.push(newUrl);
                     }}
-                    className="!text-lg font-medium whitespace-nowrap underline underline-offset-2"
+                    className="!text-lg font-medium whitespace-nowrap underline underline-offset-2 hover:text-primary"
                   >
                     All Categories
                   </button>
