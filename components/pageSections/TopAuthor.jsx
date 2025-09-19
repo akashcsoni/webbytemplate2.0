@@ -38,7 +38,7 @@ const TopAuthor = ({ title, description }) => {
   const [author, setAuthor] = useState([]);
   const [pagination, setPagination] = useState({});
   const [activePage, setActivePage] = useState(1);
-  const [activeFilter, setActiveFilter] = useState("a_to_z"); // default
+  const [activeFilter, setActiveFilter] = useState("by_sales"); // default
   const [loading, setLoading] = useState(true);
   const currentUrl = typeof window !== "undefined" ? window.location.href : "";
   const skeletonCount = 8; // always show 8 skeletons while loading
@@ -72,7 +72,7 @@ const TopAuthor = ({ title, description }) => {
     },
   ];
 
-  const pageSize = 4;
+  const pageSize = 12;
 
   const getAuthore = async () => {
     try {
@@ -254,7 +254,7 @@ const TopAuthor = ({ title, description }) => {
           )}
 
           <div className="md:mt-[42px] sm:mt-10 mt-[30px]">
-            <div className="w-fit">
+            <div className="w-fit ml-auto mr-0">
               <Dropdown
                 classNames={{
                   content: "rounded-[10px]",
@@ -327,9 +327,10 @@ const TopAuthor = ({ title, description }) => {
                 <AuthorCardSkeleton key={i} />
               ))
             : author.map((company) => (
-                <div
+                <Link
                   key={company.id}
                   className="border border-gray-100 rounded-lg sm:pt-[10px] pt-0 grid content-between"
+                  href={`/author/${company?.slug}`}
                 >
                   <div className="py-6 px-4 flex flex-col items-center text-center">
                     {/* Logo */}
@@ -348,8 +349,10 @@ const TopAuthor = ({ title, description }) => {
                     )}
 
                     {/* Title */}
-                    <h3 className="font-semibold 1xl:mb-2 mb-[6px] 2xl:text-2xl lg:text-[23px] text-xl">
-                      {company?.name}
+
+                    <h3 className="font-semibold 1xl:mb-2 mb-[6px] 2xl:text-2xl lg:text-[23px] text-xl text-black hover:text-primary">
+                      {company?.name?.charAt(0).toUpperCase() +
+                        company?.name?.slice(1)}
                     </h3>
                     <p className="text-gray-200 flex items-center gap-2 flex-wrap">
                       Joined by
@@ -405,7 +408,7 @@ const TopAuthor = ({ title, description }) => {
                         {company?.totalSales}
                       </p>
                     </div>
-                    <Link href={`/author/${company?.name}`}>
+                    <Link href={`/author/${company?.slug}`}>
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
                         width="12"
@@ -426,7 +429,7 @@ const TopAuthor = ({ title, description }) => {
                       </svg>
                     </Link>
                   </div>
-                </div>
+                </Link>
               ))}
         </div>
 
