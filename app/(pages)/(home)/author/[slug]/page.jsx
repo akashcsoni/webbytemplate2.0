@@ -23,7 +23,7 @@ const page = ({ params }) => {
   const [activePage, setActivePage] = useState(1);
   const [notFound, setNotFound] = useState(false);
   const [loading, setLoading] = useState(true);
-  console.log(loading);
+
   const { slug } = use(params);
 
   const short = [
@@ -47,7 +47,7 @@ const page = ({ params }) => {
 
   const [selectedSort, setSelectedSort] = useState(short[0].value);
 
-  const pageSize = 10;
+  const pageSize = 20;
 
   const getAuthoreProduct = async (id) => {
     try {
@@ -89,6 +89,7 @@ const page = ({ params }) => {
     if (page >= 1 && page <= pagination.pageCount) {
       setActivePage(page);
     }
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const generatePageNumbers = () => {
@@ -111,11 +112,6 @@ const page = ({ params }) => {
       year: "numeric",
     });
   }
-
-  // ✅ Skeleton for loading state
-  const SkeletonCard = () => (
-    <div className="animate-pulse bg-gray-200/30 rounded-lg h-[300px] w-full"></div>
-  );
 
   return !notFound ? (
     <section className="py-[22px]">
@@ -197,9 +193,34 @@ const page = ({ params }) => {
         ) : (
           <>
             <div className="flex items-center text-sm xl:mb-[14px] mb-3">
-              <a className="text-primary hover:underline" href="/">
+              <Link className="text-primary hover:underline" href="/">
                 Home
-              </a>
+              </Link>
+              <span className="mx-2 text-[#505050]">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="10"
+                  height="10"
+                  viewBox="0 0 10 10"
+                  fill="none"
+                >
+                  <g clipPath="url(#clip0_590_7)">
+                    <path
+                      fillRule="evenodd"
+                      clipRule="evenodd"
+                      d="M4.20444 4.99981L0.664062 1.46056L1.46056 0.664062L5.79519 4.99981L1.46056 9.33556L0.664062 8.54019L4.20444 4.99981ZM7.57944 4.99981L4.03906 1.46056L4.83556 0.664062L9.17019 4.99981L4.83556 9.33556L4.03906 8.54019L7.57944 4.99981Z"
+                      fill="#505050"
+                    ></path>
+                  </g>
+                </svg>
+              </span>
+
+              <Link
+                className="text-[#505050] hover:text-primary hover:underline"
+                href="/top-authore"
+              >
+                Top Author
+              </Link>
               <span className="mx-2 text-[#505050]">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -278,7 +299,7 @@ const page = ({ params }) => {
                           />
                         </g>
                       </svg>
-                      <span>{author?.totalSales}</span>
+                      {author?.totalSales && <span>{author?.totalSales}</span>}
                     </div>
                   </div>
                 </div>
@@ -296,10 +317,10 @@ const page = ({ params }) => {
                   <div className="flex items-center justify-between w-full sm:flex-row flex-col gap-4">
                     <div className="sm:flex items-center w-[70%] flex-wrap xl:gap-3 md:gap-[10px] sm:gap-2 gap-[6px] hidden">
                       <button
-                        className={`btn black-btn ${
+                        className={`btn ${
                           selectedCategory === "All"
-                            ? "bg-black text-white"
-                            : ""
+                            ? "bg-primary text-white"
+                            : "black-btn"
                         }`}
                         onClick={() => setSelectedCategory("All")}
                       >
@@ -309,10 +330,10 @@ const page = ({ params }) => {
                       {category.map((cat, index) => (
                         <button
                           key={index}
-                          className={`btn black-btn ${
+                          className={`btn ${
                             selectedCategory === cat.slug
-                              ? "bg-black text-white"
-                              : ""
+                              ? "bg-primary text-white"
+                              : "black-btn"
                           }`}
                           onClick={() => setSelectedCategory(cat.slug)}
                         >
