@@ -49,6 +49,7 @@ export async function middleware(request) {
               Authorization: `Bearer ${accessToken}`,
             },
           }
+          
         );
 
         if (apiResponse.ok) {
