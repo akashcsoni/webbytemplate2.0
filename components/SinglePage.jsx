@@ -281,6 +281,50 @@ export default function SinglePage({ pageData }) {
     }
   };
 
+  const formatContent = (content) => {
+    if (!content) return "";
+
+    const lines = content.split("\n");
+    let result = "";
+    let buffer = [];
+
+    const flushBuffer = () => {
+      if (buffer.length) {
+        const block = buffer
+          .join("\n")
+          .trim()
+          .split(/\n\s*\n/)
+          .map((p) => `<p>${p.trim().replace(/\n/g, "<br />")}</p>`)
+          .join("");
+        result += block;
+        buffer = [];
+      }
+    };
+
+    lines.forEach((line, i) => {
+      const trimmed = line.trim();
+
+      if (/<[a-z][\s\S]*>/i.test(trimmed)) {
+        // Case 1: HTML tag → flush plain text first
+        flushBuffer();
+        result += trimmed;
+
+        // ✅ Skip following empty line(s) after HTML
+        if (i + 1 < lines.length && lines[i + 1].trim() === "") {
+          return;
+        }
+      } else {
+        // Case 2: Plain text → keep it
+        buffer.push(line);
+      }
+    });
+
+    // Flush any leftover plain text
+    flushBuffer();
+
+    return result;
+  };
+
   return (
     <div className="overflow-hidden">
       <div className="container mx-auto px-4 py-6">
@@ -336,7 +380,11 @@ export default function SinglePage({ pageData }) {
                         </span>
                       </div>
                     )}
-                    <span className="p2 hover:text-primary" ><Link href={`/author/${pageData?.author?.username}`}>{pageData.author.full_name}</Link></span>
+                    <span className="p2 hover:text-primary">
+                      <Link href={`/author/${pageData?.author?.username}`}>
+                        {pageData.author.full_name}
+                      </Link>
+                    </span>
                   </div>
                 )}
 
@@ -555,10 +603,11 @@ export default function SinglePage({ pageData }) {
                         <div className="flex items-center gap-4">
                           <div className="w-full ">
                             <button
-                              className={`w-full btn flex items-center justify-center transition-all duration-200 ${isProductInCart
-                                ? "btn-secondary border-2 border-primary text-primary hover:btn-primary"
-                                : "btn-primary"
-                                }`}
+                              className={`w-full btn flex items-center justify-center transition-all duration-200 ${
+                                isProductInCart
+                                  ? "btn-secondary border-2 border-primary text-primary hover:btn-primary"
+                                  : "btn-primary"
+                              }`}
                               onClick={handleAddToCart}
                               disabled={loading}
                             >
@@ -769,7 +818,9 @@ export default function SinglePage({ pageData }) {
               {pageData?.description && (
                 <span
                   className="sm:space-y-5 space-y-2 sm:mb-[50px] mb-4"
-                  dangerouslySetInnerHTML={{ __html: pageData?.description }}
+                  dangerouslySetInnerHTML={{
+                    __html: formatContent(pageData?.description)
+                  }}
                 />
               )}
               <hr className="border border-primary/10 xl:my-[25px] sm:my-5 my-2" />
