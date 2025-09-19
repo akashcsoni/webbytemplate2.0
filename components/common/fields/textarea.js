@@ -7,7 +7,10 @@ export default function FormTextArea({
   onChange,
   error,
   defaultValueData,
+  infoButton, // 👈 new prop
 }) {
+  // console.log(infoButton, "this is for info buton");
+
   const [localError, setlocalError] = useState("");
   const [value, setValue] = useState(defaultValueData || "");
 
@@ -40,10 +43,12 @@ export default function FormTextArea({
       disableAutosize
       classNames={{
         inputWrapper:
-          "w-full border border-primary/10 xl:py-3 py-2 xl:px-5 md:px-4 px-3 lg:!h-[120px] md:!h-[110px] !h-[100px] focus:outline-none !bg-white rounded-[5px]",
+          // "w-full border border-primary/10 xl:py-3 py-2 xl:px-5 md:px-4 px-3 lg:!h-[120px] md:!h-[110px] !h-[100px] focus:outline-none !bg-white rounded-[5px]",
+          "w-full border border-primary/10 xl:py-3 py-2 xl:px-5 md:px-4 px-3 focus:outline-none !bg-white rounded-[5px]",
         base: "!bg-white",
         input:
-          "xl:!text-base md:!text-[15px] !text-sm placeholder:!text-gray-300 !font-normal h-full",
+          // "xl:!text-base md:!text-[15px] !text-sm placeholder:!text-gray-300 !font-normal h-full",
+          "xl:!text-base md:!text-[15px] !text-sm placeholder:!text-gray-300 !font-normal h-full resize-y",
         label: "2xl:text-base md:text-[15px] !text-black text-sm ",
         errorMessage: "!text-[#ef4444]",
       }}
@@ -82,7 +87,13 @@ export default function FormTextArea({
         setValue(e.target.value);
       }}
       value={value}
-      label={`${data?.label}${getRules(data.rules)}`}
+      // label={`${data?.label}${getRules(data.rules)} `}
+      label={
+        <div className="flex items-center gap-2">
+          {`${data?.label}${getRules(data.rules)}`}
+          {infoButton && infoButton} {/* 👈 render info button here */}
+        </div>
+      }
       labelPlacement="outside"
       placeholder={data?.placeholder}
       type={data?.type}

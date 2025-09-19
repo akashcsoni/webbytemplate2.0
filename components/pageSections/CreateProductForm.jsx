@@ -1,7 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Button } from "@heroui/react";
+import {
+  Modal,
+  ModalContent,
+  ModalHeader,
+  ModalBody,
+  Button,
+  useDisclosure,
+} from "@heroui/react";
 import {
   FormInput,
   FormTextArea,
@@ -22,6 +29,7 @@ import { themeConfig } from "@/config/theamConfig";
 import { useAuth } from "@/contexts/AuthContext";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
+import { Info } from "lucide-react";
 
 export default function ProductsPage({
   button,
@@ -34,6 +42,7 @@ export default function ProductsPage({
   const { authUser } = useAuth();
   const router = useRouter();
   const [formValues, setFormValues] = useState({});
+  // console.log(formValues, "this is for form bvalues");
   const [validationErrors, setValidationErrors] = useState({});
   const [loading, setLoading] = useState(false);
   const [defaultValueData, setDefaultValueData] = useState({});
@@ -48,13 +57,36 @@ export default function ProductsPage({
   const [topicsData, setTopicsData] = useState([]);
   const [isEditMode, setIsEditMode] = useState(false);
   const [hasSubmitted, setHasSubmitted] = useState(false);
+  const { isOpen, onOpen, onOpenChange } = useDisclosure();
+  const [modalContent, setModalContent] = useState("");
 
-  console.log("🔍 Current defaultValueData:", defaultValueData);
-  console.log("🔍 Current formValues:", formValues);
-  console.log(
-    "🔍 Dynamic fields:",
-    dynamicCategoryFields.map((f) => f.name)
-  );
+  // 🔑 One function handles multiple field types
+  const handleInfoClick = (fieldLabel) => {
+    switch (fieldLabel) {
+      case "Product Overview":
+        setModalContent(
+          "The Product Overview should be a short summary (1–2 sentences) highlighting the product’s key features and purpose."
+        );
+        break;
+
+      case "Product Description / Detailed Description":
+        setModalContent(
+          "The Product Description should be detailed. Include specifications, use cases, dimensions, and other relevant details to help customers understand the product better."
+        );
+        break;
+
+      default:
+        setModalContent("No details available for this field.");
+    }
+    onOpen();
+  };
+
+  // console.log("🔍 Current defaultValueData:", defaultValueData);
+  // console.log("🔍 Current formValues:", formValues);
+  // console.log(
+  //   "🔍 Dynamic fields:",
+  //   dynamicCategoryFields.map((f) => f.name)
+  // );
 
   // Helper function to safely get image ID with better error handling
   const getImageId = (image) => {
@@ -321,8 +353,14 @@ export default function ProductsPage({
         .replace(/^-+|-+$/g, "");
     }
 
-    const { title, description, grid_image, existing_product, price } =
-      formValues;
+    const {
+      title,
+      description,
+      grid_image,
+      existing_product,
+      price,
+      overview,
+    } = formValues;
     const slug = generateSlug(title);
     let optionIds = [];
 
@@ -356,11 +394,18 @@ export default function ProductsPage({
       }
     });
 
+    function removeHtmlAttributes(html) {
+      // Replace all attributes inside HTML tags
+      return html.replace(/<(\w+)(\s+[^>]+)>/g, "<$1>");
+    }
+
     const data = {
       ...formValues,
       title,
       slug,
       description,
+      // overview, // ✅ Added this line
+      overview_description: removeHtmlAttributes(overview), // ✅ Map frontend field to backend field name
       grid_image,
       author: authUser?.documentId,
       all: existing_product,
@@ -384,7 +429,7 @@ export default function ProductsPage({
       const { id } = (await params) || {};
 
       if (id) {
-        console.log("🔄 Edit mode - Processing image updates");
+        // console.log("🔄 Edit mode - Processing image updates");
 
         // Get current image IDs from formValues (most up-to-date)
         const currentGridImageId = getImageId(formValues.grid_image);
@@ -396,12 +441,12 @@ export default function ProductsPage({
           originalImageData?.gallery_image
         );
 
-        console.log("Image comparison:", {
-          currentGrid: currentGridImageId,
-          originalGrid: originalGridImageId,
-          currentGallery: currentGalleryIds,
-          originalGallery: originalGalleryIds,
-        });
+        // console.log("Image comparison:", {
+        //   currentGrid: currentGridImageId,
+        //   originalGrid: originalGridImageId,
+        //   currentGallery: currentGalleryIds,
+        //   originalGallery: originalGalleryIds,
+        // });
 
         // Handle grid_image deletion - only delete if there was an original and it's different
         if (
@@ -409,7 +454,7 @@ export default function ProductsPage({
           originalGridImageId !== currentGridImageId &&
           originalGridImageId > 0
         ) {
-          console.log("🗑️ Deleting old grid image:", originalGridImageId);
+          // console.log("🗑️ Deleting old grid image:", originalGridImageId);
           try {
             await strapiDelete(
               `upload/files/${originalGridImageId}`,
@@ -426,13 +471,13 @@ export default function ProductsPage({
             originalId > 0 && !currentGalleryIds.includes(originalId)
         );
 
-        console.log("🖼️ Gallery image IDs to delete:", imagesToDelete);
+        // console.log("🖼️ Gallery image IDs to delete:", imagesToDelete);
 
         // Delete removed images
         for (const imageIdToDelete of imagesToDelete) {
           if (imageIdToDelete > 0) {
             try {
-              console.log("🗑️ Deleting gallery image:", imageIdToDelete);
+              // console.log("🗑️ Deleting gallery image:", imageIdToDelete);
               await strapiDelete(
                 `upload/files/${imageIdToDelete}`,
                 themeConfig.TOKEN
@@ -460,7 +505,7 @@ export default function ProductsPage({
           formValues,
           defaultValueData
         );
-        console.log("🔄 Preserved dynamic field data:", preservedDynamicData);
+        // console.log("🔄 Preserved dynamic field data:", preservedDynamicData);
 
         // ✅ CRITICAL FIX: Only update defaultValueData and preserve current formValues
         try {
@@ -473,10 +518,10 @@ export default function ProductsPage({
           );
 
           if (updatedProductData?.data) {
-            console.log(
-              "📊 Fresh product data from server:",
-              updatedProductData.data
-            );
+            // console.log(
+            //   "📊 Fresh product data from server:",
+            //   updatedProductData.data
+            // );
 
             // Format the fresh data properly for defaultValueData (reference only)
             const freshFormattedData = {
@@ -493,6 +538,7 @@ export default function ProductsPage({
               existing_product: extractIds(
                 updatedProductData.data?.all_technology?.products
               ),
+              overview: updatedProductData.data?.overview_description || "",
               price: updatedProductData.data?.price?.sales_price,
               // ✅ CRITICAL: Properly format image data with URLs
               grid_image: formatImageData(updatedProductData.data?.grid_image),
@@ -503,10 +549,10 @@ export default function ProductsPage({
               ...preservedDynamicData,
             };
 
-            console.log(
-              "✅ Formatted fresh data with preserved dynamic fields:",
-              freshFormattedData
-            );
+            // console.log(
+            //   "✅ Formatted fresh data with preserved dynamic fields:",
+            //   freshFormattedData
+            // );
 
             // ✅ CRITICAL FIX: Update defaultValueData with preserved dynamic data
             setDefaultValueData(freshFormattedData);
@@ -524,15 +570,6 @@ export default function ProductsPage({
               grid_image: updatedProductData.data?.grid_image,
               gallery_image: updatedProductData.data?.gallery_image,
             });
-
-            console.log(
-              "✅ Form values after save (should preserve dynamic fields):",
-              {
-                ...formValues,
-                grid_image: freshFormattedData.grid_image,
-                gallery_image: freshFormattedData.gallery_image,
-              }
-            );
           }
         } catch (fetchError) {
           console.error("Failed to fetch updated product data:", fetchError);
@@ -562,7 +599,7 @@ export default function ProductsPage({
       console.error("Product save failed:", error);
       toast.error(
         error?.response?.data?.error?.message ||
-        "An error occurred while saving the product."
+          "An error occurred while saving the product."
       );
     } finally {
       setLoading(false);
@@ -570,7 +607,7 @@ export default function ProductsPage({
   };
 
   const handleFieldChange = async (name, value) => {
-    console.log(`🔄 Field changed: ${name}`, value);
+    // console.log(`🔄 Field changed: ${name}`, value);
 
     const updatedFormValues = {
       ...formValues,
@@ -644,7 +681,25 @@ export default function ProductsPage({
       validation: { required: "Description is required" },
       rules: ["required"],
       className: "mb-5",
+      infoVisible: true,
     },
+
+    // this is for product overview
+
+    {
+      position: 3,
+      name: "overview",
+      label: "Product Overview",
+      placeholder: "Enter product overview",
+      type: "textarea",
+      html: "textarea",
+      description: "Provide a detailed overview of the product",
+      validation: { required: "Overview is required" },
+      rules: ["required"],
+      className: "mb-5",
+      infoVisible: true,
+    },
+
     {
       position: 4,
       name: "preview_link",
@@ -857,6 +912,7 @@ export default function ProductsPage({
   ];
 
   const getFields = (data) => {
+    // console.log(data?.infoVisible);
     if (
       ["product_zip", "product_zip_url"].includes(data.name) &&
       !showFiels.includes(data.name)
@@ -885,6 +941,17 @@ export default function ProductsPage({
             onChange={handleFieldChange}
             error={validationErrors[data.name]}
             defaultValueData={defaultValueData[data.name]}
+            infoButton={
+              data?.infoVisible === true && (
+                <button
+                  type="button"
+                  onClick={() => handleInfoClick(data.label)}
+                  className="text-gray-500 hover:text-gray-700"
+                >
+                  <Info size={18} />
+                </button>
+              )
+            }
           />
         );
       case "upload":
@@ -1123,7 +1190,7 @@ export default function ProductsPage({
         token: themeConfig.TOKEN,
       });
       if (productData?.data) {
-        console.log("📊 Raw product data from server:", productData.data);
+        // console.log("📊 Raw product data from server:", productData.data);
 
         const firstVendorProduct = productData.data?.vendor_given_products?.[0];
         const processedVendorProducts =
@@ -1144,6 +1211,11 @@ export default function ProductsPage({
             return item;
           }) || [];
 
+        function removeHtmlAttributes(html) {
+          // Replace all attributes inside HTML tags
+          return html.replace(/<(\w+)(\s+[^>]+)>/g, "<$1>");
+        }
+
         // ✅ CRITICAL FIX: Properly format image data with URLs
         const finalDefaultValueData = {
           ...productData.data,
@@ -1158,6 +1230,10 @@ export default function ProductsPage({
           ),
           price: productData.data?.price?.sales_price,
           vendor_given_products: processedVendorProducts,
+          overview: productData.data?.overview_description || "",
+          overview_description: removeHtmlAttributes(
+            productData.data?.overview_description || ""
+          ),
           // ✅ CRITICAL: Format images properly with URLs
           grid_image: formatImageData(productData.data?.grid_image),
           gallery_image: formatImageArray(productData.data?.gallery_image),
@@ -1169,11 +1245,11 @@ export default function ProductsPage({
           gallery_image: productData.data?.gallery_image,
         });
 
-        console.log("📊 Formatted product data:", finalDefaultValueData);
-        console.log(
-          "🖼️ Gallery images formatted:",
-          finalDefaultValueData.gallery_image
-        );
+        // console.log("📊 Formatted product data:", finalDefaultValueData);
+        // console.log(
+        //   "🖼️ Gallery images formatted:",
+        //   finalDefaultValueData.gallery_image
+        // );
 
         setDefaultValueData(finalDefaultValueData);
         setFormValues(finalDefaultValueData);
@@ -1185,258 +1261,266 @@ export default function ProductsPage({
   };
 
   return (
-    <div>
-      <div className="flex items-center justify-between w-full">
-        <h1 className="h2 py-[30px]">{title}</h1>
-      </div>
-      <div className="overflow-hidden">
-        <div className="flex gap-4 md:flex-row flex-col items-start justify-between">
-          {form && (
-            <div className="xl:w-2/3 md:w-[60%] w-full bg-white border-primary/10 border rounded-md overflow-hidden">
-              <div className="border-b border-primary/10 bg-white">
-                <p className="text-black py-[6px] px-5">{sub_title}</p>
-              </div>
-              <form
-                className="pt-4 pb-9 px-5"
-                id="product_details_form"
-                onSubmit={save_product_details}
-              >
-                <div className="flex flex-col">
-                  {getFieldDefinitions()?.map((data, index) => {
-                    return (
-                      getFields(data) && (
-                        <div
-                          key={data.name || index}
-                          className={data.className}
-                        >
-                          {getFields(data)}
-                        </div>
-                      )
-                    );
-                  })}
-                  {isEditMode && defaultValueData?.product_zip_url && (
+    <>
+      <div>
+        <div className="flex items-center justify-between w-full">
+          <h1 className="h2 py-[30px]">{title}</h1>
+        </div>
+        <div className="overflow-hidden">
+          <div className="flex gap-4 md:flex-row flex-col items-start justify-between">
+            {form && (
+              <div className="xl:w-2/3 md:w-[60%] w-full bg-white border-primary/10 border rounded-md overflow-hidden">
+                <div className="border-b border-primary/10 bg-white">
+                  <p className="text-black py-[6px] px-5">{sub_title}</p>
+                </div>
+                <form
+                  className="pt-4 pb-9 px-5"
+                  id="product_details_form"
+                  onSubmit={save_product_details}
+                >
+                  <div className="flex flex-col">
+                    {getFieldDefinitions()?.map((data, index) => {
+                      return (
+                        getFields(data) && (
+                          <div key={index} className={data.className}>
+                            {getFields(data)}
+                          </div>
+                        )
+                      );
+                    })}
+
+                    {isEditMode && defaultValueData?.product_zip_url && (
+                      <Button
+                        type="button"
+                        onClick={() => {
+                          if (defaultValueData?.product_zip_url) {
+                            window.open(
+                              defaultValueData.product_zip_url,
+                              "_blank"
+                            );
+                          }
+                        }}
+                        className="group btn btn-secondary flex items-center justify-center gap-[10px] w-[220px] xl:!py-[11px] py-[10px] h-auto mb-3"
+                      >
+                        Download Existing Zip
+                      </Button>
+                    )}
+                    {dynamicCategoryFields?.map((data) => {
+                      return (
+                        getFields(data) && (
+                          <div
+                            key={`dynamic-${data.name}`}
+                            className={data.className}
+                          >
+                            {getFields(data)}
+                          </div>
+                        )
+                      );
+                    })}
+                  </div>
+                  {button && (
                     <Button
-                      type="button"
-                      onClick={() => {
-                        if (defaultValueData?.product_zip_url) {
-                          window.open(
-                            defaultValueData.product_zip_url,
-                            "_blank"
-                          );
-                        }
-                      }}
-                      className="group btn btn-secondary flex items-center justify-center gap-[10px] w-[220px] xl:!py-[11px] py-[10px] h-auto mb-3"
+                      disabled={loading}
+                      type="submit"
+                      startContent={
+                        loading && (
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="20"
+                            height="20"
+                            viewBox="0 0 50 50"
+                            fill="none"
+                          >
+                            <circle cx="40" cy="25" r="3" fill="currentColor">
+                              <animate
+                                attributeName="opacity"
+                                values="1;0.2;1"
+                                dur="1.2s"
+                                begin="0s"
+                                repeatCount="indefinite"
+                              />
+                            </circle>
+                            <circle
+                              cx="37.99038105676658"
+                              cy="32.5"
+                              r="3"
+                              fill="currentColor"
+                            >
+                              <animate
+                                attributeName="opacity"
+                                values="1;0.2;1"
+                                dur="1.2s"
+                                begin="0.1s"
+                                repeatCount="indefinite"
+                              />
+                            </circle>
+                            <circle
+                              cx="32.5"
+                              cy="37.99038105676658"
+                              r="3"
+                              fill="currentColor"
+                            >
+                              <animate
+                                attributeName="opacity"
+                                values="1;0.2;1"
+                                dur="1.2s"
+                                begin="0.2s"
+                                repeatCount="indefinite"
+                              />
+                            </circle>
+                            <circle cx="25" cy="40" r="3" fill="currentColor">
+                              <animate
+                                attributeName="opacity"
+                                values="1;0.2;1"
+                                dur="1.2s"
+                                begin="0.30000000000000004s"
+                                repeatCount="indefinite"
+                              />
+                            </circle>
+                            <circle
+                              cx="17.500000000000004"
+                              cy="37.99038105676658"
+                              r="3"
+                              fill="currentColor"
+                            >
+                              <animate
+                                attributeName="opacity"
+                                values="1;0.2;1"
+                                dur="1.2s"
+                                begin="0.4s"
+                                repeatCount="indefinite"
+                              />
+                            </circle>
+                            <circle
+                              cx="12.00961894323342"
+                              cy="32.5"
+                              r="3"
+                              fill="currentColor"
+                            >
+                              <animate
+                                attributeName="opacity"
+                                values="1;0.2;1"
+                                dur="1.2s"
+                                begin="0.5s"
+                                repeatCount="indefinite"
+                              />
+                            </circle>
+                            <circle
+                              cx="10"
+                              cy="25.000000000000004"
+                              r="3"
+                              fill="currentColor"
+                            >
+                              <animate
+                                attributeName="opacity"
+                                values="1;0.2;1"
+                                dur="1.2s"
+                                begin="0.6000000000000001s"
+                                repeatCount="indefinite"
+                              />
+                            </circle>
+                            <circle
+                              cx="12.009618943233418"
+                              cy="17.500000000000004"
+                              r="3"
+                              fill="currentColor"
+                            >
+                              <animate
+                                attributeName="opacity"
+                                values="1;0.2;1"
+                                dur="1.2s"
+                                begin="0.7000000000000001s"
+                                repeatCount="indefinite"
+                              />
+                            </circle>
+                            <circle
+                              cx="17.499999999999993"
+                              cy="12.009618943233423"
+                              r="3"
+                              fill="currentColor"
+                            >
+                              <animate
+                                attributeName="opacity"
+                                values="1;0.2;1"
+                                dur="1.2s"
+                                begin="0.8s"
+                                repeatCount="indefinite"
+                              />
+                            </circle>
+                            <circle
+                              cx="24.999999999999996"
+                              cy="10"
+                              r="3"
+                              fill="currentColor"
+                            >
+                              <animate
+                                attributeName="opacity"
+                                values="1;0.2;1"
+                                dur="1.2s"
+                                begin="0.9s"
+                                repeatCount="indefinite"
+                              />
+                            </circle>
+                            <circle
+                              cx="32.5"
+                              cy="12.009618943233422"
+                              r="3"
+                              fill="currentColor"
+                            >
+                              <animate
+                                attributeName="opacity"
+                                values="1;0.2;1"
+                                dur="1.2s"
+                                begin="1s"
+                                repeatCount="indefinite"
+                              />
+                            </circle>
+                            <circle
+                              cx="37.99038105676658"
+                              cy="17.499999999999993"
+                              r="3"
+                              fill="currentColor"
+                            >
+                              <animate
+                                attributeName="opacity"
+                                values="1;0.2;1"
+                                dur="1.2s"
+                                begin="1.1s"
+                                repeatCount="indefinite"
+                              />
+                            </circle>
+                          </svg>
+                        )
+                      }
+                      className="group btn btn-primary flex items-center justify-center gap-[10px] w-[220px] xl:!py-[11px] py-[10px] h-auto sm:mt-7 mt-5"
                     >
-                      Download Existing Zip
+                      {button?.label}
                     </Button>
                   )}
-                  {dynamicCategoryFields?.map((data) => {
-                    return (
-                      getFields(data) && (
-                        <div
-                          key={`dynamic-${data.name}`}
-                          className={data.className}
-                        >
-                          {getFields(data)}
-                        </div>
-                      )
-                    );
-                  })}
-                </div>
-                {button && (
-                  <Button
-                    disabled={loading}
-                    type="submit"
-                    startContent={
-                      loading && (
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          width="20"
-                          height="20"
-                          viewBox="0 0 50 50"
-                          fill="none"
-                        >
-                          <circle cx="40" cy="25" r="3" fill="currentColor">
-                            <animate
-                              attributeName="opacity"
-                              values="1;0.2;1"
-                              dur="1.2s"
-                              begin="0s"
-                              repeatCount="indefinite"
-                            />
-                          </circle>
-                          <circle
-                            cx="37.99038105676658"
-                            cy="32.5"
-                            r="3"
-                            fill="currentColor"
-                          >
-                            <animate
-                              attributeName="opacity"
-                              values="1;0.2;1"
-                              dur="1.2s"
-                              begin="0.1s"
-                              repeatCount="indefinite"
-                            />
-                          </circle>
-                          <circle
-                            cx="32.5"
-                            cy="37.99038105676658"
-                            r="3"
-                            fill="currentColor"
-                          >
-                            <animate
-                              attributeName="opacity"
-                              values="1;0.2;1"
-                              dur="1.2s"
-                              begin="0.2s"
-                              repeatCount="indefinite"
-                            />
-                          </circle>
-                          <circle cx="25" cy="40" r="3" fill="currentColor">
-                            <animate
-                              attributeName="opacity"
-                              values="1;0.2;1"
-                              dur="1.2s"
-                              begin="0.30000000000000004s"
-                              repeatCount="indefinite"
-                            />
-                          </circle>
-                          <circle
-                            cx="17.500000000000004"
-                            cy="37.99038105676658"
-                            r="3"
-                            fill="currentColor"
-                          >
-                            <animate
-                              attributeName="opacity"
-                              values="1;0.2;1"
-                              dur="1.2s"
-                              begin="0.4s"
-                              repeatCount="indefinite"
-                            />
-                          </circle>
-                          <circle
-                            cx="12.00961894323342"
-                            cy="32.5"
-                            r="3"
-                            fill="currentColor"
-                          >
-                            <animate
-                              attributeName="opacity"
-                              values="1;0.2;1"
-                              dur="1.2s"
-                              begin="0.5s"
-                              repeatCount="indefinite"
-                            />
-                          </circle>
-                          <circle
-                            cx="10"
-                            cy="25.000000000000004"
-                            r="3"
-                            fill="currentColor"
-                          >
-                            <animate
-                              attributeName="opacity"
-                              values="1;0.2;1"
-                              dur="1.2s"
-                              begin="0.6000000000000001s"
-                              repeatCount="indefinite"
-                            />
-                          </circle>
-                          <circle
-                            cx="12.009618943233418"
-                            cy="17.500000000000004"
-                            r="3"
-                            fill="currentColor"
-                          >
-                            <animate
-                              attributeName="opacity"
-                              values="1;0.2;1"
-                              dur="1.2s"
-                              begin="0.7000000000000001s"
-                              repeatCount="indefinite"
-                            />
-                          </circle>
-                          <circle
-                            cx="17.499999999999993"
-                            cy="12.009618943233423"
-                            r="3"
-                            fill="currentColor"
-                          >
-                            <animate
-                              attributeName="opacity"
-                              values="1;0.2;1"
-                              dur="1.2s"
-                              begin="0.8s"
-                              repeatCount="indefinite"
-                            />
-                          </circle>
-                          <circle
-                            cx="24.999999999999996"
-                            cy="10"
-                            r="3"
-                            fill="currentColor"
-                          >
-                            <animate
-                              attributeName="opacity"
-                              values="1;0.2;1"
-                              dur="1.2s"
-                              begin="0.9s"
-                              repeatCount="indefinite"
-                            />
-                          </circle>
-                          <circle
-                            cx="32.5"
-                            cy="12.009618943233422"
-                            r="3"
-                            fill="currentColor"
-                          >
-                            <animate
-                              attributeName="opacity"
-                              values="1;0.2;1"
-                              dur="1.2s"
-                              begin="1s"
-                              repeatCount="indefinite"
-                            />
-                          </circle>
-                          <circle
-                            cx="37.99038105676658"
-                            cy="17.499999999999993"
-                            r="3"
-                            fill="currentColor"
-                          >
-                            <animate
-                              attributeName="opacity"
-                              values="1;0.2;1"
-                              dur="1.2s"
-                              begin="1.1s"
-                              repeatCount="indefinite"
-                            />
-                          </circle>
-                        </svg>
-                      )
-                    }
-                    className="group btn btn-primary flex items-center justify-center gap-[10px] w-[220px] xl:!py-[11px] py-[10px] h-auto sm:mt-7 mt-5"
-                  >
-                    {button?.label}
-                  </Button>
-                )}
-              </form>
-            </div>
-          )}
-          {images && (
-            <div className="border border-primary/10 rounded-md overflow-hidden bg-white xl:w-1/3 md:w-[40%] w-full">
-              <div className="border-b border-primary/10">
-                <p className="text-black py-[6px] px-5">{sub_title}</p>
+                </form>
               </div>
-              {getImageFields()?.map((data, index) => {
-                return <div key={index}>{getFields(data)}</div>;
-              })}
-            </div>
-          )}
+            )}
+            {images && (
+              <div className="border border-primary/10 rounded-md overflow-hidden bg-white xl:w-1/3 md:w-[40%] w-full">
+                <div className="border-b border-primary/10">
+                  <p className="text-black py-[6px] px-5">{sub_title}</p>
+                </div>
+                {getImageFields()?.map((data, index) => {
+                  return <div key={index}>{getFields(data)}</div>;
+                })}
+              </div>
+            )}
+          </div>
         </div>
       </div>
-    </div>
+
+      {/* Modal */}
+      <Modal isOpen={isOpen} onOpenChange={onOpenChange}>
+        <ModalContent>
+          <ModalHeader className="font-semibold">Field Information</ModalHeader>
+          <ModalBody>{modalContent}</ModalBody>
+        </ModalContent>
+      </Modal>
+    </>
   );
 }

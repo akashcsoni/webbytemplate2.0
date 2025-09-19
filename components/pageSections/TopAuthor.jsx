@@ -7,12 +7,12 @@ import {
   DropdownMenu,
   DropdownItem,
   Button,
-  Link,
   Skeleton,
 } from "@heroui/react";
 import { strapiPost } from "@/lib/api/strapiClient";
 import { NO_FOUND_PRODUCT_GRID_IMAGE, themeConfig } from "@/config/theamConfig";
 import Image from "next/image";
+import Link from "next/link";
 
 function AuthorCardSkeleton() {
   return (
