@@ -49,6 +49,7 @@ export default function SinglePage({ pageData }) {
   const { addToCart, openCart, cartItems } = useCart();
   const { addToWishlist, wishlistItems } = useWishlist();
   const [wishlistLoading, setWishlistLoading] = useState(false);
+  const [showAllFeatures, setShowAllFeatures] = useState(false);
 
   // Check if current product is in cart
   const isProductInCart = cartItems?.some(
@@ -141,7 +142,7 @@ export default function SinglePage({ pageData }) {
       return;
     }
 
-    setLoading(true); // START loader
+    setLoading(true);
 
     try {
       const allLicenses = Array.isArray(pageData.all_license)
@@ -710,7 +711,8 @@ export default function SinglePage({ pageData }) {
               {/* Related Topics */}
 
               <div className="2xl:pt-4 lg;pt-1">
-                {pageData?.sub_title && (
+                
+                {/* {pageData?.sub_title && (
                   <>
                     <h5 className="text-[#000000] font-medium mb-4 2xl:pb-[18px] pb-3 border-primary/10 border-b">
                       Related Topics:
@@ -719,14 +721,14 @@ export default function SinglePage({ pageData }) {
                       {pageData?.sub_title}
                     </p>
                   </>
-                )}
+                )} */}
 
                 <div className="flex justify-between text-[#505050] flex-wrap gap-y-1">
-                  <p className="p2">
+                  <p className="p-2">
                     <span className="!text-black">Created :</span>{" "}
                     {formatDate(pageData?.createdAt)}
                   </p>
-                  <p className="p2">
+                  <p className="p-2">
                     <span className="!text-black">Updated :</span>{" "}
                     {formatDate(pageData?.createdAt)}
                   </p>
@@ -791,11 +793,53 @@ export default function SinglePage({ pageData }) {
                   <h5 className="font-medium border-b border-primary/10 sm:pb-[18px] pb-3">
                     Features:
                   </h5>
-                  <div className="sm:space-y-[14px] space-y-3 divide-y divide-primary/10">
-                    {pageData.features.map((feature) => (
-                      <FeatureItem key={feature.slug} text={feature.title} />
+                  <div className="space-y-0">
+                    {(showAllFeatures ? pageData.features : pageData.features.slice(0, 5)).map((feature, index, array) => (
+                      <div key={feature.slug} className="border-b border-primary/10 py-3">
+                        <FeatureItem text={feature.title} />
+                      </div>
                     ))}
                   </div>
+                  {pageData.features.length > 5 && (
+                    <button
+                      onClick={() => setShowAllFeatures(!showAllFeatures)}
+                      className="mt-3 text-primary hover:text-primary/80 text-sm font-medium flex items-center gap-1 transition-colors"
+                    >
+                      {showAllFeatures ? (
+                        <>
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            className="w-4 h-4"
+                          >
+                            <polyline points="6 15 12 9 18 15" />
+                          </svg>
+                          Show Less
+                        </>
+                      ) : (
+                        <>
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            className="w-4 h-4"
+                          >
+                            <polyline points="6 9 12 15 18 9" />
+                          </svg>
+                          Show All ({pageData.features.length})
+                        </>
+                      )}
+                    </button>
+                  )}
                 </div>
               )}
             </div>

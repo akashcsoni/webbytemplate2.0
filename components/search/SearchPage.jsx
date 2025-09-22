@@ -732,7 +732,9 @@ const SearchPageContent = ({ slug }) => {
           const { data, filter, pagination } = parsedResponse;
 
           if (data && Array.isArray(data)) {
-            setfilteredProducts(data);
+            const shuffledData = data.sort(() => Math.random() - 0.5);
+            // console.log(shuffledData);
+            setfilteredProducts(shuffledData);
             setTotalProducts(data.length);
             setPagination(pagination);
 

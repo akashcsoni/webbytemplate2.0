@@ -61,7 +61,8 @@ export default function ProductsList(props) {
         );
 
         const productsData = response.data || [];
-        setFilteredProducts(productsData);
+        const shuffledData = productsData.sort(() => Math.random() - 0.5);
+        setFilteredProducts(shuffledData);
         setError(null);
       } catch (err) {
         // console.error("Error fetching products:", err);

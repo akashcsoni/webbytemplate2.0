@@ -725,10 +725,10 @@ export default function CheckoutPage() {
             {/* gst number field */}
             {selectedCountry === "India" && (
               <div>
-                <label className="p2 !text-black mb-[6px]">GST Number *</label>
+                <label className="p2 !text-black mb-[6px]">GST Number</label>
                 <input
                   type="text"
-                  placeholder="First Name"
+                  placeholder="GST Number"
                   value={form.gst_number || ""}
                   onChange={(e) => handleChange("first_name", e.target.value)}
                   className={inputClass("first_name")}
