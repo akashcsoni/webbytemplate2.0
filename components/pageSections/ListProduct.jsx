@@ -119,7 +119,8 @@ export default function ProductsPage({
         if (response.data) {
           const productsData = response.data || [];
           setPageCount(response.pagination.pageCount);
-          setFilteredProducts(productsData);
+          const shuffledData = productsData.sort(() => Math.random() - 0.5);
+          setFilteredProducts(shuffledData);
         }
         // setError(null);
       } catch (err) {
