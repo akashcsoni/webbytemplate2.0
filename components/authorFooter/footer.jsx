@@ -11,8 +11,6 @@ export function AuthorFooter() {
             © 2025 WebbyTemplate.com owned by WebbyCrown Solutions. All rights
             reserved.
           </p>
-          <p className="p2 !text-white">Privacy Policy</p>
-          <p className="p2 !text-white">Refund Policy</p>
           <Image
             src="/images/payment-card.svg"
             alt="payment-card"
