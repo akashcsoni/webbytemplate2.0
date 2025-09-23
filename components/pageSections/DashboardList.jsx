@@ -408,7 +408,7 @@ export default function DashboardPage({ title }) {
     },
     {
       title: "Product Name",
-      field: "product",
+      field: "transaction_product",
       hozAlign: "center",
       widthGrow: 2,
     },
@@ -425,7 +425,7 @@ export default function DashboardPage({ title }) {
     }),
     order_id: item.order_id?.documentId || "N/A",
     type: item?.for || "N/A",
-    product: item?.product_id?.title, // static for now
+    transaction_product: item?.product_id?.title, // transaction product name
     price: `$${item.amounts?.toFixed(2) || "0.00"}`,
     amount: `$${item.amounts?.toFixed(2) || "0.00"}`,
   }));
@@ -621,12 +621,17 @@ export default function DashboardPage({ title }) {
                             );
                           })}
 
+                        {console.log(
+                          WalletSetting?.[0]?.value,
+                          "walletsetting"
+                        )}
+
                         <div className="w-full sm:w-1/2 lg:w-[28%] sm:p-4 p-3 lg:py-0 lg:pl-4 lg:border-0 sm:border-l border-t border-primary/10">
                           <div className="flex items-center justify-between w-full">
                             <div className="flex flex-col gap-2">
                               <p className="p2">Available</p>
                               <p className="font-bold text-black">
-                                $15,479.238
+                                ${WalletSetting?.[0]?.value}
                               </p>
                             </div>
                             <div>
@@ -799,8 +804,8 @@ export default function DashboardPage({ title }) {
                     </div>
 
                     {/* recent selling products */}
-                    <div className="my-[20px] border border-primary/10 rounded-md overflow-hidden">
-                      <div className="flex items-center justify-between sm:flex-nowrap flex-wrap gap-1.5 w-full border-b border-primary/10 sm:px-5 px-3 py-[6px] bg-white">
+                    <div className="my-[20px] p-3 bg-white border border-primary/10 rounded-md overflow-hidden">
+                      <div className="flex items-center justify-between sm:flex-nowrap flex-wrap gap-1.5 w-full sm:px-5 px-3 py-[6px] mb-2 bg-white">
                         <p className="text-black">Recent Selling Products</p>
                         <div className="flex flex-wrap justify-center gap-y-6">
                           {[0].map((index) => (
@@ -813,7 +818,7 @@ export default function DashboardPage({ title }) {
                         </div>
                       </div>
 
-                      <div className="bg-white rounded-md shadow overflow-x-auto">
+                      <div className="bg-white overflow-x-auto">
                         <DynamicTable
                           data={tableSummaryData}
                           columns={summarycolums}
@@ -830,7 +835,7 @@ export default function DashboardPage({ title }) {
                   {/* Filter Fields */}
                   <form
                     ref={formRef}
-                    className="grid items-end lg:grid-cols-3 sm:grid-cols-2 grid-cols-1 gap-4 sm:px-5 px-4 pt-[18px]"
+                    className="grid items-end lg:grid-cols-3 sm:grid-cols-2 grid-cols-1 gap-4 sm:px-5 px-4 pt-[18px] mb-5"
                   >
                     <div>
                       <Input

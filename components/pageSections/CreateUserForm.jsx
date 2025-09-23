@@ -13,7 +13,7 @@ import {
 import { useEffect, useState, useRef } from "react";
 import { themeConfig } from "@/config/theamConfig";
 import toast from "react-hot-toast";
-import { countries } from "@/lib/data/countries";
+import { countries, stripDialCode } from "@/lib/data/countries";
 import { Listbox } from "@headlessui/react";
 
 const profileSetting = ({ title, sub_title, form, image, button }) => {
@@ -47,10 +47,10 @@ const profileSetting = ({ title, sub_title, form, image, button }) => {
 
   const filteredStates = selectedCountry
     ? countries
-      .find((country) => country.name === selectedCountry)
-      ?.states?.filter((state) =>
-        state.toLowerCase().includes(stateSearchTerm.toLowerCase())
-      ) || []
+        .find((country) => country.name === selectedCountry)
+        ?.states?.filter((state) =>
+          state.toLowerCase().includes(stateSearchTerm.toLowerCase())
+        ) || []
     : [];
 
   const toggleCountryDropdown = () => {
@@ -562,8 +562,8 @@ const profileSetting = ({ title, sub_title, form, image, button }) => {
                       <div className="flex items-center sm:flex-row flex-col sm:gap-[22px] gap-1.5">
                         <div className="1xl:w-[100px] 1xl:h-[100px] md:w-[90px] md:h-[90px] sm:w-[85px] sm:h-[85px] w-20 h-20 flex-shrink-0 rounded-full bg-transparent flex items-center justify-center profile-picture">
                           {profileImage !== null &&
-                            profileImage !== undefined &&
-                            profileImage !== "" ? (
+                          profileImage !== undefined &&
+                          profileImage !== "" ? (
                             <Image
                               src={profileImage || "/placeholder.svg"}
                               alt="Profile"
@@ -828,10 +828,11 @@ const profileSetting = ({ title, sub_title, form, image, button }) => {
                                 Phone Number *
                               </label>
                               <div
-                                className={`flex items-center border rounded-md overflow-visible py-[11px] px-2 bg-white ${validationErrors.phone_no
-                                  ? "border-red-500"
-                                  : "border-gray-100"
-                                  }`}
+                                className={`flex items-center border rounded-md overflow-visible py-[11px] px-2 bg-white ${
+                                  validationErrors.phone_no
+                                    ? "border-red-500"
+                                    : "border-gray-100"
+                                }`}
                               >
                                 <Listbox className="border-r border-gray-100 pr-[10px]">
                                   <div className="relative">
@@ -846,23 +847,10 @@ const profileSetting = ({ title, sub_title, form, image, button }) => {
                                         height={16}
                                         className="rounded-sm mr-2"
                                       />
-                                      <span className="text-xs text-gray-600 mr-1">
+
+                                      <span className="text-xs text-gray-600 mr-1 m-2">
                                         {filteredflag?.[0]?.dialCode || "+1"}
                                       </span>
-                                      <svg
-                                        xmlns="http://www.w3.org/2000/svg"
-                                        width="15"
-                                        height="15"
-                                        viewBox="0 0 9 9"
-                                        fill="none"
-                                      >
-                                        <g clipPath="url(#clip0_1233_287)">
-                                          <path
-                                            d="M4.11673 7.15175C4.33218 7.35027 4.66391 7.35027 4.87937 7.15175L8.81858 3.52223C8.93421 3.41568 9 3.26561 9 3.10837V2.78716C9 2.29637 8.4156 2.04078 8.05523 2.37395L4.88007 5.30948C4.66441 5.50886 4.33168 5.50886 4.11602 5.30948L0.940859 2.37395C0.58049 2.04078 -0.00390625 2.29637 -0.00390625 2.78716V3.10837C-0.00390625 3.26561 0.0618803 3.41568 0.177518 3.52223L4.11673 7.15175Z"
-                                            fill="#808080"
-                                          />
-                                        </g>
-                                      </svg>
                                     </Listbox.Button>
                                   </div>
                                 </Listbox>
@@ -870,7 +858,9 @@ const profileSetting = ({ title, sub_title, form, image, button }) => {
                                 <input
                                   type="tel"
                                   placeholder="Phone Number"
-                                  value={formValues.phone_no || ""}
+                                  value={
+                                    stripDialCode(formValues.phone_no) || ""
+                                  }
                                   onChange={(e) => {
                                     const value = e.target.value.replace(
                                       /\D/g,

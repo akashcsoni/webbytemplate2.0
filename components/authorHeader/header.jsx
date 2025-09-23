@@ -204,20 +204,11 @@ export default function AuthorHeader({ authUser }) {
           {/* Desktop Navigation */}
           <nav className="author-links-content flex items-center justify-between relative w-[58%] h-full">
             <div className="navigation-links flex items-center h-full gap-4">
-              <Link href="/partners" className="author-links !text-white">
-                Partners
-              </Link>
               <Link href="/offers" className="author-links !text-white">
                 Offers
               </Link>
               <Link href="/support" className="author-links !text-white">
                 Support
-              </Link>
-              <Link href="/hire-agency" className="author-links !text-white">
-                Hire an agency
-              </Link>
-              <Link href="/hire-agency" className="author-links !text-white">
-                Unlimited Downloads
               </Link>
             </div>
             {/* Search Icon */}
@@ -245,11 +236,10 @@ export default function AuthorHeader({ authUser }) {
 
             {/* Search Bar */}
             <div
-              className={`h-[74px] absolute z-50 bg-primary overflow-hidden transition-all duration-700 ease-in-out flex items-center justify-between !m-0 ${
-                isSearchOpen
+              className={`h-[74px] absolute z-50 bg-primary overflow-hidden transition-all duration-700 ease-in-out flex items-center justify-between !m-0 ${isSearchOpen
                   ? "w-full opacity-100 z-100 p-2 ps-7 right-0"
                   : "w-0 opacity-0 z-0 p-0 right-0"
-              }`}
+                }`}
             >
               <div className="flex items-center justify-start w-full gap-5">
                 <svg
@@ -326,11 +316,10 @@ export default function AuthorHeader({ authUser }) {
 
                 {/* Search Bar */}
                 <div
-                  className={` absolute z-50 w-full py-2 sm:px-7 px-4 top-full bg-white border-y border-gray-100 shadow-xl overflow-hidden transition-all duration-700 ease-in-out flex items-center justify-between !m-0 ${
-                    isSearchOpen
+                  className={` absolute z-50 w-full py-2 sm:px-7 px-4 top-full bg-white border-y border-gray-100 shadow-xl overflow-hidden transition-all duration-700 ease-in-out flex items-center justify-between !m-0 ${isSearchOpen
                       ? "opacity-100 sm:h-14 h-12 z-100 right-0"
                       : "opacity-0 z-0 right-0 h-0"
-                  }`}
+                    }`}
                 >
                   <div className="flex items-center justify-start w-full sm:gap-5 gap-2">
                     <svg
@@ -425,9 +414,8 @@ export default function AuthorHeader({ authUser }) {
 
               {/* Side Cart */}
               <div
-                className={`fixed top-0 right-0 h-full w-full max-w-[450px] bg-white shadow-lg z-50 transition-transform duration-300 ease-in-out ${
-                  openCart ? "translate-x-0" : "translate-x-full"
-                }`}
+                className={`fixed top-0 right-0 h-full w-full max-w-[450px] bg-white shadow-lg z-50 transition-transform duration-300 ease-in-out ${openCart ? "translate-x-0" : "translate-x-full"
+                  }`}
               >
                 <div className="flex items-center justify-between p-4 bg-blue-300">
                   <h5 className="sm:text-[20px] text-lg font-medium">
@@ -518,7 +506,7 @@ export default function AuthorHeader({ authUser }) {
             </div>
 
             <Link
-              href="/schedule"
+              href="https://calendly.com/webbytemplate-support/45min"
               className="links !text-white !py-0 1xl:!pl-[15px] !pl-1.5 !pr-0"
             >
               <span className="1xl:block hidden !text-white">
@@ -571,9 +559,8 @@ export default function AuthorHeader({ authUser }) {
                   />
                 </svg>
                 <svg
-                  className={`w-4 h-4 transform transition-transform duration-200 ${
-                    open ? "rotate-180" : ""
-                  }`}
+                  className={`w-4 h-4 transform transition-transform duration-200 ${open ? "rotate-180" : ""
+                    }`}
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"

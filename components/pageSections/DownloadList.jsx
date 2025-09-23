@@ -17,6 +17,7 @@ const DownloadPage = ({ title }) => {
   const formRef = useRef(null);
   const { authUser } = useAuth();
   const [filteredOrder, setFilteredOrder] = useState([]);
+  // console.log(filteredOrder, "this is for filteredOrder data");
 
   const [filterData, setFilterData] = useState({});
   const [loading, setLoading] = useState(false);
@@ -27,15 +28,15 @@ const DownloadPage = ({ title }) => {
   const generateInvoiceHTML = (orderData) => {
     const totalSalesPrice = orderData.multiProduct
       ? orderData?._children?.reduce((total, item) => {
-        return (
-          total + (item.price?.sales_price || item.price?.regular_price || 0)
-        );
-      }, 0)
+          return (
+            total + (item.price?.sales_price || item.price?.regular_price || 0)
+          );
+        }, 0)
       : orderData?.product?.reduce((total, item) => {
-        return (
-          total + (item.price?.sales_price || item.price?.regular_price || 0)
-        );
-      }, 0);
+          return (
+            total + (item.price?.sales_price || item.price?.regular_price || 0)
+          );
+        }, 0);
     // 2. Calculate 18% GST
     const gst = totalSalesPrice * 0.18;
 
@@ -613,9 +614,10 @@ AMOUNT
 </tr>
 </thead>
 
-${!orderData?.multiProduct &&
-      orderData?.product?.map((item, index) => {
-        return `<tbody>
+${
+  !orderData?.multiProduct &&
+  orderData?.product?.map((item, index) => {
+    return `<tbody>
 <tr>
 <td
 style="
@@ -714,10 +716,11 @@ $${finalTotal?.toFixed(2)}
 </td>
 </tr>
 </tbody>`;
-      })
-      }
-${orderData?.multiProduct &&
-      `<tbody>
+  })
+}
+${
+  orderData?.multiProduct &&
+  `<tbody>
 <tr>
 <td
 style="
@@ -746,7 +749,7 @@ ${orderData?.products}
 <table>
 <tbody>
 ${orderData?._children.map((item) => {
-        return `
+  return `
 <tr>
 <td style="text-decoration: initial">
 <p
@@ -795,7 +798,7 @@ line-height: 18px;
 </td>
 </tr>
 `;
-      })}
+})}
 </tbody>
 </table>
 </td>
@@ -871,7 +874,7 @@ $${finalTotal.toFixed(2)}
 </td>
 </tr>
 </tbody>`
-      }
+}
 <tfoot>
 <tr>
 <td
@@ -1093,6 +1096,7 @@ USD $${finalTotal.toFixed(2)}
   };
 
   const downloadInvoice = async (orderData) => {
+    // console.log(orderData);
     try {
       const invoiceHTML = generateInvoiceHTML(orderData);
 
@@ -1134,14 +1138,15 @@ USD $${finalTotal.toFixed(2)}
           data.products &&
           `<div class="flex items-center gap-2">
 <span>${data.products}</span>
-${data.multiProduct
-            ? `<button class="toggle-children">
+${
+  data.multiProduct
+    ? `<button class="toggle-children">
 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 18 18" fill="none" class="">
 <path d="M9 0C4.03754 0 0 4.03754 0 9C0 13.9625 4.03754 18 9 18C13.9625 18 18 13.9625 18 9C18 4.03754 13.9625 0 9 0ZM9 1.38462C13.2141 1.38462 16.6154 4.78592 16.6154 9C16.6154 13.2141 13.2141 16.6154 9 16.6154C4.78592 16.6154 1.38462 13.2141 1.38462 9C1.38462 4.78592 4.78592 1.38462 9 1.38462ZM8.30769 4.15385V11.2708L5.53846 8.50154L4.56508 9.49846L8.50223 13.4349L9.00069 13.9334L9.49915 13.4349L13.4356 9.49777L12.4615 8.50154L9.69231 11.2708V4.15385H8.30769Z" fill="#0156D5" />
 </svg>
 </button>`
-            : ""
-          }
+    : ""
+}
 </div>`
         );
       },
@@ -1159,6 +1164,9 @@ ${data.multiProduct
       hozAlign: "center",
       formatter: (cell) => {
         const data = cell.getData();
+
+        // console.log(data, "this is for download");
+
         return data.product_zip
           ? `<div class="flex items-center gap-2"><button class="btn btn-primary !py-1 !px-4">Download</button></div>`
           : "";
@@ -1175,12 +1183,21 @@ ${data.multiProduct
       width: 100,
       formatter: (cell) => {
         const data = cell.getData();
-        return data.downloadInvoice
-          ? `<button class="btn btn-primary !py-1 !px-4">Download Invoice</button>`
-          : "";
+        // console.log(data, "this is for data");
+
+        // ✅ Only show button if it's NOT a "Multi-Product Order"
+        if (
+          data?.products == "Multi-Product Order" ||
+          data?._children === null
+        ) {
+          return `<button class="review-btn !px-3 !py-1 btn btn-primary !text-sm">Download Invoice</button>`;
+        }
+        return ""; // no button for multi-orders
       },
       cellClick: async (e, cell) => {
+        // console.log(cell.getRow().getData(), "cells data");
         const orderData = cell.getRow().getData();
+        // console.log(orderData, "orderDataorderDataorderDataorderDataorderData");
         if (orderData.documentId) {
           await downloadInvoice(orderData);
         } else {
@@ -1190,7 +1207,7 @@ ${data.multiProduct
     },
     {
       title: "Date Purchased",
-      field: "updatedAt",
+      field: "date_purchase",
       hozAlign: "center",
       formatter: "datetime",
       formatterParams: {
@@ -1199,21 +1216,7 @@ ${data.multiProduct
         invalidPlaceholder: "",
       },
     },
-    // {
-    // title: "Product Review",
-    // field: "review",
-    // hozAlign: "center",
-    // formatter: () => {
-    // return `<button class="review-btn px-3 py-1 rounded bg-blue-500 text-white text-sm">Add Review</button>`;
-    // },
-    // cellClick: (e, cell) => {
-    // // console.log(e, "testing for cell");
-    // const rowData = cell.getRow().getData();
-    // console.log(rowData, "this is my row data");
-    // setSelectedProduct(rowData);
-    // setIsOpen(true);
-    // },
-    // },
+
     {
       title: "Product Review",
       field: "review",
@@ -1267,7 +1270,7 @@ ${data.multiProduct
     formRef.current?.reset();
   };
 
-  const page_size = 10;
+  const page_size = 1;
 
   useEffect(() => {
     const fetchOrderData = async (id) => {
@@ -1284,29 +1287,28 @@ ${data.multiProduct
           themeConfig.TOKEN
         );
 
-
+        console.log(orderData);
 
         if (orderData?.data) {
           const formattedData = orderData.data.map((item) => {
-            console.log(item, "console -> ");
+            // console.log(item, "console -> ");
             const isMultipleProducts = item?.products?.length > 1;
 
             const redirectProduct = (products) =>
+              // console.log(products);
               products.map((p) => ({
-                // id: p.product?.id, // ✅ numeric id
+                // id: p?.id, // ✅ numeric id
                 order_id: item?.documentId,
                 document_id: p?.product?.documentId, // ✅ strapi uid
                 products: p.product_title || p.product?.title || "Untitled",
                 price: p.product?.price,
                 product_zip:
-                  p.product?.product_zip_url ||
-                  p.product?.product_zip?.url ||
-                  null,
+                  p.product?.product_zip_url || p.product?.product_zip || null,
               }));
 
             // console.log(redirectProduct, "redirectproduct");
 
-            // console.log(item?.products, "this is for checking item responmse");
+            console.log(item, "this is for checking item responmse");
 
             return {
               ...item,
@@ -1319,13 +1321,13 @@ ${data.multiProduct
               price: !isMultipleProducts ? item.products?.price : {},
               products: !isMultipleProducts
                 ? item.products?.[0]?.product?.title ||
-                item.products?.[0]?.product_title ||
-                "Untitled"
+                  item.products?.[0]?.product_title ||
+                  "Untitled"
                 : "Multi-Product Order",
               updatedAt: item.updatedAt,
               product_zip: !isMultipleProducts
                 ? item.products?.[0]?.product?.product_zip_url ||
-                item.products?.[0]?.product?.product_zip?.url
+                  item.products?.[0]?.product?.product_zip?.url
                 : null,
               downloadInvoice:
                 item.products?.[0]?.product?.product_zip_url ||
@@ -1414,8 +1416,8 @@ ${data.multiProduct
                 defaultValue={
                   filterData?.purchased_date
                     ? parseDate(
-                      filterData.purchased_date.split("-").reverse().join("-")
-                    )
+                        filterData.purchased_date.split("-").reverse().join("-")
+                      )
                     : null
                 }
                 labelPlacement="outside"

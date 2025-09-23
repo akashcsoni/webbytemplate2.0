@@ -772,11 +772,11 @@ p,
 }
 
 /* tabulator */
-.tabulator .tabulator-tableholder {
-  @apply xl:!overflow-hidden;
-}
 .download-table .tabulator-tableholder {
   @apply 1xl:!overflow-hidden !overflow-auto;
+}
+.tabulator .tabulator-tableholder {
+  @apply !overflow-auto;
 }
 .tabulator {
   @apply !border-0 !bg-white;
@@ -963,15 +963,15 @@ div[tabulator-field="documentId"] {
 }
 
 div[tabulator-field="products"] {
-  @apply 2xl:!w-[550px] xl:!w-[470px] lg:!w-[430px] !w-[400px];
+  @apply 2xl:!w-[480px] xl:!w-[470px] lg:!w-[430px] !w-[400px];
 }
 
 div[tabulator-field="product_zip"] {
-  @apply 2xl:!w-[200px] 1xl:!w-[150px] !w-[150px];
+  @apply 2xl:!w-[170px] 1xl:!w-[150px] !w-[150px];
 }
 
 div[tabulator-field="downloadInvoice"] {
-  @apply 2xl:!w-[250px] !w-[190px];
+  @apply !w-[190px];
 }
 
 /* ticket/support */
@@ -1005,6 +1005,12 @@ div[tabulator-field="status"] {
 
 div[tabulator-field="dates"] {
   @apply !w-[100px];
+}
+div[tabulator-field="type"] {
+  @apply !w-[100px];
+}
+div[tabulator-field="date_purchase"] {
+  @apply !w-[150px];
 }
 
 .success {
