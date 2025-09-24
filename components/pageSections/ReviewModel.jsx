@@ -46,7 +46,7 @@ export default function ReviewModal({ isOpen, onClose, product }) {
     const handleSubmit = async () => {
         const isValid = validateForm();
         if (!isValid) {
-            toast.error("Please correct the errors before submitting.");
+            // toast.error("Please correct the errors before submitting.");
             return;
         }
 
@@ -158,7 +158,7 @@ export default function ReviewModal({ isOpen, onClose, product }) {
                                 isLoading={isSubmitting}
                                 disabled={isSubmitting}
                             >
-                                {isSubmitting ? "Submitting..." : "Submit Review"}
+                                {!isSubmitting ? "Submitting..." : "Submit Review"}
                             </Button>
                         </div>
                     </div>

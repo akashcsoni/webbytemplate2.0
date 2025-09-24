@@ -5,11 +5,13 @@ import { strapiPost } from "@/lib/api/strapiClient";
 import { themeConfig } from "@/config/theamConfig";
 import Cookies from "js-cookie";
 import { useRouter, useSearchParams } from "next/navigation";
+import Link from "next/link";
 
 export default function CheckoutPage({ params }) {
   const router = useRouter();
   const { id } = use(params);
   const [order, setOrder] = useState({});
+  console.log(order, "this is my order");
   const authToken = Cookies.get("authToken");
   console.log(authToken, "auth token is required");
   const searchParams = useSearchParams();
@@ -195,9 +197,13 @@ export default function CheckoutPage({ params }) {
               <p>Date:</p>
               <h5>{formatDate(order?.createdAt)}</h5>
             </div>
+            {console.log(
+              order?.total_price + order?.tax_amount,
+              "this is for total price"
+            )}
             <div className="xl:py-5 2xl:px-[50px] 1xl:px-[40px] xl:px-7 py-4 px-6 sm:border-r sm:border-b-0 border-b border-[#00193E1A]">
               <p>Total:</p>
-              <h5>${order?.total_price}</h5>
+              <h5>${(order?.total_price + order?.tax_amount)?.toFixed(2)}</h5>
             </div>
             <div className="xl:py-5 2xl:px-[50px] 1xl:px-[40px] xl:px-7 py-4 px-6">
               <p>Email:</p>
@@ -293,10 +299,16 @@ export default function CheckoutPage({ params }) {
 
               <div className="2xl:py-6 sm:py-5 py-4 flex flex-col gap-3">
                 <p className="flex items-center justify-between w-full">
-                  Subtotal: <span>${order?.total_price}</span>
+                  Subtotal:{" "}
+                  <span>
+                    ${(order?.total_price + order?.tax_amount)?.toFixed(2)}
+                  </span>
                 </p>
                 <p className="flex items-center justify-between w-full text-black">
-                  Total: <span>${order?.total_price}</span>
+                  Total:{" "}
+                  <span>
+                    ${(order?.total_price + order?.tax_amount)?.toFixed(2)}
+                  </span>
                 </p>
               </div>
             </div>
@@ -366,7 +378,9 @@ export default function CheckoutPage({ params }) {
 
         {/* Footer Action */}
         <div className="sm:pt-8 pt-6">
-          <button className="btn btn-primary">Keep Shopping</button>
+          <Link href="/" className="btn btn-primary">
+            Keep Shopping
+          </Link>
         </div>
       </section>
     </div>
