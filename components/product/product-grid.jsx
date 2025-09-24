@@ -80,9 +80,7 @@ export default function ProductCard({ product }) {
 
             {/* ✅ Technology icons loop */}
             <div
-              className="absolute w-[95%] bottom-4 left-1/2 -translate-x-1/2
-gap-2 flex flex-wrap items-center justify-center text-center
-cursor-pointer transition-colors w-fit"
+              className="absolute w-[95%] bottom-4 left-1/2 -translate-x-1/2 gap-2 flex flex-wrap items-center justify-center text-center cursor-pointer transition-colors"
             >
               {combinedTechImages.map((imgUrl, idx) => (
                 <div
