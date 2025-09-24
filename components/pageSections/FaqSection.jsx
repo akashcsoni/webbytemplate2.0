@@ -68,7 +68,7 @@ export default function FaqSection({ title = "", label = "", button, list = [], 
                       <span className="h5 !font-normal text-primary">
                         Q{index + 1}.
                       </span>
-                      <h5 className="font-normal 2xl:text-xl 1xl:text-[19px] md:text-lg sm:text-[17px] sm:text-base text-[15px]">{item.title}</h5>
+                      <h3 className="font-normal 2xl:text-xl 1xl:text-[19px] md:text-lg sm:text-[17px] sm:text-base text-[15px]">{item.title}</h3>
                     </div>
                     <span className="text-gray-200 p-1" aria-hidden="true">
                       {openQuestion === item.id ? (
