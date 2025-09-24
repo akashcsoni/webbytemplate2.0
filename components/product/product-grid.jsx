@@ -10,8 +10,20 @@ const sanitizeText = (text) =>
     ? text.replace(/</g, "&lt;").replace(/>/g, "&gt;")
     : "";
 
-export default function ({ product }) {
-  // console.log(product, "this is for p=roduct");
+export default function ProductCard({ product }) {
+  // ✅ Collect current product technology image
+  const currentTechImage = product?.all_technology?.technology?.image?.url
+    ? [product.all_technology.technology.image.url]
+    : [];
+
+  // ✅ Collect related products technology images
+  const relatedTechImages =
+    product?.all_technology?.products
+      ?.map((p) => p?.all_technology?.technology?.image?.url)
+      ?.filter(Boolean) || [];
+
+  // ✅ Merge both
+  const combinedTechImages = [...currentTechImage, ...relatedTechImages];
 
   const productSlug = product?.slug ?? "";
   const productTitle = sanitizeText(product?.short_title || product?.title);
@@ -46,27 +58,57 @@ export default function ({ product }) {
               e.currentTarget.src = NO_FOUND_PRODUCT_GRID_IMAGE;
             }}
           />
-          <div className="absolute top-0 w-full h-full items-center justify-center bg-black/60 hidden group-hover:flex transition-all">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="40"
-              height="40"
-              viewBox="0 0 40 40"
-              fill="none"
-            >
-              <g clipPath="url(#clip0_5061_42)">
+          <div className="absolute top-0 w-full h-full bg-black/60 hidden group-hover:block transition-all">
+            {/* Center Arrow */}
+            <div className="absolute inset-0 flex items-center justify-center">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="40"
+                height="40"
+                viewBox="0 0 40 40"
+                fill="none"
+              >
                 <path
-                  d="M9 31L32.0001 8.00011M32.0001 8.00011L32 30M32.0001 8.00011L9.99976 8.00024"
+                  d="M9 31L32 8M32 8V30M32 8H10"
                   stroke="white"
                   strokeWidth="2"
                   strokeLinecap="round"
                   strokeLinejoin="round"
                 />
-              </g>
-            </svg>
+              </svg>
+            </div>
+
+            {/* ✅ Technology icons loop */}
+            <div
+              className="absolute w-[95%] bottom-4 left-1/2 -translate-x-1/2
+gap-2 flex flex-wrap items-center justify-center text-center
+cursor-pointer transition-colors w-fit"
+            >
+              {combinedTechImages.map((imgUrl, idx) => (
+                <div
+                  key={idx}
+                  className="flex items-center justify-center border border-[#0156d5] bg-white rounded-full p-2"
+                >
+                  <div className="relative">
+                    <img
+                      alt="Technology"
+                      loading="lazy"
+                      width="46"
+                      height="46"
+                      decoding="async"
+                      className="2xl:h-[46px] xl:h-9 h-[35px] w-full"
+                      style={{ color: "transparent" }}
+                      src={imgUrl}
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </Link>
+
+      {/* Bottom section */}
       <div className="flex items-center justify-between">
         <div className="flex items-center">
           <Image
@@ -100,7 +142,7 @@ export default function ({ product }) {
                 : salesPrice.toFixed(2)}
             </span>
             <br />
-            {salesPrice !== null && regularPrice && (
+            {product?.price?.sales_price !== null && regularPrice && (
               <span className="p2 !text-gray-300 text-sm line-through">
                 ${regularPrice.toFixed(2)}
               </span>
