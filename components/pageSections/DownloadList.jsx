@@ -17,13 +17,11 @@ const DownloadPage = ({ title }) => {
   const formRef = useRef(null);
   const { authUser } = useAuth();
   const [filteredOrder, setFilteredOrder] = useState([]);
-  // console.log(filteredOrder, "this is for filteredOrder data");
 
   const [filterData, setFilterData] = useState({});
   const [loading, setLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
-  // console.log(selectedProduct, "this is for selected product");
 
   const generateInvoiceHTML = (orderData) => {
     const totalSalesPrice = orderData.multiProduct
@@ -43,7 +41,15 @@ const DownloadPage = ({ title }) => {
     // 3. Final total with GST
     const finalTotal = totalSalesPrice + gst;
 
-    return `
+    function formatDate(dateString) {
+      const date = new Date(dateString);
+      const options = { day: "2-digit", month: "short", year: "numeric" };
+      const formattedDate = date.toLocaleDateString("en-GB", options);
+
+      return formattedDate;
+    }
+
+    return `  
 <!DOCTYPE html>
 <html>
 <head>
@@ -199,7 +205,7 @@ color: #000;
 line-height: 18px;
 "
 >
-#${orderData.documentId}
+${orderData.documentId}
 </p>
 </td>
 </tr>
@@ -245,7 +251,7 @@ color: #000;
 line-height: 18px;
 "
 >
-${orderData.updatedAt}
+${formatDate(orderData.updatedAt)}
 </p>
 </td>
 </tr>
@@ -371,20 +377,6 @@ color: #000;
 line-height: 18px;
 "
 >
-India.
-</p>
-<p
-style="
-margin: 0;
-padding: 0;
-font-family: 'Proxima Nova', sans-serif;
-font-weight: 400;
-margin-bottom: 3px;
-font-size: 13px;
-color: #000;
-line-height: 18px;
-"
->
 <b>GSTIN:</b> 24AACFW9641F1Z3
 </p>
 </td>
@@ -429,7 +421,9 @@ font-family: 'Proxima Nova', sans-serif;
 >
 ${orderData?.user?.full_name}
 </h4>
-<p
+${
+  orderData?.user?.email
+    ? `<p
 style="
 margin: 0;
 padding: 0;
@@ -442,8 +436,9 @@ line-height: 18px;
 "
 >
 ${orderData?.user?.email}
-</p>
-
+</p>`
+    : ""
+}
 <p
 style="
 margin: 0;
@@ -615,158 +610,26 @@ AMOUNT
 </thead>
 
 ${
-  !orderData?.multiProduct &&
-  orderData?.product?.map((item, index) => {
-    return `<tbody>
-<tr>
-<td
-style="
-text-align: left;
-padding: 15px 10px;
-font-family: 'Proxima Nova', sans-serif;
-vertical-align: top;
-width: 300px;
-min-width: 300px;
-border-bottom: 1px solid #eee;
-"
->
-<p
-style="
-margin: 0;
-padding: 0;
-font-family: 'Proxima Nova', sans-serif;
-font-weight: 400;
-font-size: 13px;
-color: #000;
-line-height: 18px;
-"
->
-${item?.product_title}
-</p>
-</td>
-<td
-style="
-text-align: center;
-padding: 15px 10px;
-font-family: 'Proxima Nova', sans-serif;
-vertical-align: top;
-border-bottom: 1px solid #eee;
-"
->
-<p
-style="
-margin: 0;
-padding: 0;
-font-family: 'Proxima Nova', sans-serif;
-font-weight: 400;
-font-size: 13px;
-color: #000;
-line-height: 18px;
-"
->
-$${totalSalesPrice?.toFixed(2)}
-</p>
-</td>
-
-<td
-style="
-text-align: center;
-padding: 15px 10px;
-font-family: 'Proxima Nova', sans-serif;
-vertical-align: top;
-border-bottom: 1px solid #eee;
-"
->
-<p
-style="
-margin: 0;
-padding: 0;
-font-family: 'Proxima Nova', sans-serif;
-font-weight: 400;
-font-size: 13px;
-color: #000;
-line-height: 18px;
-"
->
-18.00%
-</p>
-</td>
-<td
-style="
-text-align: right;
-padding: 15px 10px;
-font-family: 'Proxima Nova', sans-serif;
-vertical-align: top;
-border-bottom: 1px solid #eee;
-"
->
-<p
-style="
-margin: 0;
-padding: 0;
-font-family: 'Proxima Nova', sans-serif;
-font-weight: 400;
-font-size: 13px;
-color: #000;
-line-height: 18px;
-"
->
-$${finalTotal?.toFixed(2)}
-</p>
-</td>
-</tr>
-</tbody>`;
-  })
-}
-${
-  orderData?.multiProduct &&
-  `<tbody>
-<tr>
-<td
-style="
-text-align: left;
-padding: 15px 10px;
-font-family: 'Proxima Nova', sans-serif;
-vertical-align: top;
-width: 300px;
-min-width: 300px;
-border-bottom: 1px solid #eee;
-"
->
-<p
-style="
-margin: 0;
-padding: 0;
-font-family: 'Proxima Nova', sans-serif;
-font-weight: 400;
-font-size: 13px;
-color: #000;
-line-height: 18px;
-"
->
-${orderData?.products}
-</p>
-<table>
+  orderData?.multiProduct
+    ? orderData?._children
+        .map((item) => {
+          const price = item.price?.sales_price || item.price?.regular_price;
+          const taxAmount = price * (orderData.tax_percentage / 100);
+          const finalAmount = price + taxAmount;
+          return `
 <tbody>
-${orderData?._children.map((item) => {
-  return `
 <tr>
-<td style="text-decoration: initial">
-<p
+<td
 style="
-margin: 0;
-padding: 0;
+text-align: left;
+padding: 15px 10px;
 font-family: 'Proxima Nova', sans-serif;
-font-weight: 400;
-font-size: 13px;
-color: #000;
-line-height: 18px;
+vertical-align: top;
+width: 300px;
+min-width: 300px;
+border-bottom: 1px solid #eee;
 "
 >
-&#187
-</p>
-</td>
-<td>
 <p
 style="
 margin: 0;
@@ -781,7 +644,15 @@ line-height: 18px;
 ${item?.products}
 </p>
 </td>
-<td style="width: 100px; min-width: 100px">
+<td
+style="
+text-align: center;
+padding: 15px 10px;
+font-family: 'Proxima Nova', sans-serif;
+vertical-align: top;
+border-bottom: 1px solid #eee;
+"
+>
 <p
 style="
 margin: 0;
@@ -793,14 +664,8 @@ color: #000;
 line-height: 18px;
 "
 >
-: $${item.price?.sales_price ? item.price?.sales_price : item.price?.regular_price}
+$${price.toFixed(2)}
 </p>
-</td>
-</tr>
-`;
-})}
-</tbody>
-</table>
 </td>
 <td
 style="
@@ -822,31 +687,7 @@ color: #000;
 line-height: 18px;
 "
 >
-$${totalSalesPrice.toFixed(2)}
-</p>
-</td>
-
-<td
-style="
-text-align: center;
-padding: 15px 10px;
-font-family: 'Proxima Nova', sans-serif;
-vertical-align: top;
-border-bottom: 1px solid #eee;
-"
->
-<p
-style="
-margin: 0;
-padding: 0;
-font-family: 'Proxima Nova', sans-serif;
-font-weight: 400;
-font-size: 13px;
-color: #000;
-line-height: 18px;
-"
->
-18.00%
+${orderData.tax_percentage.toFixed(2)}%
 </p>
 </td>
 <td
@@ -869,11 +710,114 @@ color: #000;
 line-height: 18px;
 "
 >
-$${finalTotal.toFixed(2)}
+$${finalAmount.toFixed(2)}
 </p>
 </td>
 </tr>
-</tbody>`
+</tbody>
+`;
+        })
+        .join("")
+    : `
+<tbody>
+<tr>
+<td
+style="
+text-align: left;
+padding: 15px 10px;
+font-family: 'Proxima Nova', sans-serif;
+vertical-align: top;
+width: 300px;
+min-width: 300px;
+border-bottom: 1px solid #eee;
+"
+>
+<p
+style="
+margin: 0;
+padding: 0;
+font-family: 'Proxima Nova', sans-serif;
+font-weight: 400;
+font-size: 13px;
+color: #000;
+line-height: 18px;
+"
+>
+${orderData?.product[0]?.product_title}
+</p>
+</td>
+<td
+style="
+text-align: center;
+padding: 15px 10px;
+font-family: 'Proxima Nova', sans-serif;
+vertical-align: top;
+border-bottom: 1px solid #eee;
+"
+>
+<p
+style="
+margin: 0;
+padding: 0;
+font-family: 'Proxima Nova', sans-serif;
+font-weight: 400;
+font-size: 13px;
+color: #000;
+line-height: 18px;
+"
+>
+$${orderData?.product[0]?.product?.price?.sales_price?.toFixed(2) || orderData?.product[0]?.product?.price?.regular_price?.toFixed(2)}
+</p>
+</td>
+<td
+style="
+text-align: center;
+padding: 15px 10px;
+font-family: 'Proxima Nova', sans-serif;
+vertical-align: top;
+border-bottom: 1px solid #eee;
+"
+>
+<p
+style="
+margin: 0;
+padding: 0;
+font-family: 'Proxima Nova', sans-serif;
+font-weight: 400;
+font-size: 13px;
+color: #000;
+line-height: 18px;
+"
+>
+${orderData?.tax_percentage?.toFixed(2)}%
+</p>
+</td>
+<td
+style="
+text-align: right;
+padding: 15px 10px;
+font-family: 'Proxima Nova', sans-serif;
+vertical-align: top;
+border-bottom: 1px solid #eee;
+"
+>
+<p
+style="
+margin: 0;
+padding: 0;
+font-family: 'Proxima Nova', sans-serif;
+font-weight: 400;
+font-size: 13px;
+color: #000;
+line-height: 18px;
+"
+>
+$${(orderData.total_price + orderData.tax_amount).toFixed(2)}
+</p>
+</td>
+</tr>
+</tbody>
+`
 }
 <tfoot>
 <tr>
@@ -938,7 +882,7 @@ color: #000;
 line-height: 18px;
 "
 >
-USD $${totalSalesPrice.toFixed(2)}
+USD $${orderData.total_price.toFixed(2)}
 </p>
 </td>
 </tr>
@@ -984,7 +928,7 @@ color: #000;
 line-height: 18px;
 "
 >
-USD $${gst.toFixed(2)}
+USD $${orderData.tax_amount.toFixed(2)}
 </p>
 </td>
 </tr>
@@ -1079,7 +1023,7 @@ color: #000;
 line-height: 18px;
 "
 >
-USD $${finalTotal.toFixed(2)}
+USD $${(orderData.total_price + orderData.tax_amount).toFixed(2)}
 </p>
 </td>
 </tr>
@@ -1096,7 +1040,6 @@ USD $${finalTotal.toFixed(2)}
   };
 
   const downloadInvoice = async (orderData) => {
-    // console.log(orderData);
     try {
       const invoiceHTML = generateInvoiceHTML(orderData);
 
@@ -1287,8 +1230,6 @@ ${
           themeConfig.TOKEN
         );
 
-        console.log(orderData);
-
         if (orderData?.data) {
           const formattedData = orderData.data.map((item) => {
             // console.log(item, "console -> ");
@@ -1305,10 +1246,6 @@ ${
                 product_zip:
                   p.product?.product_zip_url || p.product?.product_zip || null,
               }));
-
-            // console.log(redirectProduct, "redirectproduct");
-
-            console.log(item, "this is for checking item responmse");
 
             return {
               ...item,
@@ -1332,6 +1269,7 @@ ${
               downloadInvoice:
                 item.products?.[0]?.product?.product_zip_url ||
                 item.products?.[0]?.product?.product_zip?.url,
+              date_purchase: item.updatedAt,
             };
           });
           setFilteredOrder(formattedData);

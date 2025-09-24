@@ -397,6 +397,18 @@ export default function CheckoutPage() {
       }
     }
 
+    // if (selectedCountry === "India") {
+    //   const gstNumber = getStringValue(form.gst_number).trim();
+    //   if (
+    //     gstNumber &&
+    //     !/^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/.test(
+    //       gstNumber
+    //     )
+    //   ) {
+    //     newErrors.gst_number = "Please enter a valid GST number.";
+    //   }
+    // }
+
     // Terms agreement validation
     if (!form.agreed) {
       newErrors.agreed =
@@ -723,7 +735,7 @@ export default function CheckoutPage() {
             </div>
 
             {/* gst number field */}
-            {selectedCountry === "India" && (
+            {/* {selectedCountry === "India" && (
               <div>
                 <label className="p2 !text-black mb-[6px]">GST Number</label>
                 <input
@@ -740,7 +752,27 @@ export default function CheckoutPage() {
                   </p>
                 )}
               </div>
+            )} */}
+
+            {selectedCountry === "India" && (
+              <div>
+                <label className="p2 !text-black mb-[6px]">GST Number</label>
+                <input
+                  type="text"
+                  placeholder="GST Number"
+                  value={form.gst_number || ""}
+                  onChange={(e) => handleChange("gst_number", e.target.value)} // ✅
+                  className={inputClass("gst_number")} // ✅
+                  maxLength={50}
+                />
+                {/* {errors.gst_number && ( // ✅
+                  <p className="text-red-500 text-xs mt-1">
+                    {errors.gst_number}
+                  </p>
+                )} */}
+              </div>
             )}
+
             {/* gst number field */}
 
             {/* Last Name */}
@@ -851,8 +883,9 @@ export default function CheckoutPage() {
             <div>
               <label className="p2 !text-black block">Phone Number *</label>
               <div
-                className={`flex items-center border rounded-md overflow-visible py-[11px] px-2 bg-white ${errors.phone_no ? "border-red-500" : "border-gray-100"
-                  }`}
+                className={`flex items-center border rounded-md overflow-visible py-[11px] px-2 bg-white ${
+                  errors.phone_no ? "border-red-500" : "border-gray-100"
+                }`}
               >
                 {/* Custom flag-only dropdown */}
                 <Listbox
@@ -1134,14 +1167,9 @@ export default function CheckoutPage() {
           <Button
             onPress={handlePayNow}
             className="group btn btn-primary flex items-center justify-center gap-[10px] w-[220px] xl:!py-[11px] py-[10px] h-auto sm:mt-7 mt-5"
+            isLoading={payNowLoading || isLoading}
+            disabled={payNowLoading || isLoading}
           >
-            {/* {isLoading
-              ? !isAuthenticated
-                ? "Logging in..."
-                : "Paying..."
-              : !isAuthenticated
-                ? "Login to Pay"
-                : "Pay Now"} */}
             {payNowLoading
               ? "Paying..."
               : isLoading
@@ -1179,6 +1207,7 @@ export default function CheckoutPage() {
           <h4>Your Cart Total</h4>
           <div className="text-sm text-gray-700 sm:space-y-4 space-y-2 mt-[18px] mb-[22px] pt-[18px]">
             {cartItems?.map((item, index) => {
+              // console.log(item, "this is for item");
               return (
                 <div
                   key={index}
@@ -1199,8 +1228,9 @@ export default function CheckoutPage() {
                 ${item?.total?.toFixed(2)}
               </span> */}
                 <span className="p2">GST (18%)</span>
+                {/* {console.log(totalPrice * 0.18, "this is for total")} */}
                 <span className="p2 !text-black !font-medium">
-                  ${Math.floor(totalPrice * 0.18)}
+                  ${(totalPrice * 0.18)?.toFixed(2)}
                 </span>
               </div>
             )}
@@ -1212,11 +1242,15 @@ export default function CheckoutPage() {
               <p className="font-medium !text-black">
                 {/* ${(totalPrice + totalPrice * 0.18).toFixed(2)} */}
                 {/* ${Math.floor(totalPrice + totalPrice * 0.18)} */}$
-                {Math.floor(
+                {console.log((50000.125978).toFixed(2), "this is for total")}
+                {/* {Math.floor(
                   selectedCountry === "India"
                     ? totalPrice + totalPrice * 0.18
                     : totalPrice
-                )}
+                )} */}
+                {selectedCountry === "India"
+                  ? (totalPrice + totalPrice * 0.18).toFixed(2)
+                  : totalPrice.toFixed(2)}
               </p>
             </div>
             <div className="flex items-center gap-2 xl:mt-2">
