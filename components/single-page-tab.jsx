@@ -18,42 +18,53 @@ const formatContent = (content) => {
 
   const lines = content.split("\n");
   let result = "";
-  let buffer = [];
+  let listBuffer = [];
 
-  const flushBuffer = () => {
-    if (buffer.length) {
-      const block = buffer
-        .join("\n")
-        .trim()
-        .split(/\n\s*\n/)
-        .map((p) => `<p>${p.trim().replace(/\n/g, "<br />")}</p>`)
-        .join("");
-      result += block;
-      buffer = [];
+  const flushList = () => {
+    if (listBuffer.length) {
+      result += "<ul>" + listBuffer.map(li => `<li>${li}</li>`).join("") + "</ul>";
+      listBuffer = [];
     }
   };
 
-  lines.forEach((line, i) => {
+  const parseInlineMarkdown = (text) => {
+    return text
+      .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>") // bold
+      .replace(/\*(.*?)\*/g, "<em>$1</em>");           // italic
+  };
+
+  lines.forEach((line) => {
     const trimmed = line.trim();
+    if (!trimmed) {
+      flushList();
+      return;
+    }
 
-    if (/<[a-z][\s\S]*>/i.test(trimmed)) {
-      // Case 1: HTML tag → flush plain text first
-      flushBuffer();
-      result += trimmed;
+    // Headings
+    if (/^###\s+/.test(trimmed)) {
+      flushList();
+      result += `<h3>${parseInlineMarkdown(trimmed.replace(/^###\s+/, ""))}</h3>`;
+    } else if (/^##\s+/.test(trimmed)) {
+      flushList();
+      result += `<h2>${parseInlineMarkdown(trimmed.replace(/^##\s+/, ""))}</h2>`;
+    } else if (/^#\s+/.test(trimmed)) {
+      flushList();
+      result += `<h1>${parseInlineMarkdown(trimmed.replace(/^#\s+/, ""))}</h1>`;
+    }
 
-      // ✅ Skip following empty line(s) after HTML
-      if (i + 1 < lines.length && lines[i + 1].trim() === "") {
-        return;
-      }
-    } else {
-      // Case 2: Plain text → keep it
-      buffer.push(line);
+    // Lists
+    else if (/^[-*]\s+/.test(trimmed)) {
+      listBuffer.push(parseInlineMarkdown(trimmed.replace(/^[-*]\s+/, "")));
+    }
+
+    // Paragraph
+    else {
+      flushList();
+      result += `<p>${parseInlineMarkdown(trimmed)}</p>`;
     }
   });
 
-  // Flush any leftover plain text
-  flushBuffer();
-
+  flushList();
   return result;
 };
 
@@ -65,7 +76,7 @@ const SinglePageTab = ({ data }) => {
       case "overview":
         return data?.overview_description ? (
           <div
-            className="space-y-4"
+            className="space-y-4 product-overview"
             dangerouslySetInnerHTML={{
               __html: formatContent(data.overview_description),
             }}
@@ -129,11 +140,10 @@ const SinglePageTab = ({ data }) => {
           <button
             key={tab.key}
             onClick={() => setActiveTab(tab.key)}
-            className={`px-4 py-2 transition-all duration-200 border-b-2 ${
-              activeTab === tab.key
-                ? "border-blue-600 text-blue-600"
-                : "text-gray-600 hover:text-blue-600 border-transparent"
-            } bg-transparent`}
+            className={`px-4 py-2 transition-all duration-200 border-b-2 ${activeTab === tab.key
+              ? "border-blue-600 text-blue-600"
+              : "text-gray-600 hover:text-blue-600 border-transparent"
+              } bg-transparent`}
           >
             {tab.title}
           </button>
