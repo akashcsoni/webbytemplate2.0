@@ -1143,3 +1143,14 @@ h4 {
   @apply bg-blue-300;
 }
 
+.product-overview h2{
+@apply 2xl:text-2xl sm:text-[23px] text-xl font-medium 1xl:leading-[35px] sm:leading-[33px] leading-[30px];
+}
+
+.product-overview ul {
+list-style-type: disc; /* same as list-disc */
+}
+
+.product-overview ul li{
+@apply 2xl:text-lg 1xl:text-[17px] sm:text-base text-[15px] 2xl:leading-[30px] xl:leading-7 sm:leading-6 leading-[19px] text-gray-200;
+}
