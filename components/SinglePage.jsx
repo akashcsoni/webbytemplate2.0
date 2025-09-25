@@ -19,7 +19,7 @@ function TagPill({ text, slug }) {
       href={`/search/${slug}`}
       className="p2 border py-1 sm:px-[18px] px-2 border-primary/10 rounded-[4px]"
     >
-      {text}
+      <h3 className="p2 font-normal">{text}</h3>
     </Link>
   );
 }
@@ -40,7 +40,7 @@ function FeatureItem({ text }) {
         <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
         <polyline points="22 4 12 14.01 9 11.01" />
       </svg>
-      <span className="text-[#505050]">{text}</span>
+      <h2 className="text-[#505050] p2 font-normal">{text}</h2>
     </div>
   );
 }
@@ -49,6 +49,7 @@ export default function SinglePage({ pageData }) {
   const { addToCart, openCart, cartItems } = useCart();
   const { addToWishlist, wishlistItems } = useWishlist();
   const [wishlistLoading, setWishlistLoading] = useState(false);
+  const [showAllFeatures, setShowAllFeatures] = useState(false);
 
   // Check if current product is in cart
   const isProductInCart = cartItems?.some(
@@ -792,7 +793,7 @@ export default function SinglePage({ pageData }) {
               {/* Features Section - Always render for SEO */}
               <div className="sm:py-4 py-3">
                 <h5 className="font-medium border-b border-primary/10 sm:pb-[18px] pb-3">
-                  Features:
+                  Template Features:
                 </h5>
                 <div className="space-y-0">
                   {pageData?.features && pageData?.features.length > 0 ? (
@@ -801,11 +802,51 @@ export default function SinglePage({ pageData }) {
                       {pageData.features.map((feature, index) => (
                         <div
                           key={index}
-                          className="border-b border-primary/10 py-3"
+                          className={`border-b border-primary/10 py-3 ${index >= 5 && !showAllFeatures ? 'hidden' : ''}`}
                         >
                           <FeatureItem text={feature.title} />
                         </div>
                       ))}
+                      {pageData.features.length > 5 && (
+                        <button
+                          onClick={() => setShowAllFeatures(!showAllFeatures)}
+                          className="!mt-3 text-primary hover:text-primary/80 text-sm font-medium flex items-center gap-1 transition-colors"
+                        >
+                          {showAllFeatures ? (
+                            <>
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                className="w-4 h-4"
+                              >
+                                <polyline points="6 15 12 9 18 15" />
+                              </svg>
+                              Show Less
+                            </>
+                          ) : (
+                            <>
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                className="w-4 h-4"
+                              >
+                                <polyline points="6 9 12 15 18 9" />
+                              </svg>
+                              Show All ({pageData.features.length})
+                            </>
+                          )}
+                        </button>
+                      )}
                     </>
                   ) : (
                     <span className="text-gray-500">No features available</span>
