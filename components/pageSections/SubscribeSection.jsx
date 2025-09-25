@@ -146,7 +146,7 @@ const SubscribeSection = ({
                           />
                           <Button
                             type="submit"
-                            className="btn btn-primary font-medium whitespace-nowrap"
+                            className="btn btn-primary font-medium whitespace-nowrap h-full"
                             isLoading={loading}
                             disabled={loading}
                           >

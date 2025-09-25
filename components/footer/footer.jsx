@@ -134,22 +134,27 @@ export function Footer({ footerMenu = [], footerSettings = {} }) {
 
   // Organize social media links
   const socialLinks = useMemo(() => {
-    if (!footerSettings?.social_media || !Array.isArray(footerSettings.social_media)) {
+    if (
+      !footerSettings?.social_media ||
+      !Array.isArray(footerSettings.social_media)
+    ) {
       return [];
     }
 
     return footerSettings.social_media
-      .filter(social => social && typeof social === 'object') // Filter out invalid items
+      .filter((social) => social && typeof social === "object") // Filter out invalid items
       .sort((a, b) => {
         const posA = Number.parseInt(a?.position) || 0;
         const posB = Number.parseInt(b?.position) || 0;
         return posA - posB;
       })
       .map((social) => {
-        const label = social?.label || 
+        const label =
+          social?.label ||
           Object.keys(socialIconMap).find((key) =>
-            (social?.link || '').toLowerCase().includes(key)
-          ) || "Social Media";
+            (social?.link || "").toLowerCase().includes(key)
+          ) ||
+          "Social Media";
 
         return {
           icon: social?.image || null,
@@ -160,7 +165,8 @@ export function Footer({ footerMenu = [], footerSettings = {} }) {
   }, [footerSettings]);
 
   // Get the copyright text with fallback
-  const copyrightText = footerSettings?.copyright_label || 
+  const copyrightText =
+    footerSettings?.copyright_label ||
     `© ${currentYear} WebbyTemplate.com owned by WebbyCrown Solutions. All rights reserved.`;
 
   // Get the logo with fallback
@@ -171,15 +177,26 @@ export function Footer({ footerMenu = [], footerSettings = {} }) {
   };
 
   // Get the buttons with fallback
-  const buttons = Array.isArray(footerSettings?.button) ? footerSettings.button : [
-    { id: 1, label: "Contact Us", link: "/contact-us", image: null },
-    { id: 2, label: "Schedule Meeting", link: "/schedule-meeting", image: null },
-  ];
+  const buttons = Array.isArray(footerSettings?.button)
+    ? footerSettings.button
+    : [
+        { id: 1, label: "Contact Us", link: "/contact-us", image: null },
+        {
+          id: 2,
+          label: "Schedule Meeting",
+          link: "/schedule-meeting",
+          image: null,
+        },
+      ];
 
   // Render a menu column if data exists
   const renderMenuColumn = (menuItem, fallbackLabel) => {
     // If no menu item or sub_menu, don't render anything
-    if (!menuItem || !Array.isArray(menuItem?.sub_menu) || menuItem.sub_menu.length === 0) {
+    if (
+      !menuItem ||
+      !Array.isArray(menuItem?.sub_menu) ||
+      menuItem.sub_menu.length === 0
+    ) {
       return null;
     }
 
@@ -194,9 +211,9 @@ export function Footer({ footerMenu = [], footerSettings = {} }) {
                 <Link
                   href={subItem?.slug || "#"}
                   className={`!text-gray-400 p2 hover:!text-white focus:!text-white active:!text-white${
-                    isActive ? ' active !text-white font-medium' : ''
+                    isActive ? " active !text-white font-medium" : ""
                   }`}
-                  aria-current={isActive ? 'page' : undefined}
+                  aria-current={isActive ? "page" : undefined}
                 >
                   {subItem?.label || `Menu Item ${index + 1}`}
                 </Link>
@@ -214,9 +231,11 @@ export function Footer({ footerMenu = [], footerSettings = {} }) {
   // Update isActiveLink to support sub-paths
   const isActiveLink = (slug) => {
     if (!slug) return false;
-    const cleanPathname = pathname?.replace(/\/$/, '');
-    const cleanSlug = slug.replace(/\/$/, '');
-    return cleanPathname === cleanSlug || cleanPathname.startsWith(cleanSlug + '/');
+    const cleanPathname = pathname?.replace(/\/$/, "");
+    const cleanSlug = slug.replace(/\/$/, "");
+    return (
+      cleanPathname === cleanSlug || cleanPathname.startsWith(cleanSlug + "/")
+    );
   };
 
   return (
@@ -270,7 +289,7 @@ export function Footer({ footerMenu = [], footerSettings = {} }) {
                   ) : btn?.id === 2 ? (
                     socialIcons.clock
                   ) : null}
-                  <span>{btn?.label || 'Button'}</span>
+                  <span>{btn?.label || "Button"}</span>
                 </Link>
               </Button>
             ))}
@@ -306,7 +325,9 @@ export function Footer({ footerMenu = [], footerSettings = {} }) {
       <div className="border-t border-gray-500 bg-gray-500">
         <div className="container mx-auto xl:py-7 py-5 flex flex-col lg:flex-row justify-between items-center">
           <p className="text-white sm:mb-4 mb-3 lg:mb-0 lg:text-start text-center 2xl:text-lg 1xl:text-[17px] sm:text-base text-[15px]">
-            {copyrightText}
+            {/* {console.log(copyrightText, "this id for copyrightText")} */}
+            <span dangerouslySetInnerHTML={{ __html: copyrightText }} />
+            {/* {copyrightText} */}
           </p>
           {socialLinks.length > 0 && (
             <div className="flex space-x-3">

@@ -21,6 +21,8 @@ export default function Page() {
     totalPrice = 0,
   } = useCart() || {};
 
+  console.log(cartItems, "this is for cart item");
+
   const removeProductFromCart = (cartItem) => {
     if (cartItem) {
       if (cartItem?.product) {
@@ -75,7 +77,8 @@ export default function Page() {
         <div className="container px-4 py-8">
           <div className="flex items-center justify-center min-h-[400px]">
             <div className="text-center">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+<div className="animate-apiun rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+
               <p className="text-gray-600">Loading cart...</p>
             </div>
           </div>
@@ -99,7 +102,9 @@ export default function Page() {
                   <div className="flex-1 sm:w-auto w-full">
                     <div className="flex justify-between items-start sm:flex-nowrap flex-wrap">
                       <h5 className="xl:w-[350px] w-[300px] sm:mb-[11px] mb-1">
-                        {item?.product?.title}
+                        <Link href={`product/${item?.product?.slug}`}>
+                          {item?.product?.title}
+                        </Link>
                       </h5>
                       <button
                         onClick={() => removeProductFromCart(item)}

@@ -75,6 +75,7 @@ export default function SinglePage({ pageData }) {
     defaultSlug = "",
     defaultPrice = null
   ) {
+    console.log(data, "this is for data");
     const technologies = [];
     const techMap = new Map(); // To track technologies by ID
 
@@ -674,7 +675,6 @@ export default function SinglePage({ pageData }) {
               {/* Related Topics */}
 
               <div className="2xl:pt-4 lg;pt-1">
-                
                 {/* {pageData?.sub_title && (
                   <>
                     <h5 className="text-[#000000] font-medium mb-4 2xl:pb-[18px] pb-3 border-primary/10 border-b">
@@ -757,8 +757,14 @@ export default function SinglePage({ pageData }) {
                     Features:
                   </h5>
                   <div className="space-y-0">
-                    {(showAllFeatures ? pageData.features : pageData.features.slice(0, 5)).map((feature, index, array) => (
-                      <div key={feature.slug} className="border-b border-primary/10 py-3">
+                    {(showAllFeatures
+                      ? pageData.features
+                      : pageData.features.slice(0, 5)
+                    ).map((feature, index, array) => (
+                      <div
+                        key={feature.slug}
+                        className="border-b border-primary/10 py-3"
+                      >
                         <FeatureItem text={feature.title} />
                       </div>
                     ))}
@@ -826,7 +832,7 @@ export default function SinglePage({ pageData }) {
                 <span
                   className="sm:space-y-5 space-y-2 sm:mb-[50px] mb-4"
                   dangerouslySetInnerHTML={{
-                    __html: formatContent(pageData?.description)
+                    __html: formatContent(pageData?.description),
                   }}
                 />
               )}
