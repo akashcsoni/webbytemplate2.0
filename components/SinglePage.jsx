@@ -288,42 +288,83 @@ export default function SinglePage({ pageData }) {
 
     const lines = content.split("\n");
     let result = "";
-    let buffer = [];
+    let listBuffer = [];
+    let blockquoteBuffer = [];
 
-    const flushBuffer = () => {
-      if (buffer.length) {
-        const block = buffer
-          .join("\n")
-          .trim()
-          .split(/\n\s*\n/)
-          .map((p) => `<p>${p.trim().replace(/\n/g, "<br />")}</p>`)
-          .join("");
-        result += block;
-        buffer = [];
+    const flushList = () => {
+      if (listBuffer.length) {
+        result += "<ul>" + listBuffer.map(li => `<li>${li}</li>`).join("") + "</ul>";
+        listBuffer = [];
       }
     };
 
-    lines.forEach((line, i) => {
+    const flushBlockquote = () => {
+      if (blockquoteBuffer.length) {
+        result += "<blockquote>" + blockquoteBuffer.join("") + "</blockquote>";
+        blockquoteBuffer = [];
+      }
+    };
+
+    const parseInlineMarkdown = (text) => {
+      return text
+        .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")     // bold (**) 
+        .replace(/__(.*?)__/g, "<strong>$1</strong>")         // bold (__)
+        .replace(/\*(.*?)\*/g, "<em>$1</em>")                 // italic (*)
+        .replace(/_(.*?)_/g, "<em>$1</em>")                   // italic (_)
+        .replace(/~~(.*?)~~/g, "<del>$1</del>")               // strikethrough
+        .replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2" target="_blank">$1</a>'); // links
+    };
+
+    lines.forEach((line) => {
       const trimmed = line.trim();
+      if (!trimmed) {
+        flushList();
+        flushBlockquote();
+        return;
+      }
 
-      if (/<[a-z][\s\S]*>/i.test(trimmed)) {
-        // Case 1: HTML tag → flush plain text first
-        flushBuffer();
-        result += trimmed;
-
-        // ✅ Skip following empty line(s) after HTML
-        if (i + 1 < lines.length && lines[i + 1].trim() === "") {
-          return;
+      // Blockquote lines (group contiguous '>' lines)
+      if (/^>\s?/.test(trimmed)) {
+        flushList(); // end any open list before blockquote
+        const inner = trimmed.replace(/^>\s?/, "");
+        // support headings inside blockquote
+        const headingMatchBQ = /^(#{1,6})\s+(.+)$/.exec(inner);
+        if (headingMatchBQ) {
+          const level = headingMatchBQ[1].length;
+          const text = parseInlineMarkdown(headingMatchBQ[2]);
+          blockquoteBuffer.push(`<h${level}>${text}</h${level}>`);
+        } else {
+          blockquoteBuffer.push(`<p>${parseInlineMarkdown(inner)}</p>`);
         }
-      } else {
-        // Case 2: Plain text → keep it
-        buffer.push(line);
+        return;
+      }
+
+      // Headings H1–H6 (outside blockquote)
+      const headingMatch = /^(#{1,6})\s+(.+)$/.exec(trimmed);
+      if (headingMatch) {
+        flushList();
+        flushBlockquote();
+        const level = headingMatch[1].length; // count of "#"
+        const text = parseInlineMarkdown(headingMatch[2]);
+        result += `<h${level}>${text}</h${level}>`;
+        return;
+      }
+
+      // Lists
+      if (/^[-*]\s+/.test(trimmed)) {
+        listBuffer.push(parseInlineMarkdown(trimmed.replace(/^[-*]\s+/, "")));
+      }
+
+      // Paragraph
+      else {
+        flushList();
+        flushBlockquote();
+        result += `<p>${parseInlineMarkdown(trimmed)}</p>`;
       }
     });
 
-    // Flush any leftover plain text
-    flushBuffer();
-
+    flushList();
+    flushBlockquote();
     return result;
   };
 
@@ -605,11 +646,10 @@ export default function SinglePage({ pageData }) {
                         <div className="flex items-center gap-4">
                           <div className="w-full ">
                             <button
-                              className={`w-full btn flex items-center justify-center transition-all duration-200 ${
-                                isProductInCart
+                              className={`w-full btn flex items-center justify-center transition-all duration-200 ${isProductInCart
                                   ? "btn-secondary border-2 border-primary text-primary hover:btn-primary"
                                   : "btn-primary"
-                              }`}
+                                }`}
                               onClick={handleAddToCart}
                               disabled={loading}
                             >
