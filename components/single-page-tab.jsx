@@ -183,7 +183,7 @@ const SinglePageTab = ({ data }) => {
               : "text-gray-600 hover:text-blue-600 border-transparent"
               } bg-transparent`}
           >
-            {tab.title}
+            <h2 className="p2 font-normal">{tab.title}</h2>
           </button>
         ))}
       </div>
