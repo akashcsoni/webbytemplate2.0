@@ -10,7 +10,6 @@ import { Suspense } from "react";
 function CheckoutContent() {
   const searchParams = useSearchParams();
   const sessionId = searchParams.get("session_id");
-  console.log(sessionId);
   const [status, setStatus] = useState("Verifying payment...");
 
   useEffect(() => {

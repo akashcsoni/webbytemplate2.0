@@ -35,7 +35,6 @@ const SinglePageSwiper = ({
   product
 }) => {
 
-  console.log("===", pageData);
 
   const prevRef = useRef(null);
   const nextRef = useRef(null);
@@ -90,13 +89,11 @@ const SinglePageSwiper = ({
 
 
   const productUrl = `${URL}/product/${pageData?.slug}`;
-  console.log(URL);
   const text =
     `Hi friend! I came across an amazing ${product?.name} on WebbyTemplate.com ` +
     `that you would absolutely like. Just click on the link below to view it.`;
 
 
-  console.log(productUrl);
 
   // Social share buttons data
   const socialButtons = [

@@ -5,10 +5,6 @@ import Image from "next/image";
 import Link from "next/link";
 
 export function TechnologySelector({ all_technology, pageName }) {
-  console.log(
-    all_technology,
-    "all_technologyall_technologyall_technologyall_technology"
-  );
 
   const [defaultTech, setDefaultTech] = useState(null);
   const [hoveredTech, setHoveredTech] = useState(null);

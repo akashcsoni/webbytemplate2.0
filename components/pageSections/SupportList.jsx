@@ -37,7 +37,6 @@ const ticketSupportPage = ({ title }) => {
   const [orderData, setOrderData] = useState([]);
   const [openTicket, setOpenTicket] = useState(null);
   const [openTicketData, setOpenTicketData] = useState({});
-  console.log(openTicketData, "ticket data ");
   const [submitFormData, setSubmitFormData] = useState({});
 
   const handleClick = () => {
@@ -139,7 +138,6 @@ const ticketSupportPage = ({ title }) => {
               themeConfig.TOKEN
             );
             if (fileData && fileData[0]) {
-              console.log(fileData, "file data upload check");
               attachments = fileData[0].id;
             }
           } catch (error) {
@@ -185,7 +183,6 @@ const ticketSupportPage = ({ title }) => {
           }, 1000);
         }
       } catch (error) {
-        console.log(error);
         setFormSubmitLoading(false);
         toast.error(error.response.data.error.message);
       } finally {
@@ -224,7 +221,6 @@ const ticketSupportPage = ({ title }) => {
       },
       cellClick: async (e, cell) => {
         const orderData = cell.getRow().getData();
-        console.log(orderData);
         if (orderData.id) {
           await setOpenTicket(orderData?.id);
         } else {

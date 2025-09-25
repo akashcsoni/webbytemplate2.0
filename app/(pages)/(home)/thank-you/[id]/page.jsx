@@ -13,9 +13,7 @@ export default function CheckoutPage({ params }) {
   const router = useRouter();
   const { id } = use(params);
   const [order, setOrder] = useState({});
-  console.log(order?.documentId, "this is my order");
   const authToken = Cookies.get("authToken");
-  console.log(authToken, "auth token is required");
   const searchParams = useSearchParams();
   const sessionId = searchParams.get("session_id");
   // console.log(sessionId);
@@ -568,10 +566,6 @@ export default function CheckoutPage({ params }) {
               <p>Date:</p>
               <h5>{formatDate(order?.createdAt)}</h5>
             </div>
-            {console.log(
-              order?.total_price + order?.tax_amount,
-              "this is for total price"
-            )}
             <div className="xl:py-5 pl-7 2xl:pr-[50px] 1xl:pr-[40px] xl:pr-7 py-4 pr-6 sm:border-r sm:border-b-0 border-b border-[#00193E1A]">
               <p>Total:</p>
               <h5>${(order?.total_price + order?.tax_amount)?.toFixed(2)}</h5>

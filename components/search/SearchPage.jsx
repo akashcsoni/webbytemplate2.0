@@ -964,7 +964,6 @@ const SearchPageContent = ({ slug }) => {
       newUrl = `${searchPath}${queryString}`;
     }
 
-    console.log(newUrl, "newurl part for url ");
 
     router.push(newUrl);
   };
@@ -1797,7 +1796,7 @@ xl:relative xl:translate-x-0 z-20 xl:p-0 xl:shadow-none xl:block
                 <div className="flex items-center justify-center divide-x divide-primary/10 bg-blue-300 border border-primary/10 p-[1px] rounded-[4px] flex-shrink-0">
                   <p className="p2 sm:px-2 px-1">
                     Term :{" "}
-                    {console.log(
+                    {
                       filtteredSearchQuery,
                       "this is for filttered search query"
                     )}
@@ -1832,7 +1831,7 @@ xl:relative xl:translate-x-0 z-20 xl:p-0 xl:shadow-none xl:block
                   <p className="p2 sm:px-2 px-1">
                     Term :{" "}
                     <span className="!text-black">
-                      {console.log(
+                      {
                         searchParams.get("term"),
                         "search parmas for condition"
                       )}

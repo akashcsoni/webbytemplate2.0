@@ -113,7 +113,6 @@ const ReviewList = ({ slug }) => {
             key={review?.id || idx}
             className="border-b border-primary/10 1xl:pb-6 sm:pb-4 pb-2"
           >
-            {console.log(review, "this is for review")}
             <div className="flex items-start flex-wrap sm:gap-[30px] gap-3">
               <h5 className="flex-shrink-0">
                 {review?.user?.full_name || "Anonymous"}

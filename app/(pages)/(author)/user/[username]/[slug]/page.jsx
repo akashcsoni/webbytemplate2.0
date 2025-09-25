@@ -7,7 +7,6 @@ import Loading from "../../loading";
 
 export default async function DynamicPage({ params }) {
   const { slug } = await params;
-  console.log(slug);
 
   try {
     const pageData = await strapiGet(`customers/${slug}`, {

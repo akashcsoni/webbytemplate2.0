@@ -103,11 +103,9 @@ const SinglePageModal = ({ product_id }) => {
           }
         }
       } catch (error) {
-        console.log(error, 'error')
         setApiErrors("An error occurred while sending your inquiry. Please try again.")
       } finally {
         setIsLoading(false)
-        console.log('finally')
       }
     }
   }

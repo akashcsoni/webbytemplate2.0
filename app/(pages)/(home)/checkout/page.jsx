@@ -53,7 +53,6 @@ export default function CheckoutPage() {
   // Redirect to home if cart is empty
   useEffect(() => {
     if (!isLoading && cartItems.length === 0) {
-      console.log("Cart is empty, redirecting to home page...");
       router.push("/");
     }
   }, [cartItems, isLoading, router]);
@@ -114,7 +113,6 @@ export default function CheckoutPage() {
         });
 
         if (userData) {
-          console.log(userData, "this is for userdata");
           // Handle phone number and country detection
           let phoneNumber = userData.phone_no || "";
           let detectedCountry = null;
@@ -520,8 +518,6 @@ export default function CheckoutPage() {
 
       if (response?.result && response?.data) {
         const orderData = response.data;
-        console.log(orderData, "✅ orderData from Strapi");
-        console.log(orderData);
 
         // 2. Create Razorpay order in backend
         if (selectedCountry === "India") {
@@ -533,8 +529,6 @@ export default function CheckoutPage() {
           });
           const razorpayOrder = razorpayOrderRes.order;
           const razorpayKey = razorpayOrderRes.key_id;
-          console.log(razorpayOrder, "✅ Razorpay Order");
-          console.log(razorpayKey, "✅ Razorpay Key");
           // 3. Setup Razorpay options
           const options = {
             key: razorpayKey, // From backend
@@ -544,7 +538,6 @@ export default function CheckoutPage() {
             description: "Order Payment",
             order_id: razorpayOrder.id,
             handler: async function (razorpayResponse) {
-              console.log("✅ Razorpay Success", razorpayResponse);
               // 4. Verify payment
               await strapiPost("razorpay/verify", {
                 ...razorpayResponse,
@@ -558,7 +551,6 @@ export default function CheckoutPage() {
                 // 🚫 User closed popup without doing anything
                 // 👉 DO NOT call backend. Leave status as pending.
                 router.push("/");
-                console.log("User closed the payment popup");
               },
             },
             prefill: {
@@ -572,7 +564,6 @@ export default function CheckoutPage() {
           };
           // 5. Open Razorpay Checkout
           const rzp = new Razorpay(options);
-          console.log(rzp, "rzp");
 
           rzp.on("payment.failed", async function (response) {
             const orderId = response.error.metadata?.order_id;
@@ -585,7 +576,6 @@ export default function CheckoutPage() {
               });
             }
 
-            console.log("❌ Razorpay payment failed", response);
           });
 
           rzp.open();
@@ -598,7 +588,6 @@ export default function CheckoutPage() {
             redirect_id: orderData?.documentId,
           });
 
-          console.log(stripeRes);
 
           if (stripeRes?.url) {
             window.location.href = stripeRes.url;
@@ -607,7 +596,6 @@ export default function CheckoutPage() {
           }
         }
       } else {
-        console.log("❌ Order creation failed:", response);
       }
     } catch (error) {
       console.error("❌ Payment Error:", error);
@@ -1260,7 +1248,6 @@ export default function CheckoutPage() {
               <p className="font-medium !text-black">
                 {/* ${(totalPrice + totalPrice * 0.18).toFixed(2)} */}
                 {/* ${Math.floor(totalPrice + totalPrice * 0.18)} */}$
-                {console.log((50000.125978).toFixed(2), "this is for total")}
                 {/* {Math.floor(
                   selectedCountry === "India"
                     ? totalPrice + totalPrice * 0.18

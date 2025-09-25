@@ -49,7 +49,6 @@ export default function SinglePage({ pageData }) {
   const { addToCart, openCart, cartItems } = useCart();
   const { addToWishlist, wishlistItems } = useWishlist();
   const [wishlistLoading, setWishlistLoading] = useState(false);
-  const [showAllFeatures, setShowAllFeatures] = useState(false);
 
   // Check if current product is in cart
   const isProductInCart = cartItems?.some(
@@ -75,7 +74,6 @@ export default function SinglePage({ pageData }) {
     defaultSlug = "",
     defaultPrice = null
   ) {
-    console.log(data, "this is for data");
     const technologies = [];
     const techMap = new Map(); // To track technologies by ID
 
@@ -647,8 +645,8 @@ export default function SinglePage({ pageData }) {
                           <div className="w-full ">
                             <button
                               className={`w-full btn flex items-center justify-center transition-all duration-200 ${isProductInCart
-                                  ? "btn-secondary border-2 border-primary text-primary hover:btn-primary"
-                                  : "btn-primary"
+                                ? "btn-secondary border-2 border-primary text-primary hover:btn-primary"
+                                : "btn-primary"
                                 }`}
                               onClick={handleAddToCart}
                               disabled={loading}
@@ -770,13 +768,13 @@ export default function SinglePage({ pageData }) {
             {/* Tags */}
 
             <div className="!mt-0">
-              {pageData?.tags && pageData?.tags.length > 0 && (
-                <div className="lg:py-[15px] py-3 2xl:pt-[30px]">
-                  <h5 className="font-medium mb-3 border-b border-primary/10 pb-[18px]">
-                    Tags:
-                  </h5>
-                  <div className="flex flex-wrap gap-3">
-                    {pageData.tags.map((tag) => {
+              <div className="lg:py-[15px] py-3 2xl:pt-[30px]">
+                <h5 className="font-medium mb-3 border-b border-primary/10 pb-[18px]">
+                  Tags:
+                </h5>
+                <div className="flex flex-wrap gap-3">
+                  {pageData?.tags && pageData?.tags.length > 0 ? (
+                    pageData.tags.map((tag) => {
                       const title = tag.title
                         .toLowerCase()
                         .replace(/\b\w/g, (c) => c.toUpperCase());
@@ -784,80 +782,42 @@ export default function SinglePage({ pageData }) {
                       return (
                         <TagPill key={tag.slug} text={title} slug={tag.slug} />
                       );
-                    })}
-                  </div>
-                </div>
-              )}
-
-              {/* Features */}
-
-              {pageData?.features && pageData?.features.length > 0 && (
-                <div className="sm:py-4 py-3">
-                  <h5 className="font-medium border-b border-primary/10 sm:pb-[18px] pb-3">
-                    Features:
-                  </h5>
-                  <div className="space-y-0">
-                    {(showAllFeatures
-                      ? pageData.features
-                      : pageData.features.slice(0, 5)
-                    ).map((feature, index, array) => (
-                      <div
-                        key={feature.slug}
-                        className="border-b border-primary/10 py-3"
-                      >
-                        <FeatureItem text={feature.title} />
-                      </div>
-                    ))}
-                  </div>
-                  {pageData.features.length > 5 && (
-                    <button
-                      onClick={() => setShowAllFeatures(!showAllFeatures)}
-                      className="mt-3 text-primary hover:text-primary/80 text-sm font-medium flex items-center gap-1 transition-colors"
-                    >
-                      {showAllFeatures ? (
-                        <>
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            className="w-4 h-4"
-                          >
-                            <polyline points="6 15 12 9 18 15" />
-                          </svg>
-                          Show Less
-                        </>
-                      ) : (
-                        <>
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            className="w-4 h-4"
-                          >
-                            <polyline points="6 9 12 15 18 9" />
-                          </svg>
-                          Show All ({pageData.features.length})
-                        </>
-                      )}
-                    </button>
+                    })
+                  ) : (
+                    <span className="text-gray-500">No tags available</span>
                   )}
                 </div>
-              )}
+              </div>
+
+              {/* Features Section - Always render for SEO */}
+              <div className="sm:py-4 py-3">
+                <h5 className="font-medium border-b border-primary/10 sm:pb-[18px] pb-3">
+                  Features:
+                </h5>
+                <div className="space-y-0">
+                  {pageData?.features && pageData?.features.length > 0 ? (
+                    <>
+                      {/* Render ALL features for SEO - all visible in HTML source */}
+                      {pageData.features.map((feature, index) => (
+                        <div
+                          key={index}
+                          className="border-b border-primary/10 py-3"
+                        >
+                          <FeatureItem text={feature.title} />
+                        </div>
+                      ))}
+                    </>
+                  ) : (
+                    <span className="text-gray-500">No features available</span>
+                  )}
+                </div>
+              </div>
             </div>
           </div>
 
           <div className="lg:w-[60%] relative">
             {/* discription */}
             <>
-              {/* {console.log(pageData)} */}
               <div className="lg:block hidden mb-5">
                 {pageData && pageData && (
                   <SinglePageSwiper
