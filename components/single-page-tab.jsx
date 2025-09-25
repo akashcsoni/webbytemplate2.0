@@ -19,6 +19,7 @@ const formatContent = (content) => {
   const lines = content.split("\n");
   let result = "";
   let listBuffer = [];
+  let blockquoteBuffer = [];
 
   const flushList = () => {
     if (listBuffer.length) {
@@ -27,44 +28,73 @@ const formatContent = (content) => {
     }
   };
 
+  const flushBlockquote = () => {
+    if (blockquoteBuffer.length) {
+      result += "<blockquote>" + blockquoteBuffer.join("") + "</blockquote>";
+      blockquoteBuffer = [];
+    }
+  };
+
   const parseInlineMarkdown = (text) => {
     return text
-      .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>") // bold
-      .replace(/\*(.*?)\*/g, "<em>$1</em>");           // italic
+      .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")     // bold (**) 
+      .replace(/__(.*?)__/g, "<strong>$1</strong>")         // bold (__)
+      .replace(/\*(.*?)\*/g, "<em>$1</em>")                 // italic (*)
+      .replace(/_(.*?)_/g, "<em>$1</em>")                   // italic (_)
+      .replace(/~~(.*?)~~/g, "<del>$1</del>")               // strikethrough
+      .replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2" target="_blank">$1</a>'); // links
   };
 
   lines.forEach((line) => {
     const trimmed = line.trim();
     if (!trimmed) {
       flushList();
+      flushBlockquote();
       return;
     }
 
-    // Headings
-    if (/^###\s+/.test(trimmed)) {
+    // Blockquote lines (group contiguous '>' lines)
+    if (/^>\s?/.test(trimmed)) {
+      flushList(); // end any open list before blockquote
+      const inner = trimmed.replace(/^>\s?/, "");
+      // support headings inside blockquote
+      const headingMatchBQ = /^(#{1,6})\s+(.+)$/.exec(inner);
+      if (headingMatchBQ) {
+        const level = headingMatchBQ[1].length;
+        const text = parseInlineMarkdown(headingMatchBQ[2]);
+        blockquoteBuffer.push(`<h${level}>${text}</h${level}>`);
+      } else {
+        blockquoteBuffer.push(`<p>${parseInlineMarkdown(inner)}</p>`);
+      }
+      return;
+    }
+
+    // Headings H1–H6 (outside blockquote)
+    const headingMatch = /^(#{1,6})\s+(.+)$/.exec(trimmed);
+    if (headingMatch) {
       flushList();
-      result += `<h3>${parseInlineMarkdown(trimmed.replace(/^###\s+/, ""))}</h3>`;
-    } else if (/^##\s+/.test(trimmed)) {
-      flushList();
-      result += `<h2>${parseInlineMarkdown(trimmed.replace(/^##\s+/, ""))}</h2>`;
-    } else if (/^#\s+/.test(trimmed)) {
-      flushList();
-      result += `<h1>${parseInlineMarkdown(trimmed.replace(/^#\s+/, ""))}</h1>`;
+      flushBlockquote();
+      const level = headingMatch[1].length; // count of "#"
+      const text = parseInlineMarkdown(headingMatch[2]);
+      result += `<h${level}>${text}</h${level}>`;
+      return;
     }
 
     // Lists
-    else if (/^[-*]\s+/.test(trimmed)) {
+    if (/^[-*]\s+/.test(trimmed)) {
       listBuffer.push(parseInlineMarkdown(trimmed.replace(/^[-*]\s+/, "")));
     }
 
     // Paragraph
     else {
       flushList();
+      flushBlockquote();
       result += `<p>${parseInlineMarkdown(trimmed)}</p>`;
     }
   });
 
   flushList();
+  flushBlockquote();
   return result;
 };
 

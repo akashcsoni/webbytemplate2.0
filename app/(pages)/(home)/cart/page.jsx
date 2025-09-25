@@ -21,8 +21,6 @@ export default function Page() {
     totalPrice = 0,
   } = useCart() || {};
 
-  console.log(cartItems, "this is for cart item");
-
   const removeProductFromCart = (cartItem) => {
     if (cartItem) {
       if (cartItem?.product) {
