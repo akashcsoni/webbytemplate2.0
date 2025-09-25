@@ -1518,7 +1518,6 @@ export default function AuthModal() {
         email: inputValue.trim(),
         type: "email",
       };
-      console.log("📧 Email Payload:", payload);
     } else {
       // 🧼 Clean mobile number: remove any spaces
       const cleanedMobile = `${selectedCountry.code}${inputValue.replace(/\s+/g, "")}`;
@@ -1526,7 +1525,6 @@ export default function AuthModal() {
         mobile: cleanedMobile,
         type: "mobile",
       };
-      console.log("📞 Mobile Payload:", payload);
     }
 
     setIsSubmitting(true);
@@ -1539,7 +1537,6 @@ export default function AuthModal() {
         themeConfig.TOKEN
       );
 
-      console.log("✅ Response from backend:", response);
 
       if (response?.message) {
         setSuccessMessage("OTP has been sent.");

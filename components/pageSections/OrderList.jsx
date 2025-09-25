@@ -22,7 +22,6 @@ const OrderList = ({ title }) => {
   ];
 
   const [order, setOrder] = useState([]);
-  console.log(order, "this is my order");
 
   useEffect(() => {
     const fetchOrderData = async (id) => {
@@ -86,7 +85,6 @@ const OrderList = ({ title }) => {
         // }
       } catch (err) {
         // toast.error("Failed to load product data.");
-        console.log(err);
         // setFilteredOrder([]);
       }
     };

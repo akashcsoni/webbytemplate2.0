@@ -265,7 +265,6 @@ export default function DashboardPage({ title }) {
         if (response.data) {
           const productsData = response.data || [];
 
-          console.log(productsData, "productdata for amount");
 
           // console.log(productsData, "this is for product data");
 
@@ -312,7 +311,6 @@ export default function DashboardPage({ title }) {
         if (response.data) {
           const productsData = response || [];
 
-          console.log(productsData, "this is for summmary product data");
 
           // const userWallets = productsData.filter(
           //   (item) => item?.vendor_id?.id === loginUserId
@@ -621,10 +619,6 @@ export default function DashboardPage({ title }) {
                             );
                           })}
 
-                        {console.log(
-                          WalletSetting?.[0]?.value,
-                          "walletsetting"
-                        )}
 
                         <div className="w-full sm:w-1/2 lg:w-[28%] sm:p-4 p-3 lg:py-0 lg:pl-4 lg:border-0 sm:border-l border-t border-primary/10">
                           <div className="flex items-center justify-between w-full">

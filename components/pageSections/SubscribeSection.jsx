@@ -77,7 +77,6 @@ const SubscribeSection = ({
           }
         }
       } catch (error) {
-        console.log(error, "error");
       } finally {
         // console.log('finally')
         setloading(false);

@@ -219,7 +219,6 @@ export function WishListProvider({ children }) {
         ...(userId && { user: userId }),
       };
 
-      console.log("Updating wishlist with data:", wishlistData); // Debug log
 
       // Update the wishlist
       const res = await strapiPut(
@@ -233,7 +232,6 @@ export function WishListProvider({ children }) {
         setWishListId(id);
         setTotalPrice(totalPrice || 0);
         setWishlistItems(products || []);
-        console.log("Wishlist updated successfully:", products); // Debug log
       } else {
         console.error("Invalid response from wishlist update:", res);
         throw new Error("Failed to update wishlist");
@@ -267,7 +265,6 @@ export function WishListProvider({ children }) {
         ...(userId && { user: userId }),
       };
 
-      console.log("Updating wishlist with data:", wishlistData); // Debug log
 
       // Update the wishlist
       const res = await strapiPut(
@@ -281,7 +278,6 @@ export function WishListProvider({ children }) {
         setWishListId(id);
         setTotalPrice(totalPrice || 0);
         setWishlistItems(products || []);
-        console.log("Wishlist updated successfully:", products); // Debug log
       } else {
         console.error("Invalid response from wishlist update:", res);
         throw new Error("Failed to update wishlist");
