@@ -11,6 +11,7 @@ import { Button } from "@heroui/react";
 import { strapiGet, strapiPost } from "@/lib/api/strapiClient";
 import Cookies from "js-cookie";
 import { themeConfig } from "@/config/theamConfig";
+import Link from "next/link";
 
 export default function CheckoutPage() {
   const router = useRouter();
@@ -27,7 +28,8 @@ export default function CheckoutPage() {
   const [countrySearchTerm, setCountrySearchTerm] = useState("");
   const [userDataLoading, setUserDataLoading] = useState(true);
   const [payNowLoading, setpayNowLoading] = useState(false);
-  console.log(selectedCountry === "India");
+  const [loading, setLoading] = useState(false);
+  // console.log(selectedCountry === "India");
 
   const countryRef = useRef(null);
   const stateRef = useRef(null);
@@ -509,6 +511,7 @@ export default function CheckoutPage() {
 
     try {
       // 1. Create order in Strapi (your Orders collection)
+      setLoading(true);
       const response = await strapiPost(
         "orders",
         checkoutData,
@@ -611,6 +614,7 @@ export default function CheckoutPage() {
       setpayNowLoading(false);
     } finally {
       setpayNowLoading(false);
+      setLoading(false);
     }
   };
 
@@ -656,6 +660,16 @@ export default function CheckoutPage() {
   const filteredflag = countries.filter((country) =>
     country.name.toLowerCase().includes(selectedCountry.toLowerCase())
   );
+
+  {
+    loading && (
+      <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+        <div className="text-white p-4 bg-gray-800 rounded-md shadow-lg">
+          Processing payment...
+        </div>
+      </div>
+    );
+  }
 
   // Show loading state while checking cart
   if (userDataLoading) {
@@ -1213,7 +1227,11 @@ export default function CheckoutPage() {
                   key={index}
                   className="flex justify-between py-1 1xl:gap-20 xl:gap-12 gap-4"
                 >
-                  <span className="p2">{item?.product?.title}</span>
+                  <span className="p2">
+                    <Link href={`product/${item?.product?.slug}`}>
+                      {item?.product?.title}
+                    </Link>
+                  </span>
                   <span className="p2 !text-black !font-medium">
                     ${item?.total?.toFixed(2)}
                   </span>

@@ -1077,10 +1077,16 @@ USD $${(orderData.total_price + orderData.tax_amount).toFixed(2)}
       hozAlign: "left",
       formatter: (cell) => {
         const data = cell.getData();
+        // console.log(data, "this is for data product afdasdfasdfasdf");
         return (
           data.products &&
           `<div class="flex items-center gap-2">
-<span>${data.products}</span>
+        <a href="/product/${data.product_slug}" 
+           
+           target="_blank" 
+           rel="noopener noreferrer">
+          ${data.products}
+        </a>
 ${
   data.multiProduct
     ? `<button class="toggle-children">
@@ -1111,7 +1117,7 @@ ${
         // console.log(data, "this is for download");
 
         return data.product_zip
-          ? `<div class="flex items-center gap-2"><button class="btn btn-primary !py-1 !px-4">Download</button></div>`
+          ? `<div class="flex items-center gap-2 truncate"><button class="btn btn-primary !py-1 !px-4">Download</button></div>`
           : "";
       },
       cellClick: (e, cell) => {
@@ -1245,7 +1251,10 @@ ${
                 price: p.product?.price,
                 product_zip:
                   p.product?.product_zip_url || p.product?.product_zip || null,
+                product_slug: p.product?.slug || null, // ✅ added slug
               }));
+
+            // console.log(item, "guyfsdyufysudfyuasdf");
 
             return {
               ...item,
@@ -1270,6 +1279,7 @@ ${
                 item.products?.[0]?.product?.product_zip_url ||
                 item.products?.[0]?.product?.product_zip?.url,
               date_purchase: item.updatedAt,
+              product_slug: item.products?.[0]?.product?.slug,
             };
           });
           setFilteredOrder(formattedData);

@@ -5,6 +5,10 @@ import Image from "next/image";
 import Link from "next/link";
 
 export function TechnologySelector({ all_technology, pageName }) {
+  console.log(
+    all_technology,
+    "all_technologyall_technologyall_technologyall_technology"
+  );
 
   const [defaultTech, setDefaultTech] = useState(null);
   const [hoveredTech, setHoveredTech] = useState(null);
@@ -33,7 +37,9 @@ export function TechnologySelector({ all_technology, pageName }) {
   return (
     <div>
       {/* Dynamic Heading and Description */}
-      <h2 className="p !text-black mb-[3px] lg:pt-5 pt-2 !text-lg">Technology</h2>
+      <h2 className="p !text-black mb-[3px] lg:pt-5 pt-2 !text-lg">
+        Technology
+      </h2>
       <p className="p2 mb-4">
         <span className="text-black">
           {currentTech?.title || "No title available"}
@@ -61,8 +67,9 @@ export function TechnologySelector({ all_technology, pageName }) {
             <div
               onMouseEnter={() => setHoveredTech(tech)}
               onMouseLeave={() => setHoveredTech(null)}
-              className={`border ${isFirst ? "border-[#0156d5]" : "border-[#d9dde2]"
-                } ${isFirst ? "bg-[#e6effb]" : "bg-white"} 
+              className={`border ${
+                isFirst ? "border-[#0156d5]" : "border-[#d9dde2]"
+              } ${isFirst ? "bg-[#e6effb]" : "bg-white"} 
                 rounded-md p-3 flex flex-col items-center justify-center text-center  
                 cursor-pointer transition-colors
                 hover:border-[#0156d5] hover:bg-[#e6effb]`}
@@ -89,10 +96,16 @@ export function TechnologySelector({ all_technology, pageName }) {
                 {title}
               </div>
               <div className="!text-primary p2">
-                ${typeof salesPrice === "number" ? salesPrice.toFixed(2) : salesPrice}
+                $
+                {typeof salesPrice === "number"
+                  ? salesPrice.toFixed(2)
+                  : salesPrice}
               </div>
               <div className="text-[#969ba3] font-medium text-sm line-through">
-                ${typeof regularPrice === "number" ? regularPrice.toFixed(2) : regularPrice}
+                $
+                {typeof regularPrice === "number"
+                  ? regularPrice.toFixed(2)
+                  : regularPrice}
               </div>
             </div>
           );

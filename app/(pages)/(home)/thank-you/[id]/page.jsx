@@ -6,17 +6,19 @@ import { themeConfig } from "@/config/theamConfig";
 import Cookies from "js-cookie";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
+import html2pdf from "html2pdf.js/dist/html2pdf.min";
+import toast from "react-hot-toast";
 
 export default function CheckoutPage({ params }) {
   const router = useRouter();
   const { id } = use(params);
   const [order, setOrder] = useState({});
-  console.log(order, "this is my order");
+  console.log(order?.documentId, "this is my order");
   const authToken = Cookies.get("authToken");
   console.log(authToken, "auth token is required");
   const searchParams = useSearchParams();
   const sessionId = searchParams.get("session_id");
-  console.log(sessionId);
+  // console.log(sessionId);
   const [status, setStatus] = useState("Verifying payment...");
 
   const formatDate = (isoDateString) => {
@@ -84,6 +86,372 @@ export default function CheckoutPage({ params }) {
 
     verifyStripePayment();
   }, [sessionId]);
+
+  const downloadInvoice = async (orderData) => {
+    try {
+      const invoiceHTML = generateInvoiceHTML(orderData);
+
+      const opt = {
+        margin: 0.5,
+        filename: `invoice-${orderData.documentId}.pdf`,
+        image: { type: "jpeg", quality: 0.98 },
+        html2canvas: { scale: 2 },
+        jsPDF: { unit: "in", format: "letter", orientation: "portrait" },
+      };
+
+      await html2pdf().set(opt).from(invoiceHTML).save();
+      toast.success("Invoice downloaded successfully!");
+    } catch (error) {
+      console.error("Error generating PDF:", error);
+      toast.error("Failed to download invoice. Please try again.");
+    }
+  };
+
+  const generateInvoiceHTML = (orderData) => {
+    const totalSalesPrice = orderData.multiProduct
+      ? orderData?._children?.reduce((total, item) => {
+          return (
+            total + (item.price?.sales_price || item.price?.regular_price || 0)
+          );
+        }, 0)
+      : orderData?.product?.reduce((total, item) => {
+          return (
+            total + (item.price?.sales_price || item.price?.regular_price || 0)
+          );
+        }, 0);
+    // 2. Calculate 18% GST
+    const gst = totalSalesPrice * 0.18;
+
+    // 3. Final total with GST
+    const finalTotal = totalSalesPrice + gst;
+
+    function formatDate(dateString) {
+      const date = new Date(dateString);
+      const options = { day: "2-digit", month: "short", year: "numeric" };
+      const formattedDate = date.toLocaleDateString("en-GB", options);
+
+      return formattedDate;
+    }
+
+    return `  
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <title>Invoice</title>
+    <style>
+        body {
+            font-family: 'Proxima Nova', Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        .pdf-box {
+            max-width: 1110px;
+            margin: auto;
+            padding: 20px 20px 0 20px;
+        }
+
+        h1,
+        h2,
+        h3,
+        h4,
+        h5,
+        h6 {
+            margin: 0;
+            padding: 0;
+        }
+
+        h2 {
+            font-size: 30px;
+        }
+
+        p {
+            font-size: 16px;
+            font-weight: 400;
+            line-height: 24px;
+            color: #505050;
+            margin: 0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 20px;
+        }
+
+        /* .invoice-meta p {
+            margin-bottom: px;
+        } */
+
+        .info-boxes {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 16px;
+        }
+
+        .box {
+            flex: 1;
+            border: 1px solid #D3DEEF;
+            border-radius: 6px;
+            padding: 20px;
+            font-size: 13px;
+            background: #E6EFFB33;
+        }
+
+        .box h6 {
+            margin-top: 0px;
+            margin-bottom: 10px;
+            font-weight: 400;
+            color: #0043A2;
+            font-size: 18px;
+        }
+
+        .box h4 {
+            margin-top: 0px;
+            margin-bottom: 8px;
+            color: #000000;
+            font-size: 20px;
+        }
+
+        .product-description {
+            width: 40%;
+            word-wrap: break-word;
+            white-space: normal;
+        }
+
+        table {
+            border-collapse: separate;
+            border-spacing: 0;
+            width: 100%;
+            border: 1px solid #D3DEEF;
+            border-radius: 12px;
+            overflow: hidden;
+            margin-bottom: 16px;
+        }
+
+        th {
+            margin-top: 0;
+            white-space: nowrap;
+            background: #0043A2;
+            color: #fff;
+            font-size: 16px;
+            padding: 10px 15px;
+            text-align: left;
+            font-weight: 500;
+        }
+
+        td {
+            margin: 0;
+            font-size: 16px;
+            padding: 10px 15px;
+            font-weight: 400;
+            color: #505050;
+            vertical-align: top;
+            /* border-bottom: 1px solid #eee; */
+        }
+
+        .totals {
+            margin-top: 20px;
+        }
+
+        .totals td {
+            font-size: 13px;
+            padding: 6px 10px;
+        }
+
+        .totals tr:last-child td {
+            font-weight: bold;
+            background: #f4f4f4;
+        }
+
+        .note {
+            margin-top: 20px;
+            border: 1px solid #ddd;
+            padding: 15px;
+            border-radius: 6px;
+            font-size: 12px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .footer {
+            margin-top: 20px;
+            text-align: center;
+            font-size: 11px;
+            color: #666;
+            background: #E6EFFB;
+            padding: 12px 16px;
+        }
+
+        .footer a {
+            text-decoration: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="pdf-box">
+
+        <!-- Header -->
+        <div class="header">
+            <div>
+                <h2 style="margin-bottom:10px;">Tax Invoice</h2>
+                <div class="invoice-meta">
+                    <p>Date: 28 Apr 2025</p>
+                    <p>Invoice No: IVIP55367467</p>
+                    <p>Order No: 201762078</p>
+                </div>
+            </div>
+            <div>
+                <img src="https://webbytemplate-store-com.s3.ap-south-1.amazonaws.com/Favicon_1_a677acbd8e.png"
+                    alt="LOGO" />
+            </div>
+        </div>
+
+        <!-- Info -->
+        <div class="info-boxes">
+            <div class="box">
+                <h6>Billed By</h6>
+                <h4><strong>WebbyCrown Solutions</strong></h4>
+                <p style="margin-bottom:8px;">517, Laxmi Enclave 2, opp. Gajera School, Katargam, Surat, Gujarat 395004
+                </p>
+                <p style="margin-bottom:5px;"><span style="color:black; margin-right:28px;">Email:</span>
+                    info@webbycrown.com</p>
+                <p style="margin-bottom:5px;"><span style="color:black; margin-right:15px;">Phone:</span> +91
+                    63527-72383</p>
+                <p><span style="color:black; margin-right:16px;">GSTIN:</span> 22AAAA00051225</p>
+            </div>
+            <div class="box">
+                <h6>Billed To</h6>
+                <h4><strong>Rohit Ghoghari</strong></h4>
+                <p style="margin-bottom:8px;">45, Chamunda nagr soc, sagar-puna road, Surat, Gujarat 395010, India</p>
+                <p style="margin-bottom:5px;"><span style="color:black; margin-right:28px;">Email:</span>
+                    rvghoghari@gmail.com</p>
+                <p style="margin-bottom:5px;"><span style="color:black; margin-right:15px;">Phone:</span> +91
+                    63527-72383</p>
+                <p><span style="color:black; margin-right:16px;">GSTIN:</span> 22AAAA00051Z25</p>
+            </div>
+        </div>
+
+        <table class="items">
+            <thead>
+                <tr>
+                    <th style="width: 20%;">Product Name</th>
+                    <th style="width: 20%;">Product Code</th>
+                    <th style="width: 40%;">Description</th>
+                    <th style="text-align:right; width: 20%;">Amount</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                <!-- Product 1 -->
+
+                <tr>
+                    <td>Orian: template</td>
+                    <td>Or553525</td>
+                    <td class="product-description">Lestin - Directory Listing WordPress Theme -
+                        Regular License</td>
+                    <td style=" text-align:right;">$25</td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td></td>
+                    <td style="padding:5px 15px;">GST% @ 18.0%</td>
+                    <td style=" text-align:right; padding:5px 15px;">$3.4</td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td></td>
+                    <td style="padding:5px 15px;">VAT%</td>
+                    <td style=" text-align:right; padding:5px 15px;">$2.5</td>
+                </tr>
+                <tr>
+                    <td style="border-bottom:1px solid #D3DEEF;"></td>
+                    <td style="border-bottom:1px solid #D3DEEF;"></td>
+                    <td style="padding-top:5px;border-bottom:1px solid #D3DEEF;">TDS%</td>
+                    <td style="padding-top:5px; text-align:right;border-bottom:1px solid #D3DEEF;">$1.1</td>
+                </tr>
+
+                <!-- Product 2 -->
+                <tr>
+                    <td>Orian: template</td>
+                    <td>Or553525</td>
+                    <td class="product-description">Lestin - Directory Listing WordPress Theme -
+                        Regular License</td>
+                    <td style=" text-align:right;">$25</td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td></td>
+                    <td style="padding:5px 15px;">GST% @ 18.0%</td>
+                    <td style=" text-align:right; padding:5px 15px;">$3.4</td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td></td>
+                    <td style="padding:5px 15px;">VAT%</td>
+                    <td style=" text-align:right; padding:5px 15px;">$2.5</td>
+                </tr>
+                <tr>
+                    <td style="border-bottom:1px solid #D3DEEF;"></td>
+                    <td style="border-bottom:1px solid #D3DEEF;"></td>
+                    <td style="padding-top:5px;border-bottom:1px solid #D3DEEF;">TDS%</td>
+                    <td style="padding-top:5px; text-align:right;border-bottom:1px solid #D3DEEF;">$1.1</td>
+                </tr>
+            </tbody>
+
+            <tfoot>
+                <tr>
+                    <td colspan="2" style="text-align:left;">
+                        Paid via Credit Card</td>
+                    <td colspan="2" style="text-align:right; font-weight:500; color:black;">Invoice Total:
+                        <span style="color:#0156D5"> USD $34.49</span>
+                    </td>
+                </tr>
+            </tfoot>
+        </table>
+
+
+        <!-- Note -->
+        <div class="info-boxes">
+            <div class="box"
+                style="display:flex; align-items:center; justify-content:space-between; gap:13px; padding:15px;">
+                <div>
+                    <h6>Note:</h6>
+
+                    <p>Thanks for buying from (Author Name) from WebbyTemplate</p>
+
+                </div>
+                <div>
+                    <p style="margin-bottom:8px; color:black; font-weight:500;">Have questions or need support?</p>
+                    <p style="margin-bottom:8px;">Reach out to us at support@yourwebsite.com.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+    </div>
+    <div class="footer">
+        <p>
+            To learn more, please review our
+            <a href="#">Privacy Policy</a>,
+            <a href="#">Terms of Service</a>, or
+            <a href="#">Tax & VAT Policy</a>.
+        </p>
+    </div>
+</body>
+
+</html>
+`;
+  };
 
   return (
     <div className="container">
@@ -165,7 +533,10 @@ export default function CheckoutPage({ params }) {
                 </svg>
                 Download List
               </button>
-              <button className="!border-[#00193E1A] btn btn-outline-primary !py-[2px] !px-3 gap-2">
+              <button
+                className="!border-[#00193E1A] btn btn-outline-primary !py-[2px] !px-3 gap-2"
+                onClick={() => downloadInvoice(order)}
+              >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   width="14"
@@ -189,11 +560,11 @@ export default function CheckoutPage({ params }) {
 
           {/* Header Summary */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:mb-[30px] mb-6 border border-[#00193E1A] rounded-b-[5px] overflow-hidden">
-            <div className="xl:py-5 2xl:px-[50px] 1xl:px-[40px] xl:px-7 py-4 px-6 border-b lg:border-b-0 sm:border-r border-[#00193E1A]">
+            <div className="xl:py-5 pl-7 2xl:pr-[50px] 1xl:pr-[40px] xl:pr-7 py-4 pr-6 border-b lg:border-b-0 sm:border-r border-[#00193E1A]">
               <p>Order Number:</p>
               <h5>#{order?.id}</h5>
             </div>
-            <div className="xl:py-5 2xl:px-[50px] 1xl:px-[40px] xl:px-7 py-4 px-6 border-b lg:border-b-0 lg:border-r border-[#00193E1A]">
+            <div className="xl:py-5 pl-7 2xl:pr-[50px] 1xl:pr-[40px] xl:pr-7 py-4 pr-6 border-b lg:border-b-0 lg:border-r border-[#00193E1A]">
               <p>Date:</p>
               <h5>{formatDate(order?.createdAt)}</h5>
             </div>
@@ -201,11 +572,11 @@ export default function CheckoutPage({ params }) {
               order?.total_price + order?.tax_amount,
               "this is for total price"
             )}
-            <div className="xl:py-5 2xl:px-[50px] 1xl:px-[40px] xl:px-7 py-4 px-6 sm:border-r sm:border-b-0 border-b border-[#00193E1A]">
+            <div className="xl:py-5 pl-7 2xl:pr-[50px] 1xl:pr-[40px] xl:pr-7 py-4 pr-6 sm:border-r sm:border-b-0 border-b border-[#00193E1A]">
               <p>Total:</p>
               <h5>${(order?.total_price + order?.tax_amount)?.toFixed(2)}</h5>
             </div>
-            <div className="xl:py-5 2xl:px-[50px] 1xl:px-[40px] xl:px-7 py-4 px-6">
+            <div className="xl:py-5 pl-7 2xl:pr-[50px] 1xl:pr-[40px] xl:pr-7 py-4 pr-6">
               <p>Email:</p>
               <h5>{order?.user?.email}</h5>
             </div>
@@ -239,7 +610,9 @@ export default function CheckoutPage({ params }) {
                             {item?.product_title}
                           </p>
                           <div className="flex items-center justify-between w-full gap-2">
-                            <p className="text-primary">${item?.total}</p>
+                            <p className="text-primary">
+                              ${item?.total?.toFixed(2)}
+                            </p>
                             <button className="!border-[#00193E1A] btn btn-outline-primary !py-[2px] !px-3 gap-2 h-fit my-auto sm:!hidden !flex">
                               <svg
                                 xmlns="http://www.w3.org/2000/svg"
@@ -322,7 +695,9 @@ export default function CheckoutPage({ params }) {
                 <p className="text-black">Billing Address</p>
               </div>
               <div className="2xl:py-[30px] 2xl:px-[35px] sm:py-[25px] xl:px-[30px] sm:px-6 p-4 rounded-b-[5px] overflow-hidden border border-[#00193E1A]">
-                <h4 className="font-bold mb-[10px]">{order?.user?.username}</h4>
+                <h4 className="font-bold mb-[10px] !mt-0">
+                  {order?.user?.username}
+                </h4>
                 <p>{order?.billing_address?.address},</p>
                 <p>{order?.billing_address?.city},</p>
                 <p>{order?.billing_address?.state}</p>
@@ -357,12 +732,166 @@ export default function CheckoutPage({ params }) {
                   <span className="text-black sm:mr-[18px] mr-3">
                     Payment by:
                   </span>{" "}
-                  {order?.payment_type ? order?.payment_type : "Paypal"}
-                  {/* <img
-                    src="/images/paypal.svg"
-                    alt="PayPal"
-                    className="xl:w-[84px] w-[70px] ml-3"
-                  /> */}
+                  <div className="flex items-center gap-2">
+                    {order?.payment_type ? order?.payment_type : "Paypal"}{" "}
+                    {order?.payment_type === "razorpay" ? (
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="102"
+                        height="28"
+                        viewBox="0 0 102 28"
+                        fill="none"
+                      >
+                        <rect
+                          x="0.328125"
+                          y="0.25"
+                          width="100.5"
+                          height="27.5"
+                          rx="2.75"
+                          fill="#3395FF"
+                          fillOpacity="0.15"
+                        />
+                        <rect
+                          x="0.328125"
+                          y="0.25"
+                          width="100.5"
+                          height="27.5"
+                          rx="2.75"
+                          stroke="#3395FF"
+                          strokeWidth="0.5"
+                        />
+                        <g clipPath="url(#clip0_7812_4861)">
+                          <path
+                            fillRule="evenodd"
+                            clipRule="evenodd"
+                            d="M28.339 11.7998C28.2049 12.3006 27.9451 12.6681 27.5595 12.9028C27.1735 13.1374 26.6321 13.255 25.9337 13.255H23.7149L24.4938 10.3449H26.7126C27.4104 10.3449 27.8895 10.4622 28.1498 10.6969C28.4096 10.9318 28.473 11.2993 28.339 11.7998ZM30.6367 11.7371C30.9189 10.6841 30.8019 9.87563 30.286 9.31243C29.77 8.74922 28.8659 8.46777 27.5746 8.46777H22.6216L19.6406 19.6062H22.0469L23.2488 15.1163H24.8269C25.1807 15.1163 25.4593 15.1738 25.663 15.2885C25.8671 15.4035 25.9867 15.6069 26.0236 15.8985L26.4528 19.6062H29.0311L28.6128 16.1491C28.5276 15.3772 28.1748 14.9235 27.5549 14.788C28.3452 14.5588 29.0072 14.1777 29.5403 13.6458C30.0729 13.1141 30.4387 12.478 30.6367 11.7371Z"
+                            fill="#072654"
+                          />
+                          <path
+                            fillRule="evenodd"
+                            clipRule="evenodd"
+                            d="M36.482 15.6175C36.2809 16.3682 35.9711 16.9421 35.5529 17.3382C35.1341 17.7347 34.6332 17.9327 34.0502 17.9327C33.4557 17.9327 33.0525 17.7373 32.84 17.3461C32.6264 16.9551 32.6191 16.3895 32.8176 15.6487C33.0156 14.9083 33.3315 14.3296 33.7664 13.912C34.2008 13.4953 34.7096 13.2864 35.293 13.2864C35.8761 13.2864 36.271 13.4875 36.4757 13.8889C36.6805 14.2903 36.683 14.8665 36.482 15.6175ZM37.5367 11.6751L37.2354 12.8015C37.1049 12.3947 36.8529 12.0716 36.4798 11.8317C36.1063 11.5919 35.6433 11.4717 35.0914 11.4717C34.4144 11.4717 33.7633 11.6465 33.1388 11.9959C32.5142 12.3455 31.968 12.8382 31.5009 13.4742C31.0338 14.1105 30.6914 14.8353 30.4736 15.6487C30.2559 16.4624 30.2123 17.1793 30.3432 17.7997C30.4742 18.4204 30.7579 18.8975 31.1948 19.2313C31.6314 19.5653 32.1936 19.7317 32.881 19.7317C33.4328 19.7317 33.9587 19.6171 34.4576 19.3876C34.9563 19.1584 35.3798 18.8401 35.7285 18.4334L35.4142 19.6066H37.742L39.8646 11.6751H37.5367Z"
+                            fill="#072654"
+                          />
+                          <path
+                            fillRule="evenodd"
+                            clipRule="evenodd"
+                            d="M48.2361 11.6748H41.4707L40.9978 13.4427H44.9349L39.7294 17.948L39.2852 19.6063H46.2693L46.7427 17.8387H42.5245L47.809 13.2705L48.2361 11.6748Z"
+                            fill="#072654"
+                          />
+                          <path
+                            fillRule="evenodd"
+                            clipRule="evenodd"
+                            d="M54.1936 15.6018C53.9842 16.3838 53.674 16.9683 53.2635 17.3541C52.853 17.7399 52.3562 17.9326 51.7733 17.9326C50.5542 17.9326 50.1531 17.1561 50.5688 15.6018C50.7756 14.83 51.0873 14.2486 51.5041 13.8576C51.9213 13.4664 52.4264 13.2708 53.0203 13.2708C53.6033 13.2708 53.9967 13.4664 54.1993 13.8576C54.4019 14.2486 54.4004 14.83 54.1936 15.6018ZM55.5555 11.9722C55.0198 11.6387 54.3354 11.4717 53.502 11.4717C52.6581 11.4717 51.8766 11.6387 51.157 11.9722C50.4373 12.3062 49.8247 12.7859 49.3191 13.4115C48.813 14.0374 48.4482 14.7673 48.2248 15.6018C48.0013 16.4364 47.9754 17.1661 48.1469 17.7919C48.3178 18.4178 48.6732 18.8975 49.2146 19.2313C49.7556 19.5653 50.4477 19.7317 51.2916 19.7317C52.125 19.7317 52.8987 19.5653 53.6132 19.2313C54.3266 18.8975 54.9372 18.4178 55.4433 17.7919C55.9488 17.1661 56.3136 16.4364 56.5371 15.6018C56.7605 14.7673 56.7865 14.0374 56.6155 13.4115C56.444 12.7859 56.0907 12.3062 55.5555 11.9722Z"
+                            fill="#072654"
+                          />
+                          <path
+                            fillRule="evenodd"
+                            clipRule="evenodd"
+                            d="M79.9036 15.6175C79.7025 16.3682 79.3928 16.9421 78.9745 17.3382C78.5562 17.7347 78.0543 17.9327 77.4713 17.9327C76.8779 17.9327 76.4742 17.7373 76.2616 17.3461C76.048 16.9551 76.0408 16.3895 76.2393 15.6487C76.4373 14.9083 76.7532 14.3296 77.1881 13.912C77.6225 13.4953 78.1312 13.2864 78.7147 13.2864C79.2977 13.2864 79.6926 13.4875 79.8973 13.8889C80.1021 14.2903 80.1047 14.8665 79.9036 15.6175ZM80.9584 11.6751L80.6571 12.8015C80.5266 12.3947 80.2746 12.0716 79.9015 11.8317C79.5279 11.5919 79.065 11.4717 78.5131 11.4717C77.836 11.4717 77.185 11.6465 76.5604 11.9959C75.9358 12.3455 75.3897 12.8382 74.9226 13.4742C74.4555 14.1105 74.113 14.8353 73.8953 15.6487C73.6776 16.4624 73.6344 17.1793 73.7649 17.7997C73.8958 18.4204 74.179 18.8975 74.6165 19.2313C75.053 19.5653 75.6152 19.7317 76.3027 19.7317C76.8545 19.7317 77.3804 19.6171 77.8792 19.3876C78.378 19.1584 78.8015 18.8401 79.1501 18.4334L78.8358 19.6066H81.1636L83.2863 11.6751H80.9584Z"
+                            fill="#072654"
+                          />
+                          <path
+                            fillRule="evenodd"
+                            clipRule="evenodd"
+                            d="M63.8542 13.8028L64.4476 11.6439C64.2459 11.5396 63.9788 11.4873 63.6458 11.4873C63.1142 11.4873 62.6024 11.6202 62.1093 11.8863C61.6858 12.1146 61.3252 12.4351 61.0207 12.8366L61.3294 11.674L60.6554 11.6751H59.0022L56.8633 19.6066H59.2233L60.3327 15.4611C60.4943 14.8563 60.7843 14.3844 61.2036 14.0455C61.6219 13.7065 62.1441 13.5369 62.7692 13.5369C63.1547 13.5369 63.5159 13.6256 63.8542 13.8028Z"
+                            fill="#072654"
+                          />
+                          <path
+                            fillRule="evenodd"
+                            clipRule="evenodd"
+                            d="M70.4246 15.6484C70.2261 16.3893 69.9185 16.9548 69.5017 17.3458C69.084 17.737 68.5841 17.9324 68.0011 17.9324C67.4176 17.9324 67.0201 17.7344 66.8086 17.338C66.5966 16.9418 66.5914 16.3682 66.7925 15.6172C66.9936 14.8662 67.3064 14.29 67.7315 13.8886C68.1565 13.4872 68.661 13.2861 69.2446 13.2861C69.8171 13.2861 70.2064 13.495 70.4126 13.912C70.6184 14.3292 70.6226 14.9083 70.4246 15.6484ZM72.0739 11.9956C71.6359 11.6462 71.0783 11.4717 70.4017 11.4717C69.8078 11.4717 69.2425 11.6072 68.7072 11.8783C68.1705 12.1498 67.7356 12.5195 67.402 12.989L67.4095 12.937L67.806 11.6737H67.3498V11.6748H65.5023L64.9157 13.8681C64.9089 13.8936 64.9032 13.9174 64.8964 13.9432L62.4766 22.9855H64.8362L66.0546 18.4334C66.1741 18.8397 66.4225 19.1581 66.7987 19.3873C67.1749 19.6167 67.6389 19.7315 68.1913 19.7315C68.8788 19.7315 69.5324 19.565 70.1533 19.231C70.7738 18.8975 71.3131 18.4201 71.7704 17.7995C72.2282 17.1793 72.566 16.4621 72.7837 15.6484C73.0014 14.8349 73.0466 14.1102 72.9203 13.4739C72.7941 12.8379 72.5114 12.3452 72.0739 11.9956Z"
+                            fill="#072654"
+                          />
+                          <path
+                            fillRule="evenodd"
+                            clipRule="evenodd"
+                            d="M93.0563 11.677L93.0578 11.6748H91.6286C91.5829 11.6748 91.5426 11.6761 91.5008 11.677H90.759L90.3797 12.2061C90.3493 12.246 90.3189 12.2861 90.2862 12.3327L90.2449 12.394L87.2303 16.5976L86.6052 11.6748H84.136L85.3865 19.1553L82.625 22.9855H82.7037H84.1137H85.0851L85.7544 22.0363C85.7741 22.008 85.791 21.9849 85.8121 21.955L86.593 20.8464L86.6154 20.8146L90.1098 15.8548L93.0539 11.6803L93.0578 11.677H93.0563Z"
+                            fill="#072654"
+                          />
+                          <path
+                            fillRule="evenodd"
+                            clipRule="evenodd"
+                            d="M13.5735 9.74404L12.8672 12.3468L16.909 9.7294L14.2658 19.604L16.95 19.6065L20.8547 5.02148L13.5735 9.74404Z"
+                            fill="#3395FF"
+                          />
+                          <path
+                            fillRule="evenodd"
+                            clipRule="evenodd"
+                            d="M9.22451 15.4555L8.11328 19.6067H13.6152C13.6152 19.6067 15.8657 11.164 15.8663 11.1616C15.8642 11.163 9.22451 15.4555 9.22451 15.4555Z"
+                            fill="#072654"
+                          />
+                        </g>
+                      </svg>
+                    ) : (
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="60"
+                        height="28"
+                        viewBox="0 0 60 28"
+                        fill="none"
+                      >
+                        <rect
+                          x="0.328125"
+                          y="0.25"
+                          width="58.7012"
+                          height="27.4998"
+                          rx="2.75"
+                          fill="#635BFF"
+                          fillOpacity="0.15"
+                        />
+                        <rect
+                          x="0.328125"
+                          y="0.25"
+                          width="58.7012"
+                          height="27.4998"
+                          rx="2.75"
+                          stroke="#635BFF"
+                          strokeWidth="0.5"
+                        />
+                        <path
+                          fillRule="evenodd"
+                          clipRule="evenodd"
+                          d="M51.2793 14.3002C51.2793 11.2241 49.7913 8.79688 46.9473 8.79688C44.0913 8.79688 42.3633 11.2241 42.3633 14.2762C42.3633 17.893 44.4033 19.7194 47.3313 19.7194C48.7593 19.7194 49.8393 19.395 50.6553 18.9384V16.5352C49.8393 16.9437 48.9033 17.1961 47.7153 17.1961C46.5513 17.1961 45.5193 16.7875 45.3873 15.3696H51.2553C51.2553 15.2134 51.2793 14.5886 51.2793 14.3002ZM45.3513 13.1587C45.3513 11.8009 46.1793 11.2361 46.9353 11.2361C47.6673 11.2361 48.4473 11.8009 48.4473 13.1587H45.3513Z"
+                          fill="#635BFF"
+                        />
+                        <path
+                          fillRule="evenodd"
+                          clipRule="evenodd"
+                          d="M37.73 8.79688C36.554 8.79688 35.798 9.34961 35.378 9.73413L35.222 8.98913H32.582V22.9998L35.582 22.363L35.594 18.9624C36.026 19.2749 36.662 19.7194 37.718 19.7194C39.866 19.7194 41.822 17.9891 41.822 14.1801C41.81 10.6954 39.83 8.79688 37.73 8.79688ZM37.01 17.0759C36.302 17.0759 35.882 16.8236 35.594 16.5112L35.582 12.0532C35.894 11.7048 36.326 11.4644 37.01 11.4644C38.102 11.4644 38.858 12.6901 38.858 14.2642C38.858 15.8743 38.114 17.0759 37.01 17.0759Z"
+                          fill="#635BFF"
+                        />
+                        <path
+                          fillRule="evenodd"
+                          clipRule="evenodd"
+                          d="M28.4531 8.08812L31.4651 7.43925V5L28.4531 5.63685V8.08812Z"
+                          fill="#635BFF"
+                        />
+                        <path
+                          d="M31.4651 9.00146H28.4531V19.5155H31.4651V9.00146Z"
+                          fill="#635BFF"
+                        />
+                        <path
+                          fillRule="evenodd"
+                          clipRule="evenodd"
+                          d="M25.2254 9.89034L25.0334 9.00116H22.4414V19.5152H25.4414V12.3897C26.1494 11.4644 27.3494 11.6327 27.7214 11.7648V9.00116C27.3374 8.85697 25.9334 8.59261 25.2254 9.89034Z"
+                          fill="#635BFF"
+                        />
+                        <path
+                          fillRule="evenodd"
+                          clipRule="evenodd"
+                          d="M19.2252 6.39404L16.2972 7.01888L16.2852 16.6437C16.2852 18.4221 17.6172 19.7318 19.3932 19.7318C20.3772 19.7318 21.0972 19.5516 21.4932 19.3353V16.8961C21.1092 17.0523 19.2132 17.605 19.2132 15.8266V11.5609H21.4932V9.00152H19.2132L19.2252 6.39404Z"
+                          fill="#635BFF"
+                        />
+                        <path
+                          fillRule="evenodd"
+                          clipRule="evenodd"
+                          d="M11.1141 12.0532C11.1141 11.5846 11.4981 11.4044 12.1341 11.4044C13.0461 11.4044 14.1981 11.6807 15.1101 12.1734V9.34961C14.1141 8.95308 13.1301 8.79688 12.1341 8.79688C9.69813 8.79687 8.07812 10.0706 8.07812 12.1974C8.07812 15.5138 12.6381 14.9851 12.6381 16.415C12.6381 16.9678 12.1581 17.148 11.4861 17.148C10.4901 17.148 9.21813 16.7395 8.21012 16.1867V19.0465C9.32613 19.5272 10.4541 19.7315 11.4861 19.7315C13.9821 19.7315 15.6981 18.4938 15.6981 16.3429C15.6861 12.7622 11.1141 13.399 11.1141 12.0532Z"
+                          fill="#635BFF"
+                        />
+                      </svg>
+                    )}
+                  </div>
                 </p>
                 <p>
                   {" "}
@@ -378,7 +907,7 @@ export default function CheckoutPage({ params }) {
 
         {/* Footer Action */}
         <div className="sm:pt-8 pt-6">
-          <Link href="/" className="btn btn-primary">
+          <Link href="/" className="btn btn-primary w-fit">
             Keep Shopping
           </Link>
         </div>
