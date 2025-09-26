@@ -9,7 +9,7 @@ import { FooterFooterContainer } from "@/components/footer/footer-container";
 export const metadata = {
   title: {
     default: siteConfig.name,
-    template: `%s - ${siteConfig.name}`,
+    template: `%s`,
   },
   description: siteConfig.description,
   icons: {

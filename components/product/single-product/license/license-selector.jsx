@@ -532,9 +532,9 @@ export default function LicenseSelector({
 
                 return (
                     <div key={type} className="lg:space-y-4 space-y-2">
-                        <h5 className="text-black !font-medium 2xl:!text-xl xl:!text-lg lg:!text-[17px] !text-lg">
+                        <h2 className="text-black !font-medium 2xl:!text-xl xl:!text-lg lg:!text-[17px] !text-lg">
                             {type === "choose_a_license" ? "License Options" : "Get Services from UI Website Templates Experts"}
-                        </h5>
+                        </h2>
 
                         <div className="space-y-[14px]">
                             {typeLicenses.map((license) => {

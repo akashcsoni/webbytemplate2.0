@@ -290,11 +290,10 @@ const SinglePageSwiper = ({
           >
             {gallery_images.map((img, i) => (
               <SwiperSlide key={i}>
-                {/* {console.log(img)} */}
                 <div className="relative group w-full h-full lg:before:pt-[69%] before:pt-[64%] before:block overflow-hidden">
                   <Image
                     src={containsTargetURL(img?.url) ? img?.url : `${img?.url}`}
-                    alt={`Product ${i + 1}`}
+                    alt={img?.alternativeText || `Product ${i + 1}`}
                     width={imageWidth}
                     height={imageHeight}
                     className="flex-shrink-0 w-full h-full absolute top-0 left-0 bottom-0 right-0"
