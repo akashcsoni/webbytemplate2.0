@@ -792,9 +792,9 @@ export default function SinglePage({ pageData }) {
 
               {/* Features Section - Always render for SEO */}
               <div className="sm:py-4 py-3">
-                <h5 className="font-medium border-b border-primary/10 sm:pb-[18px] pb-3">
+                <h3 className="font-medium border-b border-primary/10 sm:pb-[18px] pb-3 text-[20px]">
                   Template Features:
-                </h5>
+                </h3>
                 <div className="space-y-0">
                   {pageData?.features && pageData?.features.length > 0 ? (
                     <>
