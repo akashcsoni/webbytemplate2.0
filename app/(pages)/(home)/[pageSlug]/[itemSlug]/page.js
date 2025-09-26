@@ -5,7 +5,6 @@ import SinglePage from "@/components/SinglePage";
 import SomethingWrong from "@/components/somethingWrong/page";
 import { themeConfig } from "@/config/theamConfig";
 import { strapiGet, strapiPost } from "@/lib/api/strapiClient";
-
 export const dynamic = 'force-dynamic'; // Force no caching, SSR on every request
 
 // Generate dynamic metadata for SEO
@@ -30,7 +29,7 @@ export async function generateMetadata({ params }) {
             const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://webbytemplatev2.vercel.app';
             const currentUrl = `${baseUrl}/${pageSlug}/${itemSlug}`;
             return {
-                title: `${itemSlug} - WebbyTemplate`,
+                title: itemSlug,
                 description: "Premium website templates and themes",
                 alternates: {
                     canonical: currentUrl,
@@ -43,7 +42,7 @@ export async function generateMetadata({ params }) {
         const currentUrl = `${baseUrl}/${pageSlug}/${itemSlug}`;
         
         // Generate title from seo_meta with fallbacks
-        const title = data?.seo_meta?.title || data?.title || itemSlug || 'WebbyTemplate';
+        const title = data?.seo_meta?.title || data?.title || itemSlug;
         
         // Generate description from seo_meta with fallbacks
         const description = data?.seo_meta?.description || data?.description || "Premium website templates and themes";
@@ -62,6 +61,7 @@ export async function generateMetadata({ params }) {
         return {
             title: title,
             description: description,
+            keywords: data?.seo_meta?.keywords || data?.tags?.map(tag => tag.title).join(', ') || 'website templates, themes, web design',
             alternates: {
                 canonical: currentUrl,
             },
@@ -87,16 +87,32 @@ export async function generateMetadata({ params }) {
                 description: description,
                 images: imageUrl ? [imageUrl] : undefined,
             },
+            robots: {
+                index: true,
+                follow: true,
+                googleBot: {
+                    index: true,
+                    follow: true,
+                    'max-video-preview': -1,
+                    'max-image-preview': 'large',
+                    'max-snippet': -1,
+                },
+            },
         };
     } catch (error) {
         console.error('Error generating metadata:', error);
         const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://webbytemplatev2.vercel.app';
         const currentUrl = `${baseUrl}/${pageSlug}/${itemSlug}`;
         return {
-            title: `${itemSlug} - WebbyTemplate`,
+            title: itemSlug,
             description: "Premium website templates and themes",
+            keywords: 'website templates, themes, web design',
             alternates: {
                 canonical: currentUrl,
+            },
+            robots: {
+                index: true,
+                follow: true,
             },
         };
     }
@@ -140,7 +156,7 @@ export default async function DynamicPage({ params, searchParams }) {
             const currentUrl = `${baseUrl}/${pageSlug}/${itemSlug}`;
             
             // Generate title and description from seo_meta with fallbacks (same as metadata)
-            const title = pageData?.data?.seo_meta?.title || pageData?.data?.title || itemSlug || 'Product';
+            const title = pageData?.data?.seo_meta?.title || pageData?.data?.title || itemSlug;
             const description = pageData?.data?.seo_meta?.description || pageData?.data?.description || "Premium website template";
             
             // Generate Product schema (always show, with or without reviews)

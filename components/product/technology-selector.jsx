@@ -33,9 +33,9 @@ export function TechnologySelector({ all_technology, pageName }) {
   return (
     <div>
       {/* Dynamic Heading and Description */}
-      <h2 className="p !text-black mb-[3px] lg:pt-5 pt-2 !text-lg">
+      <h3 className="p !text-black mb-[3px] lg:pt-5 pt-2 !text-lg">
         Technology
-      </h2>
+      </h3>
       <p className="p2 mb-4">
         <span className="text-black">
           {currentTech?.title || "No title available"}

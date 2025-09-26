@@ -19,7 +19,7 @@ function TagPill({ text, slug }) {
       href={`/search/${slug}`}
       className="p2 border py-1 sm:px-[18px] px-2 border-primary/10 rounded-[4px]"
     >
-      <h3 className="p2 font-normal">{text}</h3>
+      <span className="p2 font-normal">{text}</span>
     </Link>
   );
 }
@@ -40,7 +40,7 @@ function FeatureItem({ text }) {
         <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
         <polyline points="22 4 12 14.01 9 11.01" />
       </svg>
-      <h2 className="text-[#505050] p2 font-normal">{text}</h2>
+      <span className="text-[#505050] p2 font-normal">{text}</span>
     </div>
   );
 }
@@ -618,9 +618,9 @@ export default function SinglePage({ pageData }) {
 
             {!isWhiteLabel && (
               <div className="border-b border-[#d9dde2] lg:py-[15px] py-3 flex justify-between items-center">
-                <h2 className="text-[#000000] text-lg font-semibold">
+                <h3 className="text-[#000000] text-lg font-semibold">
                   Lifetime
-                </h2>
+                </h3>
                 <div>
                   <span className="font-medium">${totalPrice.toFixed(2)}</span>
                   <br />
@@ -742,7 +742,7 @@ export default function SinglePage({ pageData }) {
 
             {pageData?.rating !== 0 && (
               <div className="2xl:py-[15px] py-3 flex justify-between items-center">
-                <h5 className="text-[#000000] font-medium">Review:</h5>
+                <h3 className="text-[#000000] font-medium">Review:</h3>
                 <div className="flex items-center">
                   <div className="flex text-[#f9bc60]">
                     {[...Array(pageData?.rating)].map((_, i) => (
@@ -770,9 +770,9 @@ export default function SinglePage({ pageData }) {
 
             <div className="!mt-0">
               <div className="lg:py-[15px] py-3 2xl:pt-[30px]">
-                <h5 className="font-medium mb-3 border-b border-primary/10 pb-[18px]">
+                <h3 className="font-medium mb-3 border-b border-primary/10 pb-[18px] text-[20px]  ">
                   Tags:
-                </h5>
+                </h3>
                 <div className="flex flex-wrap gap-3">
                   {pageData?.tags && pageData?.tags.length > 0 ? (
                     pageData.tags.map((tag) => {
@@ -792,9 +792,9 @@ export default function SinglePage({ pageData }) {
 
               {/* Features Section - Always render for SEO */}
               <div className="sm:py-4 py-3">
-                <h3 className="font-medium border-b border-primary/10 sm:pb-[18px] pb-3 text-[20px]">
+                <h2 className="font-medium border-b border-primary/10 sm:pb-[18px] pb-3 text-[20px]">
                   Template Features:
-                </h3>
+                </h2>
                 <div className="space-y-0">
                   {pageData?.features && pageData?.features.length > 0 ? (
                     <>
