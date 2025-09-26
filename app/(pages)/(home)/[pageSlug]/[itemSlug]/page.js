@@ -27,9 +27,14 @@ export async function generateMetadata({ params }) {
         });
 
         if (!pageData.result || !pageData.data || Object.keys(pageData.data).length === 0) {
+            const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://webbytemplatev2.vercel.app';
+            const currentUrl = `${baseUrl}/${pageSlug}/${itemSlug}`;
             return {
                 title: `${itemSlug} - WebbyTemplate`,
                 description: "Premium website templates and themes",
+                alternates: {
+                    canonical: currentUrl,
+                },
             };
         }
 
@@ -37,11 +42,11 @@ export async function generateMetadata({ params }) {
         const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://webbytemplatev2.vercel.app';
         const currentUrl = `${baseUrl}/${pageSlug}/${itemSlug}`;
         
-        // Generate title from API data with fallbacks
-        const title = data?.title || itemSlug || 'WebbyTemplate';
+        // Generate title from seo_meta with fallbacks
+        const title = data?.seo_meta?.title || data?.title || itemSlug || 'WebbyTemplate';
         
-        // Generate description from API data with fallbacks
-        const description = data?.description || "Premium website templates and themes";
+        // Generate description from seo_meta with fallbacks
+        const description = data?.seo_meta?.description || data?.description || "Premium website templates and themes";
 
         // Get image URL from seo_meta with validation
         let imageUrl = null;
@@ -57,6 +62,9 @@ export async function generateMetadata({ params }) {
         return {
             title: title,
             description: description,
+            alternates: {
+                canonical: currentUrl,
+            },
             openGraph: {
                 type: 'website',
                 title: title,
@@ -82,9 +90,14 @@ export async function generateMetadata({ params }) {
         };
     } catch (error) {
         console.error('Error generating metadata:', error);
+        const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://webbytemplatev2.vercel.app';
+        const currentUrl = `${baseUrl}/${pageSlug}/${itemSlug}`;
         return {
             title: `${itemSlug} - WebbyTemplate`,
             description: "Premium website templates and themes",
+            alternates: {
+                canonical: currentUrl,
+            },
         };
     }
 }
@@ -125,23 +138,67 @@ export default async function DynamicPage({ params, searchParams }) {
             // Safe data extraction with fallbacks
             const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://webbytemplatev2.vercel.app';
             const currentUrl = `${baseUrl}/${pageSlug}/${itemSlug}`;
-            const title = pageData?.data?.title || itemSlug || 'Product';
+            
+            // Generate title and description from seo_meta with fallbacks (same as metadata)
+            const title = pageData?.data?.seo_meta?.title || pageData?.data?.title || itemSlug || 'Product';
+            const description = pageData?.data?.seo_meta?.description || pageData?.data?.description || "Premium website template";
             
             // Generate Product schema (always show, with or without reviews)
             let productSchema = null;
             try {
-                // Start with basic Product schema
+                // Prepare images array
+                let images = [];
+                if (pageData?.data?.gallery_image && Array.isArray(pageData.data.gallery_image)) {
+                    images = pageData.data.gallery_image.map(img => img.url).filter(Boolean);
+                }
+                if (images.length === 0 && pageData?.data?.seo_meta?.image?.url) {
+                    images = [pageData.data.seo_meta.image.url];
+                }
+
+                // Prepare offers array from licenses
+                let offers = [];
+                if (pageData?.data?.all_license && Array.isArray(pageData.data.all_license)) {
+                    offers = pageData.data.all_license.map(license => ({
+                        "@type": "Offer",
+                        "url": currentUrl,
+                        "priceCurrency": "USD",
+                        "price": license.sales_price ? license.sales_price.toString() : license.regular_price?.toString() || "0",
+                        "priceSpecification": {
+                            "@type": "UnitPriceSpecification",
+                            "priceCurrency": "USD",
+                            "price": license.sales_price ? license.sales_price.toString() : license.regular_price?.toString() || "0"
+                        },
+                        "availability": "https://schema.org/InStock",
+                        "itemCondition": "https://schema.org/NewCondition",
+                        "name": license.license?.title || license.license_type || "License",
+                        "sku": license.license?.documentId || license.id || `${itemSlug}-${license.license_type}`
+                    }));
+                }
+
+                // Start with comprehensive Product schema
                 productSchema = {
                     "@context": "https://schema.org/",
                     "@type": "Product",
                     "name": title,
-                    "image": pageData?.data?.gallery_image?.[0]?.url || pageData?.data?.seo_meta?.image?.url || null,
-                    "description": pageData?.data?.description || "Premium website template",
+                    "image": images.length > 0 ? images : null,
+                    "description": description,
                     "sku": pageData?.data?.sku || pageData?.data?.id || itemSlug,
                     "brand": {
                         "@type": "Brand",
                         "name": "WebbyTemplate"
-                    }
+                    },
+                    "offers": offers.length > 0 ? offers : null,
+                    "mainEntityOfPage": {
+                        "@type": "WebPage",
+                        "@id": currentUrl
+                    },
+                    "publisher": {
+                        "@type": "Organization",
+                        "name": "WebbyTemplate",
+                        "url": baseUrl
+                    },
+                    "datePublished": pageData?.data?.createdAt ? new Date(pageData.data.createdAt).toISOString().split('T')[0] : null,
+                    "dateModified": pageData?.data?.updatedAt ? new Date(pageData.data.updatedAt).toISOString().split('T')[0] : null
                 };
 
                 // Try to fetch reviews and add them if available
