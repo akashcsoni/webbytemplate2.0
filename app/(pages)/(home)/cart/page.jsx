@@ -75,7 +75,7 @@ export default function Page() {
         <div className="container px-4 py-8">
           <div className="flex items-center justify-center min-h-[400px]">
             <div className="text-center">
-<div className="animate-apiun rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+              <div className="animate-apiun rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
 
               <p className="text-gray-600">Loading cart...</p>
             </div>
@@ -99,7 +99,7 @@ export default function Page() {
                   />
                   <div className="flex-1 sm:w-auto w-full">
                     <div className="flex justify-between items-start sm:flex-nowrap flex-wrap">
-                      <h5 className="xl:w-[350px] w-[300px] sm:mb-[11px] mb-1">
+                      <h5 className="xl:w-[350px] w-[300px] sm:mb-[11px] mb-1 hover:text-primary">
                         <Link href={`product/${item?.product?.slug}`}>
                           {item?.product?.title}
                         </Link>

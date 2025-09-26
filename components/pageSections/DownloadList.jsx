@@ -1077,27 +1077,33 @@ USD $${(orderData.total_price + orderData.tax_amount).toFixed(2)}
       hozAlign: "left",
       formatter: (cell) => {
         const data = cell.getData();
-        // console.log(data, "this is for data product afdasdfasdfasdf");
-        return (
-          data.products &&
-          `<div class="flex items-center gap-2">
-        <a href="/product/${data.product_slug}" 
-           
-           target="_blank" 
-           rel="noopener noreferrer">
-          ${data.products}
-        </a>
-${
-  data.multiProduct
-    ? `<button class="toggle-children">
-<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 18 18" fill="none" class="">
-<path d="M9 0C4.03754 0 0 4.03754 0 9C0 13.9625 4.03754 18 9 18C13.9625 18 18 13.9625 18 9C18 4.03754 13.9625 0 9 0ZM9 1.38462C13.2141 1.38462 16.6154 4.78592 16.6154 9C16.6154 13.2141 13.2141 16.6154 9 16.6154C4.78592 16.6154 1.38462 13.2141 1.38462 9C1.38462 4.78592 4.78592 1.38462 9 1.38462ZM8.30769 4.15385V11.2708L5.53846 8.50154L4.56508 9.49846L8.50223 13.4349L9.00069 13.9334L9.49915 13.4349L13.4356 9.49777L12.4615 8.50154L9.69231 11.2708V4.15385H8.30769Z" fill="#0156D5" />
-</svg>
-</button>`
-    : ""
-}
-</div>`
-        );
+
+        // Single product → clickable link
+        if (!data.multiProduct) {
+          return `
+        <div class="flex items-center gap-2 hover:text-primary">
+          <a href="/product/${data.product_slug}" 
+             target="_blank" 
+             rel="noopener noreferrer"
+             class="truncate max-w-[450px]" 
+             >
+            ${data.products}
+          </a>
+        </div>`;
+        }
+
+        // Multi-product (bundle) → plain title + toggle button
+        return `
+      <div class="flex items-center gap-2">
+        <span>${data.products}</span>
+        <button class="toggle-children">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" 
+               viewBox="0 0 18 18" fill="none">
+            <path d="M9 0C4.03754 0 0 4.03754 0 9C0 13.9625 4.03754 18 9 18C13.9625 18 18 13.9625 18 9C18 4.03754 13.9625 0 9 0ZM9 1.38462C13.2141 1.38462 16.6154 4.78592 16.6154 9C16.6154 13.2141 13.2141 16.6154 9 16.6154C4.78592 16.6154 1.38462 13.2141 1.38462 9C1.38462 4.78592 4.78592 1.38462 9 1.38462ZM8.30769 4.15385V11.2708L5.53846 8.50154L4.56508 9.49846L8.50223 13.4349L9.00069 13.9334L9.49915 13.4349L13.4356 9.49777L12.4615 8.50154L9.69231 11.2708V4.15385H8.30769Z" 
+              fill="#0156D5" />
+          </svg>
+        </button>
+      </div>`;
       },
       cellClick: (e, cell) => {
         const row = cell.getRow();
@@ -1107,6 +1113,7 @@ ${
         }
       },
     },
+
     {
       title: "Download Link",
       field: "product_zip",
@@ -1279,7 +1286,9 @@ ${
                 item.products?.[0]?.product?.product_zip_url ||
                 item.products?.[0]?.product?.product_zip?.url,
               date_purchase: item.updatedAt,
-              product_slug: item.products?.[0]?.product?.slug,
+              product_slug: !isMultipleProducts
+                ? item.products?.[0]?.product?.slug
+                : item.products?.[0]?.product?.slug,
             };
           });
           setFilteredOrder(formattedData);
