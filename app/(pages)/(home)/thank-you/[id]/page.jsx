@@ -13,10 +13,13 @@ export default function CheckoutPage({ params }) {
   const router = useRouter();
   const { id } = use(params);
   const [order, setOrder] = useState({});
+  // console.log(order);
+  // console.log(order?.id, "this is my order");
   const authToken = Cookies.get("authToken");
+
   const searchParams = useSearchParams();
   const sessionId = searchParams.get("session_id");
-  // console.log(sessionId);
+
   const [status, setStatus] = useState("Verifying payment...");
 
   const formatDate = (isoDateString) => {
@@ -51,6 +54,10 @@ export default function CheckoutPage({ params }) {
         router.push("/"); // 👈 Redirect to homepage
       }
     }
+  };
+
+  const productdownload = async (id, license_key) => {
+    console.log(license_key, "for id test");
   };
 
   useEffect(() => {
@@ -566,13 +573,19 @@ export default function CheckoutPage({ params }) {
               <p>Date:</p>
               <h5>{formatDate(order?.createdAt)}</h5>
             </div>
+            {/* {console.log(
+              order?.total_price + order?.tax_amount,
+              "this is for total price"
+            )} */}
             <div className="xl:py-5 pl-7 2xl:pr-[50px] 1xl:pr-[40px] xl:pr-7 py-4 pr-6 sm:border-r sm:border-b-0 border-b border-[#00193E1A]">
               <p>Total:</p>
               <h5>${(order?.total_price + order?.tax_amount)?.toFixed(2)}</h5>
             </div>
             <div className="xl:py-5 pl-7 2xl:pr-[50px] 1xl:pr-[40px] xl:pr-7 py-4 pr-6">
               <p>Email:</p>
-              <h5>{order?.user?.email}</h5>
+              <a href={`mailto:${order?.user?.email}`}>
+                <h5>{order?.user?.email}</h5>
+              </a>
             </div>
           </div>
         </div>
@@ -589,6 +602,7 @@ export default function CheckoutPage({ params }) {
               <div className="divide-y divide-[#00193E1A]">
                 {order?.products &&
                   order?.products?.map((item, index) => {
+                    console.log(item);
                     return (
                       <div
                         key={index}
@@ -634,7 +648,12 @@ export default function CheckoutPage({ params }) {
                             </button>
                           </div>
                         </div>
-                        <button className="!border-[#00193E1A] btn btn-outline-primary !py-[2px] !px-3 gap-2 h-fit my-auto sm:!flex !hidden">
+                        <button
+                          className="!border-[#00193E1A] btn btn-outline-primary !py-[2px] !px-3 gap-2 h-fit my-auto sm:!flex !hidden"
+                          onClick={() =>
+                            productdownload(item?.id, item?.license_key)
+                          }
+                        >
                           <svg
                             xmlns="http://www.w3.org/2000/svg"
                             width="14"
@@ -659,6 +678,74 @@ export default function CheckoutPage({ params }) {
                           </svg>
                           Download
                         </button>
+
+                        {/* <button
+                          onClick={async () => {
+                            try {
+                              const response = await fetch(
+                                "https://studio.webbytemplate.com/api/orders/productdownload",
+                                {
+                                  method: "POST",
+                                  headers: {
+                                    "Content-Type": "application/json",
+                                  },
+                                  body: JSON.stringify({
+                                    user_id: 68,
+                                    license_key:
+                                      "WEBBY-LIC-PIDy9f0d8cfbo6s4jltg7bgdx2j-UID68-DT20250827T070236-UDOQ3SAGF96KJ6OESGD9",
+                                    product_id: 600,
+                                    order_id: 167,
+                                  }),
+                                }
+                              );
+
+                              if (!response.ok) {
+                                throw new Error("Failed to download product");
+                              }
+
+                              // If the API returns a file (blob)
+                              const blob = await response.blob();
+                              const url = window.URL.createObjectURL(blob);
+                              const link = document.createElement("a");
+                              link.href = url;
+                              link.setAttribute("download", "product.zip"); // ✅ Change file name if needed
+                              document.body.appendChild(link);
+                              link.click();
+                              link.remove();
+                            } catch (error) {
+                              console.error(
+                                "Error downloading product:",
+                                error
+                              );
+                              alert("Download failed. Please try again.");
+                            }
+                          }}
+                          className="!border-[#00193E1A] btn btn-outline-primary !py-[2px] !px-3 gap-2 h-fit my-auto sm:!flex !hidden"
+                        >
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="14"
+                            height="14"
+                            viewBox="0 0 14 14"
+                            fill="none"
+                          >
+                            <g clipPath="url(#clip0_5593_24)">
+                              <path
+                                fillRule="evenodd"
+                                clipRule="evenodd"
+                                d="M7.77951 6.33889V0.777778C7.77951 0.571498 7.69756 0.373667 7.5517 0.227806C7.40584 0.0819442 7.20801 0 7.00173 0C6.79545 0 6.59762 0.0819442 6.45176 0.227806C6.3059 0.373667 6.22395 0.571498 6.22395 0.777778V6.33889L4.49729 4.17978C4.43471 4.09648 4.35604 4.0266 4.26594 3.9743C4.17584 3.92199 4.07615 3.88831 3.97278 3.87527C3.86942 3.86224 3.76449 3.87009 3.66422 3.89839C3.56395 3.92668 3.47039 3.97483 3.38909 4.03997C3.30778 4.10512 3.2404 4.18594 3.19093 4.27763C3.14146 4.36932 3.11091 4.47001 3.10111 4.57373C3.0913 4.67745 3.10244 4.78209 3.13384 4.88142C3.16525 4.98076 3.2163 5.07277 3.28395 5.152L6.39506 9.04089C6.46794 9.13173 6.56029 9.20504 6.66529 9.25542C6.7703 9.3058 6.88527 9.33195 7.00173 9.33195C7.11819 9.33195 7.23317 9.3058 7.33817 9.25542C7.44317 9.20504 7.53552 9.13173 7.6084 9.04089L10.7195 5.152C10.7872 5.07277 10.8382 4.98076 10.8696 4.88142C10.901 4.78209 10.9122 4.67745 10.9024 4.57373C10.8925 4.47001 10.862 4.36932 10.8125 4.27763C10.7631 4.18594 10.6957 4.10512 10.6144 4.03997C10.5331 3.97483 10.4395 3.92668 10.3392 3.89839C10.239 3.87009 10.134 3.86224 10.0307 3.87527C9.92732 3.88831 9.82763 3.92199 9.73753 3.9743C9.64743 4.0266 9.56875 4.09648 9.50618 4.17978L7.77951 6.33889Z"
+                                fill="currentColor"
+                              />
+                              <path
+                                fillRule="evenodd"
+                                clipRule="evenodd"
+                                d="M5.17767 10.0132L3.38956 7.77783H1.55556C1.143 7.77783 0.747335 7.94172 0.455612 8.23344C0.163888 8.52517 0 8.92083 0 9.33339V12.4445C0 12.8571 0.163888 13.2527 0.455612 13.5444C0.747335 13.8362 1.143 14.0001 1.55556 14.0001H12.4444C12.857 14.0001 13.2527 13.8362 13.5444 13.5444C13.8361 13.2527 14 12.8571 14 12.4445V9.33339C14 8.92083 13.8361 8.52517 13.5444 8.23344C13.2527 7.94172 12.857 7.77783 12.4444 7.77783H10.6104L8.82156 10.0132C8.60295 10.2864 8.3257 10.5069 8.01033 10.6585C7.69495 10.8101 7.34952 10.8888 6.99961 10.8888C6.6497 10.8888 6.30427 10.8101 5.9889 10.6585C5.67352 10.5069 5.39627 10.2864 5.17767 10.0132ZM10.8889 10.1112C10.6826 10.1112 10.4848 10.1931 10.3389 10.339C10.1931 10.4848 10.1111 10.6827 10.1111 10.8889C10.1111 11.0952 10.1931 11.2931 10.3389 11.4389C10.4848 11.5848 10.6826 11.6667 10.8889 11.6667H10.8967C11.1029 11.6667 11.3008 11.5848 11.4466 11.4389C11.5925 11.2931 11.6744 11.0952 11.6744 10.8889C11.6744 10.6827 11.5925 10.4848 11.4466 10.339C11.3008 10.1931 11.1029 10.1112 10.8967 10.1112H10.8889Z"
+                                fill="currentColor"
+                              />
+                            </g>
+                          </svg>
+                          Download
+                        </button> */}
                       </div>
                     );
                   })}

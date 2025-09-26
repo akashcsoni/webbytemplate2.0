@@ -91,10 +91,10 @@ export default function ProductCard({ product }) {
                     <img
                       alt="Technology"
                       loading="lazy"
-                      width="46"
-                      height="46"
+                      width="25"
+                      height="25"
                       decoding="async"
-                      className="2xl:h-[46px] xl:h-9 h-[35px] w-full"
+                      className="2xl:h-[25px] xl:h-9 h-[30px] w-full"
                       style={{ color: "transparent" }}
                       src={imgUrl}
                     />
