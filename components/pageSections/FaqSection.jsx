@@ -27,6 +27,91 @@ export default function FaqSection({ title = "", label = "", button, list = [], 
     }
   };
 
+  const formatContent = (content) => {
+    if (!content) return "";
+
+    const lines = content.split("\n");
+    let result = "";
+    let listBuffer = [];
+    let blockquoteBuffer = [];
+
+    const flushList = () => {
+      if (listBuffer.length) {
+        result += "<ul>" + listBuffer.map(li => `<li>${li}</li>`).join("") + "</ul>";
+        listBuffer = [];
+      }
+    };
+
+    const flushBlockquote = () => {
+      if (blockquoteBuffer.length) {
+        result += "<blockquote>" + blockquoteBuffer.join("") + "</blockquote>";
+        blockquoteBuffer = [];
+      }
+    };
+
+    const parseInlineMarkdown = (text) => {
+      return text
+        .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")     // bold (**) 
+        .replace(/__(.*?)__/g, "<strong>$1</strong>")         // bold (__)
+        .replace(/\*(.*?)\*/g, "<em>$1</em>")                 // italic (*)
+        .replace(/_(.*?)_/g, "<em>$1</em>")                   // italic (_)
+        .replace(/~~(.*?)~~/g, "<del>$1</del>")               // strikethrough
+        .replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2" target="_blank">$1</a>'); // links
+    };
+
+    lines.forEach((line) => {
+      const trimmed = line.trim();
+      if (!trimmed) {
+        flushList();
+        flushBlockquote();
+        return;
+      }
+
+      // Blockquote lines (group contiguous '>' lines)
+      if (/^>\s?/.test(trimmed)) {
+        flushList(); // end any open list before blockquote
+        const inner = trimmed.replace(/^>\s?/, "");
+        // support headings inside blockquote
+        const headingMatchBQ = /^(#{1,6})\s+(.+)$/.exec(inner);
+        if (headingMatchBQ) {
+          const level = headingMatchBQ[1].length;
+          const text = parseInlineMarkdown(headingMatchBQ[2]);
+          blockquoteBuffer.push(`<h${level}>${text}</h${level}>`);
+        } else {
+          blockquoteBuffer.push(`<p>${parseInlineMarkdown(inner)}</p>`);
+        }
+        return;
+      }
+
+      // Headings H1–H6 (outside blockquote)
+      const headingMatch = /^(#{1,6})\s+(.+)$/.exec(trimmed);
+      if (headingMatch) {
+        flushList();
+        flushBlockquote();
+        const level = headingMatch[1].length; // count of "#"
+        const text = parseInlineMarkdown(headingMatch[2]);
+        result += `<h${level}>${text}</h${level}>`;
+        return;
+      }
+
+      // Lists
+      if (/^[-*]\s+/.test(trimmed)) {
+        listBuffer.push(parseInlineMarkdown(trimmed.replace(/^[-*]\s+/, "")));
+      }
+
+      // Paragraph
+      else {
+        flushList();
+        flushBlockquote();
+        result += `<p>${parseInlineMarkdown(trimmed)}</p>`;
+      }
+    });
+
+    flushList();
+    flushBlockquote();
+    return result;
+  };
+
   const isMedium = type === "medium";
 
   return (
@@ -84,9 +169,16 @@ export default function FaqSection({ title = "", label = "", button, list = [], 
                       id={`faq-content-${item.id}`}
                       className="2xl:mt-5 xl:mt-4 sm:mt-3 mt-2 lg:pl-14 md:pl-[52px] sm:pl-10 pl-8 pr-4 pb-0.5"
                     >
-                      <p className="2xl:text-lg 1xl:text-[17px] sm:text-base text-sm">
-                        {item.label}
-                      </p>
+                      {
+                        item?.label && (
+                          <div
+                            className="2xl:text-lg 1xl:text-[17px] sm:text-base text-sm cms-content"
+                            dangerouslySetInnerHTML={{
+                              __html: formatContent(item?.label),
+                            }}
+                          />
+                        )
+                      }
                     </div>
                   )}
                 </div>
