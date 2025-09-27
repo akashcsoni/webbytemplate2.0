@@ -129,6 +129,7 @@ export function Footer({ footerMenu = [], footerSettings = {} }) {
   const productsAndPartners = findMenuCategory("Products and Partners");
   const topics = findMenuCategory("Topics");
   const company = findMenuCategory("Company");
+  const content = findMenuCategory("Content");
   const earn = findMenuCategory("Earn");
   const support = findMenuCategory("Support");
 
@@ -180,14 +181,14 @@ export function Footer({ footerMenu = [], footerSettings = {} }) {
   const buttons = Array.isArray(footerSettings?.button)
     ? footerSettings.button
     : [
-        { id: 1, label: "Contact Us", link: "/contact-us", image: null },
-        {
-          id: 2,
-          label: "Schedule Meeting",
-          link: "/schedule-meeting",
-          image: null,
-        },
-      ];
+      { id: 1, label: "Contact Us", link: "/contact-us", image: null },
+      {
+        id: 2,
+        label: "Schedule Meeting",
+        link: "/schedule-meeting",
+        image: null,
+      },
+    ];
 
   // Render a menu column if data exists
   const renderMenuColumn = (menuItem, fallbackLabel) => {
@@ -210,9 +211,8 @@ export function Footer({ footerMenu = [], footerSettings = {} }) {
               <li key={subItem?.id || index}>
                 <Link
                   href={subItem?.slug || "#"}
-                  className={`!text-gray-400 p2 hover:!text-white focus:!text-white active:!text-white${
-                    isActive ? " active !text-white font-medium" : ""
-                  }`}
+                  className={`!text-gray-400 p2 hover:!text-white focus:!text-white active:!text-white${isActive ? " active !text-white font-medium" : ""
+                    }`}
                   aria-current={isActive ? "page" : undefined}
                 >
                   {subItem?.label || `Menu Item ${index + 1}`}
@@ -310,12 +310,13 @@ export function Footer({ footerMenu = [], footerSettings = {} }) {
             </div>
             <div className="2xl:px-20 xl:px-10 lg:px-8 md:px-4 pr-4 xl:py-9 sm:py-5 py-3 sm:border-r border-gray-500 md:block grid md:justify-items-center sm:justify-items-start">
               {renderMenuColumn(company, "Company")}
+              {/* {renderMenuColumn(content, "Content")} */}
             </div>
-
             {/* Fourth column with Earn and Support stacked */}
             <div className="sm:space-y-8 space-y-4 2xl:ps-20 xl:ps-10 lg:ps-8 md:ps-4 sm:px-4 xl:py-9 sm:py-5 py-3 md:block grid md:justify-items-center sm:justify-items-end">
               {renderMenuColumn(earn, "Earn")}
               {renderMenuColumn(support, "Support")}
+              {/* {renderMenuColumn(content, "Content")} */}
             </div>
           </div>
         </div>
