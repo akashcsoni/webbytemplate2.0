@@ -18,6 +18,91 @@ export default function RichText({ body, read_more, with_bg }) {
         return 2000; // desktop
     };
 
+    const formatContent = (content) => {
+        if (!content) return "";
+
+        const lines = content.split("\n");
+        let result = "";
+        let listBuffer = [];
+        let blockquoteBuffer = [];
+
+        const flushList = () => {
+            if (listBuffer.length) {
+                result += "<ul>" + listBuffer.map(li => `<li>${li}</li>`).join("") + "</ul>";
+                listBuffer = [];
+            }
+        };
+
+        const flushBlockquote = () => {
+            if (blockquoteBuffer.length) {
+                result += "<blockquote>" + blockquoteBuffer.join("") + "</blockquote>";
+                blockquoteBuffer = [];
+            }
+        };
+
+        const parseInlineMarkdown = (text) => {
+            return text
+                .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")     // bold (**) 
+                .replace(/__(.*?)__/g, "<strong>$1</strong>")         // bold (__)
+                .replace(/\*(.*?)\*/g, "<em>$1</em>")                 // italic (*)
+                .replace(/_(.*?)_/g, "<em>$1</em>")                   // italic (_)
+                .replace(/~~(.*?)~~/g, "<del>$1</del>")               // strikethrough
+                .replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2" target="_blank">$1</a>'); // links
+        };
+
+        lines.forEach((line) => {
+            const trimmed = line.trim();
+            if (!trimmed) {
+                flushList();
+                flushBlockquote();
+                return;
+            }
+
+            // Blockquote lines (group contiguous '>' lines)
+            if (/^>\s?/.test(trimmed)) {
+                flushList(); // end any open list before blockquote
+                const inner = trimmed.replace(/^>\s?/, "");
+                // support headings inside blockquote
+                const headingMatchBQ = /^(#{1,6})\s+(.+)$/.exec(inner);
+                if (headingMatchBQ) {
+                    const level = headingMatchBQ[1].length;
+                    const text = parseInlineMarkdown(headingMatchBQ[2]);
+                    blockquoteBuffer.push(`<h${level}>${text}</h${level}>`);
+                } else {
+                    blockquoteBuffer.push(`<p>${parseInlineMarkdown(inner)}</p>`);
+                }
+                return;
+            }
+
+            // Headings H1–H6 (outside blockquote)
+            const headingMatch = /^(#{1,6})\s+(.+)$/.exec(trimmed);
+            if (headingMatch) {
+                flushList();
+                flushBlockquote();
+                const level = headingMatch[1].length; // count of "#"
+                const text = parseInlineMarkdown(headingMatch[2]);
+                result += `<h${level}>${text}</h${level}>`;
+                return;
+            }
+
+            // Lists
+            if (/^[-*]\s+/.test(trimmed)) {
+                listBuffer.push(parseInlineMarkdown(trimmed.replace(/^[-*]\s+/, "")));
+            }
+
+            // Paragraph
+            else {
+                flushList();
+                flushBlockquote();
+                result += `<p>${parseInlineMarkdown(trimmed)}</p>`;
+            }
+        });
+
+        flushList();
+        flushBlockquote();
+        return result;
+    };
+
     useEffect(() => {
         const handleResize = () => {
             setCharacterLimit(calculateCharacterLimit());
@@ -115,7 +200,7 @@ export default function RichText({ body, read_more, with_bg }) {
                     <div className={(with_bg === true || with_bg === null) ? "rich-text container 2xl:py-[60px] xl:py-[50px] md:py-[45px] sm:py-9 py-7" : "rich-text container"}>
                         <div
                             className="prose mb-4"
-                            dangerouslySetInnerHTML={{ __html: displayContent }}
+                            dangerouslySetInnerHTML={{ __html: formatContent(displayContent) }}
                         />
                         <div className="relative z-50">
                             {showToggle && (
