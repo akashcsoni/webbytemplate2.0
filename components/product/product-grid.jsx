@@ -79,9 +79,7 @@ export default function ProductCard({ product }) {
             </div>
 
             {/* ✅ Technology icons loop */}
-            <div
-              className="absolute w-[95%] bottom-4 left-1/2 -translate-x-1/2 gap-2 flex flex-wrap items-center justify-center text-center cursor-pointer transition-colors"
-            >
+            <div className="absolute w-[95%] bottom-4 left-1/2 -translate-x-1/2 gap-2 flex flex-wrap items-center justify-center text-center cursor-pointer transition-colors">
               {combinedTechImages.map((imgUrl, idx) => (
                 <div
                   key={idx}
@@ -94,7 +92,7 @@ export default function ProductCard({ product }) {
                       width="25"
                       height="25"
                       decoding="async"
-                      className="2xl:h-[25px] xl:h-9 h-[30px] w-full"
+                      className="2xl:h-[25px] h-[24px] w-full"
                       style={{ color: "transparent" }}
                       src={imgUrl}
                     />

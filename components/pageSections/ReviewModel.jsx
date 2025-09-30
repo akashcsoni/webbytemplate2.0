@@ -158,7 +158,7 @@ export default function ReviewModal({ isOpen, onClose, product }) {
                                 isLoading={isSubmitting}
                                 disabled={isSubmitting}
                             >
-                                {!isSubmitting ? "Submitting..." : "Submit Review"}
+                                {isSubmitting ? "Submitting..." : "Submit Review"}
                             </Button>
                         </div>
                     </div>

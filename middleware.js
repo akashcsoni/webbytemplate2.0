@@ -36,7 +36,7 @@ export async function middleware(request) {
     } catch (err) {
       console.error("Invalid JSON in authUser cookie:", err);
     }
-
+    ``
     // Call API to validate token and get additional user data
     if (accessToken && isLogin) {
       try {

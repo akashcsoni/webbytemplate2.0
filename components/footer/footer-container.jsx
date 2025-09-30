@@ -56,18 +56,6 @@ export async function FooterFooterContainer() {
 
         return <Footer footerMenu={menuData} footerSettings={formattedSettings} />;
     } catch (error) {
-        // console.error("Error in Footer component:", error);
-        // Return empty component in case of error
-        // return <Footer footerMenu={[]} footerSettings={{
-        //     copyright_label: `© ${new Date().getFullYear()} WebbyTemplate.com owned by WebbyCrown Solutions. All rights reserved.`,
-        //     logo: {
-        //         url: "/placeholder.svg?height=40&width=240",
-        //         width: 240,
-        //         height: 40,
-        //     },
-        //     button: [],
-        //     social_media: [],
-        // }} />;
         return null
     }
 }

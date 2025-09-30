@@ -511,7 +511,6 @@ export default function CheckoutPage() {
 
     try {
       // 1. Create order in Strapi (your Orders collection)
-      setRedirectLoading(true);
       const response = await strapiPost(
         "orders",
         checkoutData,
@@ -545,18 +544,29 @@ export default function CheckoutPage() {
             order_id: razorpayOrder.id,
             handler: async function (razorpayResponse) {
               console.log("✅ Razorpay Success", razorpayResponse);
-              // 4. Verify payment
-              await strapiPost("razorpay/verify", {
-                ...razorpayResponse,
-                strapi_order_id: orderData.id,
-                user_id: orderData?.user?.id,
-              });
-              router.push(`/thank-you/${orderData?.documentId}`);
+              // show redirect loader while we verify + navigate
+              setRedirectLoading(true);
+              try {
+                // 4. Verify payment
+                await strapiPost("razorpay/verify", {
+                  ...razorpayResponse,
+                  strapi_order_id: orderData.id,
+                  user_id: orderData?.user?.id,
+                });
+                // Give the overlay a frame to render before navigation
+                setTimeout(() => {
+                  router.push(`/thank-you/${orderData?.documentId}`);
+                }, 50);
+              } catch (e) {
+                console.error("Verification failed:", e);
+                setRedirectLoading(false);
+              }
             },
             modal: {
               ondismiss: function () {
                 // 🚫 User closed popup without doing anything
-                // 👉 DO NOT call backend. Leave status as pending.
+                setRedirectLoading(false);
+                setpayNowLoading(false);
                 router.push("/");
                 console.log("User closed the payment popup");
               },
@@ -586,6 +596,7 @@ export default function CheckoutPage() {
             }
 
             console.log("❌ Razorpay payment failed", response);
+            setRedirectLoading(false);
           });
 
           rzp.open();
@@ -601,6 +612,7 @@ export default function CheckoutPage() {
           console.log(stripeRes);
 
           if (stripeRes?.url) {
+            setRedirectLoading(true);
             window.location.href = stripeRes.url;
           } else {
             throw new Error("Stripe session creation failed");
@@ -614,25 +626,10 @@ export default function CheckoutPage() {
       setpayNowLoading(false);
       setRedirectLoading(false);
     } finally {
+      // Keep redirectLoading as-is so overlay stays visible during redirect
       setpayNowLoading(false);
-      setRedirectLoading(false);
     }
   };
-
-  // Add this loading overlay in your JSX (before the return statement)
-  {
-    redirectLoading && (
-      <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-        <div className="text-white p-6 bg-gray-800 rounded-lg shadow-lg text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4"></div>
-          <p className="text-lg font-medium">Processing payment...</p>
-          <p className="text-sm text-gray-300 mt-2">
-            Please wait while we confirm your payment
-          </p>
-        </div>
-      </div>
-    );
-  }
 
   const handleStateSelect = (state, e) => {
     // Prevent event propagation to avoid dropdown toggle conflicts
@@ -698,6 +695,17 @@ export default function CheckoutPage() {
 
   return (
     <div className="container px-4 py-8">
+      {redirectLoading && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[1000]">
+          <div className="text-white p-6 bg-gray-900/90 rounded-lg shadow-lg text-center min-w-[260px]">
+            <div className="animate-spin rounded-full h-12 w-12 border-2 border-white border-t-transparent mx-auto mb-4"></div>
+            <p className="text-lg font-medium">Redirecting…</p>
+            <p className="text-sm text-gray-300 mt-1">
+              Please wait while we confirm your payment
+            </p>
+          </div>
+        </div>
+      )}
       {/* Login prompt for returning customers */}
       {!authLoading && !isAuthenticated && (
         <div className="m-3">
