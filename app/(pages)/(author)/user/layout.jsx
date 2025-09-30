@@ -90,11 +90,11 @@ export default function Layout({ children }) {
                             label: "PRODUCTS",
                             path: `/user/${authUser?.username}/products/list`,
                           },
-                          {
-                            id: "paymentTax",
-                            label: "PAYMENT & TAX SET UP",
-                            path: `/user/${authUser?.username}/paymentTax`,
-                          },
+                          // {
+                          //   id: "paymentTax",
+                          //   label: "PAYMENT & TAX SET UP",
+                          //   path: `/user/${authUser?.username}/paymentTax`,
+                          // },
                           {
                             id: "ticket-support",
                             label: "TICKETS / SUPPORT",

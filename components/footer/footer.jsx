@@ -1,5 +1,6 @@
 "use client";
 
+import React from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useMemo } from "react";
@@ -117,21 +118,55 @@ export function Footer({ footerMenu = [], footerSettings = {} }) {
       return [];
     }
 
-    // Sort menu items by their id to ensure consistent order
-    return [...footerMenu].sort((a, b) => (a?.id || 0) - (b?.id || 0));
+    // Sort menu items by their position field (handle both "position" and "positioin" typo)
+    return [...footerMenu].sort((a, b) => {
+      const posA = parseInt(a?.position || a?.positioin || "0");
+      const posB = parseInt(b?.position || b?.positioin || "0");
+      return posA - posB;
+    });
   }, [footerMenu]);
 
-  // Find specific menu categories - with null checks
-  const findMenuCategory = (label) => {
-    return organizedMenu.find((item) => item?.label === label) || null;
+  // Get menu items by position
+  const getMenuByPosition = (position) => {
+    return organizedMenu.find((item) => {
+      const itemPosition = item?.position || item?.positioin;
+      return itemPosition === position.toString() || itemPosition === position;
+    }) || null;
   };
 
-  const productsAndPartners = findMenuCategory("Products and Partners");
-  const topics = findMenuCategory("Topics");
-  const company = findMenuCategory("Company");
-  const content = findMenuCategory("Content");
-  const earn = findMenuCategory("Earn");
-  const support = findMenuCategory("Support");
+  // Position-based column assignment system
+  const totalMenuItems = organizedMenu.length;
+  
+  // Assign items to columns based on their position or column assignment
+  const assignItemsToColumns = () => {
+    const columns = [[], [], [], []]; // 4 columns
+    
+    organizedMenu.forEach((item) => {
+      const position = parseInt(item?.position || item?.positioin || "0");
+      const column = parseInt(item?.column || "0"); // Support for explicit column assignment
+      
+      // If explicit column is specified, use that
+      if (column >= 1 && column <= 4) {
+        columns[column - 1].push(item);
+      }
+      // Otherwise, use position-based assignment
+      else if (position >= 1 && position <= 3) {
+        // Positions 1-3 go to columns 1-3
+        columns[position - 1].push(item);
+      } else if (position >= 4) {
+        // Positions 4+ go to column 4 (stacked)
+        columns[3].push(item);
+      } else {
+        // Fallback: distribute evenly if no valid position
+        const columnIndex = organizedMenu.indexOf(item) % 4;
+        columns[columnIndex].push(item);
+      }
+    });
+    
+    return columns;
+  };
+
+  const columnItems = assignItemsToColumns();
 
   // Organize social media links
   const socialLinks = useMemo(() => {
@@ -192,30 +227,36 @@ export function Footer({ footerMenu = [], footerSettings = {} }) {
 
   // Render a menu column if data exists
   const renderMenuColumn = (menuItem, fallbackLabel) => {
-    // If no menu item or sub_menu, don't render anything
-    if (
-      !menuItem ||
-      !Array.isArray(menuItem?.sub_menu) ||
-      menuItem.sub_menu.length === 0
-    ) {
+    // If no menu item, don't render anything
+    if (!menuItem) {
       return null;
     }
 
+    // Check for sub_menu in different possible structures
+    const subMenu = menuItem?.sub_menu || menuItem?.subMenu || menuItem?.items || [];
+
+    // If no sub_menu or sub_menu is empty, don't render anything
+    if (!Array.isArray(subMenu) || subMenu.length === 0) {
+      return null;
+    }
+
+    const menuLabel = menuItem?.label || menuItem?.title || fallbackLabel || "Menu";
+
     return (
       <div className="md:max-w-full sm:max-w-[200px] w-full">
-        <h5 className="font-bold xl:mb-4 mb-2">{menuItem.label}</h5>
+        <h5 className="font-bold xl:mb-4 mb-2">{menuLabel}</h5>
         <ul className="lg:space-y-2 space-y-1">
-          {menuItem.sub_menu.map((subItem, index) => {
-            const isActive = isActiveLink(subItem?.slug);
+          {subMenu.map((subItem, index) => {
+            const isActive = isActiveLink(subItem?.slug || subItem?.url);
             return (
               <li key={subItem?.id || index}>
                 <Link
-                  href={subItem?.slug || "#"}
+                  href={subItem?.slug || subItem?.url || "#"}
                   className={`!text-gray-400 p2 hover:!text-white focus:!text-white active:!text-white${isActive ? " active !text-white font-medium" : ""
                     }`}
                   aria-current={isActive ? "page" : undefined}
                 >
-                  {subItem?.label || `Menu Item ${index + 1}`}
+                  {subItem?.label || subItem?.title || `Menu Item ${index + 1}`}
                 </Link>
               </li>
             );
@@ -301,23 +342,67 @@ export function Footer({ footerMenu = [], footerSettings = {} }) {
       {hasMenuItems && (
         <div className="container mx-auto">
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4">
-            {/* First three columns */}
-            <div className="2xl:pe-20 xl:pe-10 lg:pe-8 sm:pe-4 xl:py-9 sm:py-5 py-3 sm:border-r border-gray-500 md:block grid sm:justify-items-start">
-              {renderMenuColumn(productsAndPartners, "Products and Partners")}
-            </div>
-            <div className="2xl:px-20 xl:px-10 lg:px-8 sm:px-4 xl:py-9 sm:py-5 py-3 md:border-r border-gray-500 md:block grid md:justify-items-center sm:justify-items-end">
-              {renderMenuColumn(topics, "Topics")}
-            </div>
-            <div className="2xl:px-20 xl:px-10 lg:px-8 md:px-4 pr-4 xl:py-9 sm:py-5 py-3 sm:border-r border-gray-500 md:block grid md:justify-items-center sm:justify-items-start">
-              {renderMenuColumn(company, "Company")}
-              {/* {renderMenuColumn(content, "Content")} */}
-            </div>
-            {/* Fourth column with Earn and Support stacked */}
-            <div className="sm:space-y-8 space-y-4 2xl:ps-20 xl:ps-10 lg:ps-8 md:ps-4 sm:px-4 xl:py-9 sm:py-5 py-3 md:block grid md:justify-items-center sm:justify-items-end">
-              {renderMenuColumn(earn, "Earn")}
-              {renderMenuColumn(support, "Support")}
-              {/* {renderMenuColumn(content, "Content")} */}
-            </div>
+            {/* Column 1 */}
+            {columnItems[0].length > 0 && (
+              <div className="2xl:pe-20 xl:pe-10 lg:pe-8 sm:pe-4 xl:py-9 sm:py-5 py-3 sm:border-r border-gray-500 md:block grid sm:justify-items-start">
+                {columnItems[0].length === 1 ? (
+                  renderMenuColumn(columnItems[0][0], columnItems[0][0]?.label)
+                ) : (
+                  <div className="sm:space-y-8 space-y-4">
+                    {columnItems[0].map((menuItem, index) => (
+                      <React.Fragment key={menuItem?.id || `col1-${index}`}>
+                        {renderMenuColumn(menuItem, menuItem?.label)}
+                      </React.Fragment>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+            
+            {/* Column 2 */}
+            {columnItems[1].length > 0 && (
+              <div className="2xl:px-20 xl:px-10 lg:px-8 sm:px-4 xl:py-9 sm:py-5 py-3 md:border-r border-gray-500 md:block grid md:justify-items-center sm:justify-items-end">
+                {columnItems[1].length === 1 ? (
+                  renderMenuColumn(columnItems[1][0], columnItems[1][0]?.label)
+                ) : (
+                  <div className="sm:space-y-8 space-y-4">
+                    {columnItems[1].map((menuItem, index) => (
+                      <React.Fragment key={menuItem?.id || `col2-${index}`}>
+                        {renderMenuColumn(menuItem, menuItem?.label)}
+                      </React.Fragment>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+            
+            {/* Column 3 */}
+            {columnItems[2].length > 0 && (
+              <div className="2xl:px-20 xl:px-10 lg:px-8 md:px-4 pr-4 xl:py-9 sm:py-5 py-3 sm:border-r border-gray-500 md:block grid">
+                {columnItems[2].length === 1 ? (
+                  renderMenuColumn(columnItems[2][0], columnItems[2][0]?.label)
+                ) : (
+                  <div className="sm:space-y-8 space-y-4">
+                    {columnItems[2].map((menuItem, index) => (
+                      <React.Fragment key={menuItem?.id || `col3-${index}`}>
+                        {renderMenuColumn(menuItem, menuItem?.label)}
+                      </React.Fragment>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+            
+            {/* Column 4 */}
+            {columnItems[3].length > 0 && (
+              <div className="sm:space-y-8 space-y-4 2xl:ps-20 xl:ps-10 lg:ps-8 md:ps-4 sm:px-4 xl:py-9 sm:py-5 py-3 md:block grid md:justify-items-center sm:justify-items-end">
+                {columnItems[3].map((menuItem, index) => (
+                  <React.Fragment key={menuItem?.id || `col4-${index}`}>
+                    {renderMenuColumn(menuItem, menuItem?.label)}
+                  </React.Fragment>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       )}

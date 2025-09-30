@@ -32,7 +32,6 @@ export default function ProductsList(props) {
   } = props;
 
   const [filteredProducts, setFilteredProducts] = useState([]);
-  // console.log(filteredProducts, "this is for filteredProducts");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedCategory, setSelectedCategory] = useState(null);

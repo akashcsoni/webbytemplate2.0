@@ -112,7 +112,7 @@ const SinglePageTab = ({ data }) => {
               className="space-y-4 product-overview"
               dangerouslySetInnerHTML={{
                 __html: formatContent(data.overview_description),
-              }}
+              }}  
             />
           ) : (
             <p>An overview for this item is currently unavailable.</p>
