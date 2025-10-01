@@ -91,13 +91,13 @@ export function TechnologySelector({ all_technology, pageName }) {
               <div className="p2 2xl:!text-base !text-sm !text-black">
                 {title}
               </div>
-              <div className="!text-primary p2">
+              <div className="!text-primary p2 font-bold">
                 $
                 {typeof salesPrice === "number"
                   ? salesPrice.toFixed(2)
                   : salesPrice}
               </div>
-              <div className="text-[#969ba3] font-medium text-sm line-through">
+              <div className="text-[#969ba3] font-light !text-small line-through italic">
                 $
                 {typeof regularPrice === "number"
                   ? regularPrice.toFixed(2)

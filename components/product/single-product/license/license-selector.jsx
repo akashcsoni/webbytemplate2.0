@@ -587,11 +587,16 @@ export default function LicenseSelector({
                                                 </div>
                                             </div>
                                         </div>
-                                        <span
-                                            className={`font-medium p2 !text-black ${license.contact_sale ? "text-[#505050] italic" : ""}`}
-                                        >
-                                            {license.contact_sale ? "Full Access" : `$${(license.sales_price || 0).toFixed(2)}`}
-                                        </span>
+                                        <div className="flex align-center gap-2">
+                                            <span className={`line-through italic font-light !text-small p2 !text-[#969ba3]`}>
+                                                ${(license.regular_price || 0).toFixed(2)}
+                                            </span>
+                                            <span
+                                                className={`font-bold p2 !text-black ${license.contact_sale ? "text-[#969ba3] italic" : ""}`}
+                                            >
+                                                {license.contact_sale ? "Full Access" : `$${(license.sales_price || 0).toFixed(2)}`}
+                                            </span>
+                                        </div>
                                     </div>
                                 )
                             })}

@@ -1,6 +1,7 @@
 import GlobalComponent from "@/components/global/global-component";
 import PageNotFound from "@/components/PageNotFound/PageNotFound";
 import SearchPage from "@/components/search/SearchPage";
+import SingleBlogPage from "@/components/SingleBlogPage";
 import SinglePage from "@/components/SinglePage";
 import SomethingWrong from "@/components/somethingWrong/page";
 import { themeConfig } from "@/config/theamConfig";
@@ -45,13 +46,23 @@ export async function generateMetadata({ params }) {
         const title = data?.seo_meta?.title || data?.title || itemSlug;
         
         // Generate description from seo_meta with fallbacks
-        const description = data?.seo_meta?.description || data?.description || "Premium website templates and themes";
+        let description = data?.seo_meta?.description || data?.description;
+        
+        // For blog posts, use different default description
+        if (pageSlug === 'blog') {
+            description = description || "Read our latest blog post";
+        } else {
+            description = description || "Premium website templates and themes";
+        }
 
         // Get image URL from seo_meta with validation
         let imageUrl = null;
         try {
             if (data?.seo_meta?.image?.url && typeof data.seo_meta.image.url === 'string') {
                 imageUrl = data.seo_meta.image.url;
+            } else if (pageSlug === 'blog' && data?.image?.url && typeof data.image.url === 'string') {
+                // For blog posts, fallback to main image if seo_meta image is not available
+                imageUrl = data.image.url;
             }
         } catch (error) {
             console.error('Error extracting image URL:', error);
@@ -61,12 +72,15 @@ export async function generateMetadata({ params }) {
         return {
             title: title,
             description: description,
-            keywords: data?.seo_meta?.keywords || data?.tags?.map(tag => tag.title).join(', ') || 'website templates, themes, web design',
+            keywords: data?.seo_meta?.keywords || 
+                     (pageSlug === 'blog' 
+                        ? (data?.blog_categories?.map(cat => cat.title).join(', ') || 'blog, articles, web design')
+                        : (data?.tags?.map(tag => tag.title).join(', ') || 'website templates, themes, web design')),
             alternates: {
                 canonical: currentUrl,
             },
             openGraph: {
-                type: 'website',
+                type: pageSlug === 'blog' ? 'article' : 'website',
                 title: title,
                 description: description,
                 url: currentUrl,
@@ -80,6 +94,15 @@ export async function generateMetadata({ params }) {
                     }
                 ] : undefined,
                 locale: 'en_US',
+                ...(pageSlug === 'blog' && data?.author?.full_name && {
+                    authors: [data.author.full_name]
+                }),
+                ...(pageSlug === 'blog' && data?.publishedAt && {
+                    publishedTime: new Date(data.publishedAt).toISOString()
+                }),
+                ...(pageSlug === 'blog' && data?.updatedAt && {
+                    modifiedTime: new Date(data.updatedAt).toISOString()
+                })
             },
             twitter: {
                 card: 'summary_large_image',
@@ -129,12 +152,12 @@ export default async function DynamicPage({ params, searchParams }) {
             const categoryBasePath = themeConfig.CATEGORY_API_ROUTE || 'category'; // fallback if not defined
             endpoint = `${categoryBasePath}/${itemSlug}`;
         }
-
+        
         const pageData = await strapiGet(endpoint, {
             params: { populate: "*" },
             token: themeConfig.TOKEN,
         });
-
+        
         if (!pageData.result) {
             return <SomethingWrong />;
         }
@@ -149,6 +172,7 @@ export default async function DynamicPage({ params, searchParams }) {
         if (!pageData || !pageData.data || Object.keys(pageData.data).length === 0) {
             return <PageNotFound />;
         }
+
 
         if (pageSlug === 'product') {
             // Safe data extraction with fallbacks
@@ -394,9 +418,140 @@ export default async function DynamicPage({ params, searchParams }) {
                 </>
             );
         } else if (pageSlug === 'blog') {
+            // Generate blog metadata and structured data
+            const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://webbytemplatev2.vercel.app';
+            const currentUrl = `${baseUrl}/${pageSlug}/${itemSlug}`;
+            
+            // Generate title and description from seo_meta with fallbacks
+            const title = pageData?.data?.seo_meta?.title || pageData?.data?.title || itemSlug;
+            const description = pageData?.data?.seo_meta?.description || pageData?.data?.description || "Read our latest blog post";
+            
+            // Generate Article structured data
+            let articleSchema = null;
+            try {
+                // Prepare images array
+                let images = [];
+                if (pageData?.data?.image?.url) {
+                    images = [pageData.data.image.url];
+                }
+                if (images.length === 0 && pageData?.data?.seo_meta?.image?.url) {
+                    images = [pageData.data.seo_meta.image.url];
+                }
+
+                // Calculate word count for reading time
+                let wordCount = 0;
+                if (pageData?.data?.body) {
+                    const textContent = pageData.data.body.replace(/<[^>]*>/g, '');
+                    wordCount = textContent.split(/\s+/).length;
+                }
+
+                articleSchema = {
+                    "@context": "https://schema.org",
+                    "@type": "Article",
+                    "headline": title,
+                    "description": description,
+                    "image": images.length > 0 ? images : null,
+                    "author": {
+                        "@type": "Person",
+                        "name": pageData?.data?.author?.full_name || "Anonymous",
+                        "url": pageData?.data?.author?.username ? `${baseUrl}/author/${pageData.data.author.username}` : null
+                    },
+                    "publisher": {
+                        "@type": "Organization",
+                        "name": "WebbyTemplate",
+                        "url": baseUrl,
+                        "logo": {
+                            "@type": "ImageObject",
+                            "url": `${baseUrl}/logo/webby-logo.svg`
+                        }
+                    },
+                    "datePublished": pageData?.data?.publishedAt ? new Date(pageData.data.publishedAt).toISOString() : null,
+                    "dateModified": pageData?.data?.updatedAt ? new Date(pageData.data.updatedAt).toISOString() : null,
+                    "mainEntityOfPage": {
+                        "@type": "WebPage",
+                        "@id": currentUrl
+                    },
+                    "url": currentUrl,
+                    "articleSection": pageData?.data?.blog_categories?.map(cat => cat.title).join(', ') || null,
+                    "wordCount": wordCount > 0 ? wordCount.toString() : null
+                };
+
+                // Remove null values from schema
+                articleSchema = JSON.parse(JSON.stringify(articleSchema, (key, value) => {
+                    return value === null ? undefined : value;
+                }));
+            } catch (error) {
+                console.error('Error generating Article schema:', error);
+                articleSchema = null;
+            }
+
+            // Generate breadcrumb structured data for blog
+            let breadcrumbData = null;
+            try {
+                breadcrumbData = {
+                    "@context": "https://schema.org",
+                    "@type": "BreadcrumbList",
+                    "itemListElement": [
+                        {
+                            "@type": "ListItem",
+                            "position": 1,
+                            "name": "Home",
+                            "item": baseUrl
+                        },
+                        {
+                            "@type": "ListItem",
+                            "position": 2,
+                            "name": "Blog",
+                            "item": `${baseUrl}/blog`
+                        }
+                    ]
+                };
+
+                // Add category breadcrumb if available
+                if (pageData?.data?.blog_categories && 
+                    Array.isArray(pageData.data.blog_categories) && 
+                    pageData.data.blog_categories.length > 0 &&
+                    pageData.data.blog_categories[0]?.title &&
+                    pageData.data.blog_categories[0]?.slug) {
+                    breadcrumbData.itemListElement.push({
+                        "@type": "ListItem",
+                        "position": 3,
+                        "name": pageData.data.blog_categories[0].title,
+                        "item": `${baseUrl}/blog/category/${pageData.data.blog_categories[0].slug}`
+                    });
+                }
+
+                // Add current page breadcrumb
+                breadcrumbData.itemListElement.push({
+                    "@type": "ListItem",
+                    "position": breadcrumbData.itemListElement.length + 1,
+                    "name": title,
+                    "item": currentUrl
+                });
+            } catch (error) {
+                console.error('Error generating blog breadcrumb data:', error);
+                breadcrumbData = null;
+            }
+
             return (
                 <>
-                    <GlobalComponent data={pageData.data} />
+                    {breadcrumbData && (
+                        <script
+                            type="application/ld+json"
+                            dangerouslySetInnerHTML={{
+                                __html: JSON.stringify(breadcrumbData)
+                            }}
+                        />
+                    )}
+                    {articleSchema && (
+                        <script
+                            type="application/ld+json"
+                            dangerouslySetInnerHTML={{
+                                __html: JSON.stringify(articleSchema)
+                            }}
+                        />
+                    )}
+                    <SingleBlogPage data={pageData.data} />
                 </>
             );
         } else if (pageSlug === 'category') {
