@@ -19,7 +19,7 @@ function TagPill({ text, slug }) {
       href={`/search/${slug}`}
       className="p2 border py-1 sm:px-[18px] px-2 border-primary/10 rounded-[4px]"
     >
-      <span className="p2 font-normal">{text}</span>
+      <h3 className="p2 font-normal">{text}</h3>
     </Link>
   );
 }
@@ -40,7 +40,7 @@ function FeatureItem({ text }) {
         <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
         <polyline points="22 4 12 14.01 9 11.01" />
       </svg>
-      <span className="text-[#505050] p2 font-normal">{text}</span>
+      <h2 className="text-[#505050] p2 font-normal">{text}</h2>
     </div>
   );
 }
