@@ -130,8 +130,11 @@ export default function SinglePage({ pageData }) {
 
   const [totalPrice, setTotalPrice] = useState(
     pageData?.price?.sales_price === null
-      ? pageData?.price?.regular_price
-      : pageData?.price?.sales_price
+      ? (pageData?.price?.regular_price || 0)
+      : (pageData?.price?.sales_price || 0)
+  );
+  const [totalRegularPrice, setTotalRegularPrice] = useState(
+    pageData?.price?.regular_price || 0
   );
   const [isWhiteLabel, setIsWhiteLabel] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -212,6 +215,38 @@ export default function SinglePage({ pageData }) {
     setIsWhiteLabel(whiteLabel);
     if (licenseId) setSelectedLicense(licenseId);
     if (addonIds) setSelectedAddons(addonIds);
+
+    // Calculate regular price based on selected license and addons
+    let regularPrice = 0;
+    
+    try {
+      if (licenseId && pageData?.all_license && Array.isArray(pageData.all_license)) {
+        const selectedLicenseObj = pageData.all_license.find(
+          (license) => license && license.id === licenseId
+        );
+        
+        if (selectedLicenseObj && typeof selectedLicenseObj.regular_price === 'number') {
+          regularPrice += selectedLicenseObj.regular_price;
+        }
+      }
+
+      if (addonIds && Array.isArray(addonIds) && pageData?.all_license && Array.isArray(pageData.all_license)) {
+        const selectedAddonObjs = pageData.all_license.filter(
+          (license) => license && license.id && addonIds.includes(license.id)
+        );
+        
+        selectedAddonObjs.forEach((addon) => {
+          if (addon && !addon.contact_sale && typeof addon.regular_price === 'number') {
+            regularPrice += addon.regular_price;
+          }
+        });
+      }
+    } catch (error) {
+      console.error("Error calculating regular price:", error);
+      regularPrice = 0;
+    }
+
+    setTotalRegularPrice(regularPrice);
   };
 
   // Extract and display
@@ -622,13 +657,10 @@ export default function SinglePage({ pageData }) {
                   Lifetime
                 </h3>
                 <div>
-                  <span className="font-medium">${totalPrice.toFixed(2)}</span>
+                  <span className="font-bold">${(totalPrice || 0).toFixed(2)}</span>
                   <br />
-                  <span className="text-[#969ba3] font-medium text-sm line-through">
-                    $
-                    {pageData?.price?.regular_price === null
-                      ? pageData?.price?.sales_price.toFixed(2)
-                      : pageData?.price?.regular_price.toFixed(2)}
+                  <span className="text-[#969ba3] font-light text-small line-through italic">
+                    ${(totalRegularPrice || 0).toFixed(2)}
                   </span>
                 </div>
               </div>

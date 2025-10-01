@@ -1154,3 +1154,23 @@ list-style-type: disc; /* same as list-disc */
 .product-overview ul li{
 @apply 2xl:text-lg 1xl:text-[17px] sm:text-base text-[15px] 2xl:leading-[30px] xl:leading-7 sm:leading-6 leading-[19px] text-gray-200;
 }
+
+/* =================== template insights ======== */
+.single-post-header h1 {
+  @apply sm:mb-5 mb-4 2xl:text-3xl xl:text-[32px] lg:text-[30px] sm:text-[28px] text-[22px] font-medium xl:leading-[45px] md:leading-[40px] sm:leading-9 leading-8;
+  }
+  .tags {
+  @apply flex items-center flex-wrap gap-[10px] lg:mb-8 mb-6;
+  }
+  .template-info {
+  @apply flex items-center gap-5 justify-between flex-wrap w-full 1xl:py-[30px] md:py-[22px] py-[18px] border-t border-[#00193E1A];
+  }
+  .template-info div {
+  @apply flex items-center gap-2;
+  }
+  .single-post-header .template-info h3 {
+  @apply xl:text-base md:text-[15px] text-sm leading-5 text-gray-200;
+  }
+  .single-post-header .container {
+  @apply py-5;
+  }
