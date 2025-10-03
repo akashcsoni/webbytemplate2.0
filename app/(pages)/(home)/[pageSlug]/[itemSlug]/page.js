@@ -11,6 +11,8 @@ export const dynamic = 'force-dynamic'; // Force no caching, SSR on every reques
 // Generate dynamic metadata for SEO
 export async function generateMetadata({ params }) {
     const { pageSlug, itemSlug } = await params;
+    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://webbytemplatev2.vercel.app';
+    const currentUrl = `${baseUrl}/${pageSlug}/${itemSlug}`;
     
     try {
         let endpoint = `${pageSlug}/${itemSlug}`;
@@ -27,8 +29,6 @@ export async function generateMetadata({ params }) {
         });
 
         if (!pageData.result || !pageData.data || Object.keys(pageData.data).length === 0) {
-            const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://webbytemplatev2.vercel.app';
-            const currentUrl = `${baseUrl}/${pageSlug}/${itemSlug}`;
             return {
                 title: itemSlug,
                 description: "Premium website templates and themes",
@@ -39,8 +39,6 @@ export async function generateMetadata({ params }) {
         }
 
         const data = pageData?.data || {};
-        const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://webbytemplatev2.vercel.app';
-        const currentUrl = `${baseUrl}/${pageSlug}/${itemSlug}`;
         
         // Generate title from seo_meta with fallbacks
         const title = data?.seo_meta?.title || data?.title || itemSlug;
@@ -54,6 +52,9 @@ export async function generateMetadata({ params }) {
         } else {
             description = description || "Premium website templates and themes";
         }
+
+        // Check if category should be indexed based on no_index field
+        const shouldIndex = pageSlug === 'category' ? (data?.no_index !== true) : true;
 
         // Get image URL from seo_meta with validation
         let imageUrl = null;
@@ -111,10 +112,10 @@ export async function generateMetadata({ params }) {
                 images: imageUrl ? [imageUrl] : undefined,
             },
             robots: {
-                index: true,
+                index: shouldIndex,
                 follow: true,
                 googleBot: {
-                    index: true,
+                    index: shouldIndex,
                     follow: true,
                     'max-video-preview': -1,
                     'max-image-preview': 'large',
@@ -124,8 +125,9 @@ export async function generateMetadata({ params }) {
         };
     } catch (error) {
         console.error('Error generating metadata:', error);
-        const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://webbytemplatev2.vercel.app';
-        const currentUrl = `${baseUrl}/${pageSlug}/${itemSlug}`;
+        // Default to indexing for error cases (unless specifically a category with no_index)
+        const shouldIndexFallback = true;
+            
         return {
             title: itemSlug,
             description: "Premium website templates and themes",
@@ -134,7 +136,7 @@ export async function generateMetadata({ params }) {
                 canonical: currentUrl,
             },
             robots: {
-                index: true,
+                index: shouldIndexFallback,
                 follow: true,
             },
         };
