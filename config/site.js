@@ -1,5 +1,5 @@
 export const siteConfig = {
-  name: "WebbyTemplate@2.0",
+  name: "WebbyTemplate",
   description: "Make beautiful websites regardless of your design experience.",
   navItems: [
     {

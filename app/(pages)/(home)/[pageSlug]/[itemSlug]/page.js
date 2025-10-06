@@ -40,7 +40,7 @@ export async function generateMetadata({ params }) {
         }
 
         const data = pageData?.data || {};
-        
+
         // Generate title from seo_meta with fallbacks
         const title = data?.seo_meta?.title || data?.title || itemSlug;
         
@@ -87,7 +87,7 @@ export async function generateMetadata({ params }) {
                 canonical: currentUrl,
             },
             openGraph: {
-                type: pageSlug === 'blog' ? 'article' : (pageSlug === 'product' ? 'product' : 'website'),
+                type: pageSlug === 'blog' ? 'article' : 'website',
                 title: title,
                 description: description,
                 url: currentUrl,
@@ -789,6 +789,37 @@ export default async function DynamicPage({ params, searchParams }) {
                     </>
                 );
             } else {
+                // Generate FAQ structured data for category pages
+                let faqStructuredData = null;
+                try {
+                    const faqComponent = pageData.data.components?.find(comp => comp.__component === 'shared.faq-section');
+                    if (faqComponent && faqComponent.list && Array.isArray(faqComponent.list) && faqComponent.list.length > 0) {
+                        const validFaqItems = faqComponent.list.filter(faqItem => 
+                            faqItem && 
+                            (faqItem.title || faqItem.question) && 
+                            (faqItem.label || faqItem.answer || faqItem.description)
+                        );
+
+                        if (validFaqItems.length > 0) {
+                            faqStructuredData = {
+                                "@context": "https://schema.org",
+                                "@type": "FAQPage",
+                                "mainEntity": validFaqItems.map(faqItem => ({
+                                    "@type": "Question",
+                                    "name": faqItem.title || faqItem.question || "FAQ Question",
+                                    "acceptedAnswer": {
+                                        "@type": "Answer",
+                                        "text": faqItem.label || faqItem.answer || faqItem.description || "FAQ Answer"
+                                    }
+                                }))
+                            };
+                        }
+                    }
+                } catch (error) {
+                    console.error('Error generating FAQ structured data:', error);
+                    faqStructuredData = null;
+                }
+
                 return (
                     <>
                         {collectionPageSchema && (
@@ -796,6 +827,14 @@ export default async function DynamicPage({ params, searchParams }) {
                                 type="application/ld+json"
                                 dangerouslySetInnerHTML={{
                                     __html: JSON.stringify(collectionPageSchema)
+                                }}
+                            />
+                        )}
+                        {faqStructuredData && (
+                            <script
+                                type="application/ld+json"
+                                dangerouslySetInnerHTML={{
+                                    __html: JSON.stringify(faqStructuredData)
                                 }}
                             />
                         )}
