@@ -231,7 +231,21 @@ const ticketSupportPage = ({ title }) => {
     const script = document.createElement("script");
     script.src = "https://checkout.razorpay.com/v1/checkout.js";
     script.async = true;
-    document.body.appendChild(script);
+    script.defer = true;
+    script.onload = () => {
+      console.log("Razorpay script loaded successfully");
+    };
+    script.onerror = () => {
+      console.error("Failed to load Razorpay script");
+    };
+    document.head.appendChild(script); // Append to head instead of body
+    
+    // Cleanup function
+    return () => {
+      if (document.head.contains(script)) {
+        document.head.removeChild(script);
+      }
+    };
   }, []);
 
   const handlePayNow = async (orderData) => {

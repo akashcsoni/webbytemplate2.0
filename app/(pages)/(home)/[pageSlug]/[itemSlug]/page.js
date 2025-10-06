@@ -6,6 +6,7 @@ import SinglePage from "@/components/SinglePage";
 import SomethingWrong from "@/components/somethingWrong/page";
 import { themeConfig } from "@/config/theamConfig";
 import { strapiGet, strapiPost } from "@/lib/api/strapiClient";
+import { getCanonicalImageUrls, getBestCanonicalImage, createImageObjectSchema, getFallbackImageUrl } from "@/lib/utils/canonicalImageUrl";
 export const dynamic = 'force-dynamic'; // Force no caching, SSR on every request
 
 // Generate dynamic metadata for SEO
@@ -56,18 +57,23 @@ export async function generateMetadata({ params }) {
         // Check if category should be indexed based on no_index field
         const shouldIndex = pageSlug === 'category' ? (data?.no_index !== true) : true;
 
-        // Get image URL from seo_meta with validation
+        // Get canonical image URL from seo_meta with validation
         let imageUrl = null;
         try {
-            if (data?.seo_meta?.image?.url && typeof data.seo_meta.image.url === 'string') {
-                imageUrl = data.seo_meta.image.url;
-            } else if (pageSlug === 'blog' && data?.image?.url && typeof data.image.url === 'string') {
+            if (data?.seo_meta?.image) {
+                imageUrl = getCanonicalImageUrl(data.seo_meta.image, baseUrl);
+            } else if (pageSlug === 'blog' && data?.image) {
                 // For blog posts, fallback to main image if seo_meta image is not available
-                imageUrl = data.image.url;
+                imageUrl = getCanonicalImageUrl(data.image, baseUrl);
+            }
+            
+            // Fallback to site logo if no image found
+            if (!imageUrl) {
+                imageUrl = getFallbackImageUrl(baseUrl);
             }
         } catch (error) {
             console.error('Error extracting image URL:', error);
-            imageUrl = null;
+            imageUrl = getFallbackImageUrl(baseUrl);
         }
 
         return {
@@ -81,20 +87,29 @@ export async function generateMetadata({ params }) {
                 canonical: currentUrl,
             },
             openGraph: {
-                type: pageSlug === 'blog' ? 'article' : 'website',
+                type: pageSlug === 'blog' ? 'article' : (pageSlug === 'product' ? 'product' : 'website'),
                 title: title,
                 description: description,
                 url: currentUrl,
                 siteName: 'WebbyTemplate',
+                locale: 'en_US',
                 images: imageUrl ? [
                     {
                         url: imageUrl,
                         width: 1200,
                         height: 630,
                         alt: title,
+                        type: 'image/jpeg'
                     }
-                ] : undefined,
-                locale: 'en_US',
+                ] : [
+                    {
+                        url: `${baseUrl}/logo/webby-logo.svg`,
+                        width: 1200,
+                        height: 630,
+                        alt: 'WebbyTemplate',
+                        type: 'image/svg+xml'
+                    }
+                ],
                 ...(pageSlug === 'blog' && data?.author?.full_name && {
                     authors: [data.author.full_name]
                 }),
@@ -103,13 +118,32 @@ export async function generateMetadata({ params }) {
                 }),
                 ...(pageSlug === 'blog' && data?.updatedAt && {
                     modifiedTime: new Date(data.updatedAt).toISOString()
+                }),
+                ...(pageSlug === 'product' && data?.all_license && data.all_license.length > 0 && {
+                    price: {
+                        amount: data.all_license[0].sales_price || data.all_license[0].regular_price || 0,
+                        currency: 'USD'
+                    }
+                }),
+                ...(pageSlug === 'product' && data?.categories && data.categories.length > 0 && {
+                    section: data.categories[0].title
                 })
             },
             twitter: {
                 card: 'summary_large_image',
+                site: '@webbytemplate',
+                creator: pageSlug === 'blog' && data?.author?.twitter ? `@${data.author.twitter}` : '@webbytemplate',
                 title: title,
                 description: description,
-                images: imageUrl ? [imageUrl] : undefined,
+                images: imageUrl ? [imageUrl] : [`${baseUrl}/logo/webby-logo.svg`],
+                ...(pageSlug === 'product' && data?.all_license && data.all_license.length > 0 && {
+                    label1: 'Price',
+                    data1: `$${data.all_license[0].sales_price || data.all_license[0].regular_price || 0}`
+                }),
+                ...(pageSlug === 'product' && data?.categories && data.categories.length > 0 && {
+                    label2: 'Category',
+                    data2: data.categories[0].title
+                })
             },
             robots: {
                 index: shouldIndex,
@@ -121,6 +155,33 @@ export async function generateMetadata({ params }) {
                     'max-image-preview': 'large',
                     'max-snippet': -1,
                 },
+            },
+            other: {
+                // Additional meta tags for better SEO
+                'theme-color': '#000000',
+                'msapplication-TileColor': '#000000',
+                'msapplication-config': '/browserconfig.xml',
+                ...(pageSlug === 'product' && data?.all_license && data.all_license.length > 0 && {
+                    'product:price:amount': (data.all_license[0].sales_price || data.all_license[0].regular_price || 0).toString(),
+                    'product:price:currency': 'USD',
+                    'product:availability': 'in stock',
+                    'product:condition': 'new'
+                }),
+                ...(pageSlug === 'product' && data?.categories && data.categories.length > 0 && {
+                    'product:category': data.categories[0].title
+                }),
+                ...(pageSlug === 'blog' && data?.author?.full_name && {
+                    'article:author': data.author.full_name
+                }),
+                ...(pageSlug === 'blog' && data?.publishedAt && {
+                    'article:published_time': new Date(data.publishedAt).toISOString()
+                }),
+                ...(pageSlug === 'blog' && data?.updatedAt && {
+                    'article:modified_time': new Date(data.updatedAt).toISOString()
+                }),
+                ...(pageSlug === 'blog' && data?.blog_categories && data.blog_categories.length > 0 && {
+                    'article:section': data.blog_categories[0].title
+                })
             },
         };
     } catch (error) {
@@ -188,13 +249,18 @@ export default async function DynamicPage({ params, searchParams }) {
             // Generate Product schema (always show, with or without reviews)
             let productSchema = null;
             try {
-                // Prepare images array
+                // Prepare canonical images array
                 let images = [];
                 if (pageData?.data?.gallery_image && Array.isArray(pageData.data.gallery_image)) {
-                    images = pageData.data.gallery_image.map(img => img.url).filter(Boolean);
+                    images = getCanonicalImageUrls(pageData.data.gallery_image, baseUrl);
                 }
-                if (images.length === 0 && pageData?.data?.seo_meta?.image?.url) {
-                    images = [pageData.data.seo_meta.image.url];
+                if (images.length === 0 && pageData?.data?.seo_meta?.image) {
+                    const canonicalImage = getCanonicalImageUrl(pageData.data.seo_meta.image, baseUrl);
+                    if (canonicalImage) images = [canonicalImage];
+                }
+                if (images.length === 0) {
+                    // Fallback to site logo
+                    images = [getFallbackImageUrl(baseUrl)];
                 }
 
                 // Prepare offers array from licenses
@@ -227,7 +293,8 @@ export default async function DynamicPage({ params, searchParams }) {
                     "sku": pageData?.data?.sku || pageData?.data?.id || itemSlug,
                     "brand": {
                         "@type": "Brand",
-                        "name": "WebbyTemplate"
+                        "name": "WebbyTemplate",
+                        "url": baseUrl
                     },
                     "offers": offers.length > 0 ? offers : null,
                     "mainEntityOfPage": {
@@ -237,11 +304,54 @@ export default async function DynamicPage({ params, searchParams }) {
                     "publisher": {
                         "@type": "Organization",
                         "name": "WebbyTemplate",
-                        "url": baseUrl
+                        "url": baseUrl,
+                        "logo": createImageObjectSchema(
+                            `${baseUrl}/logo/webby-logo.svg`,
+                            baseUrl,
+                            "WebbyTemplate Logo"
+                        )
                     },
                     "datePublished": pageData?.data?.createdAt ? new Date(pageData.data.createdAt).toISOString().split('T')[0] : null,
-                    "dateModified": pageData?.data?.updatedAt ? new Date(pageData.data.updatedAt).toISOString().split('T')[0] : null
+                    "dateModified": pageData?.data?.updatedAt ? new Date(pageData.data.updatedAt).toISOString().split('T')[0] : null,
+                    "url": currentUrl,
+                    "category": pageData?.data?.categories?.map(cat => cat.title).join(', ') || null,
+                    "keywords": pageData?.data?.tags?.map(tag => tag.title).join(', ') || null,
+                    "additionalProperty": []
                 };
+
+                // Add additional properties for better SEO
+                if (pageData?.data?.technology) {
+                    productSchema.additionalProperty.push({
+                        "@type": "PropertyValue",
+                        "name": "Technology",
+                        "value": pageData.data.technology
+                    });
+                }
+
+                if (pageData?.data?.file_size) {
+                    productSchema.additionalProperty.push({
+                        "@type": "PropertyValue",
+                        "name": "File Size",
+                        "value": pageData.data.file_size
+                    });
+                }
+
+                if (pageData?.data?.resolution) {
+                    productSchema.additionalProperty.push({
+                        "@type": "PropertyValue",
+                        "name": "Resolution",
+                        "value": pageData.data.resolution
+                    });
+                }
+
+                // Add author information if available
+                if (pageData?.data?.author) {
+                    productSchema.author = {
+                        "@type": "Person",
+                        "name": pageData.data.author.full_name || pageData.data.author.username,
+                        "url": pageData.data.author.username ? `${baseUrl}/author/${pageData.data.author.username}` : null
+                    };
+                }
 
                 // Try to fetch reviews and add them if available
                 try {
@@ -391,6 +501,15 @@ export default async function DynamicPage({ params, searchParams }) {
 
             return (
                 <>
+                    {/* Preload critical product images for better LCP */}
+                    {pageData?.data?.gallery_image && pageData.data.gallery_image.length > 0 && (
+                        <link
+                            rel="preload"
+                            as="image"
+                            href={pageData.data.gallery_image[0].url}
+                            type="image/jpeg"
+                        />
+                    )}
                     {breadcrumbData && (
                         <script
                             type="application/ld+json"
@@ -431,13 +550,19 @@ export default async function DynamicPage({ params, searchParams }) {
             // Generate Article structured data
             let articleSchema = null;
             try {
-                // Prepare images array
+                // Prepare canonical images array
                 let images = [];
-                if (pageData?.data?.image?.url) {
-                    images = [pageData.data.image.url];
+                if (pageData?.data?.image) {
+                    const canonicalImage = getCanonicalImageUrl(pageData.data.image, baseUrl);
+                    if (canonicalImage) images = [canonicalImage];
                 }
-                if (images.length === 0 && pageData?.data?.seo_meta?.image?.url) {
-                    images = [pageData.data.seo_meta.image.url];
+                if (images.length === 0 && pageData?.data?.seo_meta?.image) {
+                    const canonicalImage = getCanonicalImageUrl(pageData.data.seo_meta.image, baseUrl);
+                    if (canonicalImage) images = [canonicalImage];
+                }
+                if (images.length === 0) {
+                    // Fallback to site logo
+                    images = [getFallbackImageUrl(baseUrl)];
                 }
 
                 // Calculate word count for reading time
@@ -462,10 +587,11 @@ export default async function DynamicPage({ params, searchParams }) {
                         "@type": "Organization",
                         "name": "WebbyTemplate",
                         "url": baseUrl,
-                        "logo": {
-                            "@type": "ImageObject",
-                            "url": `${baseUrl}/logo/webby-logo.svg`
-                        }
+                        "logo": createImageObjectSchema(
+                            `${baseUrl}/logo/webby-logo.svg`,
+                            baseUrl,
+                            "WebbyTemplate Logo"
+                        )
                     },
                     "datePublished": pageData?.data?.publishedAt ? new Date(pageData.data.publishedAt).toISOString() : null,
                     "dateModified": pageData?.data?.updatedAt ? new Date(pageData.data.updatedAt).toISOString() : null,
@@ -537,6 +663,15 @@ export default async function DynamicPage({ params, searchParams }) {
 
             return (
                 <>
+                    {/* Preload critical blog image for better LCP */}
+                    {pageData?.data?.image?.url && (
+                        <link
+                            rel="preload"
+                            as="image"
+                            href={pageData.data.image.url}
+                            type="image/jpeg"
+                        />
+                    )}
                     {breadcrumbData && (
                         <script
                             type="application/ld+json"
@@ -557,15 +692,115 @@ export default async function DynamicPage({ params, searchParams }) {
                 </>
             );
         } else if (pageSlug === 'category') {
+            // Generate CollectionPage and ItemList structured data for category pages
+            const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://webbytemplatev2.vercel.app';
+            const currentUrl = `${baseUrl}/${pageSlug}/${itemSlug}`;
+            
+            // Generate title and description from seo_meta with fallbacks
+            const title = pageData?.data?.seo_meta?.title || pageData?.data?.title || itemSlug;
+            const description = pageData?.data?.seo_meta?.description || pageData?.data?.description || "Browse our collection of premium website templates and themes";
+            
+            // Generate CollectionPage structured data
+            let collectionPageSchema = null;
+            try {
+                collectionPageSchema = {
+                    "@context": "https://schema.org",
+                    "@type": "CollectionPage",
+                    "name": title,
+                    "description": description,
+                    "url": currentUrl,
+                    "mainEntity": {
+                        "@type": "ItemList",
+                        "name": title,
+                        "description": description,
+                        "url": currentUrl,
+                        "numberOfItems": pageData?.data?.products?.length || 0,
+                        "itemListElement": []
+                    },
+                    "breadcrumb": {
+                        "@type": "BreadcrumbList",
+                        "itemListElement": [
+                            {
+                                "@type": "ListItem",
+                                "position": 1,
+                                "name": "Home",
+                                "item": baseUrl
+                            },
+                            {
+                                "@type": "ListItem",
+                                "position": 2,
+                                "name": title,
+                                "item": currentUrl
+                            }
+                        ]
+                    },
+                    "publisher": {
+                        "@type": "Organization",
+                        "name": "WebbyTemplate",
+                        "url": baseUrl
+                    }
+                };
+
+                // Add products to ItemList if available
+                if (pageData?.data?.products && Array.isArray(pageData.data.products)) {
+                    collectionPageSchema.mainEntity.itemListElement = pageData.data.products.slice(0, 20).map((product, index) => ({
+                        "@type": "ListItem",
+                        "position": index + 1,
+                        "item": {
+                            "@type": "Product",
+                            "name": product.title || product.name,
+                            "url": `${baseUrl}/product/${product.slug}`,
+                            "image": getBestCanonicalImage(
+                                product.image || product.gallery_image?.[0] || product.gallery_image,
+                                baseUrl
+                            ) || getFallbackImageUrl(baseUrl),
+                            "description": product.description || null,
+                            "offers": product.all_license && product.all_license.length > 0 ? {
+                                "@type": "Offer",
+                                "priceCurrency": "USD",
+                                "price": product.all_license[0].sales_price || product.all_license[0].regular_price || "0",
+                                "availability": "https://schema.org/InStock"
+                            } : null
+                        }
+                    }));
+                }
+
+                // Remove null values from schema
+                collectionPageSchema = JSON.parse(JSON.stringify(collectionPageSchema, (key, value) => {
+                    return value === null ? undefined : value;
+                }));
+            } catch (error) {
+                console.error('Error generating CollectionPage schema:', error);
+                collectionPageSchema = null;
+            }
+
             if (Object.keys(searchParams).length > 0) {
                 return (
                     <>
+                        {collectionPageSchema && (
+                            <script
+                                type="application/ld+json"
+                                dangerouslySetInnerHTML={{
+                                    __html: JSON.stringify(collectionPageSchema)
+                                }}
+                            />
+                        )}
                         <SearchPage />
                     </>
                 );
             } else {
                 return (
-                    <GlobalComponent data={pageData.data} />
+                    <>
+                        {collectionPageSchema && (
+                            <script
+                                type="application/ld+json"
+                                dangerouslySetInnerHTML={{
+                                    __html: JSON.stringify(collectionPageSchema)
+                                }}
+                            />
+                        )}
+                        <GlobalComponent data={pageData.data} />
+                    </>
                 );
             }
         }

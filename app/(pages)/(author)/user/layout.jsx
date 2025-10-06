@@ -61,6 +61,8 @@ export default function Layout({ children }) {
         <script
           type="text/javascript"
           src="https://cdn.jsdelivr.net/npm/luxon@2.3.1/build/global/luxon.min.js"
+          defer
+          async
         />
       </head>
       <body

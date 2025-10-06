@@ -301,13 +301,16 @@ const SingleBlogPage = ({ data }) => {
               src={data.image.url}
               alt={
                 data?.image?.alternativeText ||
-                data?.title ||
-                "Blog featured image"
+                `${data?.title || 'Blog post'} featured image`
               }
               width={800}
               height={400}
               className="w-full h-auto rounded-lg object-cover"
               priority={true}
+              loading="eager"
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 800px"
+              placeholder="blur"
+              blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABmX/9k="
             />
           </div>
         )}
