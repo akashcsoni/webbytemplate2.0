@@ -50,10 +50,14 @@ export default function ProductCard({ product }) {
         <div className="cursor-pointer relative rounded-lg overflow-hidden mb-4 transition-transform duration-300 group-hover:shadow-lg">
           <Image
             src={productImage}
-            alt={productTitle}
+            alt={`${productTitle} - Premium website template by ${authorName}`}
             width={270}
             height={345}
             className="w-full h-auto aspect-[1/1.2]"
+            loading="lazy"
+            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+            placeholder="blur"
+            blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABmX/9k="
             onError={(e) => {
               e.currentTarget.src = NO_FOUND_PRODUCT_GRID_IMAGE;
             }}
@@ -85,16 +89,15 @@ export default function ProductCard({ product }) {
                   key={idx}
                   className="flex items-center justify-center border border-[#0156d5] bg-white rounded-full p-2"
                 >
-                  <div className="relative">
-                    <img
-                      alt="Technology"
-                      loading="lazy"
-                      width="25"
-                      height="25"
-                      decoding="async"
-                      className="2xl:h-[25px] h-[24px] w-full"
-                      style={{ color: "transparent" }}
+                  <div className="relative w-6 h-6">
+                    <Image
+                      alt={`${productTitle} technology icon - ${imgUrl.split('/').pop()?.split('.')[0] || 'tech'}`}
                       src={imgUrl}
+                      width={25}
+                      height={25}
+                      className="2xl:h-[25px] h-[24px] w-full object-contain"
+                      loading="lazy"
+                      sizes="25px"
                     />
                   </div>
                 </div>
@@ -109,19 +112,23 @@ export default function ProductCard({ product }) {
         <div className="flex items-center">
           <Image
             src={authorImage}
-            alt={authorName}
-            width={270}
-            height={345}
-            className="object-cover aspect-[1/1.2] rounded-full w-7 h-7 flex items-center justify-center text-xs mr-[10px] flex-shrink-0"
+            alt={`${authorName} profile picture`}
+            width={28}
+            height={28}
+            className="object-cover rounded-full w-7 h-7 flex items-center justify-center text-xs mr-[10px] flex-shrink-0"
+            loading="lazy"
+            sizes="28px"
+            placeholder="blur"
+            blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABmX/9k="
             onError={(e) => {
               e.currentTarget.src = NO_FOUND_PRODUCT_GRID_IMAGE;
             }}
           />
           <div>
             <Link href={`/product/${encodeURIComponent(productSlug)}`}>
-              <h3 className="text-base !text-black cursor-pointer line-clamp-1">
+              <h2 className="text-base !text-black cursor-pointer line-clamp-1">
                 {productTitle}
-              </h3>
+              </h2>
             </Link>
             <p className="text-sm text-gray-200">
               <span className="text-gray-300">by </span>

@@ -293,10 +293,15 @@ const SinglePageSwiper = ({
                 <div className="relative group w-full h-full lg:before:pt-[69%] before:pt-[64%] before:block overflow-hidden">
                   <Image
                     src={containsTargetURL(img?.url) ? img?.url : `${img?.url}`}
-                    alt={img?.alternativeText || `Product ${i + 1}`}
+                    alt={img?.alternativeText || `${title || 'Product'} gallery image ${i + 1}`}
                     width={imageWidth}
                     height={imageHeight}
                     className="flex-shrink-0 w-full h-full absolute top-0 left-0 bottom-0 right-0"
+                    priority={i === 0}
+                    loading={i === 0 ? "eager" : "lazy"}
+                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 40vw"
+                    placeholder="blur"
+                    blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABmX/9k="
                   />
                   <div className="group-hover:flex hidden items-center justify-center absolute top-0 left-0 w-full h-full group-hover:bg-black/50 transition-all duration-300 ease-in-out">
                     <Button

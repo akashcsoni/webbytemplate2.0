@@ -89,13 +89,16 @@ const BlogGrid = ({ blog }) => {
                 <Link href={getSlug() ? `/blog/${getSlug()}` : "#"}>
                     <div className="cursor-pointer relative rounded-lg overflow-hidden lg:mb-[22px] md:mb-[18px] mb-[14px] transition-transform duration-300 group-hover:shadow-lg border border-primary/10">
                         <Image
-                            alt={getTitle()}
+                            alt={`${getTitle()} - Blog post by ${getAuthorName()}`}
                             width={270}
                             height={345}
                             className="w-full h-auto"
                             src={getImageUrl()}
                             style={{ color: "transparent" }}
                             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                            loading="lazy"
+                            placeholder="blur"
+                            blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABmX/9k="
                             onError={(e) => {
                                 console.warn('Image load error:', e);
                                 e.target.src = "/images/blog-banner-1.webp";
@@ -111,17 +114,21 @@ const BlogGrid = ({ blog }) => {
                             </span>
                         </div>
                     )}
-                    <h5 className="1xl:mb-4 lg:mb-3 mb-[10px]">
+                    <h2 className="1xl:mb-4 lg:mb-3 mb-[10px]">
                         {getTitle()}
-                    </h5>
+                    </h2>
                     <div className="flex items-center gap-[10px]">
                         <div className="1xl:w-8 1xl:h-8 lg:w-[30px] lg:h-[30px] w-7 h-7 rounded-full overflow-hidden">
                             <Image
                                 src={getAuthorImageUrl()}
-                                alt={getAuthorName()}
+                                alt={`${getAuthorName()} profile picture`}
                                 width={32}
                                 height={32}
                                 className="w-full h-full object-cover"
+                                loading="lazy"
+                                sizes="32px"
+                                placeholder="blur"
+                                blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABmX/9k="
                                 onError={(e) => {
                                     console.warn('Author image load error:', e);
                                     e.target.src = "/images/place_holder.png";
