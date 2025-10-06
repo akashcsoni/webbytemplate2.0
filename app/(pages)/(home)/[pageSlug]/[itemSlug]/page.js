@@ -6,7 +6,7 @@ import SinglePage from "@/components/SinglePage";
 import SomethingWrong from "@/components/somethingWrong/page";
 import { themeConfig } from "@/config/theamConfig";
 import { strapiGet, strapiPost } from "@/lib/api/strapiClient";
-import { getCanonicalImageUrls, getBestCanonicalImage, createImageObjectSchema, getFallbackImageUrl } from "@/lib/utils/canonicalImageUrl";
+import { getCanonicalImageUrl, getCanonicalImageUrls, getBestCanonicalImage, createImageObjectSchema, getFallbackImageUrl } from "@/lib/utils/canonicalImageUrl";
 export const dynamic = 'force-dynamic'; // Force no caching, SSR on every request
 
 // Generate dynamic metadata for SEO

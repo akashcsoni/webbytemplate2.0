@@ -21,6 +21,7 @@ export default function HomeHero({
   const [searchTerm, setSearchTerm] = useState('')
   const [isOpen, setIsOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState("All Categories");
+  const [selectedCategorySlug, setSelectedCategorySlug] = useState("all-categories");
   const dropdownRef = useRef(null);
 
   // Close dropdown when clicking outside
@@ -46,8 +47,7 @@ export default function HomeHero({
 
     // If search term is empty but category is selected
     if (trimmedTerm === '') {
-      const categorySlug = selectedCategory.toLowerCase().replace(/\s+/g, '-');
-      router.push(`/category/${categorySlug}`);
+      router.push(`/category/${selectedCategorySlug}`);
       return;
     }
 
@@ -59,8 +59,7 @@ export default function HomeHero({
       router.push(`/search/${querySlug}`);
     } else {
       // Handle the category-specific route
-      const categorySlug = selectedCategory.toLowerCase().replace(/\s+/g, '-');
-      router.push(`/category/${categorySlug}?term=${querySlug}`);
+      router.push(`/category/${selectedCategorySlug}?term=${querySlug}`);
     }
   };
 
@@ -166,6 +165,7 @@ export default function HomeHero({
                               onClick={(e) => {
                                 e.preventDefault()
                                 setSelectedCategory('All Categories')
+                                setSelectedCategorySlug('all-categories')
                                 setIsOpen(false)
                               }}
                               role="option"
@@ -180,6 +180,7 @@ export default function HomeHero({
                                 onClick={(e) => {
                                   e.preventDefault()
                                   setSelectedCategory(category.title)
+                                  setSelectedCategorySlug(category.slug)
                                   setIsOpen(false)
                                 }}
                                 role="option"
