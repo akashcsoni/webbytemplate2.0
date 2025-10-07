@@ -164,7 +164,7 @@ export default function FaqSection({ title = "", label = "", button, list = [], 
                     </span>
                   </div>
 
-                  {/* Always render FAQ content for SEO, but hide/show based on state */}
+                  {/* FAQ content - always in DOM for SEO, visibility controlled by CSS */}
                   <div
                     id={`faq-content-${item.id}`}
                     className={`2xl:mt-5 xl:mt-4 sm:mt-3 mt-2 lg:pl-14 md:pl-[52px] sm:pl-10 pl-8 pr-4 pb-0.5 ${
@@ -172,28 +172,9 @@ export default function FaqSection({ title = "", label = "", button, list = [], 
                     }`}
                     aria-hidden={openQuestion !== item.id}
                   >
-                    {
-                      item?.label && (
-                        <div
-                          className="2xl:text-lg 1xl:text-[17px] sm:text-base text-sm cms-content"
-                          dangerouslySetInnerHTML={{
-                            __html: formatContent(item?.label),
-                          }}
-                        />
-                      )
-                    }
-                  </div>
-                  
-                  {/* SEO-friendly hidden content that's always in DOM */}
-                  <div 
-                    className="sr-only"
-                    aria-hidden="true"
-                    style={{ position: 'absolute', left: '-9999px', width: '1px', height: '1px', overflow: 'hidden' }}
-                  >
-                    <h4>{item.title}</h4>
                     {item?.label && (
                       <div
-                        className="cms-content"
+                        className="2xl:text-lg 1xl:text-[17px] sm:text-base text-sm cms-content"
                         dangerouslySetInnerHTML={{
                           __html: formatContent(item?.label),
                         }}
