@@ -23,43 +23,43 @@ const CategoryTagList = ({
 
   return section_layout === "category_layout"
     ? categories && categories.length > 0 && (
-        <div className="bg-blue-300 md:py-[50px] sm:py-9 py-6">
-          <div className="container">
-            <h1 className="h2 mb-[10px]">{title}</h1>
-            <p className="sm:mb-[30px] mb-5">{description}</p>
-            <div className="grid grid-cols-2 lg:grid-cols-4 sm:gap-4 gap-3 mb-4 html-categories">
-              {categories.map((category, index) => (
-                <CategoryTagCard key={index} category={category} />
-              ))}
-            </div>
-          </div>
-        </div>
-      )
-    : tags && tags.length > 0 && (
+      <div className="bg-blue-300 md:py-[50px] sm:py-9 py-6">
         <div className="container">
-          <div className="mb-[60px]">
-            <h2 className="font-medium text-gray-800 mb-4">Templates in..</h2>
-            <div className="flex flex-wrap xl:gap-[15px] lg:gap-3 sm:gap-[10px] gap-2">
-              {tags.slice(0, visibleCount).map((data, index) => (
-                <button className="btn black-btn" key={index}>
-                  {data?.title}
-                </button>
-              ))}
-              {visibleCount < tags.length && (
-                <button onClick={handleShowMore} className="btn black-btn">
-                  Show More
-                </button>
-              )}
-
-              {visibleCount >= tags.length && tags.length > limit && (
-                <button onClick={handleShowLess} className="btn black-btn">
-                  Show Less
-                </button>
-              )}
-            </div>
+          <h2 className="h2 mb-[10px]">{title}</h2>
+          <p className="sm:mb-[30px] mb-5">{description}</p>
+          <div className="grid grid-cols-2 lg:grid-cols-4 sm:gap-4 gap-3 mb-4 html-categories">
+            {categories.map((category, index) => (
+              <CategoryTagCard key={index} category={category} />
+            ))}
           </div>
         </div>
-      );
+      </div>
+    )
+    : tags && tags.length > 0 && (
+      <div className="container">
+        <div className="mb-[60px]">
+          <h2 className="font-medium text-gray-800 mb-4">Templates in..</h2>
+          <div className="flex flex-wrap xl:gap-[15px] lg:gap-3 sm:gap-[10px] gap-2">
+            {tags.slice(0, visibleCount).map((data, index) => (
+              <button className="btn black-btn" key={index}>
+                {data?.title}
+              </button>
+            ))}
+            {visibleCount < tags.length && (
+              <button onClick={handleShowMore} className="btn black-btn">
+                Show More
+              </button>
+            )}
+
+            {visibleCount >= tags.length && tags.length > limit && (
+              <button onClick={handleShowLess} className="btn black-btn">
+                Show Less
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+    );
 };
 
 export default CategoryTagList;

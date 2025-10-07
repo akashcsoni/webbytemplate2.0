@@ -7,7 +7,45 @@ import SomethingWrong from "@/components/somethingWrong/page";
 import { themeConfig } from "@/config/theamConfig";
 import { strapiGet, strapiPost } from "@/lib/api/strapiClient";
 import { getCanonicalImageUrl, getCanonicalImageUrls, getBestCanonicalImage, createImageObjectSchema, getFallbackImageUrl } from "@/lib/utils/canonicalImageUrl";
-export const dynamic = 'force-dynamic'; // Force no caching, SSR on every request
+// ISR configuration for category pages
+export const revalidate = 60; // Revalidate every 60 seconds for ISR
+
+// Generate static params for ISR - pre-generate paths for category pages
+export async function generateStaticParams() {
+    try {
+        // Fetch all categories to pre-generate static paths
+        const categoriesResponse = await strapiGet('categories', {
+            params: { 
+                populate: "*",
+                pagination: { limit: 100 } // Adjust limit based on your needs
+            },
+            token: themeConfig.TOKEN,
+        });
+
+        if (!categoriesResponse?.data || !Array.isArray(categoriesResponse.data)) {
+            return [];
+        }
+
+        // Generate static params for category pages
+        const categoryParams = categoriesResponse.data.map((category) => ({
+            pageSlug: 'category',
+            itemSlug: category.slug,
+        }));
+
+        // You can also add other page types here if needed
+        // For example, if you want to pre-generate product pages:
+        // const productsResponse = await strapiGet('products', { ... });
+        // const productParams = productsResponse.data.map((product) => ({
+        //     pageSlug: 'product',
+        //     itemSlug: product.slug,
+        // }));
+
+        return categoryParams;
+    } catch (error) {
+        console.error('Error generating static params:', error);
+        return [];
+    }
+}
 
 // Generate dynamic metadata for SEO
 export async function generateMetadata({ params }) {
@@ -27,6 +65,8 @@ export async function generateMetadata({ params }) {
         const pageData = await strapiGet(endpoint, {
             params: { populate: "*" },
             token: themeConfig.TOKEN,
+            // Add cache configuration for ISR in metadata generation
+            next: { revalidate: 60 }
         });
 
         if (!pageData.result || !pageData.data || Object.keys(pageData.data).length === 0) {
@@ -216,9 +256,12 @@ export default async function DynamicPage({ params, searchParams }) {
             endpoint = `${categoryBasePath}/${itemSlug}`;
         }
         
+        // Fetch data with ISR-friendly configuration
         const pageData = await strapiGet(endpoint, {
             params: { populate: "*" },
             token: themeConfig.TOKEN,
+            // Add cache configuration for ISR
+            next: { revalidate: 60 }
         });
         
         if (!pageData.result) {
@@ -838,6 +881,56 @@ export default async function DynamicPage({ params, searchParams }) {
                                 }}
                             />
                         )}
+                        
+                        {/* Render FAQ content directly in HTML for SEO - server-side rendered with same structure as client-side */}
+                        {(() => {
+                            const faqComponent = pageData.data.components?.find(comp => comp.__component === 'shared.faq-section');
+                            if (faqComponent && faqComponent.list && Array.isArray(faqComponent.list) && faqComponent.list.length > 0) {
+                                return (
+                                    <div style={{ display: 'none' }}>
+                                        <section className="xl:py-[35px] sm:py-[30px] py-5">
+                                            <div className="container mx-auto">
+                                                <div className="flex justify-between lg:flex-row flex-col 2xl:gap-52 xl:gap-20 sm:gap-8 gap-5">
+                                                    {(faqComponent.title || faqComponent.label) && (
+                                                        <div className="xl:w-[30%] lg:w-[36%] w-full">
+                                                            {faqComponent.title && <h2 className="md:mb-4 sm:mb-3 mb-2">{faqComponent.title}</h2>}
+                                                            {faqComponent.label && <p className="lg:mb-6 sm:mb-5 mb-4 2xl:text-lg 1xl:text-[17px] lg:text-[15px] sm:text-base text-[15px] 1xl:leading-[30px] sm:leading-6 leading-[1.45rem]">{faqComponent.label}</p>}
+                                                        </div>
+                                                    )}
+                                                    <div className="w-full 1xl:space-y-7 md:space-y-5 space-y-4">
+                                                        {faqComponent.list.map((item, index) => (
+                                                            <div key={`seo-faq-${item.id || index}`} className="border-b border-primary/10 2xl:pb-7 1xl:pb-6 md:pb-5 pb-4">
+                                                                <div className="flex items-center justify-between cursor-pointer sm:gap-[22px] gap-2">
+                                                                    <div className="flex items-center md:gap-6 sm:gap-4 gap-2.5">
+                                                                        <span className="h5 !font-normal text-primary">Q{index + 1}.</span>
+                                                                        <h3 className="font-normal 2xl:text-xl 1xl:text-[19px] md:text-lg sm:text-[17px] sm:text-base text-[15px]">{item.title || item.question || 'FAQ Question'}</h3>
+                                                                    </div>
+                                                                    <span className="text-gray-200 p-1" aria-hidden="true">
+                                                                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
+                                                                            <path d="M5 12h14" />
+                                                                            <path d="M12 5v14" />
+                                                                        </svg>
+                                                                    </span>
+                                                                </div>
+                                                                <div className="2xl:mt-5 xl:mt-4 sm:mt-3 mt-2 lg:pl-14 md:pl-[52px] sm:pl-10 pl-8 pr-4 pb-0.5">
+                                                                    {(item.label || item.answer || item.description) && (
+                                                                        <div className="2xl:text-lg 1xl:text-[17px] sm:text-base text-sm cms-content" dangerouslySetInnerHTML={{
+                                                                            __html: (item.label || item.answer || item.description || '').replace(/\n/g, '<br>')
+                                                                        }} />
+                                                                    )}
+                                                                </div>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </section>
+                                    </div>
+                                );
+                            }
+                            return null;
+                        })()}
+                        
                         <GlobalComponent data={pageData.data} />
                     </>
                 );
