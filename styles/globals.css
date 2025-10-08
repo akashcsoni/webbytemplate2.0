@@ -1189,10 +1189,10 @@ h4 {
     @apply flex items-start xl:gap-[60px] gap-[50px];
     }
     .left-content {
-    @apply xl:w-[74%] lg:w-[68%] w-full;
+    @apply  w-full;
     }
     .right-content {
-    @apply xl:w-[26%] w-[32%] h-full lg:block hidden;
+    @apply  w-[36%] h-full lg:block hidden;
     }
     /* Text Styles */
     .single-blog .content-grid .left-content h2 {
@@ -1246,6 +1246,29 @@ h4 {
     }
     .logo-box {
     @apply w-8 h-8 rounded-full overflow-hidden mb-4;
+    }
+    
+    /* Table of Contents Styles */
+    .insight-main-box p {
+    @apply block pl-4 xl:py-2.5 py-2 text-gray-200 border-l-2 border-blue-300 bg-white hover:text-primary hover:border-primary transition-all ease-in-out cursor-pointer rounded-r-md;
+    }
+    
+    .insight-main-box p:hover {
+    @apply bg-blue-50;
+    }
+    
+    .insight-main-box p.active {
+    @apply border-primary text-primary bg-blue-50;
+    }
+    
+    /* Smooth scrolling for the entire page */
+    html {
+    scroll-behavior: smooth;
+    }
+    
+    /* Add some spacing for headings when scrolling */
+    .prose h1, .prose h2, .prose h3, .prose h4, .prose h5, .prose h6 {
+    scroll-margin-top: 80px;
     }
       
       

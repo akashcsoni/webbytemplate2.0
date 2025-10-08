@@ -15,7 +15,7 @@ export async function generateStaticParams() {
     try {
         // Fetch all categories to pre-generate static paths
         const categoriesResponse = await strapiGet('categories', {
-            params: { 
+            params: {
                 populate: "*",
                 pagination: { limit: 100 } // Adjust limit based on your needs
             },
@@ -52,10 +52,10 @@ export async function generateMetadata({ params }) {
     const { pageSlug, itemSlug } = await params;
     const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://webbytemplatev2.vercel.app';
     const currentUrl = `${baseUrl}/${pageSlug}/${itemSlug}`;
-    
+
     try {
         let endpoint = `${pageSlug}/${itemSlug}`;
-        
+
         // If the page is a category page, get custom endpoint from themeConfig
         if (pageSlug === 'category') {
             const categoryBasePath = themeConfig.CATEGORY_API_ROUTE || 'category';
@@ -83,10 +83,10 @@ export async function generateMetadata({ params }) {
 
         // Generate title from seo_meta with fallbacks
         const title = data?.seo_meta?.title || data?.title || itemSlug;
-        
+
         // Generate description from seo_meta with fallbacks
         let description = data?.seo_meta?.description || data?.description;
-        
+
         // For blog posts, use different default description
         if (pageSlug === 'blog') {
             description = description || "Read our latest blog post";
@@ -106,7 +106,7 @@ export async function generateMetadata({ params }) {
                 // For blog posts, fallback to main image if seo_meta image is not available
                 imageUrl = getCanonicalImageUrl(data.image, baseUrl);
             }
-            
+
             // Fallback to site logo if no image found
             if (!imageUrl) {
                 imageUrl = getFallbackImageUrl(baseUrl);
@@ -119,10 +119,10 @@ export async function generateMetadata({ params }) {
         return {
             title: title,
             description: description,
-            keywords: data?.seo_meta?.keywords || 
-                     (pageSlug === 'blog' 
-                        ? (data?.blog_categories?.map(cat => cat.title).join(', ') || 'blog, articles, web design')
-                        : (data?.tags?.map(tag => tag.title).join(', ') || 'website templates, themes, web design')),
+            keywords: data?.seo_meta?.keywords ||
+                (pageSlug === 'blog'
+                    ? (data?.blog_categories?.map(cat => cat.title).join(', ') || 'blog, articles, web design')
+                    : (data?.tags?.map(tag => tag.title).join(', ') || 'website templates, themes, web design')),
             alternates: {
                 canonical: currentUrl,
             },
@@ -228,7 +228,7 @@ export async function generateMetadata({ params }) {
         console.error('Error generating metadata:', error);
         // Default to indexing for error cases (unless specifically a category with no_index)
         const shouldIndexFallback = true;
-            
+
         return {
             title: itemSlug,
             description: "Premium website templates and themes",
@@ -255,7 +255,7 @@ export default async function DynamicPage({ params, searchParams }) {
             const categoryBasePath = themeConfig.CATEGORY_API_ROUTE || 'category'; // fallback if not defined
             endpoint = `${categoryBasePath}/${itemSlug}`;
         }
-        
+
         // Fetch data with ISR-friendly configuration
         const pageData = await strapiGet(endpoint, {
             params: { populate: "*" },
@@ -263,20 +263,47 @@ export default async function DynamicPage({ params, searchParams }) {
             // Add cache configuration for ISR
             next: { revalidate: 60 }
         });
-        
+
+        // Handle API response errors
         if (!pageData.result) {
-            return <SomethingWrong />;
-        }
-        if (!pageData.result && pageData.status === 404) {
-            return <PageNotFound />;
-        }
-
-        if (!pageData || !pageData.data || Object.keys(pageData.data).length === 0) {
+            console.error('API request failed:', {
+                endpoint,
+                status: pageData.status,
+                error: pageData.error
+            });
             return <SomethingWrong />;
         }
 
-        if (!pageData || !pageData.data || Object.keys(pageData.data).length === 0) {
+        // Handle 404 responses
+        if (pageData.status === 404) {
+            console.error('Resource not found:', {
+                endpoint,
+                pageSlug,
+                itemSlug
+            });
             return <PageNotFound />;
+        }
+
+        // Handle empty or invalid data
+        if (!pageData || !pageData.data || Object.keys(pageData.data).length === 0) {
+            console.error('Empty or invalid data received:', {
+                endpoint,
+                hasData: !!pageData?.data,
+                dataKeys: pageData?.data ? Object.keys(pageData.data) : []
+            });
+            return <PageNotFound />;
+        }
+
+        // Additional validation for blog-specific requirements
+        if (pageSlug === 'blog') {
+            if (!pageData.data.title || !pageData.data.body) {
+                console.error('Blog missing required fields:', {
+                    hasTitle: !!pageData.data.title,
+                    hasBody: !!pageData.data.body,
+                    itemSlug
+                });
+                return <PageNotFound />;
+            }
         }
 
 
@@ -284,11 +311,11 @@ export default async function DynamicPage({ params, searchParams }) {
             // Safe data extraction with fallbacks
             const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://webbytemplatev2.vercel.app';
             const currentUrl = `${baseUrl}/${pageSlug}/${itemSlug}`;
-            
+
             // Generate title and description from seo_meta with fallbacks (same as metadata)
             const title = pageData?.data?.seo_meta?.title || pageData?.data?.title || itemSlug;
             const description = pageData?.data?.seo_meta?.description || pageData?.data?.description || "Premium website template";
-            
+
             // Generate Product schema (always show, with or without reviews)
             let productSchema = null;
             try {
@@ -401,25 +428,25 @@ export default async function DynamicPage({ params, searchParams }) {
                     const reviewsResponse = await strapiPost(`/product-review/${itemSlug}`, {
                         token: themeConfig.TOKEN,
                     });
-                    
+
                     if (reviewsResponse?.data && Array.isArray(reviewsResponse.data)) {
                         const authorizedReviews = reviewsResponse.data.filter(
                             (review) => review?.review_status === "Authorized"
                         );
-                        
+
                         // Only add review fields if reviews are found
                         if (authorizedReviews.length > 0) {
                             // Calculate aggregate rating
                             const totalRating = authorizedReviews.reduce((sum, review) => sum + (review?.rating || 0), 0);
                             const averageRating = (totalRating / authorizedReviews.length).toFixed(1);
-                            
+
                             // Add review-related fields to Product schema
                             productSchema.aggregateRating = {
                                 "@type": "AggregateRating",
                                 "ratingValue": averageRating,
                                 "reviewCount": authorizedReviews.length.toString()
                             };
-                            
+
                             productSchema.review = authorizedReviews.map(review => ({
                                 "@type": "Review",
                                 "author": {
@@ -443,7 +470,7 @@ export default async function DynamicPage({ params, searchParams }) {
                     console.error('Error fetching reviews for Product schema:', reviewError);
                     // Continue with basic Product schema without reviews
                 }
-                
+
                 // Remove null values from schema
                 productSchema = JSON.parse(JSON.stringify(productSchema, (key, value) => {
                     return value === null ? undefined : value;
@@ -452,7 +479,7 @@ export default async function DynamicPage({ params, searchParams }) {
                 console.error('Error generating Product schema:', error);
                 productSchema = null;
             }
-            
+
             // Generate breadcrumb structured data with error handling
             let breadcrumbData = null;
             try {
@@ -470,8 +497,8 @@ export default async function DynamicPage({ params, searchParams }) {
                 };
 
                 // Add category breadcrumb if available and valid
-                if (pageData?.data?.categories && 
-                    Array.isArray(pageData.data.categories) && 
+                if (pageData?.data?.categories &&
+                    Array.isArray(pageData.data.categories) &&
                     pageData.data.categories.length > 0 &&
                     pageData.data.categories[0]?.title &&
                     pageData.data.categories[0]?.slug) {
@@ -484,8 +511,8 @@ export default async function DynamicPage({ params, searchParams }) {
                 }
 
                 // Add subcategory breadcrumb if available and valid
-                if (pageData?.data?.sub_categories && 
-                    Array.isArray(pageData.data.sub_categories) && 
+                if (pageData?.data?.sub_categories &&
+                    Array.isArray(pageData.data.sub_categories) &&
                     pageData.data.sub_categories.length > 0 &&
                     pageData.data.sub_categories[0]?.title &&
                     pageData.data.sub_categories[0]?.slug) {
@@ -512,13 +539,13 @@ export default async function DynamicPage({ params, searchParams }) {
             // Generate FAQ structured data with error handling
             let faqStructuredData = null;
             try {
-                if (pageData?.data?.faq && 
-                    Array.isArray(pageData.data.faq) && 
+                if (pageData?.data?.faq &&
+                    Array.isArray(pageData.data.faq) &&
                     pageData.data.faq.length > 0) {
-                    
-                    const validFaqItems = pageData.data.faq.filter(faqItem => 
-                        faqItem && 
-                        (faqItem.title || faqItem.question) && 
+
+                    const validFaqItems = pageData.data.faq.filter(faqItem =>
+                        faqItem &&
+                        (faqItem.title || faqItem.question) &&
                         (faqItem.label || faqItem.answer || faqItem.description)
                     );
 
@@ -582,14 +609,37 @@ export default async function DynamicPage({ params, searchParams }) {
                 </>
             );
         } else if (pageSlug === 'blog') {
+            // Validate blog data before proceeding
+            if (!pageData?.data ||
+                !pageData?.data?.title ||
+                !pageData?.data?.body ||
+                Object.keys(pageData.data).length === 0) {
+                console.error('Blog data validation failed:', {
+                    hasData: !!pageData?.data,
+                    hasTitle: !!pageData?.data?.title,
+                    hasBody: !!pageData?.data?.body,
+                    dataKeys: pageData?.data ? Object.keys(pageData.data) : []
+                });
+                return <PageNotFound />;
+            }
+
+            // Additional validation for required blog fields
+            const requiredFields = ['title', 'body'];
+            const missingFields = requiredFields.filter(field => !pageData.data[field]);
+
+            if (missingFields.length > 0) {
+                console.error('Missing required blog fields:', missingFields);
+                return <PageNotFound />;
+            }
+
             // Generate blog metadata and structured data
             const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://webbytemplatev2.vercel.app';
             const currentUrl = `${baseUrl}/${pageSlug}/${itemSlug}`;
-            
+
             // Generate title and description from seo_meta with fallbacks
             const title = pageData?.data?.seo_meta?.title || pageData?.data?.title || itemSlug;
             const description = pageData?.data?.seo_meta?.description || pageData?.data?.description || "Read our latest blog post";
-            
+
             // Generate Article structured data
             let articleSchema = null;
             try {
@@ -658,6 +708,7 @@ export default async function DynamicPage({ params, searchParams }) {
 
             // Generate breadcrumb structured data for blog
             let breadcrumbData = null;
+            let breadcrumb = [];
             try {
                 breadcrumbData = {
                     "@context": "https://schema.org",
@@ -672,36 +723,43 @@ export default async function DynamicPage({ params, searchParams }) {
                         {
                             "@type": "ListItem",
                             "position": 2,
-                            "name": "Blog",
+                            "name": "Blogs",
                             "item": `${baseUrl}/blog`
+                        },
+                        {
+                            "@type": "ListItem",
+                            "position": 3,
+                            "name": title,
+                            "item": currentUrl
                         }
                     ]
                 };
 
-                // Add category breadcrumb if available
-                if (pageData?.data?.blog_categories && 
-                    Array.isArray(pageData.data.blog_categories) && 
-                    pageData.data.blog_categories.length > 0 &&
-                    pageData.data.blog_categories[0]?.title &&
-                    pageData.data.blog_categories[0]?.slug) {
-                    breadcrumbData.itemListElement.push({
-                        "@type": "ListItem",
-                        "position": 3,
-                        "name": pageData.data.blog_categories[0].title,
-                        "item": `${baseUrl}/blog/category/${pageData.data.blog_categories[0].slug}`
-                    });
-                }
-
-                // Add current page breadcrumb
-                breadcrumbData.itemListElement.push({
-                    "@type": "ListItem",
-                    "position": breadcrumbData.itemListElement.length + 1,
-                    "name": title,
-                    "item": currentUrl
-                });
+                // Create breadcrumb array for component
+                breadcrumb = [
+                    {
+                        id: 1,
+                        title: "Home",
+                        slug: "/",
+                        visible: true
+                    },
+                    {
+                        id: 2,
+                        title: "Blogs",
+                        slug: "/blog",
+                        visible: true
+                    },
+                    {
+                        id: 3,
+                        title: title,
+                        slug: currentUrl.replace(baseUrl, ''),
+                        visible: false
+                    }
+                ];
             } catch (error) {
                 console.error('Error generating blog breadcrumb data:', error);
                 breadcrumbData = null;
+                breadcrumb = [];
             }
 
             return (
@@ -731,18 +789,18 @@ export default async function DynamicPage({ params, searchParams }) {
                             }}
                         />
                     )}
-                    <SingleBlogPage data={pageData.data} />
+                    <SingleBlogPage data={pageData.data} breadcrumb={breadcrumb} />
                 </>
             );
         } else if (pageSlug === 'category') {
             // Generate CollectionPage and ItemList structured data for category pages
             const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://webbytemplatev2.vercel.app';
             const currentUrl = `${baseUrl}/${pageSlug}/${itemSlug}`;
-            
+
             // Generate title and description from seo_meta with fallbacks
             const title = pageData?.data?.seo_meta?.title || pageData?.data?.title || itemSlug;
             const description = pageData?.data?.seo_meta?.description || pageData?.data?.description || "Browse our collection of premium website templates and themes";
-            
+
             // Generate CollectionPage structured data
             let collectionPageSchema = null;
             try {
@@ -837,9 +895,9 @@ export default async function DynamicPage({ params, searchParams }) {
                 try {
                     const faqComponent = pageData.data.components?.find(comp => comp.__component === 'shared.faq-section');
                     if (faqComponent && faqComponent.list && Array.isArray(faqComponent.list) && faqComponent.list.length > 0) {
-                        const validFaqItems = faqComponent.list.filter(faqItem => 
-                            faqItem && 
-                            (faqItem.title || faqItem.question) && 
+                        const validFaqItems = faqComponent.list.filter(faqItem =>
+                            faqItem &&
+                            (faqItem.title || faqItem.question) &&
                             (faqItem.label || faqItem.answer || faqItem.description)
                         );
 
@@ -881,7 +939,7 @@ export default async function DynamicPage({ params, searchParams }) {
                                 }}
                             />
                         )}
-                        
+
                         {/* Render FAQ content directly in HTML for SEO - server-side rendered with same structure as client-side */}
                         {(() => {
                             const faqComponent = pageData.data.components?.find(comp => comp.__component === 'shared.faq-section');
@@ -930,7 +988,7 @@ export default async function DynamicPage({ params, searchParams }) {
                             }
                             return null;
                         })()}
-                        
+
                         <GlobalComponent data={pageData.data} />
                     </>
                 );
