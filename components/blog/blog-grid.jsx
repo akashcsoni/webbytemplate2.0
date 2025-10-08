@@ -114,7 +114,7 @@ const BlogGrid = ({ blog }) => {
                             </span>
                         </div>
                     )}
-                    <h2 className="1xl:mb-4 lg:mb-3 mb-[10px]">
+                    <h2 className="1xl:mb-4 lg:mb-3 mb-[10px] h5 line-clamp-2">
                         {getTitle()}
                     </h2>
                     <div className="flex items-center gap-[10px]">
