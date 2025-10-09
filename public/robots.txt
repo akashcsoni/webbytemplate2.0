@@ -1,2 +1,9 @@
 User-agent: *
 Disallow: /
+
+
+Sitemap: https://webbytemplatev2.vercel.app/sitemap.xml
+
+Sitemap: https://webbytemplatev2.vercel.app/product-list1.xml
+
+Sitemap: https://webbytemplatev2.vercel.app/product-category.xml
