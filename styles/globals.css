@@ -1271,4 +1271,6 @@ h4 {
     scroll-margin-top: 80px;
     }
       
-      
+    .left-content a {
+      @apply xl:w-[74%] lg:w-[68%] w-full;
+      }
