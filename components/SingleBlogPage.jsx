@@ -103,16 +103,29 @@ const SingleBlogPage = ({ data, breadcrumb = [] }) => {
 
       while ((match = headingRegex.exec(htmlContent)) !== null) {
         const tagName = match[1].toLowerCase();
-        const text = match[2].replace(/<[^>]*>/g, '').trim(); // Remove any nested HTML tags
+        let text = match[2].replace(/<[^>]*>/g, '').trim(); // Remove any nested HTML tags
+        
+        // Decode HTML entities
+        text = text
+          .replace(/&amp;/g, '&')
+          .replace(/&lt;/g, '<')
+          .replace(/&gt;/g, '>')
+          .replace(/&quot;/g, '"')
+          .replace(/&#39;/g, "'")
+          .replace(/&nbsp;/g, ' ');
+        
         const level = parseInt(tagName.charAt(1));
 
-        headings.push({
-          id: `heading-${index}`,
-          text,
-          level,
-          element: tagName
-        });
-        index++;
+        // Only add headings that have actual text content
+        if (text && text.length > 0) {
+          headings.push({
+            id: `heading-${index}`,
+            text,
+            level,
+            element: tagName
+          });
+          index++;
+        }
       }
 
       return headings;
@@ -240,11 +253,101 @@ const SingleBlogPage = ({ data, breadcrumb = [] }) => {
     }
 
     if (element) {
-      element.scrollIntoView({
-        behavior: 'smooth',
-        block: 'start'
+      // Add a small offset to account for fixed headers
+      const offset = 100;
+      const elementPosition = element.getBoundingClientRect().top;
+      const offsetPosition = elementPosition + window.pageYOffset - offset;
+
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: 'smooth'
       });
     }
+  };
+
+  const formatContent = (content) => {
+    if (!content) return "";
+
+    const lines = content.split("\n");
+    let result = "";
+    let listBuffer = [];
+    let blockquoteBuffer = [];
+
+    const flushList = () => {
+      if (listBuffer.length) {
+        result += "<ul>" + listBuffer.map(li => `<li>${li}</li>`).join("") + "</ul>";
+        listBuffer = [];
+      }
+    };
+
+    const flushBlockquote = () => {
+      if (blockquoteBuffer.length) {
+        result += "<blockquote>" + blockquoteBuffer.join("") + "</blockquote>";
+        blockquoteBuffer = [];
+      }
+    };
+
+    const parseInlineMarkdown = (text) => {
+      return text
+        .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")     // bold (**) 
+        .replace(/__(.*?)__/g, "<strong>$1</strong>")         // bold (__)
+        .replace(/\*(.*?)\*/g, "<em>$1</em>")                 // italic (*)
+        .replace(/_(.*?)_/g, "<em>$1</em>")                   // italic (_)
+        .replace(/~~(.*?)~~/g, "<del>$1</del>")               // strikethrough
+        .replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2" target="_blank">$1</a>'); // links
+    };
+
+    lines.forEach((line) => {
+      const trimmed = line.trim();
+      if (!trimmed) {
+        flushList();
+        flushBlockquote();
+        return;
+      }
+
+      // Blockquote lines (group contiguous '>' lines)
+      if (/^>\s?/.test(trimmed)) {
+        flushList(); // end any open list before blockquote
+        const inner = trimmed.replace(/^>\s?/, "");
+        // support headings inside blockquote
+        const headingMatchBQ = /^(#{1,6})\s+(.+)$/.exec(inner);
+        if (headingMatchBQ) {
+          const level = headingMatchBQ[1].length;
+          const text = parseInlineMarkdown(headingMatchBQ[2]);
+          blockquoteBuffer.push(`<h${level}>${text}</h${level}>`);
+        } else {
+          blockquoteBuffer.push(`<p>${parseInlineMarkdown(inner)}</p>`);
+        }
+        return;
+      }
+
+      // Headings H1–H6 (outside blockquote)
+      const headingMatch = /^(#{1,6})\s+(.+)$/.exec(trimmed);
+      if (headingMatch) {
+        flushList();
+        flushBlockquote();
+        const level = headingMatch[1].length; // count of "#"
+        const text = parseInlineMarkdown(headingMatch[2]);
+        result += `<h${level}>${text}</h${level}>`;
+        return;
+      }
+
+      // Lists
+      if (/^[-*]\s+/.test(trimmed)) {
+        listBuffer.push(parseInlineMarkdown(trimmed.replace(/^[-*]\s+/, "")));
+      }
+
+      // Paragraph
+      else {
+        flushList();
+        flushBlockquote();
+        result += `<p>${parseInlineMarkdown(trimmed)}</p>`;
+      }
+    });
+
+    flushList();
+    flushBlockquote();
+    return result;
   };
 
   // Handle outside click to close dropdown
@@ -267,12 +370,16 @@ const SingleBlogPage = ({ data, breadcrumb = [] }) => {
   // Extract headings and prepare content
   useEffect(() => {
     if (data?.body) {
-      const extractedHeadings = extractHeadings(data.body);
+      // First format the content to get proper HTML
+      const formattedContent = formatContent(data.body);
+      
+      // Extract headings from the formatted content
+      const extractedHeadings = extractHeadings(formattedContent);
       setHeadings(extractedHeadings);
 
       // Only run DOM manipulation on client side
       if (typeof window !== 'undefined') {
-        // Add IDs to headings in the DOM after component mounts
+        // Add IDs to headings in the DOM after content is rendered
         const addIdsToHeadings = () => {
           const contentElement = document.querySelector('.prose');
           if (contentElement) {
@@ -287,9 +394,13 @@ const SingleBlogPage = ({ data, breadcrumb = [] }) => {
           }
         };
 
-        // Use requestAnimationFrame to ensure DOM is ready
+        // Use multiple delays to ensure content is fully rendered
         requestAnimationFrame(() => {
-          setTimeout(addIdsToHeadings, 100);
+          setTimeout(() => {
+            requestAnimationFrame(() => {
+              setTimeout(addIdsToHeadings, 100);
+            });
+          }, 100);
         });
       }
     }
@@ -672,7 +783,7 @@ const SingleBlogPage = ({ data, breadcrumb = [] }) => {
                 {data?.body && (
                   <div
                     className="prose prose-lg max-w-none"
-                    dangerouslySetInnerHTML={{ __html: data.body }}
+                    dangerouslySetInnerHTML={{ __html: formatContent(data.body) }}
                   />
                 )}
               </div>
