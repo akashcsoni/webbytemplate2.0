@@ -158,6 +158,13 @@ ${sitemapEntries.map(entry => `  <url>
     <changefreq>daily</changefreq>
     <priority>0.9</priority>
   </url>
+  <!-- Blog sitemap reference -->
+  <url>
+    <loc>${baseUrl}/blog-list.xml</loc>
+    <lastmod>${currentDate}</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
 </urlset>`;
 
         return new Response(sitemap, {
