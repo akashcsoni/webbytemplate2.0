@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import React, { useRef, useState, useEffect, useMemo } from "react";
 import PageLoader from "./common/page-loader/PageLoader";
+import { loadComponent } from "@/lib/componentRegistry";
 
 const componentCache = {};
 
@@ -27,6 +28,32 @@ const SingleBlogPage = ({ data, breadcrumb = [] }) => {
       .join("");
   };
 
+  // Component name mapping for common variations
+  const getComponentName = (rawName) => {
+    const pascalCaseName = convertToPascalCase(rawName);
+    
+    // Handle common naming variations
+    const nameMapping = {
+      'richtext': 'RichText',
+      'rich-text': 'RichText',
+      'rich_text': 'RichText',
+      'faqsection': 'FaqSection',
+      'faq-section': 'FaqSection',
+      'faq_section': 'FaqSection',
+      'singleblogimage': 'SingleBlogImage',
+      'single-blog-image': 'SingleBlogImage',
+      'single_blog_image': 'SingleBlogImage',
+      'singleblogheading': 'SingleBlogHeading',
+      'single-blog-heading': 'SingleBlogHeading',
+      'single_blog_heading': 'SingleBlogHeading',
+      'singleblogtext': 'SingleBlogText',
+      'single-blog-text': 'SingleBlogText',
+      'single_blog_text': 'SingleBlogText'
+    };
+    
+    return nameMapping[rawName.toLowerCase()] || pascalCaseName;
+  };
+
   // Dynamic component loading logic
   useEffect(() => {
     let isMounted = true;
@@ -46,40 +73,27 @@ const SingleBlogPage = ({ data, breadcrumb = [] }) => {
         const rawName = component.__component?.split(".")[1];
         if (!rawName) continue;
 
-        const pascalCaseName = convertToPascalCase(rawName);
+        const pascalCaseName = getComponentName(rawName);
+        
+        // Debug logging
+        console.log(`Loading component: rawName="${rawName}", pascalCaseName="${pascalCaseName}"`);
 
         try {
           if (!componentCache[pascalCaseName]) {
-            let DynamicComponent = null;
-
-            // Try multiple possible locations for the component
-            const possiblePaths = [
-              `@/components/pageSections/${pascalCaseName}`,
-              `@/components/blog/${pascalCaseName}`,
-              `@/components/${pascalCaseName}`,
-              `@/components/common/${pascalCaseName}`
-            ];
-
-            for (const path of possiblePaths) {
-              try {
-                const module = await import(path);
-                DynamicComponent = module.default;
-                console.log(`Successfully loaded component "${pascalCaseName}" from ${path}`);
-                break;
-              } catch (importErr) {
-                // Continue to next path if this one fails
-                continue;
-              }
-            }
+            // Use the component registry for reliable loading
+            const DynamicComponent = await loadComponent(pascalCaseName);
 
             if (DynamicComponent) {
               componentCache[pascalCaseName] = DynamicComponent;
+              console.log(`Successfully loaded component "${pascalCaseName}" from registry`);
             } else {
-              console.warn(`Component "${pascalCaseName}" not found in any of the expected locations:`, possiblePaths);
+              console.warn(`Component "${pascalCaseName}" not found in registry. Raw name: "${rawName}"`);
+              
               // Create a fallback component for missing components
               componentCache[pascalCaseName] = ({ ...props }) => (
                 <div className="p-4 border border-red-200 bg-red-50 rounded-lg">
                   <p className="text-red-600 font-medium">Component "{pascalCaseName}" not found</p>
+                  <p className="text-red-500 text-sm mt-1">Raw name: "{rawName}"</p>
                   <p className="text-red-500 text-sm mt-1">Please check if the component exists in the correct directory.</p>
                   {process.env.NODE_ENV === 'development' && (
                     <pre className="text-xs mt-2 text-red-400">
@@ -124,7 +138,7 @@ const SingleBlogPage = ({ data, breadcrumb = [] }) => {
     const rawName = component.__component?.split(".")[1];
     if (!rawName) return null;
 
-    const pascalCaseName = convertToPascalCase(rawName);
+    const pascalCaseName = getComponentName(rawName);
     const DynamicComponent = components[pascalCaseName];
     return DynamicComponent ? (
       <DynamicComponent key={index} {...component} />
