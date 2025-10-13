@@ -17,7 +17,6 @@ export async function generateStaticParams() {
         const categoriesResponse = await strapiGet('categories', {
             params: {
                 populate: "*",
-                pagination: { limit: 100 } // Adjust limit based on your needs
             },
             token: themeConfig.TOKEN,
         });
@@ -66,7 +65,6 @@ export async function generateMetadata({ params }) {
             params: { populate: "*" },
             token: themeConfig.TOKEN,
             // Add cache configuration for ISR in metadata generation
-            next: { revalidate: 60 }
         });
 
         if (!pageData.result || !pageData.data || Object.keys(pageData.data).length === 0) {

@@ -25,6 +25,7 @@ export default function RichText({ body, read_more, with_bg }) {
         let result = "";
         let listBuffer = [];
         let blockquoteBuffer = [];
+        let headingIndex = 0;
 
         const flushList = () => {
             if (listBuffer.length) {
@@ -50,6 +51,15 @@ export default function RichText({ body, read_more, with_bg }) {
                 .replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2" target="_blank">$1</a>'); // links
         };
 
+        const generateHeadingId = (text) => {
+            return text
+                .toLowerCase()
+                .replace(/[^a-z0-9\s-]/g, '') // Remove special characters
+                .replace(/\s+/g, '-') // Replace spaces with hyphens
+                .replace(/-+/g, '-') // Replace multiple hyphens with single hyphen
+                .trim();
+        };
+
         lines.forEach((line) => {
             const trimmed = line.trim();
             if (!trimmed) {
@@ -67,7 +77,8 @@ export default function RichText({ body, read_more, with_bg }) {
                 if (headingMatchBQ) {
                     const level = headingMatchBQ[1].length;
                     const text = parseInlineMarkdown(headingMatchBQ[2]);
-                    blockquoteBuffer.push(`<h${level}>${text}</h${level}>`);
+                    const headingId = generateHeadingId(headingMatchBQ[2]);
+                    blockquoteBuffer.push(`<h${level} id="${headingId}">${text}</h${level}>`);
                 } else {
                     blockquoteBuffer.push(`<p>${parseInlineMarkdown(inner)}</p>`);
                 }
@@ -81,7 +92,8 @@ export default function RichText({ body, read_more, with_bg }) {
                 flushBlockquote();
                 const level = headingMatch[1].length; // count of "#"
                 const text = parseInlineMarkdown(headingMatch[2]);
-                result += `<h${level}>${text}</h${level}>`;
+                const headingId = generateHeadingId(headingMatch[2]);
+                result += `<h${level} id="${headingId}">${text}</h${level}>`;
                 return;
             }
 
@@ -100,6 +112,24 @@ export default function RichText({ body, read_more, with_bg }) {
 
         flushList();
         flushBlockquote();
+        
+        // Post-process to add IDs to any existing HTML headings that don't have them
+        result = result.replace(/<h([1-6])(?:\s[^>]*)?>(.*?)<\/h[1-6]>/gi, (match, level, content) => {
+            // Check if heading already has an ID
+            if (match.includes('id=')) {
+                return match;
+            }
+            
+            // Extract text content for ID generation
+            const textContent = content.replace(/<[^>]*>/g, '').trim();
+            if (textContent) {
+                const headingId = generateHeadingId(textContent);
+                return `<h${level} id="${headingId}">${content}</h${level}>`;
+            }
+            
+            return match;
+        });
+        
         return result;
     };
 

@@ -2,14 +2,134 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import React, { useRef, useState, useEffect } from "react";
+import React, { useRef, useState, useEffect, useMemo } from "react";
+import PageLoader from "./common/page-loader/PageLoader";
+
+const componentCache = {};
 
 const SingleBlogPage = ({ data, breadcrumb = [] }) => {
   const [open, setOpen] = useState(false);
   const [headings, setHeadings] = useState([]);
+  const [components, setComponents] = useState({});
+  const [loading, setLoading] = useState(true);
   const dropdownRef = useRef(null);
   const toggleDropdown = () => setOpen(!open);
   const inputRef = useRef(null);
+
+  const componentList = useMemo(() => {
+    return Array.isArray(data?.components) ? data.components : [];
+  }, [data?.components]);
+
+  const convertToPascalCase = (str) => {
+    return str
+      .split(/[-_]/g)
+      .map((s) => s.charAt(0).toUpperCase() + s.slice(1))
+      .join("");
+  };
+
+  // Dynamic component loading logic
+  useEffect(() => {
+    let isMounted = true;
+
+    const loadComponents = async () => {
+      if (!Array.isArray(componentList)) {
+        console.error("componentList is not an array:", componentList);
+        if (isMounted) setLoading(false);
+        return;
+      }
+
+      const componentMap = {};
+
+      for (const component of componentList) {
+        if (!component || !component.__component) continue;
+
+        const rawName = component.__component?.split(".")[1];
+        if (!rawName) continue;
+
+        const pascalCaseName = convertToPascalCase(rawName);
+
+        try {
+          if (!componentCache[pascalCaseName]) {
+            let DynamicComponent = null;
+
+            // Try multiple possible locations for the component
+            const possiblePaths = [
+              `@/components/pageSections/${pascalCaseName}`,
+              `@/components/blog/${pascalCaseName}`,
+              `@/components/${pascalCaseName}`,
+              `@/components/common/${pascalCaseName}`
+            ];
+
+            for (const path of possiblePaths) {
+              try {
+                const module = await import(path);
+                DynamicComponent = module.default;
+                console.log(`Successfully loaded component "${pascalCaseName}" from ${path}`);
+                break;
+              } catch (importErr) {
+                // Continue to next path if this one fails
+                continue;
+              }
+            }
+
+            if (DynamicComponent) {
+              componentCache[pascalCaseName] = DynamicComponent;
+            } else {
+              console.warn(`Component "${pascalCaseName}" not found in any of the expected locations:`, possiblePaths);
+              // Create a fallback component for missing components
+              componentCache[pascalCaseName] = ({ ...props }) => (
+                <div className="p-4 border border-red-200 bg-red-50 rounded-lg">
+                  <p className="text-red-600 font-medium">Component "{pascalCaseName}" not found</p>
+                  <p className="text-red-500 text-sm mt-1">Please check if the component exists in the correct directory.</p>
+                  {process.env.NODE_ENV === 'development' && (
+                    <pre className="text-xs mt-2 text-red-400">
+                      {JSON.stringify(props, null, 2)}
+                    </pre>
+                  )}
+                </div>
+              );
+            }
+          }
+
+          componentMap[pascalCaseName] = componentCache[pascalCaseName];
+        } catch (err) {
+          console.error(`Error loading component "${pascalCaseName}":`, err);
+          // Add a fallback component for any other errors
+          componentMap[pascalCaseName] = ({ ...props }) => (
+            <div className="p-4 border border-red-200 bg-red-50 rounded-lg">
+              <p className="text-red-600 font-medium">Error loading component "{pascalCaseName}"</p>
+              <p className="text-red-500 text-sm mt-1">{err.message}</p>
+            </div>
+          );
+        }
+      }
+
+      if (isMounted) {
+        setComponents(componentMap);
+        setLoading(false);
+      }
+    };
+
+    setLoading(true);
+    loadComponents();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [componentList]);
+
+  const renderComponent = (component, index) => {
+    if (!component || !component.__component) return null;
+
+    const rawName = component.__component?.split(".")[1];
+    if (!rawName) return null;
+
+    const pascalCaseName = convertToPascalCase(rawName);
+    const DynamicComponent = components[pascalCaseName];
+    return DynamicComponent ? (
+      <DynamicComponent key={index} {...component} />
+    ) : null;
+  };
 
   // Share functions
   const shareToSocial = (platform) => {
@@ -75,64 +195,72 @@ const SingleBlogPage = ({ data, breadcrumb = [] }) => {
     }
   };
 
-  // Calculate reading time based on body content
-  const calculateReadingTime = (body) => {
-    if (!body) return "1 min read";
+  // Calculate reading time based on components content
+  const calculateReadingTime = (components) => {
+    if (!Array.isArray(components) || components.length === 0) return "1 min read";
     try {
-      // Remove HTML tags and count words
-      const textContent = body.replace(/<[^>]*>/g, "");
-      const wordCount = textContent.split(/\s+/).length;
-      const readingTime = Math.ceil(wordCount / 200); // Average 200 words per minute
-      return `${readingTime} min read`;
+      // Estimate reading time based on number of components
+      // This is a simplified approach - you might want to extract text from components
+      const estimatedTime = Math.max(1, Math.ceil(components.length * 0.5));
+      return `${estimatedTime} min read`;
     } catch (error) {
       console.error("Error calculating reading time:", error);
       return "1 min read";
     }
   };
 
-  // Extract headings from HTML content
-  const extractHeadings = (htmlContent) => {
-    if (!htmlContent) return [];
+  // Extract headings from rendered DOM content
+  const extractHeadingsFromDOM = () => {
+    if (typeof window === 'undefined') return [];
 
-    try {
-      // Use regex to extract headings without DOM manipulation for SSR compatibility
-      const headingRegex = /<(h[1-6])(?:\s[^>]*)?>(.*?)<\/h[1-6]>/gi;
-      const headings = [];
-      let match;
-      let index = 0;
+    const leftContent = document.querySelector('.left-content');
+    if (!leftContent) return [];
 
-      while ((match = headingRegex.exec(htmlContent)) !== null) {
-        const tagName = match[1].toLowerCase();
-        let text = match[2].replace(/<[^>]*>/g, '').trim(); // Remove any nested HTML tags
-        
-        // Decode HTML entities
-        text = text
-          .replace(/&amp;/g, '&')
-          .replace(/&lt;/g, '<')
-          .replace(/&gt;/g, '>')
-          .replace(/&quot;/g, '"')
-          .replace(/&#39;/g, "'")
-          .replace(/&nbsp;/g, ' ');
-        
-        const level = parseInt(tagName.charAt(1));
+    const headings = [];
+    const headingElements = leftContent.querySelectorAll('h1, h2, h3, h4, h5, h6');
 
-        // Only add headings that have actual text content
-        if (text && text.length > 0) {
-          headings.push({
-            id: `heading-${index}`,
-            text,
-            level,
-            element: tagName
-          });
-          index++;
+    headingElements.forEach((heading, index) => {
+      const text = heading.textContent?.trim();
+      if (text && text.length > 0) {
+        // Use existing ID or generate one
+        let headingId = heading.id;
+        if (!headingId) {
+          // Generate URL-friendly ID from text
+          headingId = text
+            .toLowerCase()
+            .replace(/[^a-z0-9\s-]/g, '')
+            .replace(/\s+/g, '-')
+            .replace(/-+/g, '-')
+            .trim();
+
+          // Ensure uniqueness
+          let uniqueId = headingId;
+          let counter = 1;
+          while (document.getElementById(uniqueId)) {
+            uniqueId = `${headingId}-${counter}`;
+            counter++;
+          }
+          headingId = uniqueId;
+          heading.id = headingId;
         }
-      }
 
-      return headings;
-    } catch (error) {
-      console.error("Error extracting headings:", error);
-      return [];
+        const level = parseInt(heading.tagName.charAt(1));
+
+        headings.push({
+          id: headingId,
+          text: text,
+          level: level,
+          element: heading.tagName.toLowerCase()
+        });
+      }
+    });
+
+    // Debug logging in development
+    if (process.env.NODE_ENV === 'development' && headings.length > 0) {
+      console.log('Extracted headings:', headings);
     }
+
+    return headings;
   };
 
   // Generate table of contents
@@ -237,18 +365,38 @@ const SingleBlogPage = ({ data, breadcrumb = [] }) => {
 
   // Scroll to heading function
   const scrollToHeading = (headingId) => {
-    // First try to find element by ID
+    // Try to find element by ID first
     let element = document.getElementById(headingId);
 
-    // If not found, try to find by index (fallback)
+    // If not found, try to find by text content (fallback)
     if (!element) {
-      const index = parseInt(headingId.replace('heading-', ''));
-      const contentElement = document.querySelector('.prose');
-      if (contentElement) {
-        const headings = contentElement.querySelectorAll('h1, h2, h3, h4, h5, h6');
-        if (headings[index]) {
-          element = headings[index];
-        }
+      const leftContent = document.querySelector('.left-content');
+      if (leftContent) {
+        const headings = leftContent.querySelectorAll('h1, h2, h3, h4, h5, h6');
+
+        // Try multiple matching strategies
+        element = Array.from(headings).find(heading => {
+          const headingText = heading.textContent?.trim();
+          const headingIdAttr = heading.id;
+
+          // Direct ID match
+          if (headingIdAttr === headingId) return true;
+
+          // Text content match
+          if (headingText === headingId) return true;
+
+          // Generate ID from text and match
+          const generatedId = headingText
+            ?.toLowerCase()
+            .replace(/[^a-z0-9\s-]/g, '')
+            .replace(/\s+/g, '-')
+            .replace(/-+/g, '-')
+            .trim();
+
+          if (generatedId === headingId) return true;
+
+          return false;
+        });
       }
     }
 
@@ -262,93 +410,19 @@ const SingleBlogPage = ({ data, breadcrumb = [] }) => {
         top: offsetPosition,
         behavior: 'smooth'
       });
+
+      // Highlight the heading briefly
+      element.style.transition = 'background-color 0.3s ease';
+      element.style.backgroundColor = '#fef3c7';
+      setTimeout(() => {
+        element.style.backgroundColor = '';
+      }, 2000);
+    } else {
+      console.warn(`Heading with ID "${headingId}" not found`);
+      console.log('Available headings:', Array.from(document.querySelectorAll('.left-content h1, .left-content h2, .left-content h3, .left-content h4, .left-content h5, .left-content h6')).map(h => ({ id: h.id, text: h.textContent?.trim() })));
     }
   };
 
-  const formatContent = (content) => {
-    if (!content) return "";
-
-    const lines = content.split("\n");
-    let result = "";
-    let listBuffer = [];
-    let blockquoteBuffer = [];
-
-    const flushList = () => {
-      if (listBuffer.length) {
-        result += "<ul>" + listBuffer.map(li => `<li>${li}</li>`).join("") + "</ul>";
-        listBuffer = [];
-      }
-    };
-
-    const flushBlockquote = () => {
-      if (blockquoteBuffer.length) {
-        result += "<blockquote>" + blockquoteBuffer.join("") + "</blockquote>";
-        blockquoteBuffer = [];
-      }
-    };
-
-    const parseInlineMarkdown = (text) => {
-      return text
-        .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")     // bold (**) 
-        .replace(/__(.*?)__/g, "<strong>$1</strong>")         // bold (__)
-        .replace(/\*(.*?)\*/g, "<em>$1</em>")                 // italic (*)
-        .replace(/_(.*?)_/g, "<em>$1</em>")                   // italic (_)
-        .replace(/~~(.*?)~~/g, "<del>$1</del>")               // strikethrough
-        .replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2" target="_blank">$1</a>'); // links
-    };
-
-    lines.forEach((line) => {
-      const trimmed = line.trim();
-      if (!trimmed) {
-        flushList();
-        flushBlockquote();
-        return;
-      }
-
-      // Blockquote lines (group contiguous '>' lines)
-      if (/^>\s?/.test(trimmed)) {
-        flushList(); // end any open list before blockquote
-        const inner = trimmed.replace(/^>\s?/, "");
-        // support headings inside blockquote
-        const headingMatchBQ = /^(#{1,6})\s+(.+)$/.exec(inner);
-        if (headingMatchBQ) {
-          const level = headingMatchBQ[1].length;
-          const text = parseInlineMarkdown(headingMatchBQ[2]);
-          blockquoteBuffer.push(`<h${level}>${text}</h${level}>`);
-        } else {
-          blockquoteBuffer.push(`<p>${parseInlineMarkdown(inner)}</p>`);
-        }
-        return;
-      }
-
-      // Headings H1–H6 (outside blockquote)
-      const headingMatch = /^(#{1,6})\s+(.+)$/.exec(trimmed);
-      if (headingMatch) {
-        flushList();
-        flushBlockquote();
-        const level = headingMatch[1].length; // count of "#"
-        const text = parseInlineMarkdown(headingMatch[2]);
-        result += `<h${level}>${text}</h${level}>`;
-        return;
-      }
-
-      // Lists
-      if (/^[-*]\s+/.test(trimmed)) {
-        listBuffer.push(parseInlineMarkdown(trimmed.replace(/^[-*]\s+/, "")));
-      }
-
-      // Paragraph
-      else {
-        flushList();
-        flushBlockquote();
-        result += `<p>${parseInlineMarkdown(trimmed)}</p>`;
-      }
-    });
-
-    flushList();
-    flushBlockquote();
-    return result;
-  };
 
   // Handle outside click to close dropdown
   useEffect(() => {
@@ -367,44 +441,67 @@ const SingleBlogPage = ({ data, breadcrumb = [] }) => {
     };
   }, [open]);
 
-  // Extract headings and prepare content
+  // Extract headings from rendered DOM content
   useEffect(() => {
-    if (data?.body) {
-      // First format the content to get proper HTML
-      const formattedContent = formatContent(data.body);
-      
-      // Extract headings from the formatted content
-      const extractedHeadings = extractHeadings(formattedContent);
+    if (typeof window === 'undefined') return;
+
+    const updateHeadings = () => {
+      const extractedHeadings = extractHeadingsFromDOM();
       setHeadings(extractedHeadings);
+    };
 
-      // Only run DOM manipulation on client side
-      if (typeof window !== 'undefined') {
-        // Add IDs to headings in the DOM after content is rendered
-        const addIdsToHeadings = () => {
-          const contentElement = document.querySelector('.prose');
-          if (contentElement) {
-            const headingsInDOM = contentElement.querySelectorAll('h1, h2, h3, h4, h5, h6');
+    // Initial extraction after components are loaded
+    if (!loading && Array.isArray(componentList) && componentList.length > 0) {
+      // Use multiple timeouts to ensure content is fully rendered
+      const timeouts = [
+        setTimeout(updateHeadings, 100),
+        setTimeout(updateHeadings, 500),
+        setTimeout(updateHeadings, 1000),
+        setTimeout(updateHeadings, 2000) // Extra timeout for slower components
+      ];
 
-            headingsInDOM.forEach((heading, index) => {
-              heading.id = `heading-${index}`;
-            });
-          } else {
-            // Retry after a short delay
-            setTimeout(addIdsToHeadings, 200);
-          }
-        };
-
-        // Use multiple delays to ensure content is fully rendered
-        requestAnimationFrame(() => {
-          setTimeout(() => {
-            requestAnimationFrame(() => {
-              setTimeout(addIdsToHeadings, 100);
-            });
-          }, 100);
-        });
-      }
+      return () => {
+        timeouts.forEach(clearTimeout);
+      };
     }
-  }, [data?.body]);
+
+    // Set up MutationObserver to watch for changes in the left content
+    const leftContent = document.querySelector('.left-content');
+    if (!leftContent) return;
+
+    const observer = new MutationObserver((mutations) => {
+      let shouldUpdate = false;
+
+      mutations.forEach((mutation) => {
+        if (mutation.type === 'childList') {
+          // Check if any added nodes contain headings
+          mutation.addedNodes.forEach((node) => {
+            if (node.nodeType === Node.ELEMENT_NODE) {
+              if (node.matches && node.matches('h1, h2, h3, h4, h5, h6')) {
+                shouldUpdate = true;
+              } else if (node.querySelector && node.querySelector('h1, h2, h3, h4, h5, h6')) {
+                shouldUpdate = true;
+              }
+            }
+          });
+        }
+      });
+
+      if (shouldUpdate) {
+        // Debounce the update
+        setTimeout(updateHeadings, 100);
+      }
+    });
+
+    observer.observe(leftContent, {
+      childList: true,
+      subtree: true
+    });
+
+    return () => {
+      observer.disconnect();
+    };
+  }, [loading, componentList]);
 
   if (!data) {
     return (
@@ -464,9 +561,9 @@ const SingleBlogPage = ({ data, breadcrumb = [] }) => {
               "@type": "WebPage",
               "@id": "" // Will be populated by Next.js router
             },
-            "articleBody": data?.body ? data.body.replace(/<[^>]*>/g, '') : "",
+            "articleBody": data?.excerpt || data?.title || "Check out this blog post",
             "keywords": data?.blog_categories?.map(cat => cat?.title).join(', ') || '',
-            "wordCount": data?.body ? data.body.replace(/<[^>]*>/g, '').split(/\s+/).length : 0
+            "wordCount": data?.components ? data.components.length * 50 : 0 // Estimate based on components
           })
         }}
       />
@@ -546,7 +643,7 @@ const SingleBlogPage = ({ data, breadcrumb = [] }) => {
                 </h3>
                 <div className="p2 text-gray-500">
                   {formatDate(data?.publishedAt || data?.createdAt)} •{" "}
-                  {calculateReadingTime(data?.body)}
+                  {calculateReadingTime(data?.components)}
                 </div>
               </div>
             </div>
@@ -780,11 +877,11 @@ const SingleBlogPage = ({ data, breadcrumb = [] }) => {
             <div className="content-grid grid grid-cols-1 lg:grid-cols-3 gap-8">
               {/* Main Content */}
               <div className="left-content lg:col-span-2">
-                {data?.body && (
-                  <div
-                    className="prose prose-lg max-w-none"
-                    dangerouslySetInnerHTML={{ __html: formatContent(data.body) }}
-                  />
+                {loading ? (
+                  <PageLoader />
+                ) : (
+                  Array.isArray(componentList) &&
+                  componentList.map((component, index) => renderComponent(component, index))
                 )}
               </div>
 
