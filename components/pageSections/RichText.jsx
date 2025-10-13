@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 
 export default function RichText({ body, read_more, with_bg }) {
 
@@ -18,14 +18,17 @@ export default function RichText({ body, read_more, with_bg }) {
         return 2000; // desktop
     };
 
-    const formatContent = (content) => {
+    const formatContent = useMemo(() => (content) => {
         if (!content) return "";
 
         const lines = content.split("\n");
         let result = "";
         let listBuffer = [];
         let blockquoteBuffer = [];
-        let headingIndex = 0;
+        let tableBuffer = [];
+        let paragraphBuffer = [];
+        let inTable = false;
+        const usedIds = new Set(); // Track used IDs to ensure uniqueness
 
         const flushList = () => {
             if (listBuffer.length) {
@@ -41,6 +44,24 @@ export default function RichText({ body, read_more, with_bg }) {
             }
         };
 
+        const flushTable = () => {
+            if (tableBuffer.length) {
+                result += "<table>" + tableBuffer.join("") + "</table>";
+                tableBuffer = [];
+                inTable = false;
+            }
+        };
+
+        const flushParagraph = () => {
+            if (paragraphBuffer.length) {
+                const paragraphText = paragraphBuffer.join(" ").trim();
+                if (paragraphText) {
+                    result += `<p>${parseInlineMarkdown(paragraphText)}</p>`;
+                }
+                paragraphBuffer = [];
+            }
+        };
+
         const parseInlineMarkdown = (text) => {
             return text
                 .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")     // bold (**) 
@@ -52,25 +73,70 @@ export default function RichText({ body, read_more, with_bg }) {
         };
 
         const generateHeadingId = (text) => {
-            return text
-                .toLowerCase()
-                .replace(/[^a-z0-9\s-]/g, '') // Remove special characters
-                .replace(/\s+/g, '-') // Replace spaces with hyphens
-                .replace(/-+/g, '-') // Replace multiple hyphens with single hyphen
-                .trim();
+            // Generate base ID
+            let baseId = text.toLowerCase().replace(/[^a-z0-9\s-]/g, '').replace(/\s+/g, '-').trim();
+
+            // Ensure uniqueness
+            let uniqueId = baseId;
+            let counter = 1;
+            while (usedIds.has(uniqueId)) {
+                uniqueId = `${baseId}-${counter}`;
+                counter++;
+            }
+            usedIds.add(uniqueId);
+
+            return uniqueId;
         };
 
-        lines.forEach((line) => {
+        lines.forEach((line, index) => {
             const trimmed = line.trim();
+            
+            // Handle empty lines - flush any pending content
             if (!trimmed) {
                 flushList();
                 flushBlockquote();
+                flushTable();
+                flushParagraph();
+                return;
+            }
+
+            // Check for table start/end comments
+            if (trimmed.includes("<!-- table start -->")) {
+                flushList();
+                flushBlockquote();
+                flushTable();
+                flushParagraph();
+                inTable = true;
+                return;
+            }
+            
+            if (trimmed.includes("<!-- end start -->") || trimmed.includes("<!-- end -->")) {
+                flushTable();
+                return;
+            }
+
+            // Handle table rows when in table mode
+            if (inTable && trimmed.includes("<table>")) {
+                // Skip the opening table tag as we handle it in flushTable
+                return;
+            }
+
+            if (inTable && trimmed.includes("</table>")) {
+                // Skip the closing table tag as we handle it in flushTable
+                return;
+            }
+
+            if (inTable) {
+                // Process table content directly
+                tableBuffer.push(trimmed);
                 return;
             }
 
             // Blockquote lines (group contiguous '>' lines)
             if (/^>\s?/.test(trimmed)) {
                 flushList(); // end any open list before blockquote
+                flushTable();
+                flushParagraph();
                 const inner = trimmed.replace(/^>\s?/, "");
                 // support headings inside blockquote
                 const headingMatchBQ = /^(#{1,6})\s+(.+)$/.exec(inner);
@@ -90,6 +156,8 @@ export default function RichText({ body, read_more, with_bg }) {
             if (headingMatch) {
                 flushList();
                 flushBlockquote();
+                flushTable();
+                flushParagraph();
                 const level = headingMatch[1].length; // count of "#"
                 const text = parseInlineMarkdown(headingMatch[2]);
                 const headingId = generateHeadingId(headingMatch[2]);
@@ -99,39 +167,30 @@ export default function RichText({ body, read_more, with_bg }) {
 
             // Lists
             if (/^[-*]\s+/.test(trimmed)) {
+                flushTable();
+                flushParagraph();
                 listBuffer.push(parseInlineMarkdown(trimmed.replace(/^[-*]\s+/, "")));
             }
 
-            // Paragraph
+            // Regular text - add to paragraph buffer
             else {
                 flushList();
                 flushBlockquote();
-                result += `<p>${parseInlineMarkdown(trimmed)}</p>`;
+                flushTable();
+                paragraphBuffer.push(trimmed);
             }
         });
 
         flushList();
         flushBlockquote();
+        flushTable();
+        flushParagraph();
         
-        // Post-process to add IDs to any existing HTML headings that don't have them
-        result = result.replace(/<h([1-6])(?:\s[^>]*)?>(.*?)<\/h[1-6]>/gi, (match, level, content) => {
-            // Check if heading already has an ID
-            if (match.includes('id=')) {
-                return match;
-            }
-            
-            // Extract text content for ID generation
-            const textContent = content.replace(/<[^>]*>/g, '').trim();
-            if (textContent) {
-                const headingId = generateHeadingId(textContent);
-                return `<h${level} id="${headingId}">${content}</h${level}>`;
-            }
-            
-            return match;
-        });
+        // Debug: Log the final HTML output
+        console.log("Generated HTML:", result);
         
         return result;
-    };
+    }, []);
 
     useEffect(() => {
         const handleResize = () => {
