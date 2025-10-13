@@ -92,7 +92,7 @@ export default function SideCart() {
                   <img
                     src={imageUrl}
                     alt={title}
-                    className="2xl:w-[130px] 2xl:h-[92px] lg:w-[125px] lg:h-[88px] sm:w-[118px] sm:h-[83px] w-20 h-[75px] rounded-[3px]"
+                    className="2xl:w-[130px] 2xl:h-[92px] lg:w-[125px] lg:h-[88px] sm:w-[118px] sm:h-[83px] w-20 h-[75px] rounded-[3px] !object-cover"
                   />
                   <div className="flex-1">
                     <Link href={`/product/${item?.product?.slug || ""}`}>

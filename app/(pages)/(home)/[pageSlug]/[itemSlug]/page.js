@@ -141,7 +141,7 @@ export async function generateMetadata({ params }) {
                     }
                 ] : [
                     {
-                        url: `${baseUrl}/logo/webby-logo.svg`,
+                        url: `https://webbytemplate-store-com.s3.ap-south-1.amazonaws.com/image_2_74b59265ec.png`,
                         width: 1200,
                         height: 630,
                         alt: 'WebbyTemplate',
@@ -173,7 +173,7 @@ export async function generateMetadata({ params }) {
                 creator: pageSlug === 'blog' && data?.author?.twitter ? `@${data.author.twitter}` : '@webbytemplate',
                 title: title,
                 description: description,
-                images: imageUrl ? [imageUrl] : [`${baseUrl}/logo/webby-logo.svg`],
+                images: imageUrl ? [imageUrl] : [`https://webbytemplate-store-com.s3.ap-south-1.amazonaws.com/image_2_74b59265ec.png`],
                 ...(pageSlug === 'product' && data?.all_license && data.all_license.length > 0 && {
                     label1: 'Price',
                     data1: `$${data.all_license[0].sales_price || data.all_license[0].regular_price || 0}`
@@ -374,7 +374,7 @@ export default async function DynamicPage({ params, searchParams }) {
                         "name": "WebbyTemplate",
                         "url": baseUrl,
                         "logo": createImageObjectSchema(
-                            `${baseUrl}/logo/webby-logo.svg`,
+                            `https://webbytemplate-store-com.s3.ap-south-1.amazonaws.com/image_2_74b59265ec.png`,
                             baseUrl,
                             "WebbyTemplate Logo"
                         )
@@ -679,7 +679,7 @@ export default async function DynamicPage({ params, searchParams }) {
                         "name": "WebbyTemplate",
                         "url": baseUrl,
                         "logo": createImageObjectSchema(
-                            `${baseUrl}/logo/webby-logo.svg`,
+                            `https://webbytemplate-store-com.s3.ap-south-1.amazonaws.com/image_2_74b59265ec.png`,
                             baseUrl,
                             "WebbyTemplate Logo"
                         )
@@ -721,8 +721,8 @@ export default async function DynamicPage({ params, searchParams }) {
                         {
                             "@type": "ListItem",
                             "position": 2,
-                            "name": "Blogs",
-                            "item": `${baseUrl}/blog`
+                            "name": "Blog",
+                            "item": `${baseUrl}/blogs`
                         },
                         {
                             "@type": "ListItem",
@@ -743,8 +743,8 @@ export default async function DynamicPage({ params, searchParams }) {
                     },
                     {
                         id: 2,
-                        title: "Blogs",
-                        slug: "/blog",
+                        title: "Blog",
+                        slug: "/blogs",
                         visible: true
                     },
                     {
