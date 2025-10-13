@@ -4,145 +4,157 @@ import Image from "next/image";
 import Link from "next/link";
 import React, { useRef, useState, useEffect, useMemo } from "react";
 import PageLoader from "./common/page-loader/PageLoader";
-import { loadComponent } from "@/lib/componentRegistry";
-
-const componentCache = {};
 
 const SingleBlogPage = ({ data, breadcrumb = [] }) => {
   const [open, setOpen] = useState(false);
   const [headings, setHeadings] = useState([]);
-  const [components, setComponents] = useState({});
-  const [loading, setLoading] = useState(true);
   const dropdownRef = useRef(null);
   const toggleDropdown = () => setOpen(!open);
   const inputRef = useRef(null);
 
-  const componentList = useMemo(() => {
-    return Array.isArray(data?.components) ? data.components : [];
-  }, [data?.components]);
+  // Format content function for markdown-like formatting
+  const formatContent = (content) => {
+    if (!content) return "";
 
-  const convertToPascalCase = (str) => {
-    return str
-      .split(/[-_]/g)
-      .map((s) => s.charAt(0).toUpperCase() + s.slice(1))
-      .join("");
-  };
+    const lines = content.split("\n");
+    let result = "";
+    let listBuffer = [];
+    let blockquoteBuffer = [];
+    const usedIds = new Set(); // Track used IDs to ensure uniqueness
 
-  // Component name mapping for common variations
-  const getComponentName = (rawName) => {
-    const pascalCaseName = convertToPascalCase(rawName);
-    
-    // Handle common naming variations
-    const nameMapping = {
-      'richtext': 'RichText',
-      'rich-text': 'RichText',
-      'rich_text': 'RichText',
-      'faqsection': 'FaqSection',
-      'faq-section': 'FaqSection',
-      'faq_section': 'FaqSection',
-      'singleblogimage': 'SingleBlogImage',
-      'single-blog-image': 'SingleBlogImage',
-      'single_blog_image': 'SingleBlogImage',
-      'singleblogheading': 'SingleBlogHeading',
-      'single-blog-heading': 'SingleBlogHeading',
-      'single_blog_heading': 'SingleBlogHeading',
-      'singleblogtext': 'SingleBlogText',
-      'single-blog-text': 'SingleBlogText',
-      'single_blog_text': 'SingleBlogText'
+    const flushList = () => {
+      if (listBuffer.length) {
+        result += "<ul>" + listBuffer.map(li => `<li>${li}</li>`).join("") + "</ul>";
+        listBuffer = [];
+      }
     };
-    
-    return nameMapping[rawName.toLowerCase()] || pascalCaseName;
-  };
 
-  // Dynamic component loading logic
-  useEffect(() => {
-    let isMounted = true;
+    const flushBlockquote = () => {
+      if (blockquoteBuffer.length) {
+        result += "<blockquote>" + blockquoteBuffer.join("") + "</blockquote>";
+        blockquoteBuffer = [];
+      }
+    };
 
-    const loadComponents = async () => {
-      if (!Array.isArray(componentList)) {
-        console.error("componentList is not an array:", componentList);
-        if (isMounted) setLoading(false);
+    const parseInlineMarkdown = (text) => {
+      return text
+        .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")     // bold (**) 
+        .replace(/__(.*?)__/g, "<strong>$1</strong>")         // bold (__)
+        .replace(/\*(.*?)\*/g, "<em>$1</em>")                 // italic (*)
+        .replace(/_(.*?)_/g, "<em>$1</em>")                   // italic (_)
+        .replace(/~~(.*?)~~/g, "<del>$1</del>")               // strikethrough
+        .replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2" target="_blank">$1</a>'); // links
+    };
+
+    const generateHeadingId = (text) => {
+      // Generate base ID
+      let baseId = text.toLowerCase().replace(/[^a-z0-9\s-]/g, '').replace(/\s+/g, '-').trim();
+      
+      // Ensure uniqueness
+      let uniqueId = baseId;
+      let counter = 1;
+      while (usedIds.has(uniqueId)) {
+        uniqueId = `${baseId}-${counter}`;
+        counter++;
+      }
+      usedIds.add(uniqueId);
+      
+      return uniqueId;
+    };
+
+    lines.forEach((line) => {
+      const trimmed = line.trim();
+      if (!trimmed) {
+        flushList();
+        flushBlockquote();
         return;
       }
 
-      const componentMap = {};
+      // Blockquote lines (group contiguous '>' lines)
+      if (/^>\s?/.test(trimmed)) {
+        flushList(); // end any open list before blockquote
+        const inner = trimmed.replace(/^>\s?/, "");
+        // support headings inside blockquote
+        const headingMatchBQ = /^(#{1,6})\s+(.+)$/.exec(inner);
+        if (headingMatchBQ) {
+          const level = headingMatchBQ[1].length;
+          const text = parseInlineMarkdown(headingMatchBQ[2]);
+          const headingId = generateHeadingId(headingMatchBQ[2]);
+          blockquoteBuffer.push(`<h${level} id="${headingId}">${text}</h${level}>`);
+        } else {
+          blockquoteBuffer.push(`<p>${parseInlineMarkdown(inner)}</p>`);
+        }
+        return;
+      }
 
-      for (const component of componentList) {
-        if (!component || !component.__component) continue;
+      // Headings H1–H6 (outside blockquote)
+      const headingMatch = /^(#{1,6})\s+(.+)$/.exec(trimmed);
+      if (headingMatch) {
+        flushList();
+        flushBlockquote();
+        const level = headingMatch[1].length; // count of "#"
+        const text = parseInlineMarkdown(headingMatch[2]);
+        const headingId = generateHeadingId(headingMatch[2]);
+        result += `<h${level} id="${headingId}">${text}</h${level}>`;
+        return;
+      }
 
-        const rawName = component.__component?.split(".")[1];
-        if (!rawName) continue;
+      // Lists
+      if (/^[-*]\s+/.test(trimmed)) {
+        listBuffer.push(parseInlineMarkdown(trimmed.replace(/^[-*]\s+/, "")));
+      }
 
-        const pascalCaseName = getComponentName(rawName);
-        
-        // Debug logging
-        console.log(`Loading component: rawName="${rawName}", pascalCaseName="${pascalCaseName}"`);
+      // Paragraph
+      else {
+        flushList();
+        flushBlockquote();
+        result += `<p>${parseInlineMarkdown(trimmed)}</p>`;
+      }
+    });
 
-        try {
-          if (!componentCache[pascalCaseName]) {
-            // Use the component registry for reliable loading
-            const DynamicComponent = await loadComponent(pascalCaseName);
+    flushList();
+    flushBlockquote();
+    return result;
+  };
 
-            if (DynamicComponent) {
-              componentCache[pascalCaseName] = DynamicComponent;
-              console.log(`Successfully loaded component "${pascalCaseName}" from registry`);
-            } else {
-              console.warn(`Component "${pascalCaseName}" not found in registry. Raw name: "${rawName}"`);
-              
-              // Create a fallback component for missing components
-              componentCache[pascalCaseName] = ({ ...props }) => (
-                <div className="p-4 border border-red-200 bg-red-50 rounded-lg">
-                  <p className="text-red-600 font-medium">Component "{pascalCaseName}" not found</p>
-                  <p className="text-red-500 text-sm mt-1">Raw name: "{rawName}"</p>
-                  <p className="text-red-500 text-sm mt-1">Please check if the component exists in the correct directory.</p>
-                  {process.env.NODE_ENV === 'development' && (
-                    <pre className="text-xs mt-2 text-red-400">
-                      {JSON.stringify(props, null, 2)}
-                    </pre>
-                  )}
-                </div>
-              );
-            }
+  // Extract headings from content
+  const extractHeadings = (content) => {
+    if (!content) return [];
+    
+    const headings = [];
+    const lines = content.split('\n');
+    const usedIds = new Set(); // Track used IDs to ensure uniqueness
+    
+    lines.forEach((line) => {
+      const trimmed = line.trim();
+      const headingMatch = /^(#{1,6})\s+(.+)$/.exec(trimmed);
+      if (headingMatch) {
+        const level = headingMatch[1].length;
+        const text = headingMatch[2].replace(/<[^>]*>/g, '').trim(); // Remove HTML tags
+        if (text && text.length > 0) {
+          // Generate base ID
+          let baseId = text.toLowerCase().replace(/[^a-z0-9\s-]/g, '').replace(/\s+/g, '-').trim();
+          
+          // Ensure uniqueness
+          let uniqueId = baseId;
+          let counter = 1;
+          while (usedIds.has(uniqueId)) {
+            uniqueId = `${baseId}-${counter}`;
+            counter++;
           }
-
-          componentMap[pascalCaseName] = componentCache[pascalCaseName];
-        } catch (err) {
-          console.error(`Error loading component "${pascalCaseName}":`, err);
-          // Add a fallback component for any other errors
-          componentMap[pascalCaseName] = ({ ...props }) => (
-            <div className="p-4 border border-red-200 bg-red-50 rounded-lg">
-              <p className="text-red-600 font-medium">Error loading component "{pascalCaseName}"</p>
-              <p className="text-red-500 text-sm mt-1">{err.message}</p>
-            </div>
-          );
+          usedIds.add(uniqueId);
+          
+          headings.push({
+            id: uniqueId,
+            text: text,
+            level: level,
+            element: `h${level}`
+          });
         }
       }
-
-      if (isMounted) {
-        setComponents(componentMap);
-        setLoading(false);
-      }
-    };
-
-    setLoading(true);
-    loadComponents();
-
-    return () => {
-      isMounted = false;
-    };
-  }, [componentList]);
-
-  const renderComponent = (component, index) => {
-    if (!component || !component.__component) return null;
-
-    const rawName = component.__component?.split(".")[1];
-    if (!rawName) return null;
-
-    const pascalCaseName = getComponentName(rawName);
-    const DynamicComponent = components[pascalCaseName];
-    return DynamicComponent ? (
-      <DynamicComponent key={index} {...component} />
-    ) : null;
+    });
+    
+    return headings;
   };
 
   // Share functions
@@ -209,72 +221,18 @@ const SingleBlogPage = ({ data, breadcrumb = [] }) => {
     }
   };
 
-  // Calculate reading time based on components content
-  const calculateReadingTime = (components) => {
-    if (!Array.isArray(components) || components.length === 0) return "1 min read";
+  // Calculate reading time based on content
+  const calculateReadingTime = (content) => {
+    if (!content) return "1 min read";
     try {
-      // Estimate reading time based on number of components
-      // This is a simplified approach - you might want to extract text from components
-      const estimatedTime = Math.max(1, Math.ceil(components.length * 0.5));
-      return `${estimatedTime} min read`;
+      const wordsPerMinute = 200;
+      const wordCount = content.split(/\s+/).length;
+      const minutes = Math.ceil(wordCount / wordsPerMinute);
+      return `${minutes} min read`;
     } catch (error) {
       console.error("Error calculating reading time:", error);
       return "1 min read";
     }
-  };
-
-  // Extract headings from rendered DOM content
-  const extractHeadingsFromDOM = () => {
-    if (typeof window === 'undefined') return [];
-
-    const leftContent = document.querySelector('.left-content');
-    if (!leftContent) return [];
-
-    const headings = [];
-    const headingElements = leftContent.querySelectorAll('h1, h2, h3, h4, h5, h6');
-
-    headingElements.forEach((heading, index) => {
-      const text = heading.textContent?.trim();
-      if (text && text.length > 0) {
-        // Use existing ID or generate one
-        let headingId = heading.id;
-        if (!headingId) {
-          // Generate URL-friendly ID from text
-          headingId = text
-            .toLowerCase()
-            .replace(/[^a-z0-9\s-]/g, '')
-            .replace(/\s+/g, '-')
-            .replace(/-+/g, '-')
-            .trim();
-
-          // Ensure uniqueness
-          let uniqueId = headingId;
-          let counter = 1;
-          while (document.getElementById(uniqueId)) {
-            uniqueId = `${headingId}-${counter}`;
-            counter++;
-          }
-          headingId = uniqueId;
-          heading.id = headingId;
-        }
-
-        const level = parseInt(heading.tagName.charAt(1));
-
-        headings.push({
-          id: headingId,
-          text: text,
-          level: level,
-          element: heading.tagName.toLowerCase()
-        });
-      }
-    });
-
-    // Debug logging in development
-    if (process.env.NODE_ENV === 'development' && headings.length > 0) {
-      console.log('Extracted headings:', headings);
-    }
-
-    return headings;
   };
 
   // Generate table of contents
@@ -379,43 +337,8 @@ const SingleBlogPage = ({ data, breadcrumb = [] }) => {
 
   // Scroll to heading function
   const scrollToHeading = (headingId) => {
-    // Try to find element by ID first
-    let element = document.getElementById(headingId);
-
-    // If not found, try to find by text content (fallback)
-    if (!element) {
-      const leftContent = document.querySelector('.left-content');
-      if (leftContent) {
-        const headings = leftContent.querySelectorAll('h1, h2, h3, h4, h5, h6');
-
-        // Try multiple matching strategies
-        element = Array.from(headings).find(heading => {
-          const headingText = heading.textContent?.trim();
-          const headingIdAttr = heading.id;
-
-          // Direct ID match
-          if (headingIdAttr === headingId) return true;
-
-          // Text content match
-          if (headingText === headingId) return true;
-
-          // Generate ID from text and match
-          const generatedId = headingText
-            ?.toLowerCase()
-            .replace(/[^a-z0-9\s-]/g, '')
-            .replace(/\s+/g, '-')
-            .replace(/-+/g, '-')
-            .trim();
-
-          if (generatedId === headingId) return true;
-
-          return false;
-        });
-      }
-    }
-
+    const element = document.getElementById(headingId);
     if (element) {
-      // Add a small offset to account for fixed headers
       const offset = 100;
       const elementPosition = element.getBoundingClientRect().top;
       const offsetPosition = elementPosition + window.pageYOffset - offset;
@@ -431,9 +354,6 @@ const SingleBlogPage = ({ data, breadcrumb = [] }) => {
       setTimeout(() => {
         element.style.backgroundColor = '';
       }, 2000);
-    } else {
-      console.warn(`Heading with ID "${headingId}" not found`);
-      console.log('Available headings:', Array.from(document.querySelectorAll('.left-content h1, .left-content h2, .left-content h3, .left-content h4, .left-content h5, .left-content h6')).map(h => ({ id: h.id, text: h.textContent?.trim() })));
     }
   };
 
@@ -455,67 +375,13 @@ const SingleBlogPage = ({ data, breadcrumb = [] }) => {
     };
   }, [open]);
 
-  // Extract headings from rendered DOM content
+  // Extract headings from content on component mount
   useEffect(() => {
-    if (typeof window === 'undefined') return;
-
-    const updateHeadings = () => {
-      const extractedHeadings = extractHeadingsFromDOM();
+    if (data?.body) {
+      const extractedHeadings = extractHeadings(data.body);
       setHeadings(extractedHeadings);
-    };
-
-    // Initial extraction after components are loaded
-    if (!loading && Array.isArray(componentList) && componentList.length > 0) {
-      // Use multiple timeouts to ensure content is fully rendered
-      const timeouts = [
-        setTimeout(updateHeadings, 100),
-        setTimeout(updateHeadings, 500),
-        setTimeout(updateHeadings, 1000),
-        setTimeout(updateHeadings, 2000) // Extra timeout for slower components
-      ];
-
-      return () => {
-        timeouts.forEach(clearTimeout);
-      };
     }
-
-    // Set up MutationObserver to watch for changes in the left content
-    const leftContent = document.querySelector('.left-content');
-    if (!leftContent) return;
-
-    const observer = new MutationObserver((mutations) => {
-      let shouldUpdate = false;
-
-      mutations.forEach((mutation) => {
-        if (mutation.type === 'childList') {
-          // Check if any added nodes contain headings
-          mutation.addedNodes.forEach((node) => {
-            if (node.nodeType === Node.ELEMENT_NODE) {
-              if (node.matches && node.matches('h1, h2, h3, h4, h5, h6')) {
-                shouldUpdate = true;
-              } else if (node.querySelector && node.querySelector('h1, h2, h3, h4, h5, h6')) {
-                shouldUpdate = true;
-              }
-            }
-          });
-        }
-      });
-
-      if (shouldUpdate) {
-        // Debounce the update
-        setTimeout(updateHeadings, 100);
-      }
-    });
-
-    observer.observe(leftContent, {
-      childList: true,
-      subtree: true
-    });
-
-    return () => {
-      observer.disconnect();
-    };
-  }, [loading, componentList]);
+  }, [data?.body]);
 
   if (!data) {
     return (
@@ -575,9 +441,9 @@ const SingleBlogPage = ({ data, breadcrumb = [] }) => {
               "@type": "WebPage",
               "@id": "" // Will be populated by Next.js router
             },
-            "articleBody": data?.excerpt || data?.title || "Check out this blog post",
+            "articleBody": data?.body || data?.excerpt || data?.title || "Check out this blog post",
             "keywords": data?.blog_categories?.map(cat => cat?.title).join(', ') || '',
-            "wordCount": data?.components ? data.components.length * 50 : 0 // Estimate based on components
+            "wordCount": data?.body ? data.body.split(/\s+/).length : 0
           })
         }}
       />
@@ -657,7 +523,7 @@ const SingleBlogPage = ({ data, breadcrumb = [] }) => {
                 </h3>
                 <div className="p2 text-gray-500">
                   {formatDate(data?.publishedAt || data?.createdAt)} •{" "}
-                  {calculateReadingTime(data?.components)}
+                  {calculateReadingTime(data?.body)}
                 </div>
               </div>
             </div>
@@ -891,11 +757,13 @@ const SingleBlogPage = ({ data, breadcrumb = [] }) => {
             <div className="content-grid grid grid-cols-1 lg:grid-cols-3 gap-8">
               {/* Main Content */}
               <div className="left-content lg:col-span-2">
-                {loading ? (
-                  <PageLoader />
-                ) : (
-                  Array.isArray(componentList) &&
-                  componentList.map((component, index) => renderComponent(component, index))
+                {data?.body && (
+                  <div
+                    className="prose mb-4"
+                    dangerouslySetInnerHTML={{
+                      __html: formatContent(data.body),
+                    }}
+                  />
                 )}
               </div>
 
