@@ -56,8 +56,27 @@ const SingleBlogPage = ({ data, breadcrumb = [] }) => {
         });
       }
       
-      // Extract FAQ questions
+      // Extract FAQ section heading and questions
       if (component.__component === "shared.faq-section" && component.list && Array.isArray(component.list)) {
+        // Add the FAQ section heading itself to TOC (always "FAQs" or component.title)
+        const faqSectionTitle = (component.title && component.title.trim()) ? component.title.trim() : "FAQs";
+        let faqSectionBaseId = faqSectionTitle.toLowerCase().replace(/[^a-z0-9\s-]/g, '').replace(/\s+/g, '-').trim() || 'faqs';
+        let faqSectionId = faqSectionBaseId;
+        let faqSectionCounter = 1;
+        while (usedIds.has(faqSectionId)) {
+          faqSectionId = `${faqSectionBaseId}-${faqSectionCounter}`;
+          faqSectionCounter++;
+        }
+        usedIds.add(faqSectionId);
+
+        headings.push({
+          id: faqSectionId,
+          text: faqSectionTitle,
+          level: 2,
+          element: 'h2',
+          type: 'faq-section',
+          componentIndex: componentIndex
+        });
         
         component.list.forEach((faqItem, faqIndex) => {
           if (faqItem.title && faqItem.title.trim()) {
@@ -341,15 +360,17 @@ const SingleBlogPage = ({ data, breadcrumb = [] }) => {
         }
       }
     } else if (headingType === 'faq-section') {
-      // For FAQ sections, find the element by looking for FAQ components
-      const faqElements = document.querySelectorAll('.faq-section');
-      const heading = headings.find(h => h.id === headingId);
-      
-      if (heading && heading.componentIndex !== undefined) {
-        // Find FAQ section by component index
-        const faqElement = faqElements[heading.componentIndex];
-        if (faqElement) {
-          element = faqElement;
+      // For FAQ section, first try the section heading ID directly
+      element = document.getElementById(headingId);
+      if (!element) {
+        // Fallback: locate the faq-section wrapper by component index
+        const faqElements = document.querySelectorAll('.faq-section');
+        const heading = headings.find(h => h.id === headingId);
+        if (heading && heading.componentIndex !== undefined) {
+          const faqElement = faqElements[heading.componentIndex];
+          if (faqElement) {
+            element = faqElement;
+          }
         }
       }
     } else {
