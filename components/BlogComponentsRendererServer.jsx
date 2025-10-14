@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 import React from "react";
 import BlogFaqSection from "./BlogFaqSection";
 
@@ -172,24 +173,39 @@ const RichTextComponentServer = ({ data }) => {
 
 // Single Blog Image Component Server
 const SingleBlogImageComponentServer = ({ data }) => {
-  const { image } = data;
+  const { image, product } = data;
 
   if (!image?.url) return null;
 
+  const imageElement = (
+    <Image
+      src={image.url}
+      alt={image.alternativeText || image.name || "Blog image"}
+      width={image.width || 800}
+      height={image.height || 400}
+      className="w-full h-auto rounded-lg object-cover"
+      priority={false}
+      loading="lazy"
+      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 800px"
+      placeholder="blur"
+      blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABmX/9k="
+    />
+  );
+
   return (
     <div className="mb-6">
-      <Image
-        src={image.url}
-        alt={image.alternativeText || image.name || "Blog image"}
-        width={image.width || 800}
-        height={image.height || 400}
-        className="w-full h-auto rounded-lg object-cover"
-        priority={false}
-        loading="lazy"
-        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 800px"
-        placeholder="blur"
-        blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABmX/9k="
-      />
+      {product?.slug ? (
+        <Link
+          href={`/product/${product.slug}`}
+          className="block hover:opacity-90 transition-opacity duration-200 !w-full"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          {imageElement}
+        </Link>
+      ) : (
+        imageElement
+      )}
       {image.caption && (
         <p className="text-sm text-gray-600 mt-2 text-center italic">
           {image.caption}
