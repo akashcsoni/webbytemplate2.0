@@ -117,6 +117,7 @@ export default function BlogFaqSection({ title = "", label = "", button, list = 
 
   return (
     <section className="faq-section xl:py-[35px] sm:py-[30px] py-5">
+      <h2 id={(title || "FAQs").toLowerCase().replace(/[^a-z0-9\s-]/g, '').replace(/\s+/g, '-').trim() || 'faqs'} className="text-2xl font-bold">FAQs</h2>
       <div className="container mx-auto">
         <div className="flex justify-between lg:flex-row flex-col 2xl:gap-52 xl:gap-20 sm:gap-8 gap-5">
           {(title || label) && (
