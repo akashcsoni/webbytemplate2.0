@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import React, { useRef, useState, useEffect, useMemo } from "react";
 import PageLoader from "./common/page-loader/PageLoader";
+import BlogComponentsRendererServer from "./BlogComponentsRendererServer";
 
 const SingleBlogPage = ({ data, breadcrumb = [] }) => {
   const [open, setOpen] = useState(false);
@@ -12,150 +13,85 @@ const SingleBlogPage = ({ data, breadcrumb = [] }) => {
   const toggleDropdown = () => setOpen(!open);
   const inputRef = useRef(null);
 
-  // Format content function for markdown-like formatting
-  const formatContent = (content) => {
-    if (!content) return "";
-
-    const lines = content.split("\n");
-    let result = "";
-    let listBuffer = [];
-    let blockquoteBuffer = [];
-    const usedIds = new Set(); // Track used IDs to ensure uniqueness
-
-    const flushList = () => {
-      if (listBuffer.length) {
-        result += "<ul>" + listBuffer.map(li => `<li>${li}</li>`).join("") + "</ul>";
-        listBuffer = [];
-      }
-    };
-
-    const flushBlockquote = () => {
-      if (blockquoteBuffer.length) {
-        result += "<blockquote>" + blockquoteBuffer.join("") + "</blockquote>";
-        blockquoteBuffer = [];
-      }
-    };
-
-    const parseInlineMarkdown = (text) => {
-      return text
-        .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")     // bold (**) 
-        .replace(/__(.*?)__/g, "<strong>$1</strong>")         // bold (__)
-        .replace(/\*(.*?)\*/g, "<em>$1</em>")                 // italic (*)
-        .replace(/_(.*?)_/g, "<em>$1</em>")                   // italic (_)
-        .replace(/~~(.*?)~~/g, "<del>$1</del>")               // strikethrough
-        .replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2" target="_blank">$1</a>'); // links
-    };
-
-    const generateHeadingId = (text) => {
-      // Generate base ID
-      let baseId = text.toLowerCase().replace(/[^a-z0-9\s-]/g, '').replace(/\s+/g, '-').trim();
-      
-      // Ensure uniqueness
-      let uniqueId = baseId;
-      let counter = 1;
-      while (usedIds.has(uniqueId)) {
-        uniqueId = `${baseId}-${counter}`;
-        counter++;
-      }
-      usedIds.add(uniqueId);
-      
-      return uniqueId;
-    };
-
-    lines.forEach((line) => {
-      const trimmed = line.trim();
-      if (!trimmed) {
-        flushList();
-        flushBlockquote();
-        return;
-      }
-
-      // Blockquote lines (group contiguous '>' lines)
-      if (/^>\s?/.test(trimmed)) {
-        flushList(); // end any open list before blockquote
-        const inner = trimmed.replace(/^>\s?/, "");
-        // support headings inside blockquote
-        const headingMatchBQ = /^(#{1,6})\s+(.+)$/.exec(inner);
-        if (headingMatchBQ) {
-          const level = headingMatchBQ[1].length;
-          const text = parseInlineMarkdown(headingMatchBQ[2]);
-          const headingId = generateHeadingId(headingMatchBQ[2]);
-          blockquoteBuffer.push(`<h${level} id="${headingId}">${text}</h${level}>`);
-        } else {
-          blockquoteBuffer.push(`<p>${parseInlineMarkdown(inner)}</p>`);
-        }
-        return;
-      }
-
-      // Headings H1–H6 (outside blockquote)
-      const headingMatch = /^(#{1,6})\s+(.+)$/.exec(trimmed);
-      if (headingMatch) {
-        flushList();
-        flushBlockquote();
-        const level = headingMatch[1].length; // count of "#"
-        const text = parseInlineMarkdown(headingMatch[2]);
-        const headingId = generateHeadingId(headingMatch[2]);
-        result += `<h${level} id="${headingId}">${text}</h${level}>`;
-        return;
-      }
-
-      // Lists
-      if (/^[-*]\s+/.test(trimmed)) {
-        listBuffer.push(parseInlineMarkdown(trimmed.replace(/^[-*]\s+/, "")));
-      }
-
-      // Paragraph
-      else {
-        flushList();
-        flushBlockquote();
-        result += `<p>${parseInlineMarkdown(trimmed)}</p>`;
-      }
-    });
-
-    flushList();
-    flushBlockquote();
-    return result;
-  };
-
-  // Extract headings from content
-  const extractHeadings = (content) => {
-    if (!content) return [];
+  // Extract headings from components for table of contents
+  const extractHeadingsFromComponents = (components) => {
+    if (!components || components.length === 0) return [];
     
     const headings = [];
-    const lines = content.split('\n');
-    const usedIds = new Set(); // Track used IDs to ensure uniqueness
+    const usedIds = new Set();
     
-    lines.forEach((line) => {
-      const trimmed = line.trim();
-      const headingMatch = /^(#{1,6})\s+(.+)$/.exec(trimmed);
-      if (headingMatch) {
-        const level = headingMatch[1].length;
-        const text = headingMatch[2].replace(/<[^>]*>/g, '').trim(); // Remove HTML tags
-        if (text && text.length > 0) {
-          // Generate base ID
-          let baseId = text.toLowerCase().replace(/[^a-z0-9\s-]/g, '').replace(/\s+/g, '-').trim();
-          
-          // Ensure uniqueness
-          let uniqueId = baseId;
-          let counter = 1;
-          while (usedIds.has(uniqueId)) {
-            uniqueId = `${baseId}-${counter}`;
-            counter++;
+    components.forEach((component, componentIndex) => {
+      // Extract headings from rich-text components
+      if (component.__component === "shared.rich-text" && component.body) {
+        const lines = component.body.split('\n');
+        
+        lines.forEach((line) => {
+          const trimmed = line.trim();
+          const headingMatch = /^(#{1,6})\s+(.+)$/.exec(trimmed);
+          if (headingMatch) {
+            const level = headingMatch[1].length;
+            const text = headingMatch[2].replace(/<[^>]*>/g, '').trim(); // Remove HTML tags
+            if (text && text.length > 0) {
+              // Generate base ID
+              let baseId = text.toLowerCase().replace(/[^a-z0-9\s-]/g, '').replace(/\s+/g, '-').trim();
+              
+              // Ensure uniqueness
+              let uniqueId = baseId;
+              let counter = 1;
+              while (usedIds.has(uniqueId)) {
+                uniqueId = `${baseId}-${counter}`;
+                counter++;
+              }
+              usedIds.add(uniqueId);
+              
+              headings.push({
+                id: uniqueId,
+                text: text,
+                level: level,
+                element: `h${level}`,
+                type: 'heading'
+              });
+            }
           }
-          usedIds.add(uniqueId);
-          
-          headings.push({
-            id: uniqueId,
-            text: text,
-            level: level,
-            element: `h${level}`
-          });
-        }
+        });
+      }
+      
+      // Extract FAQ questions
+      if (component.__component === "shared.faq-section" && component.list && Array.isArray(component.list)) {
+        
+        component.list.forEach((faqItem, faqIndex) => {
+          if (faqItem.title && faqItem.title.trim()) {
+            const faqQuestion = faqItem.title.trim();
+            // Generate base ID for FAQ question
+            let baseId = faqQuestion.toLowerCase().replace(/[^a-z0-9\s-]/g, '').replace(/\s+/g, '-').trim();
+            
+            // Ensure uniqueness
+            let uniqueId = baseId;
+            let counter = 1;
+            while (usedIds.has(uniqueId)) {
+              uniqueId = `${baseId}-${counter}`;
+              counter++;
+            }
+            usedIds.add(uniqueId);
+            
+            headings.push({
+              id: uniqueId,
+              text: faqQuestion,
+              level: 3, // FAQ questions are treated as H3 level
+              element: 'h3',
+              type: 'faq-question',
+              componentIndex: componentIndex,
+              faqIndex: faqIndex,
+              faqId: faqItem.id || `faq-${componentIndex}-${faqIndex}`
+            });
+          }
+        });
       }
     });
     
     return headings;
   };
+
 
   // Share functions
   const shareToSocial = (platform) => {
@@ -221,19 +157,27 @@ const SingleBlogPage = ({ data, breadcrumb = [] }) => {
     }
   };
 
-  // Calculate reading time based on content
-  const calculateReadingTime = (content) => {
-    if (!content) return "1 min read";
+  // Calculate reading time based on components content
+  const calculateReadingTime = (components) => {
+    if (!components || components.length === 0) return "1 min read";
     try {
       const wordsPerMinute = 200;
-      const wordCount = content.split(/\s+/).length;
-      const minutes = Math.ceil(wordCount / wordsPerMinute);
+      let totalWordCount = 0;
+      
+      components.forEach((component) => {
+        if (component.__component === "shared.rich-text" && component.body) {
+          totalWordCount += component.body.split(/\s+/).length;
+        }
+      });
+      
+      const minutes = Math.ceil(totalWordCount / wordsPerMinute);
       return `${minutes} min read`;
     } catch (error) {
       console.error("Error calculating reading time:", error);
       return "1 min read";
     }
   };
+
 
   // Generate table of contents
   const generateTableOfContents = (headings) => {
@@ -323,9 +267,12 @@ const SingleBlogPage = ({ data, breadcrumb = [] }) => {
                 className={`cursor-pointer hover:text-primary transition-colors p2 ${heading.level === 2 ? 'font-normal' :
                   heading.level === 3 ? 'ml-4 !text-sm' :
                     heading.level >= 4 ? 'ml-6 !text-xs' : ''
-                  }`}
-                onClick={() => scrollToHeading(heading.id)}
+                  } ${heading.type === 'faq-question' ? 'text-green-600 font-medium' : ''}`}
+                onClick={() => scrollToHeading(heading.id, heading.type)}
               >
+                {/* {heading.type === 'faq-question' && (
+                  <span className="inline-block w-2 h-2 bg-green-500 rounded-full mr-2"></span>
+                )} */}
                 {heading.text}
               </p>
             ))}
@@ -336,8 +283,80 @@ const SingleBlogPage = ({ data, breadcrumb = [] }) => {
   };
 
   // Scroll to heading function
-  const scrollToHeading = (headingId) => {
-    const element = document.getElementById(headingId);
+  const scrollToHeading = (headingId, headingType = 'heading') => {
+    let element = null;
+    
+    if (headingType === 'faq-question') {
+      // For FAQ questions, find the specific FAQ item
+      const heading = headings.find(h => h.id === headingId);
+      
+      
+      if (heading && heading.faqId) {
+        // Method 1: Try to find by specific FAQ ID directly (most reliable)
+        const faqItemById = document.getElementById(`faq-item-${heading.faqId}`);
+        if (faqItemById) {
+          element = faqItemById;
+        }
+      }
+      
+      // Method 2: If ID method fails, search all FAQ sections
+      if (!element) {
+        const faqSections = document.querySelectorAll('.faq-section');
+        
+        for (let i = 0; i < faqSections.length; i++) {
+          const faqSection = faqSections[i];
+          const faqItems = faqSection.querySelectorAll('[id^="faq-item-"]');
+          
+          // Try to find by FAQ ID in this section
+          if (heading.faqId) {
+            const faqItem = faqSection.querySelector(`#faq-item-${heading.faqId}`);
+            if (faqItem) {
+              element = faqItem;
+              break;
+            }
+          }
+          
+          // Try to find by index in this section
+          if (!element && heading.faqIndex !== undefined) {
+            const faqItem = faqItems[heading.faqIndex];
+            if (faqItem) {
+              element = faqItem;
+              break;
+            }
+          }
+        }
+      }
+      
+      // Method 3: Last resort - search by text content
+      if (!element && heading.text) {
+        const allFaqItems = document.querySelectorAll('[id^="faq-item-"]');
+        
+        for (let i = 0; i < allFaqItems.length; i++) {
+          const faqItem = allFaqItems[i];
+          const questionText = faqItem.querySelector('h3');
+          if (questionText && questionText.textContent.trim() === heading.text) {
+            element = faqItem;
+            break;
+          }
+        }
+      }
+    } else if (headingType === 'faq-section') {
+      // For FAQ sections, find the element by looking for FAQ components
+      const faqElements = document.querySelectorAll('.faq-section');
+      const heading = headings.find(h => h.id === headingId);
+      
+      if (heading && heading.componentIndex !== undefined) {
+        // Find FAQ section by component index
+        const faqElement = faqElements[heading.componentIndex];
+        if (faqElement) {
+          element = faqElement;
+        }
+      }
+    } else {
+      // For regular headings, use ID
+      element = document.getElementById(headingId);
+    }
+    
     if (element) {
       const offset = 100;
       const elementPosition = element.getBoundingClientRect().top;
@@ -354,6 +373,7 @@ const SingleBlogPage = ({ data, breadcrumb = [] }) => {
       setTimeout(() => {
         element.style.backgroundColor = '';
       }, 2000);
+    } else {
     }
   };
 
@@ -375,13 +395,18 @@ const SingleBlogPage = ({ data, breadcrumb = [] }) => {
     };
   }, [open]);
 
-  // Extract headings from content on component mount
+  // Extract headings from components on component mount
   useEffect(() => {
-    if (data?.body) {
-      const extractedHeadings = extractHeadings(data.body);
+    if (data?.components) {
+      const extractedHeadings = extractHeadingsFromComponents(data.components);
       setHeadings(extractedHeadings);
     }
-  }, [data?.body]);
+  }, [data?.components]);
+
+  // Scroll to top when component mounts
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
 
   if (!data) {
     return (
@@ -441,9 +466,16 @@ const SingleBlogPage = ({ data, breadcrumb = [] }) => {
               "@type": "WebPage",
               "@id": "" // Will be populated by Next.js router
             },
-            "articleBody": data?.body || data?.excerpt || data?.title || "Check out this blog post",
+            "articleBody": data?.components?.map(comp => 
+              comp.__component === "shared.rich-text" ? comp.body : ""
+            ).filter(Boolean).join(" ") || data?.title || "Check out this blog post",
             "keywords": data?.blog_categories?.map(cat => cat?.title).join(', ') || '',
-            "wordCount": data?.body ? data.body.split(/\s+/).length : 0
+            "wordCount": data?.components?.reduce((total, comp) => {
+              if (comp.__component === "shared.rich-text" && comp.body) {
+                return total + comp.body.split(/\s+/).length;
+              }
+              return total;
+            }, 0) || 0
           })
         }}
       />
@@ -523,7 +555,7 @@ const SingleBlogPage = ({ data, breadcrumb = [] }) => {
                 </h3>
                 <div className="p2 text-gray-500">
                   {formatDate(data?.publishedAt || data?.createdAt)} •{" "}
-                  {calculateReadingTime(data?.body)}
+                  {calculateReadingTime(data?.components)}
                 </div>
               </div>
             </div>
@@ -757,13 +789,8 @@ const SingleBlogPage = ({ data, breadcrumb = [] }) => {
             <div className="content-grid grid grid-cols-1 lg:grid-cols-3 gap-8">
               {/* Main Content */}
               <div className="left-content lg:col-span-2">
-                {data?.body && (
-                  <div
-                    className="prose mb-4"
-                    dangerouslySetInnerHTML={{
-                      __html: formatContent(data.body),
-                    }}
-                  />
+                {data?.components && (
+                  <BlogComponentsRendererServer components={data.components} />
                 )}
               </div>
 

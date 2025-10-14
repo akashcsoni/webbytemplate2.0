@@ -294,10 +294,11 @@ export default async function DynamicPage({ params, searchParams }) {
 
         // Additional validation for blog-specific requirements
         if (pageSlug === 'blog') {
-            if (!pageData.data.title || !pageData.data.body) {
+            if (!pageData.data.title || (!pageData.data.body && !pageData.data.components)) {
                 console.error('Blog missing required fields:', {
                     hasTitle: !!pageData.data.title,
                     hasBody: !!pageData.data.body,
+                    hasComponents: !!pageData.data.components,
                     itemSlug
                 });
                 return <PageNotFound />;
@@ -610,19 +611,20 @@ export default async function DynamicPage({ params, searchParams }) {
             // Validate blog data before proceeding
             if (!pageData?.data ||
                 !pageData?.data?.title ||
-                !pageData?.data?.body ||
+                (!pageData?.data?.body && !pageData?.data?.components) ||
                 Object.keys(pageData.data).length === 0) {
                 console.error('Blog data validation failed:', {
                     hasData: !!pageData?.data,
                     hasTitle: !!pageData?.data?.title,
                     hasBody: !!pageData?.data?.body,
+                    hasComponents: !!pageData?.data?.components,
                     dataKeys: pageData?.data ? Object.keys(pageData.data) : []
                 });
                 return <PageNotFound />;
             }
 
             // Additional validation for required blog fields
-            const requiredFields = ['title', 'body'];
+            const requiredFields = ['title'];
             const missingFields = requiredFields.filter(field => !pageData.data[field]);
 
             if (missingFields.length > 0) {
@@ -661,6 +663,14 @@ export default async function DynamicPage({ params, searchParams }) {
                 if (pageData?.data?.body) {
                     const textContent = pageData.data.body.replace(/<[^>]*>/g, '');
                     wordCount = textContent.split(/\s+/).length;
+                } else if (pageData?.data?.components) {
+                    // Calculate word count from components
+                    pageData.data.components.forEach((component) => {
+                        if (component.__component === "shared.rich-text" && component.body) {
+                            const textContent = component.body.replace(/<[^>]*>/g, '');
+                            wordCount += textContent.split(/\s+/).length;
+                        }
+                    });
                 }
 
                 articleSchema = {
@@ -760,6 +770,45 @@ export default async function DynamicPage({ params, searchParams }) {
                 breadcrumb = [];
             }
 
+            // Generate FAQ structured data for blog posts
+            let faqStructuredData = null;
+            try {
+                if (pageData?.data?.components && Array.isArray(pageData.data.components)) {
+                    const faqComponents = pageData.data.components.filter(comp => comp.__component === 'shared.faq-section');
+                    
+                    if (faqComponents.length > 0) {
+                        const allFaqItems = [];
+                        faqComponents.forEach(faqComponent => {
+                            if (faqComponent.list && Array.isArray(faqComponent.list)) {
+                                faqComponent.list.forEach(faqItem => {
+                                    if (faqItem.title && faqItem.label) {
+                                        allFaqItems.push({
+                                            "@type": "Question",
+                                            "name": faqItem.title,
+                                            "acceptedAnswer": {
+                                                "@type": "Answer",
+                                                "text": faqItem.label.replace(/<[^>]*>/g, '').trim() // Remove HTML tags for schema
+                                            }
+                                        });
+                                    }
+                                });
+                            }
+                        });
+
+                        if (allFaqItems.length > 0) {
+                            faqStructuredData = {
+                                "@context": "https://schema.org",
+                                "@type": "FAQPage",
+                                "mainEntity": allFaqItems
+                            };
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error('Error generating FAQ structured data for blog:', error);
+                faqStructuredData = null;
+            }
+
             return (
                 <>
                     {/* Preload critical blog image for better LCP */}
@@ -784,6 +833,14 @@ export default async function DynamicPage({ params, searchParams }) {
                             type="application/ld+json"
                             dangerouslySetInnerHTML={{
                                 __html: JSON.stringify(articleSchema)
+                            }}
+                        />
+                    )}
+                    {faqStructuredData && (
+                        <script
+                            type="application/ld+json"
+                            dangerouslySetInnerHTML={{
+                                __html: JSON.stringify(faqStructuredData)
                             }}
                         />
                     )}
