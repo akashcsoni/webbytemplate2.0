@@ -183,7 +183,7 @@ const SingleBlogImageComponentServer = ({ data }) => {
       alt={image.alternativeText || image.name || "Blog image"}
       width={image.width || 800}
       height={image.height || 400}
-      className="w-full h-auto rounded-lg object-cover"
+      className="w-full h-auto rounded-lg object-cover !p-0 !m-0"
       priority={false}
       loading="lazy"
       sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 800px"
@@ -195,14 +195,31 @@ const SingleBlogImageComponentServer = ({ data }) => {
   return (
     <div className="mb-6">
       {product?.slug ? (
-        <Link
-          href={`/product/${product.slug}`}
-          className="block hover:opacity-90 transition-opacity duration-200 !w-full"
-          target="_blank"
-          rel="noopener noreferrer"
+        <span
+          className="block relative group overflow-hidden rounded-lg !w-full"
         >
-          {imageElement}
-        </Link>
+          <div className="relative">
+            {imageElement}
+            {/* Hover Overlay */}
+            <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 transition-all duration-300 flex items-center justify-center opacity-0 group-hover:opacity-100">
+              <div className="text-center">
+                {/* <div className="bg-white px-4 py-2 rounded-md mb-2">
+                  <span className="text-black font-semibold text-sm">LIVE THEME</span>
+                  <span className="ml-1 text-black">↗</span>
+                </div> */}
+                <div className="bg-primary px-6 py-2 rounded-md">
+                  <Link
+                    href={`/product/${product.slug}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <span className="text-white font-bold text-sm uppercase">Details</span>
+                  </Link>
+                </div>
+              </div>
+            </div>
+          </div>
+        </span>
       ) : (
         imageElement
       )}
