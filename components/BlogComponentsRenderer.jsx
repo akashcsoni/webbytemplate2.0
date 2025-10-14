@@ -199,7 +199,7 @@ const SingleBlogImageComponent = ({ data }) => {
     <div className="mb-6">
       {product?.slug ? (
         <span
-          className="block relative group overflow-hidden rounded-lg !w-full"
+          className="block relative group overflow-hidden rounded-lg !w-full !bg-[#E6EFFB] border border-primary/10 shadow-sm p-4 hover:shadow-md transition-shadow"
         >
           <div className="relative">
             {imageElement}
