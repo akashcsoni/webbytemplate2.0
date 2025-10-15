@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { usePathname } from "next/navigation";
 import CategoryTagCard from "../product/category/tag/category-tag-card";
 
 const CategoryTagList = ({
@@ -8,7 +9,37 @@ const CategoryTagList = ({
   tags,
   limit, // default limit
   section_layout,
+  params, // Add params prop
 }) => {
+  const pathname = usePathname();
+  
+  // Extract parentSlug from params or pathname
+  const getParentSlug = () => {
+    // First try to get from params
+    if (params?.itemSlug) {
+      return params.itemSlug;
+    }
+    
+    // If not in params, try to extract from pathname
+    // For URLs like /category/html-templates/web-design
+    // We want to extract "html-templates" as the parent slug
+    const pathSegments = pathname.split("/").filter(Boolean);
+    if (pathSegments[0] === "category" && pathSegments[1]) {
+      return pathSegments[1];
+    }
+    
+    return null;
+  };
+  
+  const parentSlug = getParentSlug();
+  
+  // Debug logging
+  console.log("CategoryTagList Debug:", {
+    pathname,
+    params,
+    parentSlug,
+    categories: categories?.length || 0
+  });
   const [visibleCount, setVisibleCount] = useState(limit);
 
   const handleShowMore = () => {
@@ -29,7 +60,7 @@ const CategoryTagList = ({
           <p className="sm:mb-[30px] mb-5">{description}</p>
           <div className="grid grid-cols-2 lg:grid-cols-4 sm:gap-4 gap-3 mb-4 html-categories">
             {categories.map((category, index) => (
-              <CategoryTagCard key={index} category={category} />
+              <CategoryTagCard key={index} category={category} parentSlug={parentSlug} />
             ))}
           </div>
         </div>

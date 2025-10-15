@@ -174,7 +174,7 @@ const CategoryHome = ({
                         />
                         <button
                             onClick={handleSearch}
-                            className="bg-[#0156d5] text-white lg:py-3 py-2.5 px-[18px] rounded-r flex items-center justify-center"
+                            className="!bg-primary text-white lg:py-3 py-2.5 px-[18px] rounded-r flex items-center justify-center"
                         >
                             <svg
                                 xmlns="http://www.w3.org/2000/svg"

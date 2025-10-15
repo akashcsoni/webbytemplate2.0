@@ -53,9 +53,8 @@ const DropdownSection = ({ title, children }) => {
         <span className="text-sm text-gray-500">
           <svg
             xmlns="http://www.w3.org/2000/svg"
-            className={`h-4 w-4 transform transition-transform duration-300 ease-in-out ${
-              open ? "rotate-180" : "rotate-0"
-            }`}
+            className={`h-4 w-4 transform transition-transform duration-300 ease-in-out ${open ? "rotate-180" : "rotate-0"
+              }`}
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -1024,7 +1023,7 @@ const SearchPageContent = ({ slug }) => {
         <input {...inputProps} />
         <button
           type={mounted ? "submit" : "button"}
-          className="bg-[#0156d5] text-white lg:py-3 py-2.5 px-[18px] rounded-r flex items-center justify-center"
+          className="!bg-primary text-white lg:py-3 py-2.5 px-[18px] rounded-r flex items-center justify-center"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -1231,15 +1230,14 @@ xl:relative xl:translate-x-0 z-20 xl:p-0 xl:shadow-none xl:block
 
                           router.push(newUrl);
                         }}
-                        className={`p2 group-hover:text-primary flex-1 text-left ${
-                          !searchParams.get("tags") &&
-                          !searchParams.get("sales") &&
-                          !searchParams.get("feature") &&
-                          !searchParams.get("price_min") &&
-                          !searchParams.get("price_max")
+                        className={`p2 group-hover:text-primary flex-1 text-left ${!searchParams.get("tags") &&
+                            !searchParams.get("sales") &&
+                            !searchParams.get("feature") &&
+                            !searchParams.get("price_min") &&
+                            !searchParams.get("price_max")
                             ? "font-bold"
                             : ""
-                        }`}
+                          }`}
                       >
                         All Categories
                       </button>
@@ -1270,11 +1268,10 @@ xl:relative xl:translate-x-0 z-20 xl:p-0 xl:shadow-none xl:block
                             <Link
                               href={categoryUrl}
                               // className="p2 group-hover:text-primary flex-1"
-                              className={`p2 group-hover:text-primary flex-1 ${
-                                pathname.startsWith(`/category/${categorySlug}`)
+                              className={`p2 group-hover:text-primary flex-1 ${pathname.startsWith(`/category/${categorySlug}`)
                                   ? "font-bold"
                                   : ""
-                              }`}
+                                }`}
                             >
                               {cat.title}
                             </Link>
@@ -1297,11 +1294,10 @@ xl:relative xl:translate-x-0 z-20 xl:p-0 xl:shadow-none xl:block
                                 <Link
                                   href={subCategoryUrl}
                                   // className="p2 group-hover:text-primary flex-1"
-                                  className={`p2 group-hover:text-primary flex-1 ${
-                                    pathname === `/category/${subCategorySlug}`
+                                  className={`p2 group-hover:text-primary flex-1 ${pathname === `/category/${subCategorySlug}`
                                       ? "font-bold"
                                       : ""
-                                  }`}
+                                    }`}
                                 >
                                   {subCat.title}
                                 </Link>
@@ -1428,16 +1424,14 @@ xl:relative xl:translate-x-0 z-20 xl:p-0 xl:shadow-none xl:block
                       return (
                         <li
                           key={index}
-                          className={`flex items-center justify-between ${
-                            isDisabled ? "no-drop" : ""
-                          }`}
+                          className={`flex items-center justify-between ${isDisabled ? "no-drop" : ""
+                            }`}
                         >
                           <label
-                            className={`flex items-center 1xl:space-x-3 space-x-1.5 ${
-                              isDisabled
+                            className={`flex items-center 1xl:space-x-3 space-x-1.5 ${isDisabled
                                 ? "cursor-not-allowed"
                                 : "cursor-pointer"
-                            }`}
+                              }`}
                           >
                             <div className="relative flex items-center justify-center">
                               <input
@@ -1556,45 +1550,45 @@ xl:relative xl:translate-x-0 z-20 xl:p-0 xl:shadow-none xl:block
               searchParams.get("price_min") ||
               searchParams.get("price_max") ||
               searchParams.get("term")) && (
-              <>
-                {categories.length > 0 && (
-                  <button
-                    onClick={() => {
-                      const params = new URLSearchParams(
-                        searchParams.toString()
-                      );
+                <>
+                  {categories.length > 0 && (
+                    <button
+                      onClick={() => {
+                        const params = new URLSearchParams(
+                          searchParams.toString()
+                        );
 
-                      // Remove only category-related stuff (base/subcategory if you use them)
-                      params.delete("base");
-                      params.delete("subcategory");
+                        // Remove only category-related stuff (base/subcategory if you use them)
+                        params.delete("base");
+                        params.delete("subcategory");
 
-                      // Build new URL with /search as the base
-                      const queryString = params.toString();
-                      const newUrl = queryString
-                        ? `/search?${queryString}`
-                        : "/search";
+                        // Build new URL with /search as the base
+                        const queryString = params.toString();
+                        const newUrl = queryString
+                          ? `/search?${queryString}`
+                          : "/search";
 
-                      router.push(newUrl);
-                    }}
-                    className="!text-lg font-medium whitespace-nowrap underline underline-offset-2 hover:text-primary"
-                  >
-                    All Categories
-                  </button>
-                )}
+                        router.push(newUrl);
+                      }}
+                      className="!text-lg font-medium whitespace-nowrap underline underline-offset-2 hover:text-primary"
+                    >
+                      All Categories
+                    </button>
+                  )}
 
-                {categories.map((cat, idx) => (
-                  <p
-                    key={idx}
-                    className="text-md font-normal mr-2 flex items-center gap-1"
-                  >
-                    <span className="text-gray-400 whitespace-nowrap">/</span>
-                    <span className="font-medium text-gray-900 whitespace-nowrap">
-                      {cat}
-                    </span>
-                  </p>
-                ))}
-              </>
-            )}
+                  {categories.map((cat, idx) => (
+                    <p
+                      key={idx}
+                      className="text-md font-normal mr-2 flex items-center gap-1"
+                    >
+                      <span className="text-gray-400 whitespace-nowrap">/</span>
+                      <span className="font-medium text-gray-900 whitespace-nowrap">
+                        {cat}
+                      </span>
+                    </p>
+                  ))}
+                </>
+              )}
           </div>
           {renderSearchForm()}
 
@@ -1614,11 +1608,10 @@ xl:relative xl:translate-x-0 z-20 xl:p-0 xl:shadow-none xl:block
               {options.map((opt) => (
                 <button
                   key={opt.value}
-                  className={`btn rounded font-normal flex items-center justify-center gap-[6px] ${
-                    sort === opt.value
+                  className={`btn rounded font-normal flex items-center justify-center gap-[6px] ${sort === opt.value
                       ? "bg-primary text-white border border-primary"
                       : "bg-white text-black border border-primary/10"
-                  }`}
+                    }`}
                   onClick={() => handleSortChange(opt.value)}
                 >
                   {opt.name}
@@ -1692,9 +1685,8 @@ xl:relative xl:translate-x-0 z-20 xl:p-0 xl:shadow-none xl:block
               >
                 {selected}
                 <svg
-                  className={`ml-2 h-4 w-4 transition-transform duration-300 ease-in-out ${
-                    open ? "rotate-180" : "rotate-0"
-                  }`}
+                  className={`ml-2 h-4 w-4 transition-transform duration-300 ease-in-out ${open ? "rotate-180" : "rotate-0"
+                    }`}
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -1772,9 +1764,9 @@ xl:relative xl:translate-x-0 z-20 xl:p-0 xl:shadow-none xl:block
                         {searchParams.get("term")
                           ? formatLabel(searchParams.get("term"))
                           : formatLabel(pathname.split("/")?.[2]).replace(
-                              /%20/g,
-                              " "
-                            )}
+                            /%20/g,
+                            " "
+                          )}
                       </span>
                     </p>
                     <svg
@@ -1886,30 +1878,30 @@ xl:relative xl:translate-x-0 z-20 xl:p-0 xl:shadow-none xl:block
               {/* Price Range */}
               {(searchParams.get("price_min") ||
                 searchParams.get("price_max")) && (
-                <div className="flex items-center justify-center divide-x divide-primary/10 bg-blue-300 border border-primary/10 p-[1px] rounded-[4px] flex-shrink-0">
-                  <p className="p2 sm:px-2 px-1">
-                    Price :{" "}
-                    <span className="!text-black">
-                      ${searchParams.get("price_min")} - $
-                      {searchParams.get("price_max")}
-                    </span>
-                  </p>
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="27"
-                    height="27"
-                    viewBox="0 0 9 9"
-                    fill="none"
-                    className="px-2 flex-shrink-0 cursor-pointer"
-                    onClick={() => removeFilter("price")}
-                  >
-                    <path
-                      d="M8.80065 0.206172C8.7375 0.142889 8.66249 0.0926821 8.5799 0.0584261C8.49732 0.02417 8.40879 0.00653721 8.31939 0.00653721C8.22999 0.00653721 8.14146 0.02417 8.05888 0.0584261C7.97629 0.0926821 7.90128 0.142889 7.83813 0.206172L4.5 3.53747L1.16187 0.199346C1.09867 0.136145 1.02364 0.086012 0.941068 0.0518081C0.858492 0.0176043 0.769989 6.65925e-10 0.68061 0C0.591231 -6.65925e-10 0.502727 0.0176043 0.420151 0.0518081C0.337576 0.086012 0.262546 0.136145 0.199346 0.199346C0.136145 0.262546 0.086012 0.337576 0.0518081 0.420151C0.0176043 0.502727 -6.65925e-10 0.591231 0 0.68061C6.65925e-10 0.769989 0.0176043 0.858492 0.0518081 0.941068C0.086012 1.02364 0.136145 1.09867 0.199346 1.16187L3.53747 4.5L0.199346 7.83813C0.136145 7.90133 0.086012 7.97636 0.0518081 8.05893C0.0176043 8.14151 0 8.23001 0 8.31939C0 8.40877 0.0176043 8.49727 0.0518081 8.57985C0.086012 8.66242 0.136145 8.73745 0.199346 8.80065C0.262546 8.86385 0.337576 8.91399 0.420151 8.94819C0.502727 8.9824 0.591231 9 0.68061 9C0.769989 9 0.858492 8.9824 0.941068 8.94819C1.02364 8.91399 1.09867 8.86385 1.16187 8.80065L4.5 5.46253L7.83813 8.80065C7.90133 8.86385 7.97636 8.91399 8.05893 8.94819C8.14151 8.9824 8.23001 9 8.31939 9C8.40877 9 8.49727 8.9824 8.57985 8.94819C8.66242 8.91399 8.73745 8.86385 8.80065 8.80065C8.86385 8.73745 8.91399 8.66242 8.94819 8.57985C8.9824 8.49727 9 8.40877 9 8.31939C9 8.23001 8.9824 8.14151 8.94819 8.05893C8.91399 7.97636 8.86385 7.90133 8.80065 7.83813L5.46253 4.5L8.80065 1.16187C9.06006 0.902469 9.06006 0.465577 8.80065 0.206172Z"
-                      fill="#0156D5"
-                    />
-                  </svg>
-                </div>
-              )}
+                  <div className="flex items-center justify-center divide-x divide-primary/10 bg-blue-300 border border-primary/10 p-[1px] rounded-[4px] flex-shrink-0">
+                    <p className="p2 sm:px-2 px-1">
+                      Price :{" "}
+                      <span className="!text-black">
+                        ${searchParams.get("price_min")} - $
+                        {searchParams.get("price_max")}
+                      </span>
+                    </p>
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="27"
+                      height="27"
+                      viewBox="0 0 9 9"
+                      fill="none"
+                      className="px-2 flex-shrink-0 cursor-pointer"
+                      onClick={() => removeFilter("price")}
+                    >
+                      <path
+                        d="M8.80065 0.206172C8.7375 0.142889 8.66249 0.0926821 8.5799 0.0584261C8.49732 0.02417 8.40879 0.00653721 8.31939 0.00653721C8.22999 0.00653721 8.14146 0.02417 8.05888 0.0584261C7.97629 0.0926821 7.90128 0.142889 7.83813 0.206172L4.5 3.53747L1.16187 0.199346C1.09867 0.136145 1.02364 0.086012 0.941068 0.0518081C0.858492 0.0176043 0.769989 6.65925e-10 0.68061 0C0.591231 -6.65925e-10 0.502727 0.0176043 0.420151 0.0518081C0.337576 0.086012 0.262546 0.136145 0.199346 0.199346C0.136145 0.262546 0.086012 0.337576 0.0518081 0.420151C0.0176043 0.502727 -6.65925e-10 0.591231 0 0.68061C6.65925e-10 0.769989 0.0176043 0.858492 0.0518081 0.941068C0.086012 1.02364 0.136145 1.09867 0.199346 1.16187L3.53747 4.5L0.199346 7.83813C0.136145 7.90133 0.086012 7.97636 0.0518081 8.05893C0.0176043 8.14151 0 8.23001 0 8.31939C0 8.40877 0.0176043 8.49727 0.0518081 8.57985C0.086012 8.66242 0.136145 8.73745 0.199346 8.80065C0.262546 8.86385 0.337576 8.91399 0.420151 8.94819C0.502727 8.9824 0.591231 9 0.68061 9C0.769989 9 0.858492 8.9824 0.941068 8.94819C1.02364 8.91399 1.09867 8.86385 1.16187 8.80065L4.5 5.46253L7.83813 8.80065C7.90133 8.86385 7.97636 8.91399 8.05893 8.94819C8.14151 8.9824 8.23001 9 8.31939 9C8.40877 9 8.49727 8.9824 8.57985 8.94819C8.66242 8.91399 8.73745 8.86385 8.80065 8.80065C8.86385 8.73745 8.91399 8.66242 8.94819 8.57985C8.9824 8.49727 9 8.40877 9 8.31939C9 8.23001 8.9824 8.14151 8.94819 8.05893C8.91399 7.97636 8.86385 7.90133 8.80065 7.83813L5.46253 4.5L8.80065 1.16187C9.06006 0.902469 9.06006 0.465577 8.80065 0.206172Z"
+                        fill="#0156D5"
+                      />
+                    </svg>
+                  </div>
+                )}
               {/* Clear All button - only show if there are any filters */}
               {(searchParams.get("sort") ||
                 searchParams.get("tags") ||
@@ -1918,29 +1910,29 @@ xl:relative xl:translate-x-0 z-20 xl:p-0 xl:shadow-none xl:block
                 searchParams.get("price_min") ||
                 searchParams.get("price_max") ||
                 searchParams.get("term")) && (
-                <Link
-                  href="/search"
-                  className="2xl:!text-base sm:!text-[15px] !text-sm all-btn inline-flex items-center border-b border-transparent hover:border-primary gap-2"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    clearAllFilters();
-                  }}
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="9"
-                    height="9"
-                    viewBox="0 0 9 9"
-                    fill="none"
+                  <Link
+                    href="/search"
+                    className="2xl:!text-base sm:!text-[15px] !text-sm all-btn inline-flex items-center border-b border-transparent hover:border-primary gap-2"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      clearAllFilters();
+                    }}
                   >
-                    <path
-                      d="M8.80065 0.206172C8.7375 0.142889 8.66249 0.0926821 8.5799 0.0584261C8.49732 0.02417 8.40879 0.00653721 8.31939 0.00653721C8.22999 0.00653721 8.14146 0.02417 8.05888 0.0584261C7.97629 0.0926821 7.90128 0.142889 7.83813 0.206172L4.5 3.53747L1.16187 0.199346C1.09867 0.136145 1.02364 0.086012 0.941068 0.0518081C0.858492 0.0176043 0.769989 6.65925e-10 0.68061 0C0.591231 -6.65925e-10 0.502727 0.0176043 0.420151 0.0518081C0.337576 0.086012 0.262546 0.136145 0.199346 0.199346C0.136145 0.262546 0.086012 0.337576 0.0518081 0.420151C0.0176043 0.502727 -6.65925e-10 0.591231 0 0.68061C6.65925e-10 0.769989 0.0176043 0.858492 0.0518081 0.941068C0.086012 1.02364 0.136145 1.09867 0.199346 1.16187L3.53747 4.5L0.199346 7.83813C0.136145 7.90133 0.086012 7.97636 0.0518081 8.05893C0.0176043 8.14151 0 8.23001 0 8.31939C0 8.40877 0.0176043 8.49727 0.0518081 8.57985C0.086012 8.66242 0.136145 8.73745 0.199346 8.80065C0.262546 8.86385 0.337576 8.91399 0.420151 8.94819C0.502727 8.9824 0.591231 9 0.68061 9C0.769989 9 0.858492 8.9824 0.941068 8.94819C1.02364 8.91399 1.09867 8.86385 1.16187 8.80065L4.5 5.46253L7.83813 8.80065C7.90133 8.86385 7.97636 8.91399 8.05893 8.94819C8.14151 8.9824 8.23001 9 8.31939 9C8.40877 9 8.49727 8.9824 8.57985 8.94819C8.66242 8.91399 8.73745 8.86385 8.80065 8.80065C8.86385 8.73745 8.91399 8.66242 8.94819 8.57985C8.9824 8.49727 9 8.40877 9 8.31939C9 8.23001 8.9824 8.14151 8.94819 8.05893C8.91399 7.97636 8.86385 7.90133 8.80065 7.83813L5.46253 4.5L8.80065 1.16187C9.06006 0.902469 9.06006 0.465577 8.80065 0.206172Z"
-                      fill="#0156D5"
-                    />
-                  </svg>
-                  Clear All
-                </Link>
-              )}
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="9"
+                      height="9"
+                      viewBox="0 0 9 9"
+                      fill="none"
+                    >
+                      <path
+                        d="M8.80065 0.206172C8.7375 0.142889 8.66249 0.0926821 8.5799 0.0584261C8.49732 0.02417 8.40879 0.00653721 8.31939 0.00653721C8.22999 0.00653721 8.14146 0.02417 8.05888 0.0584261C7.97629 0.0926821 7.90128 0.142889 7.83813 0.206172L4.5 3.53747L1.16187 0.199346C1.09867 0.136145 1.02364 0.086012 0.941068 0.0518081C0.858492 0.0176043 0.769989 6.65925e-10 0.68061 0C0.591231 -6.65925e-10 0.502727 0.0176043 0.420151 0.0518081C0.337576 0.086012 0.262546 0.136145 0.199346 0.199346C0.136145 0.262546 0.086012 0.337576 0.0518081 0.420151C0.0176043 0.502727 -6.65925e-10 0.591231 0 0.68061C6.65925e-10 0.769989 0.0176043 0.858492 0.0518081 0.941068C0.086012 1.02364 0.136145 1.09867 0.199346 1.16187L3.53747 4.5L0.199346 7.83813C0.136145 7.90133 0.086012 7.97636 0.0518081 8.05893C0.0176043 8.14151 0 8.23001 0 8.31939C0 8.40877 0.0176043 8.49727 0.0518081 8.57985C0.086012 8.66242 0.136145 8.73745 0.199346 8.80065C0.262546 8.86385 0.337576 8.91399 0.420151 8.94819C0.502727 8.9824 0.591231 9 0.68061 9C0.769989 9 0.858492 8.9824 0.941068 8.94819C1.02364 8.91399 1.09867 8.86385 1.16187 8.80065L4.5 5.46253L7.83813 8.80065C7.90133 8.86385 7.97636 8.91399 8.05893 8.94819C8.14151 8.9824 8.23001 9 8.31939 9C8.40877 9 8.49727 8.9824 8.57985 8.94819C8.66242 8.91399 8.73745 8.86385 8.80065 8.80065C8.86385 8.73745 8.91399 8.66242 8.94819 8.57985C8.9824 8.49727 9 8.40877 9 8.31939C9 8.23001 8.9824 8.14151 8.94819 8.05893C8.91399 7.97636 8.86385 7.90133 8.80065 7.83813L5.46253 4.5L8.80065 1.16187C9.06006 0.902469 9.06006 0.465577 8.80065 0.206172Z"
+                        fill="#0156D5"
+                      />
+                    </svg>
+                    Clear All
+                  </Link>
+                )}
             </div>
           </div>
 
@@ -1997,9 +1989,8 @@ xl:relative xl:translate-x-0 z-20 xl:p-0 xl:shadow-none xl:block
                 {generatePageNumbers().map((page) => (
                   <button
                     key={page}
-                    className={`px-3 py-1 w-10 h-10 btn border rounded flex items-center justify-center ${
-                      activePage === page ? "bg-primary text-white" : ""
-                    }`}
+                    className={`px-3 py-1 w-10 h-10 btn border rounded flex items-center justify-center ${activePage === page ? "bg-primary text-white" : ""
+                      }`}
                     onClick={() => handlePageChange(page)}
                   >
                     {page}

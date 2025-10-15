@@ -2,13 +2,23 @@ import Image from "next/image";
 import Link from "next/link";
 import React from "react";
 
-const CategoryTagCard = ({ category }) => {
+const CategoryTagCard = ({ category, parentSlug }) => {
+
   const { title, slug, cover } = category;
   const imageUrl = cover?.url || "/images/place_holder.png?height=40&width=40";
 
+  // Generate the correct URL based on whether parentSlug is available
+  const getCategoryUrl = () => {
+    if (parentSlug) {
+      return `/category/${parentSlug}/${slug}`;
+    }
+    // Fallback to original URL structure if no parent slug
+    return `/category/${slug}`;
+  };
+
   return (
     <Link
-      href={`/category/${slug}`}
+      href={getCategoryUrl()}
       className="flex items-center justify-between bg-white rounded-lg 2xl:py-[13px] md:py-[11px] sm:py-2 py-1.5 2xl:px-[18px] md:px-[16px] px-3 shadow-sm hover:shadow-md transition-shadow"
     >
       <div className="flex items-center">
