@@ -697,23 +697,6 @@ export default function DashboardPage({ title }) {
                                       <p className="font-bold text-black">
                                         ${data?.value}
                                       </p>
-                                      <div className="flex items-center gap-[3px]">
-                                        <svg
-                                          xmlns="http://www.w3.org/2000/svg"
-                                          width="22"
-                                          height="22"
-                                          viewBox="0 0 22 22"
-                                          fill="none"
-                                        >
-                                          <path
-                                            d="M7.7474 7.75V4.5C7.7474 2.70507 9.20247 1.25 10.9974 1.25C12.7923 1.25 14.2474 2.70507 14.2474 4.5V7.75M4.4974 5.58333H17.4974L18.5807 19.6667H3.41406L4.4974 5.58333Z"
-                                            stroke="#0156D5"
-                                            strokeWidth="1.5"
-                                            strokeLinecap="round"
-                                          />
-                                        </svg>
-                                        <p className="p2">960</p>
-                                      </div>
                                     </div>
                                   </div>
                                 </div>

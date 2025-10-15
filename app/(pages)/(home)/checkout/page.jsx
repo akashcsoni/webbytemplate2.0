@@ -447,6 +447,7 @@ export default function CheckoutPage() {
 
   const handlePayNow = async () => {
     setpayNowLoading(true);
+    setRedirectLoading(false); // Reset redirect loading
 
     if (!isAuthenticated) {
       openAuth("login");
@@ -535,6 +536,10 @@ export default function CheckoutPage() {
         console.log(orderData, "✅ orderData from Strapi");
         console.log(orderData);
 
+        // Set redirect loading when payment process starts
+        setRedirectLoading(true);
+        setpayNowLoading(false);
+
         // 2. Create Razorpay order in backend
         if (selectedCountry === "India") {
           // ✅ Razorpay Flow
@@ -557,8 +562,7 @@ export default function CheckoutPage() {
             order_id: razorpayOrder.id,
             handler: async function (razorpayResponse) {
               console.log("✅ Razorpay Success", razorpayResponse);
-              // show redirect loader while we verify + navigate
-              setRedirectLoading(true);
+              // Keep redirect loading active during verification
               try {
                 // 4. Verify payment
                 await strapiPost("razorpay/verify", {
@@ -569,10 +573,11 @@ export default function CheckoutPage() {
                 // Give the overlay a frame to render before navigation
                 setTimeout(() => {
                   router.push(`/thank-you/${orderData?.documentId}`);
-                }, 50);
+                }, 100);
               } catch (e) {
                 console.error("Verification failed:", e);
                 setRedirectLoading(false);
+                setpayNowLoading(false);
               }
             },
             modal: {
@@ -610,6 +615,7 @@ export default function CheckoutPage() {
 
             console.log("❌ Razorpay payment failed", response);
             setRedirectLoading(false);
+            setpayNowLoading(false);
           });
 
           rzp.open();
@@ -625,7 +631,7 @@ export default function CheckoutPage() {
           console.log(stripeRes);
 
           if (stripeRes?.url) {
-            setRedirectLoading(true);
+            // Keep redirect loading active for Stripe redirect
             window.location.href = stripeRes.url;
           } else {
             throw new Error("Stripe session creation failed");
@@ -633,14 +639,13 @@ export default function CheckoutPage() {
         }
       } else {
         console.log("❌ Order creation failed:", response);
+        setpayNowLoading(false);
+        setRedirectLoading(false);
       }
     } catch (error) {
       console.error("❌ Payment Error:", error);
       setpayNowLoading(false);
       setRedirectLoading(false);
-    } finally {
-      // Keep redirectLoading as-is so overlay stays visible during redirect
-      setpayNowLoading(false);
     }
   };
 
@@ -709,13 +714,20 @@ export default function CheckoutPage() {
   return (
     <div className="container px-4 py-8">
       {redirectLoading && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[1000]">
-          <div className="text-white p-6 bg-gray-900/90 rounded-lg shadow-lg text-center min-w-[260px]">
-            <div className="animate-spin rounded-full h-12 w-12 border-2 border-white border-t-transparent mx-auto mb-4"></div>
-            <p className="text-lg font-medium">Redirecting…</p>
-            <p className="text-sm text-gray-300 mt-1">
-              Please wait while we confirm your payment
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-[9999] backdrop-blur-sm">
+          <div className="text-white p-8 bg-gray-900/95 rounded-xl shadow-2xl text-center min-w-[300px] max-w-[400px] mx-4">
+            <div className="animate-spin rounded-full h-16 w-16 border-4 border-white border-t-transparent mx-auto mb-6"></div>
+            <h3 className="text-xl font-semibold mb-2">Processing Payment...</h3>
+            <p className="text-sm text-gray-300 mb-4">
+              Please wait while we confirm your payment and redirect you to the confirmation page.
             </p>
+            <div className="flex justify-center">
+              <div className="flex space-x-1">
+                <div className="w-2 h-2 bg-white rounded-full animate-bounce"></div>
+                <div className="w-2 h-2 bg-white rounded-full animate-bounce" style={{animationDelay: '0.1s'}}></div>
+                <div className="w-2 h-2 bg-white rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
+              </div>
+            </div>
           </div>
         </div>
       )}
@@ -1286,7 +1298,7 @@ export default function CheckoutPage() {
                   : totalPrice.toFixed(2)}
               </p>
             </div>
-            <div className="flex items-center gap-2 xl:mt-2">
+            {/* <div className="flex items-center gap-2 xl:mt-2">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 width="24"
@@ -1302,7 +1314,7 @@ export default function CheckoutPage() {
               <p className="text-black font-medium">
                 10 day money back guarantee.
               </p>
-            </div>
+            </div> */}
           </div>
         </div>
       </div>
