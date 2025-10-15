@@ -557,7 +557,7 @@ export default function CheckoutPage() {
             key: razorpayKey, // From backend
             amount: razorpayOrder.amount,
             currency: razorpayOrder.currency,
-            name: "Your Shop",
+            name: "WebbyTemplate",
             description: "Order Payment",
             order_id: razorpayOrder.id,
             handler: async function (razorpayResponse) {

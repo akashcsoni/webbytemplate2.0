@@ -284,7 +284,7 @@ const ticketSupportPage = ({ title }) => {
           key: razorpayKey,
           amount: razorpayOrder.amount,
           currency: razorpayOrder.currency,
-          name: "Your Shop",
+          name: "WebbyTemplate",
           description: "Order Payment",
           order_id: razorpayOrder.id,
           handler: async function (razorpayResponse) {
