@@ -291,7 +291,7 @@ export default function RichText({ body, read_more, with_bg }) {
                             className="prose mb-4"
                             dangerouslySetInnerHTML={{ __html: formatContent(displayContent) }}
                         />
-                        <div className="relative z-50">
+                        <div className="relative z-10">
                             {showToggle && (
                                 <button
                                     onClick={() => setIsExpanded(!isExpanded)}

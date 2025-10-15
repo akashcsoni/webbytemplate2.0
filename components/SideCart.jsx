@@ -70,7 +70,7 @@ export default function SideCart() {
           </button>
         </div>
 
-        <div className="overflow-hidden sm:max-h-[calc(100vh-235px)] max-h-[calc(100vh-210px)] sm:p-5 p-3 space-y-[25px] h-full">
+        <div className="overflow-hidden sm:max-h-[calc(100vh-285px)] max-h-[calc(100vh-260px)] sm:p-5 p-3 space-y-[25px] h-full">
           {Array.isArray(cartItems) && cartItems?.length > 0 ? (
             cartItems?.map((item) => {
               const imageUrl = item?.product?.grid_image?.url
@@ -167,7 +167,7 @@ export default function SideCart() {
           )}
         </div>
 
-        <div className="sm:py-[18px] sm:px-5 p-3 shadow-gray">
+        <div className="sm:py-[18px] sm:px-5 p-3 pb-[70px] shadow-gray">
           <div className="flex justify-between items-center mb-4">
             <p className="text-black">Subtotal:</p>
             <p className="text-primary font-medium">${totalPrice.toFixed(2)}</p>
