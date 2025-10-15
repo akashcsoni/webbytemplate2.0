@@ -232,10 +232,12 @@ export default function ProductsList(props) {
   const getCurrentSlug = () => {
     const pathSegments = pathname.split("/").filter(Boolean);
 
+    // For URL like /category/html-templates/email
+    // pathSegments = ["category", "html-templates", "email"]
     // For URL like /category/html-templates
     // pathSegments = ["category", "html-templates"]
-    if (pathSegments[0] === "category" && pathSegments[1]) {
-      return pathSegments[1]; // "html-templates"
+    if (pathSegments[0] === "category" && pathSegments.length > 1) {
+      return pathSegments[pathSegments.length - 1]; // Return the last segment
     }
 
     return null;
@@ -301,6 +303,11 @@ export default function ProductsList(props) {
 
   // Determine background class based on section_layout
   const bgClass = section_layout === "with_bg" ? "bg-gray-50" : "";
+
+  // Don't render the component if no products are found and not loading
+  if (!loading && !error && filteredProducts?.length === 0) {
+    return null;
+  }
 
   return (
     <section className={`xl:py-[35px] md:py-[30px] py-5 relative  ${bgClass}`}>
@@ -388,19 +395,11 @@ export default function ProductsList(props) {
                 </button>
               </div>
             ) : (
-              <>
-                {filteredProducts?.length > 0 ? (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 1xl:grid-cols-5 gap-[26px]">
-                    {filteredProducts?.map((product, index) => (
-                      <ProductGrid key={index} product={product} />
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-center">
-                    No products is currently available.
-                  </p>
-                )}
-              </>
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 1xl:grid-cols-5 gap-[26px]">
+                {filteredProducts?.map((product, index) => (
+                  <ProductGrid key={index} product={product} />
+                ))}
+              </div>
             )}
           </div>
         </div>

@@ -3,7 +3,7 @@ import { themeConfig } from '@/config/theamConfig';
 
 export async function GET() {
     try {
-        const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://yourdomain.com';
+        const baseUrl = themeConfig.SITE_URL;
         const currentDate = new Date().toISOString();
         
         // Initialize sitemap entries

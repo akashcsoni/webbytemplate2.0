@@ -1,6 +1,6 @@
 const URL = "https://studio.webbytemplate.com"
 const STRAPI_URL = `${URL}/api`
-const SITE_URL = 'https://webbytemplatev2.vercel.app' || "https://webbytemplatev2.vercel.app"
+const SITE_URL = 'https://www.webbytemplate.com' || "https://www.webbytemplate.com"
 const NO_AVTAR_IMAGE = `/images/no-image.svg`
 const NO_FOUND_PRODUCT_GRID_IMAGE = `/placeholder.svg?height=270&width=230`
 
