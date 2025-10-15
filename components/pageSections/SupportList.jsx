@@ -25,6 +25,7 @@ import { themeConfig } from "@/config/theamConfig";
 const ticketSupportPage = ({ title }) => {
   const formRef = useRef(null);
   const { authUser } = useAuth();
+  // console.log(authUser);
   const [file, setFile] = useState(null);
   const fileInputRef = useRef(null);
   const [fileName, setFileName] = useState("");
@@ -45,6 +46,7 @@ const ticketSupportPage = ({ title }) => {
 
   const debouncedInputChange = useCallback(
     debounce((name, value) => {
+      j;
       setFilterData((prev) => ({ ...prev, [name]: value }));
     }, 300),
     []
@@ -163,6 +165,7 @@ const ticketSupportPage = ({ title }) => {
           themeConfig.TOKEN
         );
         if (submitData) {
+          // console.log(submitData, "submitdata");
           setFormSubmitLoading(false);
           setSubmitFormData({
             productDocumentId: "",
@@ -284,7 +287,7 @@ const ticketSupportPage = ({ title }) => {
 
   const fetchSupportData = async (id, position) => {
     // setLoading(true);
-    if (id && position) {
+    if (id) {
       try {
         const payload = {
           page_size,
@@ -1184,11 +1187,11 @@ const ticketSupportPage = ({ title }) => {
                                   defaultValue={
                                     filterData?.ticket_date
                                       ? parseDate(
-                                        filterData.ticket_date
-                                          .split("-")
-                                          .reverse()
-                                          .join("-")
-                                      )
+                                          filterData.ticket_date
+                                            .split("-")
+                                            .reverse()
+                                            .join("-")
+                                        )
                                       : null
                                   }
                                   label="Date Purchased"
@@ -1351,8 +1354,8 @@ const ticketSupportPage = ({ title }) => {
                                     }}
                                     classes="download-table"
                                     layout="fitColumns"
-                                  // "fitDataFill"
-                                  // : "fitColumns",
+                                    // "fitDataFill"
+                                    // : "fitColumns",
                                   />
                                 ) : (
                                   !loading && (
@@ -1417,7 +1420,7 @@ const ticketSupportPage = ({ title }) => {
                                             inputWrapper:
                                               "!bg-white focus:!bg-white hover:!bg-white" +
                                                 errors?.product?.length >
-                                                0
+                                              0
                                                 ? " !border-danger"
                                                 : "",
                                           }}
@@ -1969,11 +1972,11 @@ const ticketSupportPage = ({ title }) => {
                                 defaultValue={
                                   filterData?.ticket_date
                                     ? parseDate(
-                                      filterData.ticket_date
-                                        .split("-")
-                                        .reverse()
-                                        .join("-")
-                                    )
+                                        filterData.ticket_date
+                                          .split("-")
+                                          .reverse()
+                                          .join("-")
+                                      )
                                     : null
                                 }
                                 label="Date Purchased"
@@ -2103,8 +2106,8 @@ const ticketSupportPage = ({ title }) => {
                                   }}
                                   classes="download-table"
                                   layout="fitColumns"
-                                // "fitDataFill"
-                                // : "fitColumns",
+                                  // "fitDataFill"
+                                  // : "fitColumns",
                                 />
                               ) : (
                                 !loading && (
@@ -2178,6 +2181,9 @@ const ticketSupportPage = ({ title }) => {
                       setOpenTicketData(null);
                     }}
                   >
+                    {/* {console.log(openTicket, "openticket")}
+                    {console.log(openTicketData, "openticketdata")} */}
+
                     {openTicket && openTicketData ? (
                       <ReplayForm data={openTicketData} status="Pending" />
                     ) : (
@@ -2280,11 +2286,11 @@ const ticketSupportPage = ({ title }) => {
                               defaultValue={
                                 filterData?.ticket_date
                                   ? parseDate(
-                                    filterData.ticket_date
-                                      .split("-")
-                                      .reverse()
-                                      .join("-")
-                                  )
+                                      filterData.ticket_date
+                                        .split("-")
+                                        .reverse()
+                                        .join("-")
+                                    )
                                   : null
                               }
                               label="Date Purchased"
@@ -2412,8 +2418,8 @@ const ticketSupportPage = ({ title }) => {
                                 }}
                                 classes="download-table"
                                 layout="fitColumns"
-                              // "fitDataFill"
-                              // : "fitColumns",
+                                // "fitDataFill"
+                                // : "fitColumns",
                               />
                             ) : (
                               !loading && (
@@ -2478,7 +2484,7 @@ const ticketSupportPage = ({ title }) => {
                                         inputWrapper:
                                           "!bg-white focus:!bg-white hover:!bg-white" +
                                             errors?.product?.length >
-                                            0
+                                          0
                                             ? " !border-danger"
                                             : "",
                                       }}

@@ -512,7 +512,7 @@ export default function CheckoutPage({ params }) {
                 Thank you, your order has been received.
               </p>
             </div>
-            <div className="flex justify-end items-start gap-2 flex-wrap">
+            {/* <div className="flex justify-end items-start gap-2 flex-wrap">
               <button className="!border-[#00193E1A] btn btn-outline-primary !py-[2px] !px-3 gap-2">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -560,7 +560,7 @@ export default function CheckoutPage({ params }) {
                 </svg>
                 Invoice
               </button>
-            </div>
+            </div> */}
           </div>
 
           {/* Header Summary */}
@@ -648,7 +648,7 @@ export default function CheckoutPage({ params }) {
                             </button>
                           </div>
                         </div>
-                        <button
+                        {/* <button
                           className="!border-[#00193E1A] btn btn-outline-primary !py-[2px] !px-3 gap-2 h-fit my-auto sm:!flex !hidden"
                           onClick={() =>
                             productdownload(item?.id, item?.license_key)
@@ -677,7 +677,7 @@ export default function CheckoutPage({ params }) {
                             </g>
                           </svg>
                           Download
-                        </button>
+                        </button> */}
 
                         {/* <button
                           onClick={async () => {

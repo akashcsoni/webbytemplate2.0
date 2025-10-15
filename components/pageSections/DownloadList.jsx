@@ -38,9 +38,9 @@ const DownloadPage = ({ title }) => {
       return total + price;
     }, 0);
 
-    const taxAmount = orderData.tax_amount;
-    const taxPercentage = orderData.tax_percentage;
-    const finalTotal = orderData.total_price;
+    const taxPercentage = orderData.tax_percentage || 0;
+    const totalGST = (subtotal * taxPercentage) / 100;
+    const finalTotal = subtotal + totalGST; // ✅ fixed total includes GST
 
     function formatDate(dateString) {
       if (!dateString) return "N/A";
@@ -52,6 +52,8 @@ const DownloadPage = ({ title }) => {
     function formatCurrency(amount) {
       return `$${(amount || 0).toFixed(2)}`;
     }
+
+    console.log(orderData, "this is for user data");
 
     const billedToFullName =
       orderData.user.full_name ||
@@ -78,7 +80,7 @@ const DownloadPage = ({ title }) => {
       billedToEmail = orderData.user.username;
     }
 
-    const billedToContact = orderData.billing_address.phone_no;
+    const billedToContact = orderData.billing_address.phone_no || "N/A";
     const billedToGSTIN = orderData.billing_address.gst_number || "N/A";
 
     // --- Generate product rows with GST line inside each ---
@@ -105,7 +107,7 @@ const DownloadPage = ({ title }) => {
           productPrice = item.total;
         }
 
-        // Calculate GST per product based on global percentage
+        // Calculate GST per product
         const gstAmount = (productPrice * taxPercentage) / 100;
 
         return `
@@ -232,8 +234,8 @@ const DownloadPage = ({ title }) => {
         <h4><strong>WebbyCrown Solutions</strong></h4>
         <p style="margin-bottom:8px;">517, Laxmi Enclave 2, opp. Gajera School, Katargam, Surat, Gujarat 395004</p>
         <p style="margin-bottom:5px;"><span style="color:black; margin-right:28px;">Email:</span> info@webbycrown.com</p>
-        <p style="margin-bottom:5px;"><span style="color:black; margin-right:15px;">Phone:</span> +91 63527-72383</p>
-        <p><span style="color:black; margin-right:16px;">GSTIN:</span> 22AAAA00051225</p>
+        <p style="margin-bottom:5px;"><span style="color:black; margin-right:15px;">Phone:</span> +91 94286-77503</p>
+        <p><span style="color:black; margin-right:16px;">GSTIN:</span> 24AACFW9641F1Z3</p>
       </div>
       <div class="box">
         <h6>Billed To</h6>
@@ -270,7 +272,7 @@ const DownloadPage = ({ title }) => {
         </div>
         <div>
           <p style="margin-bottom:8px; color:black; font-weight:500;">Have questions or need support?</p>
-          <p style="margin-bottom:8px;">Reach out to us at support@yourwebsite.com.</p>
+          <p style="margin-bottom:8px;">Reach out to us at support@webbytemplate.com.</p>
         </div>
       </div>
     </div>
@@ -278,9 +280,8 @@ const DownloadPage = ({ title }) => {
 
   <div class="footer">
     <p>To learn more, please review our
-      <a href="#">Privacy Policy</a>,
-      <a href="#">Terms of Service</a>, or
-      <a href="#">Tax & VAT Policy</a>.
+      <a style="color:#0043A2" href="https://webbytemplate.com/privacy-policy">Privacy Policy</a>,
+      <a style="color:#0043A2" href="https://webbytemplate.com/terms-and-conditions">Terms Conditions</a>.
     </p>
   </div>
 </body>
