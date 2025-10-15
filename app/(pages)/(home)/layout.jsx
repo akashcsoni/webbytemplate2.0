@@ -5,6 +5,7 @@ import { siteConfig } from "@/config/site";
 import { fontSans } from "@/config/fonts";
 import Header from "@/components/header/header";
 import { FooterFooterContainer } from "@/components/footer/footer-container";
+import Script from "next/script";
 
 export const metadata = {
   title: {
@@ -49,7 +50,7 @@ export default function RootLayout({ children }) {
           type="font/woff2"
           crossOrigin="anonymous"
         />
-        
+
         {/* Preload critical images for better LCP */}
         <link
           rel="preload"
@@ -69,22 +70,22 @@ export default function RootLayout({ children }) {
           href="/images/no-image.svg"
           type="image/svg+xml"
         />
-        
+
         {/* DNS prefetch for external domains */}
         <link rel="dns-prefetch" href="//fonts.googleapis.com" />
         <link rel="dns-prefetch" href="//cdn.jsdelivr.net" />
         <link rel="dns-prefetch" href="//checkout.razorpay.com" />
         <link rel="dns-prefetch" href="//studio.webbytemplate.com" />
-        
+
         {/* Preconnect to critical third-party origins */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link rel="preconnect" href="https://studio.webbytemplate.com" />
-        
+
         {/* Resource hints for better performance */}
         <link rel="prefetch" href="/api/auth/session" />
         <link rel="prefetch" href="/api/cart-cookie" />
-        
+
         {/* Critical CSS inlining would go here if needed */}
         <style dangerouslySetInnerHTML={{
           __html: `
@@ -112,6 +113,16 @@ export default function RootLayout({ children }) {
           <main>{children}</main>
           <FooterFooterContainer />
         </Providers>
+        <Script
+          dangerouslySetInnerHTML={{
+            __html: `window.$zoho=window.$zoho || {};$zoho.salesiq=$zoho.salesiq||{ready:function(){}}`,
+          }}
+        />
+        <Script
+          id="zsiqscript"
+          src="https://salesiq.zohopublic.in/widget?wc=siq80204715dc712d38f147a31f84d9ae62cfb628ce61feff32ab93ec9655c75845"
+          strategy="lazyOnload"
+        />
       </body>
     </html>
   );

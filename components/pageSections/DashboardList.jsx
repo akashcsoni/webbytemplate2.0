@@ -301,7 +301,7 @@ export default function DashboardPage({ title }) {
 
   useEffect(() => {
     const fetchSummaryProductData = async (id) => {
-      // console.log(id);
+      console.log(id);
       try {
         // setFilteredProducts([]);
 
@@ -313,7 +313,7 @@ export default function DashboardPage({ title }) {
 
         // Call the API using the utility function
         const response = await strapiPost(
-          `/orders/products/2`,
+          `/orders/products/${id}`,
           payload,
           themeConfig.TOKEN
         );
@@ -697,6 +697,23 @@ export default function DashboardPage({ title }) {
                                       <p className="font-bold text-black">
                                         ${data?.value}
                                       </p>
+                                      <div className="flex items-center gap-[3px]">
+                                        <svg
+                                          xmlns="http://www.w3.org/2000/svg"
+                                          width="22"
+                                          height="22"
+                                          viewBox="0 0 22 22"
+                                          fill="none"
+                                        >
+                                          <path
+                                            d="M7.7474 7.75V4.5C7.7474 2.70507 9.20247 1.25 10.9974 1.25C12.7923 1.25 14.2474 2.70507 14.2474 4.5V7.75M4.4974 5.58333H17.4974L18.5807 19.6667H3.41406L4.4974 5.58333Z"
+                                            stroke="#0156D5"
+                                            strokeWidth="1.5"
+                                            strokeLinecap="round"
+                                          />
+                                        </svg>
+                                        <p className="p2">960</p>
+                                      </div>
                                     </div>
                                   </div>
                                 </div>
@@ -740,7 +757,7 @@ export default function DashboardPage({ title }) {
                           </div>
                         </div>
                       </div>
-                      <div className="flex items-start lg:flex-row flex-col gap-5 my-[20px] overflow-hidden">
+                      {/* <div className="flex items-start lg:flex-row flex-col gap-5 my-[20px] overflow-hidden">
                         <div className="border border-primary/10 rounded-md overflow-hidden xl:w-2/3 lg:w-3/5 w-full">
                           <div className="flex items-center justify-between sm:flex-nowrap flex-wrap gap-2 w-full border-b border-primary/10 sm:px-5 px-3 py-[6px] bg-white">
                             <p className="text-black">Performance analytics</p>
@@ -880,7 +897,7 @@ export default function DashboardPage({ title }) {
                             </ChartContainer>
                           )}
                         </div>
-                      </div>
+                      </div> */}
 
                       {/* recent selling products */}
                       <div className="my-[20px] p-3 bg-white border border-primary/10 rounded-md overflow-hidden">

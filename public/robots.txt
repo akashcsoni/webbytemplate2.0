@@ -1,11 +1,14 @@
 User-agent: *
-Disallow: /
+Allow: /
 
+# Block account pages
+Disallow: /user
 
-Sitemap: https://webbytemplatev2.vercel.app/sitemap.xml
+# Block all URLs that contain query strings (if you want to block query-URLs from crawling)
+Disallow: /*?*
 
-Sitemap: https://webbytemplatev2.vercel.app/product-list.xml
+# Block Next.js build output and image handler
+Disallow: /_next/
 
-Sitemap: https://webbytemplatev2.vercel.app/product-category.xml
-
-Sitemap: https://webbytemplatev2.vercel.app/blog-list.xml
+# Sitemap
+Sitemap: https://webbytemplate.com/sitemap.xml
