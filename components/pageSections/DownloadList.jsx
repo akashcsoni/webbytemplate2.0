@@ -24,1019 +24,267 @@ const DownloadPage = ({ title }) => {
   const [selectedProduct, setSelectedProduct] = useState(null);
 
   const generateInvoiceHTML = (orderData) => {
-    const totalSalesPrice = orderData.multiProduct
-      ? orderData?._children?.reduce((total, item) => {
-          return (
-            total + (item.price?.sales_price || item.price?.regular_price || 0)
-          );
-        }, 0)
-      : orderData?.product?.reduce((total, item) => {
-          return (
-            total + (item.price?.sales_price || item.price?.regular_price || 0)
-          );
-        }, 0);
-    // 2. Calculate 18% GST
-    const gst = totalSalesPrice * 0.18;
+    const productsList = orderData.multiProduct
+      ? orderData._children
+      : orderData.product;
 
-    // 3. Final total with GST
-    const finalTotal = totalSalesPrice + gst;
+    const subtotal = productsList.reduce((total, item) => {
+      let price = 0;
+      if (orderData.multiProduct) {
+        price = item.price?.sales_price || item.price?.regular_price || 0;
+      } else {
+        price = item.total || 0;
+      }
+      return total + price;
+    }, 0);
+
+    const taxAmount = orderData.tax_amount;
+    const taxPercentage = orderData.tax_percentage;
+    const finalTotal = orderData.total_price;
 
     function formatDate(dateString) {
+      if (!dateString) return "N/A";
       const date = new Date(dateString);
       const options = { day: "2-digit", month: "short", year: "numeric" };
-      const formattedDate = date.toLocaleDateString("en-GB", options);
-
-      return formattedDate;
+      return date.toLocaleDateString("en-GB", options);
     }
 
-    return `  
+    function formatCurrency(amount) {
+      return `$${(amount || 0).toFixed(2)}`;
+    }
+
+    const billedToFullName =
+      orderData.user.full_name ||
+      orderData.billing_address.first_name +
+        " " +
+        orderData.billing_address.last_name;
+
+    const billedToAddress = `${orderData.billing_address.address}, ${orderData.billing_address.city}, ${orderData.billing_address.state} ${orderData.billing_address.pincode}, ${orderData.billing_address.country}`;
+
+    let billedToEmail = "N/A";
+    try {
+      if (
+        orderData.transactions &&
+        orderData.transactions[0] &&
+        orderData.transactions[0].description
+      ) {
+        billedToEmail =
+          JSON.parse(orderData.transactions[0].description).email ||
+          orderData.user.username;
+      } else {
+        billedToEmail = orderData.user.username;
+      }
+    } catch (e) {
+      billedToEmail = orderData.user.username;
+    }
+
+    const billedToContact = orderData.billing_address.phone_no;
+    const billedToGSTIN = orderData.billing_address.gst_number || "N/A";
+
+    // --- Generate product rows with GST line inside each ---
+    const productRows = productsList
+      .map((item) => {
+        let productName, productCode, licenseDescription, productPrice;
+
+        if (orderData.multiProduct) {
+          productName = item.products.split(":")[0] || "Product";
+          productCode = item.document_id
+            ? item.document_id.substring(0, 8)
+            : "N/A";
+          licenseDescription = item.products;
+          productPrice =
+            item.price?.sales_price || item.price?.regular_price || 0;
+        } else {
+          productName = item.product_title.split(":")[0] || "Product";
+          productCode = item.product.documentId
+            ? item.product.documentId.substring(0, 8)
+            : "N/A";
+          licenseDescription = `${item.product_title} - ${
+            item.extra_info[0]?.license?.title || "Regular License"
+          }`;
+          productPrice = item.total;
+        }
+
+        // Calculate GST per product based on global percentage
+        const gstAmount = (productPrice * taxPercentage) / 100;
+
+        return `
+      <tr class="table-details">
+        <td colspan="4" style="padding:0;">
+          <table cellpadding="0" cellspacing="0" border="0" style="padding:0; margin:0;">
+              <tr>
+                  <td style="width: 20%;">${productName}: template</td>
+                  <td style="width: 20%;">${productCode}</td>
+                  <td class="product-description">
+                  <p>${licenseDescription}</p></td>
+                  <td style=" text-align:right; width: 20%;">${formatCurrency(productPrice)}</td>
+              </tr>
+          </table>
+        </td>
+      </tr>
+
+      <tr class="table-details">
+        <td colspan="4"  style="padding:0;">
+          <table cellpadding="0" cellspacing="0" border="0" style="padding:0; margin:0;">
+              <tr>
+                  <td style="width: 20%;"></td>
+                  <td style="width: 20%;"></td>
+                  <td style="width: 40%;">GST% @ ${taxPercentage.toFixed(1)}%</td>
+                  <td style=" text-align:right; width: 20%;">${formatCurrency(gstAmount)}</td>
+              </tr>
+          </table>
+        </td>
+      </tr>
+
+      <tr class="table-details">
+        <td colspan="4"  style="padding:0;">
+          <table cellpadding="0" cellspacing="0" border="0" style="padding:0; margin:0;">
+              <tr>
+                  <td style="width: 20%;"></td>
+                  <td style="width: 20%;"></td>
+                  <td style="width: 40%;">VAT%</td>
+                  <td style=" text-align:right; width: 20%;">$0.00</td>
+              </tr>
+          </table>
+        </td>
+      </tr>
+
+      <tr class="table-details">
+        <td colspan="4"  style="padding:0;">
+          <table cellpadding="0" cellspacing="0" border="0" style="padding:0; margin:0;">
+            <tr>
+              <td style="border-bottom:1px solid #D3DEEF; width:20%;" ></td>
+              <td style="border-bottom:1px solid #D3DEEF; width:20%;"></td>
+              <td style="padding-top:5px;border-bottom:1px solid #D3DEEF; width:40%;">TDS%</td>
+              <td style="padding-top:5px; text-align:right;border-bottom:1px solid #D3DEEF; width: 20%;">$0.00</td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+      `;
+      })
+      .join("");
+
+    const paymentMethod =
+      orderData.transactions[0]?.payment_gateway === "razorpay"
+        ? "Paid via Credit Card"
+        : "Paid via Other Method";
+
+    const totalRowFooter = `
+    <tr>
+      <td colspan="2" style="text-align:left;">
+        ${paymentMethod}
+      </td>
+      <td colspan="2" style="text-align:right; font-weight:500; color:black;">
+        Invoice Total:
+        <span style="color:#0156D5">USD ${formatCurrency(finalTotal)}</span>
+      </td>
+    </tr>
+  `;
+
+    return `
 <!DOCTYPE html>
 <html>
 <head>
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta charset="utf-8" />
 <title>Invoice</title>
-<style type="text/css">
-body,
-table,
-p,
-td,
-th {
-font-family: Proxima Nova, sans-serif, system-ui, -apple-system,
-BlinkMacSystemFont, Segoe UI, Roboto, Helvetica Neue, Arial, Noto Sans,
-sans-serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol,
-Noto Color Emoji;
-}
-html {
-margin: 0;
-}
-body {
-margin: 0;
-padding: 0;
-}
-@page {
-size: 210mm 297mm;
-}
+<style>
+  body { font-family:'Proxima Nova', Arial, sans-serif; margin:0; padding:0; line-height:normal; }
+  .pdf-box { max-width:1110px; margin:auto; padding:20px 20px 0 20px; }
+  h2 { font-size:30px; margin:0; padding:0; }
+  p { font-size:16px; line-height:24px; color:#505050; margin:0; }
+  table { width:100%; border-collapse:collapse; line-height:normal; }
+  .header { display:flex; justify-content:space-between; align-items:start; margin-bottom:40px; }
+  .info-boxes { display:flex; gap:20px; margin-bottom:16px; }
+  .box { flex:1; border:1px solid #D3DEEF; border-radius:6px; padding:20px; font-size:13px; background:#E6EFFB33; }
+  .box h6 { margin:0 0 10px 0; color:#0043A2; font-size:18px; }
+  .box h4 { margin:0 0 8px 0; color:#000; font-size:20px; }
+  .product-description { width:40%; word-wrap:break-word; white-space:normal; }
+  table.items { border:1px solid #D3DEEF; border-radius:12px; margin-bottom:16px; }
+  th { background:#0043A2; color:#fff; font-size:16px; padding:5px 15px 20px; text-align:left; font-weight:500; }
+  td { font-size:16px; padding:5px 15px 20px; color:#505050; vertical-align:center; }
+  table tr.table-details td { padding:0px 15px 10px; }
+  .footer { margin-top:20px; text-align:center; font-size:11px; color:#666; background:#E6EFFB; padding:12px 16px; }
 </style>
 </head>
 
 <body>
-<div style="padding: 25px">
-<table
-align="center"
-style="
-width: 100%;
-border-collapse: collapse;
-border-spacing: 0;
-vertical-align: middle;
-font-family: 'Proxima Nova', sans-serif;
-"
->
-<tr>
-<td
-style="
-width: 40%;
-padding-right: 10px;
-vertical-align: top;
-text-align: left;
-"
->
-<table>
-<tbody>
-<tr>
-<td align="center" style="vertical-align: middle">
-<div
-style="
-width: 65px;
-height: 65px;
-background-color: #0156d5;
-border-radius: 8px;
-display: flex;
-align-items: center;
-justify-content: center;
-color: white;
-font-weight: bold;
-font-size: 18px;
-"
->
-<img
-src="https://webbytemplate-store-com.s3.ap-south-1.amazonaws.com/Favicon_1_a677acbd8e.png"
-alt="LOGO"
-/>
-</div>
-</td>
-</tr>
-</tbody>
-</table>
-</td>
-<td style="width: 60%; padding-left: 10px">
-<h2
-style="
-text-align: right;
-font-weight: 700;
-margin: 0;
-padding: 0;
-font-size: 20px;
-font-family: 'Proxima Nova', sans-serif;
-"
->
-Invoice
-</h2>
-<table
-align="center"
-style="
-width: 100%;
-border-collapse: collapse;
-border-spacing: 0;
-vertical-align: middle;
-font-family: 'Proxima Nova', sans-serif;
-"
->
-<tr>
-<td align="right" style="width: 40%; padding: 15px 0">
-<table
-align="right"
-style="
-vertical-align: top;
-border-collapse: collapse;
-border-spacing: 0;
-font-family: 'Proxima Nova', sans-serif;
-"
->
-<tr>
-<td
-style="
-width: 40%;
-vertical-align: top;
-text-align: left;
-font-family: 'Proxima Nova', sans-serif;
-"
->
-<p
-style="
-margin: 0;
-padding-right: 10px;
-font-family: 'Proxima Nova', sans-serif;
-font-weight: 700;
-font-size: 13px;
-color: #000;
-line-height: 18px;
-"
->
-Invoice No:
-</p>
-</td>
-<td
-style="
-width: 60%;
-vertical-align: top;
-text-align: right;
-font-family: 'Proxima Nova', sans-serif;
-"
->
-<p
-style="
-margin: 0;
-padding: 0;
-font-family: 'Proxima Nova', sans-serif;
-font-weight: 400;
-font-size: 13px;
-color: #000;
-line-height: 18px;
-"
->
-${orderData.documentId}
-</p>
-</td>
-</tr>
-<tr>
-<td
-style="
-width: 40%;
-vertical-align: top;
-text-align: left;
-font-family: 'Proxima Nova', sans-serif;
-"
->
-<p
-style="
-margin: 0;
-padding-right: 10px;
-font-family: 'Proxima Nova', sans-serif;
-font-weight: 700;
-font-size: 13px;
-color: #000;
-line-height: 18px;
-"
->
-Invoice Date:
-</p>
-</td>
-<td
-style="
-width: 60%;
-vertical-align: top;
-text-align: right;
-font-family: 'Proxima Nova', sans-serif;
-"
->
-<p
-style="
-margin: 0;
-padding: 0;
-font-family: 'Proxima Nova', sans-serif;
-font-weight: 400;
-font-size: 13px;
-color: #000;
-line-height: 18px;
-"
->
-${formatDate(orderData.updatedAt)}
-</p>
-</td>
-</tr>
-</table>
-</td>
-</tr>
-</table>
-</td>
-</tr>
-</table>
+  <div class="pdf-box">
+    <div class="header">
+      <div>
+        <h2 style="margin-bottom:10px;">Tax Invoice</h2>
+        <div class="invoice-meta">
+          <p>Date: ${formatDate(orderData.date_purchase)}</p>
+          <p>Invoice No: ${orderData.id}</p>
+          <p>Order No: ${orderData.documentId}</p>
+        </div>
+      </div>
+      <div>
+        <img width="271" height="56"
+          src="https://webbytemplate-store-com.s3.ap-south-1.amazonaws.com/main_logo_bcd605c0ae.png"
+          alt="LOGO" />
+      </div>
+    </div>
 
-<table
-align="center"
-style="
-width: 100%;
-border-collapse: collapse;
-border-spacing: 0;
-margin-top: 20px;
-vertical-align: top;
-background: #fff;
-font-family: 'Proxima Nova', sans-serif;
-"
->
-<tbody>
-<tr>
-<td
-style="
-width: 50%;
-padding-right: 10px;
-vertical-align: top;
-text-align: left;
-"
->
-<h5
-style="
-font-weight: 700;
-margin: 0;
-padding: 0;
-font-size: 14px;
-margin-bottom: 5px;
-font-family: 'Proxima Nova', sans-serif;
-"
->
-From
-</h5>
-<h4
-style="
-font-weight: 700;
-margin: 0;
-padding: 0;
-font-size: 16px;
-margin-bottom: 5px;
-font-family: 'Proxima Nova', sans-serif;
-"
->
-WebbyCrown Solutions
-</h4>
-<p
-style="
-margin: 0;
-padding: 0;
-font-family: 'Proxima Nova', sans-serif;
-font-weight: 400;
-margin-bottom: 3px;
-font-size: 13px;
-color: #000;
-line-height: 18px;
-"
->
-5th Floor, Shop No 517,518,519, Laxmi Enclave-2,
-</p>
-<p
-style="
-margin: 0;
-padding: 0;
-font-family: 'Proxima Nova', sans-serif;
-font-weight: 400;
-margin-bottom: 3px;
-font-size: 13px;
-color: #000;
-line-height: 18px;
-"
->
-Opp. Gajera School,
-</p>
-<p
-style="
-margin: 0;
-padding: 0;
-font-family: 'Proxima Nova', sans-serif;
-font-weight: 400;
-margin-bottom: 3px;
-font-size: 13px;
-color: #000;
-line-height: 18px;
-"
->
-Katargam, Surat, Gujarat,
-</p>
-<p
-style="
-margin: 0;
-padding: 0;
-font-family: 'Proxima Nova', sans-serif;
-font-weight: 400;
-margin-bottom: 3px;
-font-size: 13px;
-color: #000;
-line-height: 18px;
-"
->
-395004,
-</p>
-<p
-style="
-margin: 0;
-padding: 0;
-font-family: 'Proxima Nova', sans-serif;
-font-weight: 400;
-margin-bottom: 3px;
-font-size: 13px;
-color: #000;
-line-height: 18px;
-"
->
-<b>GSTIN:</b> 24AACFW9641F1Z3
-</p>
-</td>
-<td style="width: 50%; padding-left: 10px; vertical-align: top">
-<table
-style="
-width: 100%;
-vertical-align: top;
-border-collapse: collapse;
-border-spacing: 0;
-font-family: 'Proxima Nova', sans-serif;
-"
->
-<tr>
-<td
-style="
-text-align: right;
-font-family: 'Proxima Nova', sans-serif;
-"
->
-<h5
-style="
-font-weight: 700;
-margin: 0;
-padding: 0;
-font-size: 14px;
-margin-bottom: 5px;
-font-family: 'Proxima Nova', sans-serif;
-"
->
-Bill To
-</h5>
-<h4
-style="
-font-weight: 700;
-margin: 0;
-padding: 0;
-font-size: 16px;
-margin-bottom: 5px;
-font-family: 'Proxima Nova', sans-serif;
-"
->
-${orderData?.user?.full_name}
-</h4>
-${
-  orderData?.user?.email
-    ? `<p
-style="
-margin: 0;
-padding: 0;
-font-family: 'Proxima Nova', sans-serif;
-margin-bottom: 3px;
-font-weight: 400;
-font-size: 13px;
-color: #000;
-line-height: 18px;
-"
->
-${orderData?.user?.email}
-</p>`
-    : ""
-}
-<p
-style="
-margin: 0;
-padding: 0;
-font-family: 'Proxima Nova', sans-serif;
-margin-bottom: 3px;
-font-weight: 400;
-font-size: 13px;
-color: #000;
-line-height: 18px;
-"
->
-${orderData?.billing_address?.address},
-</p>
-<p
-style="
-margin: 0;
-padding: 0;
-font-family: 'Proxima Nova', sans-serif;
-margin-bottom: 3px;
-font-weight: 400;
-font-size: 13px;
-color: #000;
-line-height: 18px;
-"
->
-${orderData?.billing_address?.pincode},
-</p>
-<p
-style="
-margin: 0;
-padding: 0;
-font-family: 'Proxima Nova', sans-serif;
-margin-bottom: 3px;
-font-weight: 400;
-font-size: 13px;
-color: #000;
-line-height: 18px;
-"
->
-${orderData?.billing_address?.city}, ${orderData?.billing_address?.state},
-</p>
-<p
-style="
-margin: 0;
-padding: 0;
-font-family: 'Proxima Nova', sans-serif;
-margin-bottom: 3px;
-font-weight: 400;
-font-size: 13px;
-color: #000;
-line-height: 18px;
-">
-${orderData?.billing_address?.country},
-</p>
-</td>
-</tr>
-</table>
-</td>
-</tr>
-</tbody>
-</table>
+    <div class="info-boxes">
+      <div class="box">
+        <h6>Billed By</h6>
+        <h4><strong>WebbyCrown Solutions</strong></h4>
+        <p style="margin-bottom:8px;">517, Laxmi Enclave 2, opp. Gajera School, Katargam, Surat, Gujarat 395004</p>
+        <p style="margin-bottom:5px;"><span style="color:black; margin-right:28px;">Email:</span> info@webbycrown.com</p>
+        <p style="margin-bottom:5px;"><span style="color:black; margin-right:15px;">Phone:</span> +91 63527-72383</p>
+        <p><span style="color:black; margin-right:16px;">GSTIN:</span> 22AAAA00051225</p>
+      </div>
+      <div class="box">
+        <h6>Billed To</h6>
+        <h4><strong>${billedToFullName}</strong></h4>
+        <p style="margin-bottom:8px;">${billedToAddress}</p>
+        <p style="margin-bottom:5px;"><span style="color:black; margin-right:28px;">Email:</span> ${billedToEmail}</p>
+        <p style="margin-bottom:5px;"><span style="color:black; margin-right:15px;">Phone:</span> ${billedToContact}</p>
+        <p><span style="color:black; margin-right:16px;">GSTIN:</span> ${billedToGSTIN}</p>
+      </div>
+    </div>
 
-<table
-align="center"
-style="
-width: 100%;
-border-collapse: collapse;
-border-spacing: 0;
-background: #fff;
-font-family: 'Proxima Nova', sans-serif;
-margin-top: 30px;
-"
->
-<thead>
-<tr>
-<th
-style="
-text-align: left;
-padding: 10px 10px;
-background: #0156d5;
-font-family: 'Proxima Nova', sans-serif;
-vertical-align: middle;
-width: 300px;
-min-width: 300px;
-"
->
-<p
-style="
-margin: 0;
-padding: 0;
-font-family: 'Proxima Nova', sans-serif;
-font-weight: 700;
-font-size: 13px;
-color: #ffffff;
-"
->
-DESCRIPTION
-</p>
-</th>
-<th
-style="
-text-align: center;
-padding: 10px 10px;
-background: #0156d5;
-font-family: 'Proxima Nova', sans-serif;
-vertical-align: middle;
-"
->
-<p
-style="
-margin: 0;
-padding: 0;
-font-family: 'Proxima Nova', sans-serif;
-font-weight: 700;
-font-size: 13px;
-color: #ffffff;
-"
->
-RATE
-</p>
-</th>
+    <table class="items" cellpadding="0" cellspacing="0" border="0">
+      <thead>
+        <tr>
+          <th style="width: 20%;">Product Name</th>
+          <th style="width: 20%;">Product Code</th>
+          <th style="width: 40%;">Description</th>
+          <th style="text-align:right; width: 20%;">Amount</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${productRows}
+      </tbody>
+      <tfoot>
+        ${totalRowFooter}
+      </tfoot>
+    </table>
 
-<th
-style="
-text-align: center;
-padding: 10px 10px;
-background: #0156d5;
-font-family: 'Proxima Nova', sans-serif;
-vertical-align: middle;
-"
->
-<p
-style="
-margin: 0;
-padding: 0;
-font-family: 'Proxima Nova', sans-serif;
-font-weight: 700;
-font-size: 13px;
-color: #ffffff;
-"
->
-TAX
-</p>
-</th>
-<th
-style="
-text-align: right;
-padding: 10px 10px;
-background: #0156d5;
-font-family: 'Proxima Nova', sans-serif;
-vertical-align: middle;
-"
->
-<p
-style="
-margin: 0;
-padding: 0;
-font-family: 'Proxima Nova', sans-serif;
-font-weight: 700;
-font-size: 13px;
-color: #ffffff;
-"
->
-AMOUNT
-</p>
-</th>
-</tr>
-</thead>
+    <div class="info-boxes">
+      <div class="box" style="display:flex; align-items:center; justify-content:space-between; gap:13px; padding:5px 15px 20px;">
+        <div>
+          <h6>Note:</h6>
+          <p>Thanks for buying from WebbyTemplate</p>
+        </div>
+        <div>
+          <p style="margin-bottom:8px; color:black; font-weight:500;">Have questions or need support?</p>
+          <p style="margin-bottom:8px;">Reach out to us at support@yourwebsite.com.</p>
+        </div>
+      </div>
+    </div>
+  </div>
 
-${
-  orderData?.multiProduct
-    ? orderData?._children
-        .map((item) => {
-          const price = item.price?.sales_price || item.price?.regular_price;
-          const taxAmount = price * (orderData.tax_percentage / 100);
-          const finalAmount = price + taxAmount;
-          return `
-<tbody>
-<tr>
-<td
-style="
-text-align: left;
-padding: 15px 10px;
-font-family: 'Proxima Nova', sans-serif;
-vertical-align: top;
-width: 300px;
-min-width: 300px;
-border-bottom: 1px solid #eee;
-"
->
-<p
-style="
-margin: 0;
-padding: 0;
-font-family: 'Proxima Nova', sans-serif;
-font-weight: 400;
-font-size: 13px;
-color: #000;
-line-height: 18px;
-"
->
-${item?.products}
-</p>
-</td>
-<td
-style="
-text-align: center;
-padding: 15px 10px;
-font-family: 'Proxima Nova', sans-serif;
-vertical-align: top;
-border-bottom: 1px solid #eee;
-"
->
-<p
-style="
-margin: 0;
-padding: 0;
-font-family: 'Proxima Nova', sans-serif;
-font-weight: 400;
-font-size: 13px;
-color: #000;
-line-height: 18px;
-"
->
-$${price.toFixed(2)}
-</p>
-</td>
-<td
-style="
-text-align: center;
-padding: 15px 10px;
-font-family: 'Proxima Nova', sans-serif;
-vertical-align: top;
-border-bottom: 1px solid #eee;
-"
->
-<p
-style="
-margin: 0;
-padding: 0;
-font-family: 'Proxima Nova', sans-serif;
-font-weight: 400;
-font-size: 13px;
-color: #000;
-line-height: 18px;
-"
->
-${orderData.tax_percentage.toFixed(2)}%
-</p>
-</td>
-<td
-style="
-text-align: right;
-padding: 15px 10px;
-font-family: 'Proxima Nova', sans-serif;
-vertical-align: top;
-border-bottom: 1px solid #eee;
-"
->
-<p
-style="
-margin: 0;
-padding: 0;
-font-family: 'Proxima Nova', sans-serif;
-font-weight: 400;
-font-size: 13px;
-color: #000;
-line-height: 18px;
-"
->
-$${finalAmount.toFixed(2)}
-</p>
-</td>
-</tr>
-</tbody>
-`;
-        })
-        .join("")
-    : `
-<tbody>
-<tr>
-<td
-style="
-text-align: left;
-padding: 15px 10px;
-font-family: 'Proxima Nova', sans-serif;
-vertical-align: top;
-width: 300px;
-min-width: 300px;
-border-bottom: 1px solid #eee;
-"
->
-<p
-style="
-margin: 0;
-padding: 0;
-font-family: 'Proxima Nova', sans-serif;
-font-weight: 400;
-font-size: 13px;
-color: #000;
-line-height: 18px;
-"
->
-${orderData?.product[0]?.product_title}
-</p>
-</td>
-<td
-style="
-text-align: center;
-padding: 15px 10px;
-font-family: 'Proxima Nova', sans-serif;
-vertical-align: top;
-border-bottom: 1px solid #eee;
-"
->
-<p
-style="
-margin: 0;
-padding: 0;
-font-family: 'Proxima Nova', sans-serif;
-font-weight: 400;
-font-size: 13px;
-color: #000;
-line-height: 18px;
-"
->
-$${orderData?.product[0]?.product?.price?.sales_price?.toFixed(2) || orderData?.product[0]?.product?.price?.regular_price?.toFixed(2)}
-</p>
-</td>
-<td
-style="
-text-align: center;
-padding: 15px 10px;
-font-family: 'Proxima Nova', sans-serif;
-vertical-align: top;
-border-bottom: 1px solid #eee;
-"
->
-<p
-style="
-margin: 0;
-padding: 0;
-font-family: 'Proxima Nova', sans-serif;
-font-weight: 400;
-font-size: 13px;
-color: #000;
-line-height: 18px;
-"
->
-${orderData?.tax_percentage?.toFixed(2)}%
-</p>
-</td>
-<td
-style="
-text-align: right;
-padding: 15px 10px;
-font-family: 'Proxima Nova', sans-serif;
-vertical-align: top;
-border-bottom: 1px solid #eee;
-"
->
-<p
-style="
-margin: 0;
-padding: 0;
-font-family: 'Proxima Nova', sans-serif;
-font-weight: 400;
-font-size: 13px;
-color: #000;
-line-height: 18px;
-"
->
-$${(orderData.total_price + orderData.tax_amount).toFixed(2)}
-</p>
-</td>
-</tr>
-</tbody>
-`
-}
-<tfoot>
-<tr>
-<td
-colspan="4"
-style="
-text-align: left;
-font-family: 'Proxima Nova', sans-serif;
-vertical-align: top;
-"
->
-<table
-align="center"
-style="
-width: 100%;
-border-collapse: collapse;
-border-spacing: 0;
-font-family: 'Proxima Nova', sans-serif;
-"
->
-<tbody>
-<tr>
-<td
-style="
-text-align: left;
-padding: 10px 10px;
-border-bottom: 1px solid #eee;
-font-family: 'Proxima Nova', sans-serif;
-"
->
-<p
-style="
-margin: 0;
-padding: 0;
-font-family: 'Proxima Nova', sans-serif;
-font-weight: 400;
-font-size: 13px;
-color: #000;
-line-height: 18px;
-"
->
-Subtotal:
-</p>
-</td>
-
-<td
-style="
-text-align: right;
-padding: 10px 10px;
-border-bottom: 1px solid #eee;
-font-family: 'Proxima Nova', sans-serif;
-"
->
-<p
-style="
-margin: 0;
-padding: 0;
-font-family: 'Proxima Nova', sans-serif;
-font-weight: 400;
-font-size: 13px;
-color: #000;
-line-height: 18px;
-"
->
-USD $${orderData.total_price.toFixed(2)}
-</p>
-</td>
-</tr>
-<tr>
-<td
-style="
-text-align: left;
-padding: 10px 10px;
-border-bottom: 1px solid #eee;
-font-family: 'Proxima Nova', sans-serif;
-"
->
-<p
-style="
-margin: 0;
-padding: 0;
-font-family: 'Proxima Nova', sans-serif;
-font-weight: 400;
-font-size: 13px;
-color: #000;
-line-height: 18px;
-"
->
-Tax (18%):
-</p>
-</td>
-<td
-style="
-text-align: right;
-padding: 10px 10px;
-border-bottom: 1px solid #eee;
-font-family: 'Proxima Nova', sans-serif;
-"
->
-<p
-style="
-margin: 0;
-padding: 0;
-font-family: 'Proxima Nova', sans-serif;
-font-weight: 400;
-font-size: 13px;
-color: #000;
-line-height: 18px;
-"
->
-USD $${orderData.tax_amount.toFixed(2)}
-</p>
-</td>
-</tr>
-<tr>
-<td
-style="
-text-align: left;
-padding: 10px 10px;
-border-bottom: 1px solid #eee;
-font-family: 'Proxima Nova', sans-serif;
-"
->
-<p
-style="
-margin: 0;
-padding: 0;
-font-family: 'Proxima Nova', sans-serif;
-font-weight: 400;
-font-size: 13px;
-color: #000;
-line-height: 18px;
-"
->
-Discount:
-</p>
-</td>
-<td
-style="
-text-align: right;
-padding: 10px 10px;
-border-bottom: 1px solid #eee;
-font-family: 'Proxima Nova', sans-serif;
-"
->
-<p
-style="
-margin: 0;
-padding: 0;
-font-family: 'Proxima Nova', sans-serif;
-font-weight: 400;
-font-size: 13px;
-color: #000;
-line-height: 18px;
-"
->
-USD $0.00
-</p>
-</td>
-</tr>
-</tbody>
-<tfoot>
-<tr>
-<td
-style="
-text-align: left;
-padding: 10px 10px;
-font-family: 'Proxima Nova', sans-serif;
-background-color: #eee;
-"
->
-<p
-style="
-margin: 0;
-padding: 0;
-font-family: 'Proxima Nova', sans-serif;
-font-weight: 700;
-font-size: 13px;
-color: #000;
-line-height: 18px;
-"
->
-Total:
-</p>
-</td>
-
-<td
-style="
-text-align: right;
-padding: 10px 10px;
-font-family: 'Proxima Nova', sans-serif;
-background-color: #eee;
-"
->
-<p
-style="
-margin: 0;
-padding: 0;
-font-family: 'Proxima Nova', sans-serif;
-font-weight: 700;
-font-size: 13px;
-color: #000;
-line-height: 18px;
-"
->
-USD $${(orderData.total_price + orderData.tax_amount).toFixed(2)}
-</p>
-</td>
-</tr>
-</tfoot>
-</table>
-</td>
-</tr>
-</tfoot>
-</table>
-</div>
+  <div class="footer">
+    <p>To learn more, please review our
+      <a href="#">Privacy Policy</a>,
+      <a href="#">Terms of Service</a>, or
+      <a href="#">Tax & VAT Policy</a>.
+    </p>
+  </div>
 </body>
-</html>
-`;
+</html>`;
   };
 
   const downloadInvoice = async (orderData) => {
@@ -1082,10 +330,10 @@ USD $${(orderData.total_price + orderData.tax_amount).toFixed(2)}
         if (!data.multiProduct) {
           return `
         <div class="flex items-center gap-2 hover:text-primary">
-          <a href="/product/${data.product_slug}" 
-             target="_blank" 
+          <a href="/product/${data.product_slug}"
+             target="_blank"
              rel="noopener noreferrer"
-             class="truncate max-w-[450px]" 
+             class="truncate max-w-[450px]"
              >
             ${data.products}
           </a>
@@ -1097,9 +345,9 @@ USD $${(orderData.total_price + orderData.tax_amount).toFixed(2)}
       <div class="flex items-center gap-2">
         <span>${data.products}</span>
         <button class="toggle-children">
-          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" 
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18"
                viewBox="0 0 18 18" fill="none">
-            <path d="M9 0C4.03754 0 0 4.03754 0 9C0 13.9625 4.03754 18 9 18C13.9625 18 18 13.9625 18 9C18 4.03754 13.9625 0 9 0ZM9 1.38462C13.2141 1.38462 16.6154 4.78592 16.6154 9C16.6154 13.2141 13.2141 16.6154 9 16.6154C4.78592 16.6154 1.38462 13.2141 1.38462 9C1.38462 4.78592 4.78592 1.38462 9 1.38462ZM8.30769 4.15385V11.2708L5.53846 8.50154L4.56508 9.49846L8.50223 13.4349L9.00069 13.9334L9.49915 13.4349L13.4356 9.49777L12.4615 8.50154L9.69231 11.2708V4.15385H8.30769Z" 
+            <path d="M9 0C4.03754 0 0 4.03754 0 9C0 13.9625 4.03754 18 9 18C13.9625 18 18 13.9625 18 9C18 4.03754 13.9625 0 9 0ZM9 1.38462C13.2141 1.38462 16.6154 4.78592 16.6154 9C16.6154 13.2141 13.2141 16.6154 9 16.6154C4.78592 16.6154 1.38462 13.2141 1.38462 9C1.38462 4.78592 4.78592 1.38462 9 1.38462ZM8.30769 4.15385V11.2708L5.53846 8.50154L4.56508 9.49846L8.50223 13.4349L9.00069 13.9334L9.49915 13.4349L13.4356 9.49777L12.4615 8.50154L9.69231 11.2708V4.15385H8.30769Z"
               fill="#0156D5" />
           </svg>
         </button>
@@ -1311,8 +559,8 @@ USD $${(orderData.total_price + orderData.tax_amount).toFixed(2)}
       <div className="min-h-[1000px]">
         <h1 className="h2 mb-5 mt-[30px]">{title}</h1>
         <div className="border border-primary/10 rounded-md overflow-hidden mb-[20px] bg-white">
-          <div className="flex items-center justify-between sm:flex-nowrap flex-wrap gap-1.5 w-full border-b border-primary/10 sm:px-5 px-3 py-[6px] bg-white">
-            <p className="text-black">Downloads for invoices</p>
+          <div className="flex items-center justify-between sm:flex-nowrap flex-wrap gap-1.5 w-full border-b border-primary/10 sm:px-5 h-[37px] px-3 py-[6px] bg-white">
+            <span className="text-black">Downloads for invoices</span>
           </div>
 
           {/* Filter Inputs */}
