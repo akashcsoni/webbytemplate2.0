@@ -1,14 +1,22 @@
 User-agent: *
 Allow: /
 
-# Block account pages
+# Block user account and private sections
+Disallow: /account
+Disallow: /my-account/
+Disallow: /admin/
 Disallow: /user
 
-# Block all URLs that contain query strings (if you want to block query-URLs from crawling)
-Disallow: /*?*
+# Block shopping cart and checkout pages
+Disallow: /cart/
+Disallow: /checkout/
 
-# Block Next.js build output and image handler
+# Block technical folders (Next.js output and internal APIs)
 Disallow: /_next/
 
-# Sitemap
-Sitemap: https://webbytemplate.com/sitemap.xml
+# Block URLs with query strings (optional - prevents duplicate content)
+Disallow: /*?*
+
+# Sitemaps
+Sitemap: https://www.webbytemplate.com/sitemap.xml
+
