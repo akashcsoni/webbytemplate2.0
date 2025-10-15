@@ -6,6 +6,7 @@ import SomethingWrong from "@/components/somethingWrong/page";
 import { themeConfig } from "@/config/theamConfig";
 import { strapiGet } from "@/lib/api/strapiClient";
 import { getCanonicalImageUrl, getBestCanonicalImage, getFallbackImageUrl } from "@/lib/utils/canonicalImageUrl";
+export const dynamic = 'force-dynamic';
 
 
 

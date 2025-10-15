@@ -7,6 +7,7 @@ import SomethingWrong from "@/components/somethingWrong/page";
 import { themeConfig } from "@/config/theamConfig";
 import { strapiGet, strapiPost } from "@/lib/api/strapiClient";
 import { getCanonicalImageUrl, getCanonicalImageUrls, getBestCanonicalImage, createImageObjectSchema, getFallbackImageUrl } from "@/lib/utils/canonicalImageUrl";
+export const dynamic = 'force-dynamic';
 // ISR configuration for category pages
 export const revalidate = 60; // Revalidate every 60 seconds for ISR
 
