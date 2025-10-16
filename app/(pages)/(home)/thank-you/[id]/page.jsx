@@ -570,8 +570,6 @@ export default function CheckoutPage({ params }) {
               <p>Date:</p>
               <h5>{formatDate(order?.createdAt)}</h5>
             </div>
-              "this is for total price"
-            )} */}
             <div className="xl:py-5 pl-7 2xl:pr-[50px] 1xl:pr-[40px] xl:pr-7 py-4 pr-6 sm:border-r sm:border-b-0 border-b border-[#00193E1A]">
               <p>Total:</p>
               <h5>${(order?.total_price + order?.tax_amount)?.toFixed(2)}</h5>
