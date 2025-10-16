@@ -1300,15 +1300,11 @@ xl:relative xl:translate-x-0 z-20 xl:p-0 xl:shadow-none xl:block
                     placeholder="Search tags here"
                   />
                   <ul className="text-sm 1xl:space-y-[14px] space-y-3 2xl:h-44 1xl:h-[170px] h-[180px] pr-2 overflow-auto tags scrollbar-custom">
-                      "this is for making search filter"
-                    )} */}
                     {searchFilterData?.tags?.map((tag, index) => (
                       <li
                         key={index}
                         className="flex items-center justify-between"
                       >
-                          "this is for checking all lsug for tag"
-                        )} */}
                         <label className="flex items-center 1xl:space-x-3 space-x-1.5 cursor-pointer">
                           <div className="relative flex items-center justify-center">
                             <input
@@ -1682,9 +1678,6 @@ xl:relative xl:translate-x-0 z-20 xl:p-0 xl:shadow-none xl:block
 
           {/* Filter tags section */}
           {/* Derived from pathname */}
-            searchParams.get("term").length > 0,
-            "this is for value for checking params"
-          )} */}
           <div className="text-sm text-gray-600 flex gap-1 items-center flex-wrap mb-[25px]">
             <div className="flex items-center justify-start gap-2 flex-wrap">
               {/* Type filter tag */}
