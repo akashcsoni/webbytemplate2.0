@@ -118,6 +118,20 @@ export default function RootLayout({ children }) {
             __html: `window.$zoho=window.$zoho || {};$zoho.salesiq=$zoho.salesiq||{ready:function(){}}`,
           }}
         />
+        {/* Google Analytics */}
+        <Script
+          src="https://www.googletagmanager.com/gtag/js?id=G-W2K9LVCP3D"
+          strategy="afterInteractive"
+        />
+        <Script id="google-analytics" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'G-W2K9LVCP3D');
+          `}
+        </Script>
+        
         <Script
           id="zsiqscript"
           src="https://salesiq.zohopublic.in/widget?wc=siq80204715dc712d38f147a31f84d9ae62cfb628ce61feff32ab93ec9655c75845"

@@ -13,7 +13,7 @@ export const dynamic = 'force-dynamic';
 // Generate dynamic metadata for SEO
 export async function generateMetadata({ params }) {
     const { pageSlug, itemSlug, categorySlug } = await params;
-    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://webbytemplatev2.vercel.app';
+    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.webbytemplate.com';
     const currentUrl = `${baseUrl}/${pageSlug}/${itemSlug}/${categorySlug}`;
 
     try {
@@ -208,7 +208,7 @@ export default async function DynamicPage({ params, searchParams }) {
             );
         } else if (pageSlug === 'category') {
             // Generate CollectionPage and ItemList structured data for sub-category pages
-            const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://webbytemplatev2.vercel.app';
+            const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.webbytemplate.com';
             const currentUrl = `${baseUrl}/${pageSlug}/${itemSlug}/${categorySlug}`;
 
             // Generate title and description from seo_meta with fallbacks

@@ -50,7 +50,7 @@ export async function generateStaticParams() {
 // Generate dynamic metadata for SEO
 export async function generateMetadata({ params }) {
     const { pageSlug, itemSlug } = await params;
-    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://webbytemplatev2.vercel.app';
+    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.webbytemplate.com';
     const currentUrl = `${baseUrl}/${pageSlug}/${itemSlug}`;
 
     try {
@@ -309,7 +309,7 @@ export default async function DynamicPage({ params, searchParams }) {
 
         if (pageSlug === 'product') {
             // Safe data extraction with fallbacks
-            const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://webbytemplatev2.vercel.app';
+            const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.webbytemplate.com';
             const currentUrl = `${baseUrl}/${pageSlug}/${itemSlug}`;
 
             // Generate title and description from seo_meta with fallbacks (same as metadata)
@@ -634,7 +634,7 @@ export default async function DynamicPage({ params, searchParams }) {
             }
 
             // Generate blog metadata and structured data
-            const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://webbytemplatev2.vercel.app';
+            const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.webbytemplate.com';
             const currentUrl = `${baseUrl}/${pageSlug}/${itemSlug}`;
 
             // Generate title and description from seo_meta with fallbacks
@@ -850,7 +850,7 @@ export default async function DynamicPage({ params, searchParams }) {
             );
         } else if (pageSlug === 'category') {
             // Generate CollectionPage and ItemList structured data for category pages
-            const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://webbytemplatev2.vercel.app';
+            const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.webbytemplate.com';
             const currentUrl = `${baseUrl}/${pageSlug}/${itemSlug}`;
 
             // Generate title and description from seo_meta with fallbacks
