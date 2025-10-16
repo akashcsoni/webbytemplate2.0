@@ -255,8 +255,6 @@ export function CartProvider({ children }) {
     const closeCart = () => setIsCartOpen(false)
     const toggleCart = () => setIsCartOpen((prev) => !prev)
 
-    // console.log(cartItems)
-
     return (
         <CartContext.Provider
             value={{

@@ -8,19 +8,8 @@
           "value": "webbytemplate.com"
         }
       ],
-      "destination": "https://www.webbytemplate.com/:path*",
+      "destination": "https://www.webbytemplate.com/$1",
       "permanent": true
-    }
-  ],
-  "headers": [
-    {
-      "source": "/(.*)",
-      "headers": [
-        {
-          "key": "X-Robots-Tag",
-          "value": "index, follow"
-        }
-      ]
     }
   ]
 }

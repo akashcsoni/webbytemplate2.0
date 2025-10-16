@@ -23,7 +23,6 @@ const profileSetting = ({ title, sub_title, form, image, button }) => {
   const [fromSaveLoading, setFromSaveLoading] = useState(false);
   const [fromSetLoading, setFromSetLoading] = useState(true);
   const [formValues, setFormValues] = useState({});
-  // console.log(formValues);
   const [validationErrors, setValidationErrors] = useState({});
   const [defaultValueData, setDefaultValueData] = useState({});
   const [hasNewImage, setHasNewImage] = useState(false);
@@ -382,7 +381,6 @@ const profileSetting = ({ title, sub_title, form, image, button }) => {
   const getFields = (data) => {
     const value = defaultValueData[data.name];
     const error = validationErrors[data.name];
-    // console.log(error);
 
     switch (data.html) {
       case "input":

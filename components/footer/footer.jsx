@@ -411,7 +411,6 @@ export function Footer({ footerMenu = [], footerSettings = {} }) {
       <div className="border-t border-gray-500 bg-gray-500">
         <div className="container mx-auto xl:py-7 py-5 flex flex-col lg:flex-row justify-between items-center">
           <p className="text-white sm:mb-4 mb-3 lg:mb-0 lg:text-start text-center 2xl:text-lg 1xl:text-[17px] sm:text-base text-[15px]">
-            {/* {console.log(copyrightText, "this id for copyrightText")} */}
             <span dangerouslySetInnerHTML={{ __html: copyrightText }} />
             {/* {copyrightText} */}
           </p>

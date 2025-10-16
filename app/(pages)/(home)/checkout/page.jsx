@@ -29,7 +29,6 @@ export default function CheckoutPage() {
   const [userDataLoading, setUserDataLoading] = useState(true);
   const [payNowLoading, setpayNowLoading] = useState(false);
   const [redirectLoading, setRedirectLoading] = useState(false);
-  // console.log(selectedCountry === "India");
 
   const countryRef = useRef(null);
   const stateRef = useRef(null);
@@ -53,7 +52,6 @@ export default function CheckoutPage() {
   // Redirect to home if cart is empty
   useEffect(() => {
     if (!isLoading && cartItems.length === 0) {
-      console.log("Cart is empty, redirecting to home page...");
       router.push("/");
     }
   }, [cartItems, isLoading, router]);
@@ -114,7 +112,6 @@ export default function CheckoutPage() {
         });
 
         if (userData) {
-          console.log(userData, "this is for userdata");
           // Handle phone number and country detection
           let phoneNumber = userData.phone_no || "";
           let detectedCountry = null;
@@ -428,7 +425,6 @@ export default function CheckoutPage() {
     script.async = true;
     script.defer = true;
     script.onload = () => {
-      console.log("Razorpay script loaded successfully");
     };
     script.onerror = () => {
       console.error("Failed to load Razorpay script");
@@ -533,8 +529,6 @@ export default function CheckoutPage() {
 
       if (response?.result && response?.data) {
         const orderData = response.data;
-        console.log(orderData, "✅ orderData from Strapi");
-        console.log(orderData);
 
         // Set redirect loading when payment process starts
         setRedirectLoading(true);
@@ -550,8 +544,6 @@ export default function CheckoutPage() {
           });
           const razorpayOrder = razorpayOrderRes.order;
           const razorpayKey = razorpayOrderRes.key_id;
-          console.log(razorpayOrder, "✅ Razorpay Order");
-          console.log(razorpayKey, "✅ Razorpay Key");
           // 3. Setup Razorpay options
           const options = {
             key: razorpayKey, // From backend
@@ -561,7 +553,6 @@ export default function CheckoutPage() {
             description: "Order Payment",
             order_id: razorpayOrder.id,
             handler: async function (razorpayResponse) {
-              console.log("✅ Razorpay Success", razorpayResponse);
               // Keep redirect loading active during verification
               try {
                 // 4. Verify payment
@@ -586,7 +577,6 @@ export default function CheckoutPage() {
                 setRedirectLoading(false);
                 setpayNowLoading(false);
                 router.push("/");
-                console.log("User closed the payment popup");
               },
             },
             prefill: {
@@ -600,7 +590,6 @@ export default function CheckoutPage() {
           };
           // 5. Open Razorpay Checkout
           const rzp = new Razorpay(options);
-          console.log(rzp, "rzp");
 
           rzp.on("payment.failed", async function (response) {
             const orderId = response.error.metadata?.order_id;
@@ -613,7 +602,6 @@ export default function CheckoutPage() {
               });
             }
 
-            console.log("❌ Razorpay payment failed", response);
             setRedirectLoading(false);
             setpayNowLoading(false);
           });
@@ -628,7 +616,6 @@ export default function CheckoutPage() {
             redirect_id: orderData?.documentId,
           });
 
-          console.log(stripeRes);
 
           if (stripeRes?.url) {
             // Keep redirect loading active for Stripe redirect
@@ -638,7 +625,6 @@ export default function CheckoutPage() {
           }
         }
       } else {
-        console.log("❌ Order creation failed:", response);
         setpayNowLoading(false);
         setRedirectLoading(false);
       }
@@ -1260,7 +1246,6 @@ export default function CheckoutPage() {
           <h4>Your Cart Total</h4>
           <div className="text-sm text-gray-700 sm:space-y-4 space-y-2 mt-[18px] mb-[22px] pt-[18px]">
             {cartItems?.map((item, index) => {
-              // console.log(item, "this is for item");
               return (
                 <div
                   key={index}

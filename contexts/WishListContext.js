@@ -25,7 +25,6 @@ export function WishListProvider({ children }) {
   const isLoggedIn = isAuthenticated;
   const userId = authUser?.documentId || authUser?.id;
   const user_Id = authUser?.id;
-  //   console.log(user_Id, "this is for user id");
 
   const cart_id = Cookies.get("cart_id");
 

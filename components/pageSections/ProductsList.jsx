@@ -245,8 +245,6 @@ export default function ProductsList(props) {
 
   const currentSlug = getCurrentSlug();
 
-  console.log(pathname, "this is pathname");
-  console.log(currentSlug, "this is current slug");
 
   const [filteredProducts, setFilteredProducts] = useState([]);
   const [loading, setLoading] = useState(true);

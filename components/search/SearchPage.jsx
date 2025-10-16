@@ -104,15 +104,11 @@ const SearchPageLoading = () => (
 
 // Main SearchPage component
 const SearchPageContent = ({ slug }) => {
-  // console.log(slug, "this ios for checking slug");
 
   const router = useRouter();
   const searchParams = useSearchParams();
-  // console.log(searchParams);
   const pathname = usePathname();
   const pathsegment = pathname.split("/").filter(Boolean); // remove empty
-  // console.log(pathsegment, "this is for pathsegment");
-  // console.log(pathname, "this is for pathname");
   const prevFilterState = useRef({});
 
   // Add mounted state to handle client-side rendering
@@ -147,20 +143,16 @@ const SearchPageContent = ({ slug }) => {
   const [totalProducts, setTotalProducts] = useState(0);
   const [error, setError] = useState(null);
   const [minimumPrice, setMinimumPrice] = useState(0);
-  console.log(minimumPrice, "this is for minimum price");
 
   // Initialize search query from pathname
   const initialSearchQuery = (() => {
     const segments = pathname.split("/");
-    // console.log(segments, "this is for segment");
     return segments[2] || "";
   })();
 
-  // console.log(initialSearchQuery, "initialSearchQueryinitialSearchQuery");
 
   const [searchQuery, setSearchQuery] = useState(initialSearchQuery);
   // const filtteredSearchQuery = initialSearchQuery.replace(/%20/g, " ");
-  // console.log(filtteredSearchQuery, "this is for search query");
 
   // Add a ref to track if price was changed by user
   const priceChangedByUser = React.useRef(false);
@@ -260,7 +252,6 @@ const SearchPageContent = ({ slug }) => {
     tags: [],
   });
 
-  console.log(filterData, "this is for filter data");
 
   const [searchFilterData, setsearchFilterData] = useState({
     categories: [],
@@ -306,7 +297,6 @@ const SearchPageContent = ({ slug }) => {
 
   // Add function to convert slug back to title
   const slugToTitle = (slug) => {
-    // console.log(slug, "slug cecking for maek title");
     return slug
       .split("-")
       .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
@@ -434,10 +424,8 @@ const SearchPageContent = ({ slug }) => {
       finalQuery = params.toString();
     }
 
-    // console.log(finalQuery);
 
     const newUrl = finalQuery ? `${finalPath}?${finalQuery}` : finalPath;
-    // console.log(newUrl);
     router.push(newUrl);
   };
 
@@ -723,7 +711,6 @@ const SearchPageContent = ({ slug }) => {
           }
         }
 
-        // console.log(sortOptions[sort]);
 
         // Prepare API parameters
         const apiParams = {
@@ -734,7 +721,6 @@ const SearchPageContent = ({ slug }) => {
           order: sortDirection,
           sorting: selected,
         };
-        // console.log(searchParams.get("sort"), "this is for api params");
 
         if (sort) {
           apiParams.type = sort;
@@ -780,7 +766,6 @@ const SearchPageContent = ({ slug }) => {
           strapiPost("product/filter", apiParams, themeConfig.TOKEN),
         ]);
 
-        console.log(filterResponse, "this is for filter response");
 
         const parsedResponse = safeParseResponse(filterResponse);
 
@@ -790,7 +775,6 @@ const SearchPageContent = ({ slug }) => {
 
           if (data && Array.isArray(data)) {
             const shuffledData = data.sort(() => Math.random() - 0.5);
-            // console.log(shuffledData);
             setfilteredProducts(shuffledData);
             setTotalProducts(data.length);
             setPagination(pagination);
@@ -858,7 +842,6 @@ const SearchPageContent = ({ slug }) => {
   const filterTags = (event) => {
     const searchTerm = event.target.value;
 
-    // console.log(searchTerm, "this is for search termas");
 
     if (!searchTerm) {
       // If search term is empty, reset to the original list of tags
@@ -874,7 +857,6 @@ const SearchPageContent = ({ slug }) => {
       item.title.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
-    // console.log(filteredTags);
     // Update the filtered tags in the state
     setsearchFilterData((prevData) => ({
       ...prevData,
@@ -886,7 +868,6 @@ const SearchPageContent = ({ slug }) => {
   const filterFeature = (event) => {
     const searchTerm = event.target.value;
 
-    // console.log(searchTerm, "this is for feature search term");
 
     if (!searchTerm) {
       // If search term is empty, reset to the original list of features
@@ -905,7 +886,6 @@ const SearchPageContent = ({ slug }) => {
       item.title.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
-    // console.log(filteredFeatures, "this is for making  featured fillters");
 
     // Update the filtered features in the state
     setsearchFilterData((prevData) => ({
@@ -920,7 +900,6 @@ const SearchPageContent = ({ slug }) => {
   // Update search handler
   const handleSearch = (e) => {
     const searchValue = e.target.value;
-    // console.log(searchValue, "this is for search value");
     setSearchQuery(searchValue);
   };
 
@@ -932,7 +911,6 @@ const SearchPageContent = ({ slug }) => {
 
   const updateSearchInUrl = () => {
     const params = new URLSearchParams(searchParams.toString());
-    // console.log(params, "this is for testing params");
 
     // Remove old 'search' param if it exists
     params.delete("search");
@@ -946,7 +924,6 @@ const SearchPageContent = ({ slug }) => {
       }
     }
 
-    // console.log(
     //   searchParams.get("sort"),
     //   "this is for set sort value test jdfksdfk"
     // );
@@ -967,7 +944,6 @@ const SearchPageContent = ({ slug }) => {
     const queryString =
       orderedParams.length > 0 ? "?" + orderedParams.join("&") : "";
 
-    // console.log(queryString, "this is for queryString");
 
     let newUrl = "";
     if (pathname.startsWith("/category")) {
@@ -981,7 +957,6 @@ const SearchPageContent = ({ slug }) => {
       newUrl = `${searchPath}${queryString}`;
     }
 
-    console.log(newUrl, "newurl part for url ");
 
     router.push(newUrl);
   };
@@ -998,7 +973,6 @@ const SearchPageContent = ({ slug }) => {
     const cleanSearchQuery = searchQuery.replace(/%20/g, " ");
 
     if (mounted) {
-      // console.log(cleanSearchQuery, "this for cleaned search query");
       // Client-side rendering
       Object.assign(inputProps, {
         value: cleanSearchQuery,
@@ -1068,11 +1042,9 @@ const SearchPageContent = ({ slug }) => {
     searchTerm = "",
     existingParams = null
   ) => {
-    // console.log(
     //   categorySlug,
     //   "categorySlugcategorySlugcategorySlugcategorySlugcategorySlugcategorySlug"
     // );
-    // console.log(
     //   existingParams,
     //   "existingParamsexistingParamsexistingParamsexistingParamsexistingParamsexistingParamsexistingParams"
     // );
@@ -1122,7 +1094,6 @@ const SearchPageContent = ({ slug }) => {
       url += `?${queryString}`;
     }
 
-    // console.log(url, "url for get new redirect url");
 
     return url;
   };
@@ -1132,7 +1103,6 @@ const SearchPageContent = ({ slug }) => {
   let query = "";
   let heading = "Website Templates";
 
-  // console.log(segments[2], "this is for segments");
 
   if (segments[1] === "category" && segments[2]) {
     // Use last part of the path (could be main or sub-category)
@@ -1223,7 +1193,6 @@ xl:relative xl:translate-x-0 z-20 xl:p-0 xl:shadow-none xl:block
                             ? `/search?${queryString}`
                             : "/search";
 
-                          // console.log(
                           //   newUrl,
                           //   "all categories console for test redirects"
                           // );
@@ -1252,10 +1221,8 @@ xl:relative xl:translate-x-0 z-20 xl:p-0 xl:shadow-none xl:block
                       </span>
                     </li>
 
-                    {/* {console.log(searchParams, "checking for search parmas")} */}
 
                     {filterData?.categories?.map((cat, index) => {
-                      // console.log(cat);
                       const categorySlug = cat.slug;
                       const categoryUrl = createCategoryUrl(
                         categorySlug,
@@ -1333,8 +1300,6 @@ xl:relative xl:translate-x-0 z-20 xl:p-0 xl:shadow-none xl:block
                     placeholder="Search tags here"
                   />
                   <ul className="text-sm 1xl:space-y-[14px] space-y-3 2xl:h-44 1xl:h-[170px] h-[180px] pr-2 overflow-auto tags scrollbar-custom">
-                    {/* {console.log(
-                      searchFilterData,
                       "this is for making search filter"
                     )} */}
                     {searchFilterData?.tags?.map((tag, index) => (
@@ -1342,8 +1307,6 @@ xl:relative xl:translate-x-0 z-20 xl:p-0 xl:shadow-none xl:block
                         key={index}
                         className="flex items-center justify-between"
                       >
-                        {/* {console.log(
-                          tag,
                           "this is for checking all lsug for tag"
                         )} */}
                         <label className="flex items-center 1xl:space-x-3 space-x-1.5 cursor-pointer">
@@ -1388,7 +1351,6 @@ xl:relative xl:translate-x-0 z-20 xl:p-0 xl:shadow-none xl:block
               {/* Price Section - Only show if there are products */}
               {totalProducts > 0 && (
                 <DropdownSection title="Price">
-                  {console.log(totalProducts, "this is for price range")}
                   <div className="flex flex-col gap-2 w-full h-full items-start justify-center">
                     <div className="w-full max-w-md">
                       <Slider
@@ -1492,7 +1454,6 @@ xl:relative xl:translate-x-0 z-20 xl:p-0 xl:shadow-none xl:block
                         key={index}
                         className="flex items-center justify-between"
                       >
-                        {/* {console.log(feature)} */}
                         <label className="flex items-center 1xl:space-x-3 space-x-1.5 cursor-pointer">
                           <div className="relative flex items-center justify-center">
                             <input
@@ -1538,7 +1499,6 @@ xl:relative xl:translate-x-0 z-20 xl:p-0 xl:shadow-none xl:block
 
         {/* Main section */}
 
-        {/* {console.log(heading, "this is for heading")} */}
 
         <main className="w-full xl:w-4/5">
           <h1 className="h2 mb-4">{heading}</h1>
@@ -1722,7 +1682,6 @@ xl:relative xl:translate-x-0 z-20 xl:p-0 xl:shadow-none xl:block
 
           {/* Filter tags section */}
           {/* Derived from pathname */}
-          {/* {console.log(
             searchParams.get("term").length > 0,
             "this is for value for checking params"
           )} */}
@@ -1786,7 +1745,6 @@ xl:relative xl:translate-x-0 z-20 xl:p-0 xl:shadow-none xl:block
                   </div>
                 )}
 
-              {/* {console.log(searchParams, "this is for serach parmas")} */}
               {/* Tags */}
               {searchParams
                 .get("tags")

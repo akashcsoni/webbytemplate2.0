@@ -33,13 +33,6 @@ const CategoryTagList = ({
   
   const parentSlug = getParentSlug();
   
-  // Debug logging
-  console.log("CategoryTagList Debug:", {
-    pathname,
-    params,
-    parentSlug,
-    categories: categories?.length || 0
-  });
   const [visibleCount, setVisibleCount] = useState(limit);
 
   const handleShowMore = () => {

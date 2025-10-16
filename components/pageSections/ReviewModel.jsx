@@ -41,7 +41,6 @@ export default function ReviewModal({ isOpen, onClose, product }) {
 
     const loginUser = authUser?.documentId;
 
-    // console.log(product);
 
     const handleSubmit = async () => {
         const isValid = validateForm();

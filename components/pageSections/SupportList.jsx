@@ -25,7 +25,6 @@ import { themeConfig } from "@/config/theamConfig";
 const ticketSupportPage = ({ title }) => {
   const formRef = useRef(null);
   const { authUser } = useAuth();
-  // console.log(authUser);
   const [file, setFile] = useState(null);
   const fileInputRef = useRef(null);
   const [fileName, setFileName] = useState("");
@@ -127,7 +126,6 @@ const ticketSupportPage = ({ title }) => {
       setFormSubmitLoading(false);
       return;
     } else {
-      // console.log({ ...submitFormData, attachment });
       try {
         let attachments = null;
         if (file) {
@@ -165,7 +163,6 @@ const ticketSupportPage = ({ title }) => {
           themeConfig.TOKEN
         );
         if (submitData) {
-          // console.log(submitData, "submitdata");
           setFormSubmitLoading(false);
           setSubmitFormData({
             productDocumentId: "",
@@ -419,7 +416,6 @@ const ticketSupportPage = ({ title }) => {
         const ticketData = await strapiGet(`supports/${id}`, themeConfig.TOKEN);
 
         if (ticketData?.data) {
-          // console.log(ticketData?.data);
           setOpenTicketData(ticketData?.data);
         }
       } catch (err) {
@@ -2181,8 +2177,6 @@ const ticketSupportPage = ({ title }) => {
                       setOpenTicketData(null);
                     }}
                   >
-                    {/* {console.log(openTicket, "openticket")}
-                    {console.log(openTicketData, "openticketdata")} */}
 
                     {openTicket && openTicketData ? (
                       <ReplayForm data={openTicketData} status="Pending" />

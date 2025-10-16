@@ -53,7 +53,6 @@ const DownloadPage = ({ title }) => {
       return `$${(amount || 0).toFixed(2)}`;
     }
 
-    console.log(orderData, "this is for user data");
 
     const billedToFullName =
       orderData.user.full_name ||
@@ -370,7 +369,6 @@ const DownloadPage = ({ title }) => {
       formatter: (cell) => {
         const data = cell.getData();
 
-        // console.log(data, "this is for download");
 
         return data.product_zip
           ? `<div class="flex items-center gap-2 truncate"><button class="btn btn-primary !py-1 !px-4">Download</button></div>`
@@ -388,7 +386,6 @@ const DownloadPage = ({ title }) => {
       width: 100,
       formatter: (cell) => {
         const data = cell.getData();
-        // console.log(data, "this is for data");
 
         // ✅ Only show button if it's NOT a "Multi-Product Order"
         if (
@@ -400,9 +397,7 @@ const DownloadPage = ({ title }) => {
         return ""; // no button for multi-orders
       },
       cellClick: async (e, cell) => {
-        // console.log(cell.getRow().getData(), "cells data");
         const orderData = cell.getRow().getData();
-        // console.log(orderData, "orderDataorderDataorderDataorderDataorderData");
         if (orderData.documentId) {
           await downloadInvoice(orderData);
         } else {
@@ -438,7 +433,6 @@ const DownloadPage = ({ title }) => {
       cellClick: (e, cell) => {
         const rowData = cell.getRow().getData();
 
-        // console.log(rowData, "rowData?.products !== ");
 
         // if (rowData?.products !== "Multi-Product Order") {
         setSelectedProduct(rowData);
@@ -494,11 +488,9 @@ const DownloadPage = ({ title }) => {
 
         if (orderData?.data) {
           const formattedData = orderData.data.map((item) => {
-            // console.log(item, "console -> ");
             const isMultipleProducts = item?.products?.length > 1;
 
             const redirectProduct = (products) =>
-              // console.log(products);
               products.map((p) => ({
                 // id: p?.id, // ✅ numeric id
                 order_id: item?.documentId,
@@ -510,7 +502,6 @@ const DownloadPage = ({ title }) => {
                 product_slug: p.product?.slug || null, // ✅ added slug
               }));
 
-            // console.log(item, "guyfsdyufysudfyuasdf");
 
             return {
               ...item,
