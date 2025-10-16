@@ -1266,7 +1266,7 @@ h4 {
     scroll-behavior: smooth;
     }
 
-    .left-content p a{
+    .left-content a{
       @apply text-primary border-b border-primary font-medium;
     }
     
