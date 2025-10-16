@@ -101,6 +101,15 @@ export default function RootLayout({ children }) {
             body { font-family: 'Product Sans', system-ui, -apple-system, sans-serif; }
           `
         }} />
+        <Script id="ms-clarity" strategy="afterInteractive">
+          {`
+            (function(c,l,a,r,i,t,y){
+              c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+              t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+              y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+            })(window, document, "clarity", "script", "tr0nh7k6rz");
+          `}
+        </Script>
       </head>
       <body
         className={clsx(
@@ -131,7 +140,7 @@ export default function RootLayout({ children }) {
             gtag('config', 'G-W2K9LVCP3D');
           `}
         </Script>
-        
+
         <Script
           id="zsiqscript"
           src="https://salesiq.zohopublic.in/widget?wc=siq80204715dc712d38f147a31f84d9ae62cfb628ce61feff32ab93ec9655c75845"
