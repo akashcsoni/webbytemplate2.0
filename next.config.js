@@ -1,5 +1,22 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+    // Redirects configuration
+    async redirects() {
+        return [
+            {
+                source: '/(.*)',
+                has: [
+                    {
+                        type: 'host',
+                        value: 'webbytemplate.com',
+                    },
+                ],
+                destination: 'https://www.webbytemplate.com/:path*',
+                permanent: true,
+            },
+        ];
+    },
+    
     images: {
         remotePatterns: [
             {

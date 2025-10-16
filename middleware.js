@@ -3,6 +3,14 @@ import { NextResponse } from "next/server";
 export async function middleware(request) {
   const { pathname } = request.nextUrl;
   const url = request.nextUrl.clone();
+  
+  // Redirect non-www to www domain
+  if (request.nextUrl.hostname === 'webbytemplate.com') {
+    return NextResponse.redirect(
+      new URL(`https://www.webbytemplate.com${pathname}${request.nextUrl.search}`, request.url),
+      301
+    );
+  }
 
   // Only apply authentication checks for /user/* routes
   const isUserPath = pathname.startsWith("/user/");
