@@ -54,13 +54,11 @@ export default function FormMultiSelect({
     setSelectedCountries([]);
   };
 
-  // console.log(data, "data for check");
 
   const filteredCountries = data.options.filter((country) =>
     country?.title?.toLowerCase().includes(countrySearchTerm.toLowerCase())
   );
 
-  // console.log(filteredCountries, "filteredCountries");
 
   const selectedCountryTitles = data.options
     .filter((country) => selectedCountries.includes(country.documentId))

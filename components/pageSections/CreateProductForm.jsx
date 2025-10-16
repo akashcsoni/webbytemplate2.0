@@ -42,7 +42,6 @@ export default function ProductsPage({
   const { authUser } = useAuth();
   const router = useRouter();
   const [formValues, setFormValues] = useState({});
-  // console.log(formValues, "this is for form bvalues");
   const [validationErrors, setValidationErrors] = useState({});
   const [loading, setLoading] = useState(false);
   const [defaultValueData, setDefaultValueData] = useState({});
@@ -81,10 +80,6 @@ export default function ProductsPage({
     onOpen();
   };
 
-  // console.log("🔍 Current defaultValueData:", defaultValueData);
-  // console.log("🔍 Current formValues:", formValues);
-  // console.log(
-  //   "🔍 Dynamic fields:",
   //   dynamicCategoryFields.map((f) => f.name)
   // );
 
@@ -429,7 +424,6 @@ export default function ProductsPage({
       const { id } = (await params) || {};
 
       if (id) {
-        // console.log("🔄 Edit mode - Processing image updates");
 
         // Get current image IDs from formValues (most up-to-date)
         const currentGridImageId = getImageId(formValues.grid_image);
@@ -441,8 +435,6 @@ export default function ProductsPage({
           originalImageData?.gallery_image
         );
 
-        // console.log("Image comparison:", {
-        //   currentGrid: currentGridImageId,
         //   originalGrid: originalGridImageId,
         //   currentGallery: currentGalleryIds,
         //   originalGallery: originalGalleryIds,
@@ -454,7 +446,6 @@ export default function ProductsPage({
           originalGridImageId !== currentGridImageId &&
           originalGridImageId > 0
         ) {
-          // console.log("🗑️ Deleting old grid image:", originalGridImageId);
           try {
             await strapiDelete(
               `upload/files/${originalGridImageId}`,
@@ -471,13 +462,11 @@ export default function ProductsPage({
             originalId > 0 && !currentGalleryIds.includes(originalId)
         );
 
-        // console.log("🖼️ Gallery image IDs to delete:", imagesToDelete);
 
         // Delete removed images
         for (const imageIdToDelete of imagesToDelete) {
           if (imageIdToDelete > 0) {
             try {
-              // console.log("🗑️ Deleting gallery image:", imageIdToDelete);
               await strapiDelete(
                 `upload/files/${imageIdToDelete}`,
                 themeConfig.TOKEN
@@ -505,7 +494,6 @@ export default function ProductsPage({
           formValues,
           defaultValueData
         );
-        // console.log("🔄 Preserved dynamic field data:", preservedDynamicData);
 
         // ✅ CRITICAL FIX: Only update defaultValueData and preserve current formValues
         try {
@@ -518,8 +506,6 @@ export default function ProductsPage({
           );
 
           if (updatedProductData?.data) {
-            // console.log(
-            //   "📊 Fresh product data from server:",
             //   updatedProductData.data
             // );
 
@@ -549,8 +535,6 @@ export default function ProductsPage({
               ...preservedDynamicData,
             };
 
-            // console.log(
-            //   "✅ Formatted fresh data with preserved dynamic fields:",
             //   freshFormattedData
             // );
 
@@ -607,7 +591,6 @@ export default function ProductsPage({
   };
 
   const handleFieldChange = async (name, value) => {
-    // console.log(`🔄 Field changed: ${name}`, value);
 
     const updatedFormValues = {
       ...formValues,
@@ -912,7 +895,6 @@ export default function ProductsPage({
   ];
 
   const getFields = (data) => {
-    // console.log(data?.infoVisible);
     if (
       ["product_zip", "product_zip_url"].includes(data.name) &&
       !showFiels.includes(data.name)
@@ -1190,7 +1172,6 @@ export default function ProductsPage({
         token: themeConfig.TOKEN,
       });
       if (productData?.data) {
-        // console.log("📊 Raw product data from server:", productData.data);
 
         const firstVendorProduct = productData.data?.vendor_given_products?.[0];
         const processedVendorProducts =
@@ -1245,9 +1226,6 @@ export default function ProductsPage({
           gallery_image: productData.data?.gallery_image,
         });
 
-        // console.log("📊 Formatted product data:", finalDefaultValueData);
-        // console.log(
-        //   "🖼️ Gallery images formatted:",
         //   finalDefaultValueData.gallery_image
         // );
 

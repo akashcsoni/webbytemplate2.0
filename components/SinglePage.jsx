@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import LicenseSelector from "@/components/product/single-product/license/license-selector";
 import { TechnologySelector } from "@/components/product/technology-selector";
 import SinglePageSwiper from "@/components/single-page-swiper";
@@ -50,6 +50,11 @@ export default function SinglePage({ pageData }) {
   const { addToWishlist, wishlistItems } = useWishlist();
   const [wishlistLoading, setWishlistLoading] = useState(false);
   const [showAllFeatures, setShowAllFeatures] = useState(false);
+
+  // Scroll to top when component mounts or pageData changes
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pageData]);
 
   // Check if current product is in cart
   const isProductInCart = cartItems?.some(

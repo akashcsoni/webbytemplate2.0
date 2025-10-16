@@ -9,7 +9,6 @@ export default function FormTextArea({
   defaultValueData,
   infoButton, // 👈 new prop
 }) {
-  // console.log(infoButton, "this is for info buton");
 
   const [localError, setlocalError] = useState("");
   const [value, setValue] = useState(defaultValueData || "");

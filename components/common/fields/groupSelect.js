@@ -12,7 +12,6 @@ export default function GroupSelect({
   const dropdownRef = useRef(null);
   const [isOpen, setIsOpen] = useState(false);
   const [selected, setSelected] = useState(defaultValueData || []);
-  // console.log(selected, "selected value checking");
   const [localError, setLocalError] = useState("");
 
   useEffect(() => {
@@ -59,7 +58,6 @@ export default function GroupSelect({
     selected.includes(option.documentId)
   );
 
-  // console.log(selectedObjects);
 
   return (
     <div className="relative w-full" ref={dropdownRef}>

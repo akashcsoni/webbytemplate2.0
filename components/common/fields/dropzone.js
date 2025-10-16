@@ -19,7 +19,6 @@ export default function FormDropzone({
   const [image, setImage] = useState(
     defaultValueData || (data.multiple ? [] : "")
   );
-  // console.log(image, "checkng for image upload issue ");
   const [isDragging, setIsDragging] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [uploadSuccess, setUploadSuccess] = useState(false);
@@ -39,7 +38,6 @@ export default function FormDropzone({
           url: file.url,
           id: file.id,
         }));
-        // console.log(formatedData);
         setImage(formatedData);
         setValue(formatedData.map((file) => file.id));
       } else {
@@ -229,7 +227,6 @@ export default function FormDropzone({
               key={index}
               className="relative w-[120px] h-[140px] p-1 bg-blue-100 border border-blue-200 rounded-md"
             >
-              {/* {console.log(item, "check for item preview")} */}
               <img
                 src={item.url || "/placeholder.svg"}
                 alt={`preview-${index}`}

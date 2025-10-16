@@ -424,10 +424,10 @@ const SingleBlogPage = ({ data, breadcrumb = [] }) => {
     }
   }, [data?.components]);
 
-  // Scroll to top when component mounts
+  // Scroll to top when component mounts or data changes
   useEffect(() => {
     window.scrollTo(0, 0);
-  }, []);
+  }, [data]);
 
   if (!data) {
     return (

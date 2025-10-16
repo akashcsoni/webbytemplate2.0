@@ -135,7 +135,6 @@ export default function DashboardPage({ title }) {
   const [amount, setAmount] = useState("");
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
-  // console.log(wallet);
 
   const [filteredProducts, setFilteredProducts] = useState([]);
 
@@ -225,13 +224,10 @@ export default function DashboardPage({ title }) {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    // console.log(name);
-    // console.log(value);
     debouncedInputChange(name, value);
   };
 
   const handleStatusChange = (value) => {
-    // console.log(value);
     if (value !== undefined) {
       setFilterData((prev) => ({ ...prev, feetype: value }));
       setActivePage(1);
@@ -258,7 +254,6 @@ export default function DashboardPage({ title }) {
 
   useEffect(() => {
     const fetchProductData = async (id) => {
-      // console.log(id);
       try {
         setFilteredProducts([]);
 
@@ -278,9 +273,7 @@ export default function DashboardPage({ title }) {
         if (response.data) {
           const productsData = response.data || [];
 
-          console.log(productsData, "productdata for amount");
 
-          // console.log(productsData, "this is for product data");
 
           const userWallets = productsData.filter(
             (item) => item?.vendor_id?.id === loginUserId
@@ -301,7 +294,6 @@ export default function DashboardPage({ title }) {
 
   useEffect(() => {
     const fetchSummaryProductData = async (id) => {
-      console.log(id);
       try {
         // setFilteredProducts([]);
 
@@ -318,14 +310,12 @@ export default function DashboardPage({ title }) {
           themeConfig.TOKEN
         );
 
-        // console.log(response, "this is for checkingresponse");
 
         setSummaryOrderData(response);
 
         if (response.data) {
           const productsData = response || [];
 
-          console.log(productsData, "this is for summmary product data");
 
           // const userWallets = productsData.filter(
           //   (item) => item?.vendor_id?.id === loginUserId
@@ -369,7 +359,6 @@ export default function DashboardPage({ title }) {
   //       token: themeConfig.TOKEN,
   //     });
 
-  //     console.log(walletData, "wallet data");
 
   //     const allWallets = walletData || [];
 
@@ -380,7 +369,6 @@ export default function DashboardPage({ title }) {
   //     setwalletData(userWallets);
   //   } catch (error) {
   //     toast.error("Failed to load product data.");
-  //     console.log(error);
   //   }
   // };
 
@@ -528,7 +516,6 @@ export default function DashboardPage({ title }) {
   // const loginUserId
 
   const getUserData = async (id) => {
-    console.log(id, "loginUserId");
     if (!id) {
       console.warn("No loginUserId provided to getUserData");
       return;
@@ -573,7 +560,6 @@ export default function DashboardPage({ title }) {
 
   // 🔑 One function handles multiple field types
   const handleInfoClick = (value) => {
-    console.log(value);
     setWithdrawAmount(value);
     onOpen();
   };
@@ -620,7 +606,6 @@ export default function DashboardPage({ title }) {
         themeConfig.TOKEN
       );
 
-      console.log("Withdraw response:", response);
       // You can show toast or popup here
     } catch (err) {
       console.error("Error creating withdraw:", err);
@@ -685,7 +670,6 @@ export default function DashboardPage({ title }) {
                         <div className="flex flex-wrap lg:flex-nowrap lg:divide-x divide-primary/10 2xl:py-7 lg:py-6 2xl:px-5 lg:px-4">
                           {WalletSetting &&
                             WalletSetting.map((data, index) => {
-                              // console.log(data?.value);
                               return (
                                 <div
                                   className="w-full sm:w-1/2 lg:w-[23%] sm:p-4 p-3 lg:py-0"

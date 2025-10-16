@@ -186,8 +186,6 @@ export default function RichText({ body, read_more, with_bg }) {
         flushTable();
         flushParagraph();
         
-        // Debug: Log the final HTML output
-        console.log("Generated HTML:", result);
         
         return result;
     }, []);

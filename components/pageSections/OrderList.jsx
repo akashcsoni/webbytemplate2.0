@@ -16,10 +16,8 @@ const ticketSupportPage = ({ title }) => {
 
   const [openTicket, setOpenTicket] = useState(null);
   const [filteredOrder, setFilteredOrder] = useState([]);
-  // console.log(filteredOrder);
   const [hasPending, setHasPending] = useState(false);
   const [orderData, setOrderData] = useState();
-  // console.log(orderData);
   // table
 
   // Get user ID from authUser cookie
@@ -49,7 +47,6 @@ const ticketSupportPage = ({ title }) => {
       },
       cellClick: async (e, cell) => {
         const orderData = cell.getRow().getData();
-        // console.log(orderData);
         if (orderData.id) {
           await setOpenTicket(orderData?.id);
         } else {
@@ -143,10 +140,8 @@ const ticketSupportPage = ({ title }) => {
       },
       cellClick: function (e, cell) {
         const rowData = cell.getRow().getData();
-        // console.log(rowData);
 
         if (rowData.status?.toLowerCase() === "pending") {
-          // console.log("Redirect to payment for order:", rowData);
           setOrderData(rowData);
           handlePayNow(rowData);
         }
@@ -187,7 +182,6 @@ const ticketSupportPage = ({ title }) => {
           page_size: 10,
         };
 
-        console.log(LoginUserId, "LoginUserId");
 
         const orderData = await strapiPost(
           `order/${LoginUserId}`,
@@ -195,7 +189,6 @@ const ticketSupportPage = ({ title }) => {
           themeConfig.TOKEN
         );
 
-        console.log(orderData?.data, "order data for test");
 
         if (orderData?.data) {
           const formattedData = orderData.data.map((item) => ({
@@ -233,7 +226,6 @@ const ticketSupportPage = ({ title }) => {
     script.async = true;
     script.defer = true;
     script.onload = () => {
-      console.log("Razorpay script loaded successfully");
     };
     script.onerror = () => {
       console.error("Failed to load Razorpay script");
@@ -258,10 +250,8 @@ const ticketSupportPage = ({ title }) => {
       }
 
       const strapi_order_id = orderData?.Id;
-      // console.log(orderData);
       const user_id = orderData?.user?.id;
       const total_amount = orderData?.total;
-      // console.log(total_amount);
       const country = orderData?.billing_address?.country || "India"; // fallback
 
       if (!strapi_order_id || !user_id || !total_amount) {
@@ -288,7 +278,6 @@ const ticketSupportPage = ({ title }) => {
           description: "Order Payment",
           order_id: razorpayOrder.id,
           handler: async function (razorpayResponse) {
-            // console.log("✅ Razorpay Success", razorpayResponse);
 
             await strapiPost("razorpay/verify", {
               ...razorpayResponse,
@@ -300,7 +289,6 @@ const ticketSupportPage = ({ title }) => {
           },
           modal: {
             ondismiss: function () {
-              console.log("User closed the payment popup");
             },
           },
           prefill: {
@@ -324,7 +312,6 @@ const ticketSupportPage = ({ title }) => {
             });
           }
 
-          // console.log("❌ Razorpay payment failed", response);
         });
 
         rzp.open();
