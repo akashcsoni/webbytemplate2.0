@@ -7,7 +7,7 @@ export const dynamic = 'force-dynamic'; // SSR on every request
 
 // Generate metadata for SEO
 export async function generateMetadata() {
-    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://webbytemplatev2.vercel.app';
+    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.webbytemplate.com';
     const currentUrl = baseUrl;
 
     try {
@@ -199,7 +199,7 @@ export default async function HomePage() {
       throw new Error("Page data is empty");
     }
 
-    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://webbytemplatev2.vercel.app';
+    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.webbytemplate.com';
     const data = pageData.data;
 
     // Generate WebSite structured data for the home page
