@@ -85,6 +85,9 @@ export default function RootLayout({ children }) {
         {/* Resource hints for better performance */}
         <link rel="prefetch" href="/api/auth/session" />
         <link rel="prefetch" href="/api/cart-cookie" />
+        <link rel="preload" as="font" type="font/woff2" href="/assets/fonts/ProductSans-Medium.woff2" crossorigin />
+        <link rel="preload" as="font" type="font/woff2" href="/assets/fonts/ProductSans-Bold.woff2" crossorigin />
+        <link rel="preload" as="font" type="font/woff2" href="/assets/fonts/ProductSans-Regular.woff2" crossorigin />
 
         {/* Critical CSS inlining would go here if needed */}
         <style dangerouslySetInnerHTML={{
