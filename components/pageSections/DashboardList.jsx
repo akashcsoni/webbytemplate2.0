@@ -675,7 +675,7 @@ export default function DashboardPage({ title }) {
                                   className="w-full sm:w-1/2 lg:w-[23%] sm:p-4 p-3 lg:py-0"
                                   key={index}
                                 >
-                                  <div className="flex flex-col gap-2">
+                                  {/* <div className="flex flex-col gap-2">
                                     <p className="p2">{data?.title}</p>
                                     <div className="flex items-center justify-between w-full">
                                       <p className="font-bold text-black">
@@ -699,7 +699,7 @@ export default function DashboardPage({ title }) {
                                         <p className="p2">960</p>
                                       </div>
                                     </div>
-                                  </div>
+                                  </div> */}
                                 </div>
                               );
                             })}
