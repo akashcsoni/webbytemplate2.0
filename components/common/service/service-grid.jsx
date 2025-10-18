@@ -30,7 +30,6 @@ const ServiceGrid = ({ category = {}, link_button = {} }) => {
               width={46}
               height={46}
               className="2xl:w-[46px] 2xl:h-[46px] lg:w-10 lg:h-10 w-9 h-9"
-              unoptimized
             />
           ) : (
             <div
