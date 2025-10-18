@@ -675,13 +675,13 @@ export default function DashboardPage({ title }) {
                                   className="w-full sm:w-1/2 lg:w-[23%] sm:p-4 p-3 lg:py-0"
                                   key={index}
                                 >
-                                  {/* <div className="flex flex-col gap-2">
+                                  <div className="flex flex-col gap-2">
                                     <p className="p2">{data?.title}</p>
                                     <div className="flex items-center justify-between w-full">
                                       <p className="font-bold text-black">
                                         ${data?.value}
                                       </p>
-                                      <div className="flex items-center gap-[3px]">
+                                      {/* <div className="flex items-center gap-[3px]">
                                         <svg
                                           xmlns="http://www.w3.org/2000/svg"
                                           width="22"
@@ -697,9 +697,9 @@ export default function DashboardPage({ title }) {
                                           />
                                         </svg>
                                         <p className="p2">960</p>
-                                      </div>
+                                      </div> */}
                                     </div>
-                                  </div> */}
+                                  </div>
                                 </div>
                               );
                             })}
