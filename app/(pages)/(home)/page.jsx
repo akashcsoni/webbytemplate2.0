@@ -337,42 +337,7 @@ export default async function HomePage() {
             }}
           />
         ))}
-        
-        {/* Preload critical images for better LCP */}
-        {data?.components && Array.isArray(data.components) && (
-          <>
-            {data.components.map((component, index) => {
-              // Preload hero images from home-hero component categories
-              if (component.__component === "shared.home-hero" && component.categories && Array.isArray(component.categories)) {
-                return component.categories.slice(0, 3).map((category, catIndex) => (
-                  <link
-                    key={`hero-cat-${index}-${catIndex}`}
-                    rel="preload"
-                    as="image"
-                    href={`${baseUrl}/images/digital-product.png`}
-                    type="image/png"
-                  />
-                ));
-              }
-              // Preload service section images
-              if (component.__component === "shared.service-section" && component.list && Array.isArray(component.list)) {
-                return component.list.slice(0, 2).map((service, serviceIndex) => (
-                  service.image && (
-                    <link
-                      key={`service-img-${index}-${serviceIndex}`}
-                      rel="preload"
-                      as="image"
-                      href={service.image.url.startsWith('http') ? service.image.url : `${baseUrl}${service.image.url}`}
-                      type="image/png"
-                    />
-                  )
-                ));
-              }
-              return null;
-            })}
-          </>
-        )}
-        
+
         <GlobalComponent data={pageData.data} />
       </>
     );
