@@ -1430,7 +1430,7 @@ xl:relative xl:translate-x-0 z-20 xl:p-0 xl:shadow-none xl:block
               ) : null}
 
               {/* Features Section */}
-              {filterLoading ? (
+              {/* {filterLoading ? (
                 <DropdownSection title="Features">
                   <FilterSkeleton />
                 </DropdownSection>
@@ -1488,7 +1488,7 @@ xl:relative xl:translate-x-0 z-20 xl:p-0 xl:shadow-none xl:block
                     ))}
                   </ul>
                 </DropdownSection>
-              ) : null}
+              ) : null} */}
             </div>
           </aside>
         </div>
