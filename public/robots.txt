@@ -14,8 +14,19 @@ Disallow: /checkout/
 # Block technical folders (Next.js output and internal APIs)
 Disallow: /_next/
 
-# Block URLs with query strings (optional - prevents duplicate content)
-Disallow: /*?*
+# Block URLs with tracking parameters (prevents duplicate content from Google tracking)
+Disallow: /*?*srsltid=*
+Disallow: /*?*gclid=*
+Disallow: /*?*fbclid=*
+Disallow: /*?*utm_*
+
+# Allow sitemap XML files (they have X-Robots-Tag header but still want crawlers to read them)
+# The X-Robots-Tag header in the response will prevent indexing
+Allow: /sitemap.xml
+Allow: /page-list.xml
+Allow: /product-list.xml
+Allow: /blog-list.xml
+Allow: /product-category.xml
 
 # Sitemaps
 Sitemap: https://www.webbytemplate.com/sitemap.xml
