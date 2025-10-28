@@ -1,15 +1,59 @@
 import { NextResponse } from "next/server";
 
+/**
+ * Strip unwanted tracking parameters from URLs to prevent them from being indexed
+ * This removes Google's tracking parameters (srsltid, gclid, etc.)
+ */
+function stripTrackingParams(searchParams) {
+  if (!searchParams) return '';
+  
+  const params = new URLSearchParams(searchParams);
+  
+  // List of tracking parameters to remove
+  const trackingParams = [
+    'srsltid',     // Google search results tracking
+    'gclid',       // Google Ads click tracking
+    'gclsrc',      // Google Ads source
+    'utm_source',  // Marketing source
+    'utm_medium',  // Marketing medium
+    'utm_campaign', // Marketing campaign
+    'utm_content', // Marketing content
+    'utm_term',    // Marketing term
+    'fbclid',      // Facebook click tracking
+    'igshid',      // Instagram sharing tracking
+    'ref',         // Generic referrer parameter
+  ];
+  
+  // Remove all tracking parameters
+  trackingParams.forEach(param => params.delete(param));
+  
+  // Return the cleaned search string
+  const cleaned = params.toString();
+  return cleaned ? `?${cleaned}` : '';
+}
+
 export async function middleware(request) {
   const { pathname } = request.nextUrl;
   const url = request.nextUrl.clone();
   
-  // Redirect non-www to www domain
-  if (request.nextUrl.hostname === 'webbytemplate.com') {
+  // Check and clean tracking parameters first
+  const cleanedSearch = stripTrackingParams(request.nextUrl.search);
+  const needsRedirect = cleanedSearch !== request.nextUrl.search;
+  const isNonWww = request.nextUrl.hostname === 'webbytemplate.com';
+  
+  // Handle non-www redirect with cleaned search params
+  if (isNonWww) {
     return NextResponse.redirect(
-      new URL(`https://www.webbytemplate.com${pathname}${request.nextUrl.search}`, request.url),
+      new URL(`https://www.webbytemplate.com${pathname}${cleanedSearch}`, request.url),
       301
     );
+  }
+  
+  // Strip tracking parameters from all requests to prevent them from being indexed
+  if (needsRedirect) {
+    const cleanedUrl = request.nextUrl.clone();
+    cleanedUrl.search = cleanedSearch;
+    return NextResponse.redirect(cleanedUrl, 308);
   }
 
   // Only apply authentication checks for /user/* routes
