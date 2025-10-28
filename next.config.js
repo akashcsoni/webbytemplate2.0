@@ -14,6 +14,12 @@ const nextConfig = {
                 destination: 'https://www.webbytemplate.com/:path*',
                 permanent: true,
             },
+            // Blog URL redirects (when blog slugs are changed in Strapi)
+            {
+                source: '/blog/best-pet-and-animal-website-templates-free-download',
+                destination: '/blog/top-pet-care-website-templates',
+                permanent: true,
+            },
         ];
     },
     
