@@ -30,7 +30,7 @@ export async function GET() {
             status: 200,
             headers: {
                 'Content-Type': 'application/xml',
-                'X-Robots-Tag': 'noindex, nofollow', // Prevent indexing of sitemap XML files
+                'X-Robots-Tag': 'noindex, follow', // Prevent indexing of sitemap XML files
                 'Cache-Control': 'public, max-age=3600, s-maxage=3600', // Cache for 1 hour
             },
         });
