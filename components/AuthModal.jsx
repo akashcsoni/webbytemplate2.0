@@ -2033,7 +2033,7 @@ function OtpModal({ isOpen, onClose, identifier, type }) {
                   <>
                     We have sent a code to{" "}
                     <span className="font-medium">
-                      +{maskIdentifier(identifier)}
+                    {isNaN(identifier) ? maskIdentifier(identifier) : `+${maskIdentifier(identifier)}`}
                     </span>
                   </>
                 ) : (
