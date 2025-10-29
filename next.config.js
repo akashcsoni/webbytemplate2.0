@@ -20,6 +20,12 @@ const nextConfig = {
                 destination: '/blog/top-pet-care-website-templates',
                 permanent: true,
             },
+            // Product URL redirects (when product slugs are changed in Strapi)
+            {
+                source: '/product/fashino-responsive-shop-html-email-template',
+                destination: '/product/quickbasket-fashion-ecommerce-store-tailwindcss-template',
+                permanent: true,
+            }
         ];
     },
     
