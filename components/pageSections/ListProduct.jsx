@@ -17,6 +17,7 @@ import {
 } from "@heroui/react";
 import { debounce } from "lodash";
 import React, { useCallback, useEffect, useRef, useState } from "react";
+import Cookies from "js-cookie";
 import { SearchIcon } from "../icons";
 
 const statuses = [
@@ -55,6 +56,7 @@ export default function ProductsPage({
   const [filterData, setFilterData] = useState({});
   const [filteredProducts, setFilteredProducts] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
   // Debounced setter using useCallback to ensure it's stable
   const debouncedInputChange = useCallback(
@@ -304,6 +306,7 @@ export default function ProductsPage({
             {!loading ? (
               filteredProducts?.length > 0 ? (
                 filteredProducts.map((product, index, arr) => {
+                  
                   return (
                     <div
                       className={
@@ -682,6 +685,7 @@ const ProductItem = ({
                     </svg>
                   )}
                 </div>
+              
                 {note.message && (
                   <div className="mt-1.5">
                     {product_status ? (
@@ -761,42 +765,97 @@ const ProductItem = ({
                 Edit
               </Button>
               {/* download */}
-              <Button
-                onPress={() => {
-                  if (product_zip) {
-                    window.open(product_zip?.url, "_blank");
-                  } else {
-                    window.open(product_zip_url, "_blank");
-                  }
-                }}
-                target="_blank"
-                size="sm"
-                variant="flat"
-                className="btn btn-outline-primary !border-primary/10 !py-2 !px-3 !text-sm"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="14"
-                  height="14"
-                  viewBox="0 0 14 14"
-                  fill="none"
-                  className="fill-primary group-hover:fill-white"
-                >
-                  <g clipPath="url(#clip0_3007_2985)">
-                    <path
-                      fillRule="evenodd"
-                      clipRule="evenodd"
-                      d="M7.77804 6.33889V0.777778C7.77804 0.571498 7.6961 0.373667 7.55024 0.227806C7.40438 0.0819442 7.20655 0 7.00027 0C6.79399 0 6.59616 0.0819442 6.45029 0.227806C6.30443 0.373667 6.22249 0.571498 6.22249 0.777778V6.33889L4.49582 4.17978C4.43325 4.09648 4.35457 4.0266 4.26447 3.9743C4.17437 3.92199 4.07468 3.88831 3.97132 3.87527C3.86795 3.86224 3.76302 3.87009 3.66275 3.89839C3.56249 3.92668 3.46892 3.97483 3.38762 4.03997C3.30632 4.10512 3.23893 4.18594 3.18946 4.27763C3.13999 4.36932 3.10945 4.47001 3.09964 4.57373C3.08984 4.67745 3.10097 4.78209 3.13238 4.88142C3.16379 4.98076 3.21484 5.07277 3.28249 5.152L6.3936 9.04089C6.46648 9.13173 6.55883 9.20504 6.66383 9.25542C6.76883 9.3058 6.88381 9.33195 7.00027 9.33195C7.11673 9.33195 7.2317 9.3058 7.3367 9.25542C7.44171 9.20504 7.53405 9.13173 7.60693 9.04089L10.718 5.152C10.7857 5.07277 10.8367 4.98076 10.8682 4.88142C10.8996 4.78209 10.9107 4.67745 10.9009 4.57373C10.8911 4.47001 10.8605 4.36932 10.8111 4.27763C10.7616 4.18594 10.6942 4.10512 10.6129 4.03997C10.5316 3.97483 10.438 3.92668 10.3378 3.89839C10.2375 3.87009 10.1326 3.86224 10.0292 3.87527C9.92585 3.88831 9.82616 3.92199 9.73606 3.9743C9.64596 4.0266 9.56729 4.09648 9.50471 4.17978L7.77804 6.33889Z"
-                    />
-                    <path
-                      fillRule="evenodd"
-                      clipRule="evenodd"
-                      d="M5.17767 10.0131L3.38956 7.77777H1.55556C1.143 7.77777 0.747335 7.94166 0.455612 8.23338C0.163888 8.52511 0 8.92077 0 9.33333V12.4444C0 12.857 0.163888 13.2527 0.455612 13.5444C0.747335 13.8361 1.143 14 1.55556 14H12.4444C12.857 14 13.2527 13.8361 13.5444 13.5444C13.8361 13.2527 14 12.857 14 12.4444V9.33333C14 8.92077 13.8361 8.52511 13.5444 8.23338C13.2527 7.94166 12.857 7.77777 12.4444 7.77777H10.6104L8.82156 10.0131C8.60295 10.2863 8.3257 10.5069 8.01033 10.6584C7.69495 10.81 7.34952 10.8887 6.99961 10.8887C6.6497 10.8887 6.30427 10.81 5.9889 10.6584C5.67352 10.5069 5.39627 10.2863 5.17767 10.0131ZM10.8889 10.1111C10.6826 10.1111 10.4848 10.193 10.3389 10.3389C10.1931 10.4848 10.1111 10.6826 10.1111 10.8889C10.1111 11.0952 10.1931 11.293 10.3389 11.4389C10.4848 11.5847 10.6826 11.6667 10.8889 11.6667H10.8967C11.1029 11.6667 11.3008 11.5847 11.4466 11.4389C11.5925 11.293 11.6744 11.0952 11.6744 10.8889C11.6744 10.6826 11.5925 10.4848 11.4466 10.3389C11.3008 10.193 11.1029 10.1111 10.8967 10.1111H10.8889Z"
-                    />
-                  </g>
-                </svg>
-                Download
-              </Button>
+
+<Button
+  onPress={async () => {
+    try {
+      // Get authToken and authUser from cookies
+      const authToken = Cookies.get("authToken");
+      const authUserCookie = Cookies.get("authUser");
+
+      if (!authToken || !authUserCookie) {
+        alert("Authentication required. Please log in.");
+        return;
+      }
+
+      // Parse the authUser cookie to get user_id
+      let user_id;
+      try {
+        const authUser = JSON.parse(decodeURIComponent(authUserCookie));
+        user_id = authUser.id;
+      } catch (error) {
+        console.error("Failed to parse authUser cookie:", error);
+        alert("Invalid user data. Please log in again.");
+        return;
+      }
+
+      const response = await fetch(
+        "https://studio.webbytemplate.com/api/product/author-download",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            user_id: user_id,
+            token: authToken,
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        const error = await response.json();
+        console.error("❌ Download failed:", error);
+        alert(error?.error?.message || "Download failed. Please try again.");
+        return;
+      }
+
+      // ✅ Convert response to blob and trigger download
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", "my-product.zip"); // Set default filename
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+
+      // ✅ Cleanup
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("💥 Error downloading product:", error);
+      alert("Something went wrong. Please try again later.");
+    }
+  }}
+  size="sm"
+  variant="flat"
+  className="btn btn-outline-primary !border-primary/10 !py-2 !px-3 !text-sm"
+>
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="14"
+    height="14"
+    viewBox="0 0 14 14"
+    fill="none"
+    className="fill-primary group-hover:fill-white"
+  >
+    <g clipPath="url(#clip0_3007_2985)">
+      <path
+        fillRule="evenodd"
+        clipRule="evenodd"
+        d="M7.77804 6.33889V0.777778C7.77804 0.571498 7.6961 0.373667 7.55024 0.227806C7.40438 0.0819442 7.20655 0 7.00027 0C6.79399 0 6.59616 0.0819442 6.45029 0.227806C6.30443 0.373667 6.22249 0.571498 6.22249 0.777778V6.33889L4.49582 4.17978C4.43325 4.09648 4.35457 4.0266 4.26447 3.9743C4.17437 3.92199 4.07468 3.88831 3.97132 3.87527C3.86795 3.86224 3.76302 3.87009 3.66275 3.89839C3.56249 3.92668 3.46892 3.97483 3.38762 4.03997C3.30632 4.10512 3.23893 4.18594 3.18946 4.27763C3.13999 4.36932 3.10945 4.47001 3.09964 4.57373C3.08984 4.67745 3.10097 4.78209 3.13238 4.88142C3.16379 4.98076 3.21484 5.07277 3.28249 5.152L6.3936 9.04089C6.46648 9.13173 6.55883 9.20504 6.66383 9.25542C6.76883 9.3058 6.88381 9.33195 7.00027 9.33195C7.11673 9.33195 7.2317 9.3058 7.3367 9.25542C7.44171 9.20504 7.53405 9.13173 7.60693 9.04089L10.718 5.152C10.7857 5.07277 10.8367 4.98076 10.8682 4.88142C10.8996 4.78209 10.9107 4.67745 10.9009 4.57373C10.8911 4.47001 10.8605 4.36932 10.8111 4.27763C10.7616 4.18594 10.6942 4.10512 10.6129 4.03997C10.5316 3.97483 10.438 3.92668 10.3378 3.89839C10.2375 3.87009 10.1326 3.86224 10.0292 3.87527C9.92585 3.88831 9.82616 3.92199 9.73606 3.9743C9.64596 4.0266 9.56729 4.09648 9.50471 4.17978L7.77804 6.33889Z"
+      />
+      <path
+        fillRule="evenodd"
+        clipRule="evenodd"
+        d="M5.17767 10.0131L3.38956 7.77777H1.55556C1.143 7.77777 0.747335 7.94166 0.455612 8.23338C0.163888 8.52511 0 8.92077 0 9.33333V12.4444C0 12.857 0.163888 13.2527 0.455612 13.5444C0.747335 13.8361 1.143 14 1.55556 14H12.4444C12.857 14 13.2527 13.8361 13.5444 13.5444C13.8361 13.2527 14 12.857 14 12.4444V9.33333C14 8.92077 13.8361 8.52511 13.5444 8.23338C13.2527 7.94166 12.857 7.77777 12.4444 7.77777H10.6104L8.82156 10.0131C8.60295 10.2863 8.3257 10.5069 8.01033 10.6584C7.69495 10.81 7.34952 10.8887 6.99961 10.8887C6.6497 10.8887 6.30427 10.81 5.9889 10.6584C5.67352 10.5069 5.39627 10.2863 5.17767 10.0131ZM10.8889 10.1111C10.6826 10.1111 10.4848 10.193 10.3389 10.3389C10.1931 10.4848 10.1111 10.6826 10.1111 10.8889C10.1111 11.0952 10.1931 11.293 10.3389 11.4389C10.4848 11.5847 10.6826 11.6667 10.8889 11.6667H10.8967C11.1029 11.6667 11.3008 11.5847 11.4466 11.4389C11.5925 11.293 11.6744 11.0952 11.6744 10.8889C11.6744 10.6826 11.5925 10.4848 11.4466 10.3389C11.3008 10.193 11.1029 10.1111 10.8967 10.1111H10.8889Z"
+      />
+    </g>
+  </svg>
+  Download
+</Button>
+
+
               {/* remove */}
               {/* <Button
                 size="sm"
@@ -854,7 +913,7 @@ const ProductItem = ({
                     </div>
                     <div className="flex flex-col gap-[6px] overflow-auto">
                       <h6 className="p !font-medium !text-black break-all">
-                        Product currently waiting for review
+                      Action Required: Pending Review
                       </h6>
                       <p className="2xl:text-base 1xl:text-[15px] text-sm leading-5 text-gray-200 break-words">
                         {note?.message}
@@ -890,7 +949,7 @@ const ProductItem = ({
                     </div>
                     <div className="flex flex-col gap-[6px] overflow-auto">
                       <h6 className="p !font-medium !text-black break-all">
-                        Product currently waiting for review
+                       Currently Under Review
                       </h6>
                       <p className="2xl:text-base 1xl:text-[15px] text-sm leading-5 text-gray-200 break-words">
                         {note?.message}
@@ -926,7 +985,7 @@ const ProductItem = ({
                     </div>
                     <div className="flex flex-col gap-[6px] overflow-auto">
                       <h6 className="p !font-medium !text-black break-all">
-                        Product currently waiting for review
+                      Declined
                       </h6>
                       <p className="2xl:text-base 1xl:text-[15px] text-sm leading-5 text-gray-200 break-words">
                         {note?.message}
@@ -962,7 +1021,7 @@ const ProductItem = ({
                     </div>
                     <div className="flex flex-col gap-[6px] overflow-auto">
                       <h6 className="p !font-medium !text-black break-all">
-                        Product currently waiting for review
+                      Approved & Live
                       </h6>
                       <p className="2xl:text-base 1xl:text-[15px] text-sm leading-5 text-gray-200 break-words">
                         {note?.message}
