@@ -20,6 +20,21 @@ const nextConfig = {
                 destination: '/blog/top-pet-care-website-templates',
                 permanent: true,
             },
+            {
+                source: '/blog/best-charity-website-templates-premium-free-download',
+                destination: '/blog/charity-template-converts-donations',
+                permanent: true,
+            },
+            {
+                source: '/blog/best-fashion-website-templates-create-clothing-website',
+                destination: '/blog/best-fashion-website-templates',
+                permanent: true,
+            },
+            {
+                source: '/blog/best-tours-and-travel-website-templates-free-download',
+                destination: '/blog/best-tours-travel-templates-agencies',
+                permanent: true,
+            },
             // Product URL redirects (when product slugs are changed in Strapi)
             {
                 source: '/product/fashino-responsive-shop-html-email-template',
