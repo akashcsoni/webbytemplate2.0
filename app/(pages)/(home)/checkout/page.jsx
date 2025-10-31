@@ -484,6 +484,14 @@ export default function CheckoutPage() {
       return;
     }
 
+    // Fire order_place tracking with real user_id
+    try {
+      const { trackOrderPlaced } = await import("@/lib/utils/trackUser");
+      trackOrderPlaced({ user_id: authUser.id });
+    } catch (e) {
+      // silently ignore tracking errors
+    }
+
     const phoneCode = filteredflag?.[0]?.dialCode || "";
     const phoneNumber = getStringValue(form.phone_no);
     const fullPhone = phoneCode + phoneNumber;
