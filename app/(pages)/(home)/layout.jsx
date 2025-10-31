@@ -6,6 +6,8 @@ import { fontSans } from "@/config/fonts";
 import Header from "@/components/header/header";
 import { FooterFooterContainer } from "@/components/footer/footer-container";
 import Script from "next/script";
+import React from 'react';
+import TrackPageViewClient from "../TrackPageViewClient";
 
 export const metadata = {
   title: {
@@ -45,6 +47,7 @@ export default function RootLayout({ children }) {
         )}
       >
         <Providers themeProps={{ attribute: "class", defaultTheme: "dark" }}>
+          <TrackPageViewClient />
           <Header />
           <main>{children}</main>
           <FooterFooterContainer />
@@ -68,7 +71,6 @@ export default function RootLayout({ children }) {
             gtag('config', 'G-W2K9LVCP3D');
           `}
         </Script>
-
         <Script
           id="zsiqscript"
           src="https://salesiq.zohopublic.in/widget?wc=siq80204715dc712d38f147a31f84d9ae62cfb628ce61feff32ab93ec9655c75845"

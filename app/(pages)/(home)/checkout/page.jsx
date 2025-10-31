@@ -49,12 +49,6 @@ export default function CheckoutPage() {
 
   const [errors, setErrors] = useState({});
 
-  // Redirect to home if cart is empty
-  useEffect(() => {
-    if (!isLoading && cartItems.length === 0) {
-      router.push("/");
-    }
-  }, [cartItems, isLoading, router]);
 
   // Filter states based on selected country for billing
   useEffect(() => {
@@ -529,6 +523,7 @@ export default function CheckoutPage() {
 
       if (response?.result && response?.data) {
         const orderData = response.data;
+        
 
         // Set redirect loading when payment process starts
         setRedirectLoading(true);

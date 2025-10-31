@@ -8,6 +8,8 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import html2pdf from "html2pdf.js/dist/html2pdf.min";
 import toast from "react-hot-toast";
+import { trackOrderPlaced } from "@/lib/utils/trackUser";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function CheckoutPage({ params }) {
   const router = useRouter();
@@ -17,6 +19,7 @@ export default function CheckoutPage({ params }) {
 
   const searchParams = useSearchParams();
   const sessionId = searchParams.get("session_id");
+  const { authUser } = useAuth();
 
   const [status, setStatus] = useState("Verifying payment...");
 
@@ -28,6 +31,10 @@ export default function CheckoutPage({ params }) {
       year: "numeric",
     });
   };
+
+  useEffect(() => {
+    trackOrderPlaced({ user_id: authUser.id });
+  }, [authUser]);
 
   const getProductList = async () => {
     try {

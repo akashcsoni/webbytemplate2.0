@@ -7,6 +7,8 @@ import { useCart } from "@/contexts/CartContext";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import EmptyCart from "@/components/emptycart/page";
+import { trackCheckout } from "@/lib/utils/trackUser";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function Page() {
   const router = useRouter();
@@ -62,6 +64,23 @@ export default function Page() {
       }
     } else {
       addToCart(normalizedCart);
+    }
+  };
+
+  const { authUser } = useAuth();
+
+  const handleCheckoutClick = async () => {
+    try {
+      const user_id = authUser?.id || null; // dynamic user ID
+  
+      // 1️⃣ Call tracking function
+      await trackCheckout({ user_id });
+  
+      // 2️⃣ Redirect to checkout page after tracking
+      router.push("/checkout");
+    } catch (err) {
+      console.error("Error tracking checkout:", err);
+      router.push("/checkout"); // still go to checkout even if tracking fails
     }
   };
 
@@ -259,7 +278,7 @@ export default function Page() {
                 </p>
               </div>
               <Button
-                onClick={() => router.push(`/checkout`)}
+                onClick={handleCheckoutClick}
                 className="w-full btn btn-primary 2xl:!py-3 1xl:!py-2.5 !py-[9px] h-auto"
               >
                 Process to Checkout
