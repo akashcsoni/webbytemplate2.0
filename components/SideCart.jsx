@@ -4,11 +4,14 @@ import { useCart } from "@/contexts/CartContext";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import React, { useState } from "react";
+import { useAuth } from "@/contexts/AuthContext"; // ✅ import Auth context
+import { trackCheckout } from "@/lib/utils/trackUser"; // ✅ import tracking function
 
 export default function SideCart() {
   const router = useRouter();
   const [removingItemId, setRemovingItemId] = useState(null);
 
+  const { authUser } = useAuth(); // ✅ get current user
   const {
     isCartOpen,
     removeFromCart,
@@ -16,6 +19,24 @@ export default function SideCart() {
     cartItems = [],
     totalPrice = 0,
   } = useCart() || {};
+
+    // ✅ Track and redirect to checkout
+    const handleCheckoutClick = async () => {
+      try {
+        // setLoadingCheckout(true);
+        const user_id = authUser?.id || null;
+  
+        // call tracking API
+        await trackCheckout({ user_id });
+  
+        // close sidebar + navigate
+        closeCart();
+        router.push("/checkout");
+      } catch (err) {
+        console.error("Error tracking checkout:", err);
+        router.push("/checkout"); // still navigate even if tracking fails
+      }
+    };
 
   const removeProductFromCart = (cartItem) => {
     if (cartItem) {
@@ -179,7 +200,7 @@ export default function SideCart() {
             View Cart
           </button>
           <button
-            onClick={() => router.push(`/checkout`)}
+            onClick={handleCheckoutClick}
             className="w-full btn btn-primary transition"
           >
             Checkout

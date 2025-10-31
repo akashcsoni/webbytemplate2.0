@@ -76,6 +76,16 @@ export async function middleware(request) {
     return NextResponse.redirect(new URL("/", request.url));
   }
 
+// for checkout test
+
+  if (pathname.startsWith("/checkout")) {
+    const cartFlag = request.cookies.get("cartHasItems")?.value;
+    if (!cartFlag || cartFlag === "false") {
+      return NextResponse.redirect(new URL("/", request.url));
+    }
+  }
+  
+
   if (isUserPath) {
     isLogin = Boolean(accessToken && userData);
 
