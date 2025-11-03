@@ -42,13 +42,33 @@ export default function Header() {
   const router = useRouter();
   const [query, setQuery] = useState("");
 
-  const handleSubmit = (e) => {
-    e.preventDefault(); // Prevent full page reload
-    const trimmed = query.trim();
-    if (trimmed !== "") {
-      router.push(`/search/${encodeURIComponent(trimmed)}`);
-    }
-  };
+  // const handleSubmit = (e) => {
+  //   e.preventDefault(); // Prevent full page reload
+  //   const trimmed = query.trim();
+  //   if (trimmed !== "") {
+  //     router.push(`/search/${encodeURIComponent(trimmed)}`);
+  //   }
+  // };
+
+    // Clear search query when navigating away from search page
+    useEffect(() => {
+      if (!pathname.startsWith('/search/')) {
+        setQuery("");
+      }
+    }, [pathname]);
+
+    const handleSubmit = (e) => {
+      e.preventDefault(); // Prevent full page reload
+      const trimmed = query.trim();
+      if (trimmed !== "") {
+        router.push(`/search/${encodeURIComponent(trimmed)}`);
+        // Clear the search query after navigation
+        setQuery("");
+        // Close search bar on mobile/desktop
+        setIsSearchOpen(false);
+      }
+    };
+  
 
   // Initialize apiMenu state as empty array
   const [apiMenu, setApiMenu] = useState([]);
@@ -600,6 +620,7 @@ strokeLinejoin="round"
                   <Link
                     href={headerSettingData?.right_menu?.slug}
                     className="schedule block"
+                    target="_blank"
                   >
                     {headerSettingData?.right_menu?.label}
                   </Link>

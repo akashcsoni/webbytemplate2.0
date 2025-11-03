@@ -17,7 +17,7 @@ export default function wishlistPage() {
     wishlistTocart,
   } = useWishlist();
   // const { cartId } = useCart();
-  const { addToCart, openCart, cartId } = useCart();
+  const { addToCart, openCart, cartId, initializeCart } = useCart();
 
   const [removingItemId, setRemovingItemId] = useState(null);
 
@@ -170,7 +170,15 @@ export default function wishlistPage() {
                   </button>
 
                   <button
-                    onClick={() => wishlistTocart()}
+                    onClick={async () => {
+                      try {
+                        await wishlistTocart();
+                        await initializeCart();
+                        openCart(true);
+                      } catch (error) {
+                        console.error("Error adding all items to cart:", error);
+                      }
+                    }}
                     className="btn btn-primary gap-[10px] font-medium"
                   >
                     Add all items to cart

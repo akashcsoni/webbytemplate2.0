@@ -597,7 +597,9 @@ export default function SinglePage({ pageData }) {
             )}
 
             {pageData?.schedule_meeting && (
-              <button className="gap-2 inline-flex items-center justify-center rounded-md btn text-primary border border-gray-100 hover:border-primary focus:border-primary active:border-primary transition-colors">
+              <button 
+              onClick={() => window.open("https://calendly.com/webbytemplate-support/45min", "_blank")}
+              className="gap-2 inline-flex items-center justify-center rounded-md btn text-primary border border-gray-100 hover:border-primary focus:border-primary active:border-primary transition-colors">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   width="22"
