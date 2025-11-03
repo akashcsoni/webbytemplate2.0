@@ -9,6 +9,7 @@ import ProductGrid from "../product/product-grid";
 import ProductDummyGrid from "../product/product-dummy-grid";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 
+
 // Skeleton components for loading states
 const FilterSkeleton = ({ count = 5 }) => (
   <ul className="text-sm 1xl:space-y-[14px] space-y-3 h-44 pr-2 overflow-auto">
@@ -718,7 +719,7 @@ const SearchPageContent = ({ slug }) => {
           page: activePage,
           shop: true,
           filter: sortOptions[sort] || "top_download",
-          order: sortDirection,
+          order: sortDirection || "asc",
           sorting: selected,
         };
 
@@ -811,7 +812,7 @@ const SearchPageContent = ({ slug }) => {
     };
 
     fetchData();
-  }, [searchParams, sort, sortDirection, pathname, activePage, pageSize]);
+  }, [searchParams, sort, sortDirection, pathname, activePage, pageSize, selected]);
 
   // Handle page change
   const handlePageChange = (newPage) => {
@@ -1639,7 +1640,7 @@ xl:relative xl:translate-x-0 z-20 xl:p-0 xl:shadow-none xl:block
                 onClick={() => setOpen(!open)}
                 className="inline-flex items-center px-[15px] py-[7px] border border-primary/10 rounded-md text-sm font-medium text-black bg-white hover:bg-gray-50 focus:outline-none"
               >
-                {selected}
+                {options.find((opt) => opt.value === selected)?.name || selected}
                 <svg
                   className={`ml-2 h-4 w-4 transition-transform duration-300 ease-in-out ${open ? "rotate-180" : "rotate-0"
                     }`}
@@ -1661,14 +1662,14 @@ xl:relative xl:translate-x-0 z-20 xl:p-0 xl:shadow-none xl:block
                 <div className="absolute z-10 right-0 mt-1 w-44 bg-white border border-gray-100 rounded-md shadow-md">
                   {options.map((option) => (
                     <button
-                      key={option}
+                      key={option.value}
                       onClick={() => {
-                        setSelected(option);
+                        setSelected(option.value);
                         setOpen(false);
                       }}
                       className="block w-full text-left px-4 sm:py-2 py-1 text-sm text-black hover:bg-gray-100"
                     >
-                      {option}
+                      {option.name}
                     </button>
                   ))}
                 </div>
@@ -1903,6 +1904,7 @@ xl:relative xl:translate-x-0 z-20 xl:p-0 xl:shadow-none xl:block
               </div>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+              
                 {filteredProducts?.map((product, index) => (
                   <ProductGrid key={index} product={product} />
                 ))}
