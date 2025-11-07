@@ -26,6 +26,10 @@ export default function FormDropzone({
   const isInvalid = !!(localError && localError.length > 0);
   const errorMessage = isInvalid ? localError[0] : "";
 
+  const getRules = (rules) => {
+    return Array.isArray(rules) && (rules.includes("required") || rules.includes("editModeRequired")) ? "*" : "";
+  };
+
   useEffect(() => {
     onChange(data.name, value);
   }, [value]);
@@ -139,7 +143,7 @@ export default function FormDropzone({
           htmlFor={data.name}
           className="text-sm font-medium text-gray-900"
         >
-          {data.label}
+          {`${data.label}${getRules(data.rules)}`}
         </label>
       </div>
 

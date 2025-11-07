@@ -326,7 +326,7 @@ const TopAuthor = ({ title, description }) => {
             ? Array.from({ length: skeletonCount }).map((_, i) => (
                 <AuthorCardSkeleton key={i} />
               ))
-            : author.map((company) => (
+            : author.filter((company) => company?.totalProducts > 0).map((company) => (
                 <Link
                   key={company.id}
                   className="border border-gray-100 rounded-lg sm:pt-[10px] pt-0 grid content-between"
@@ -408,7 +408,7 @@ const TopAuthor = ({ title, description }) => {
                         {company?.totalSales}
                       </p>
                     </div>
-                    <Link href={`/author/${company?.slug}`}>
+                    {/* <Link href={`/author/${company?.slug}`}> */}
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
                         width="12"
@@ -427,7 +427,7 @@ const TopAuthor = ({ title, description }) => {
                           />
                         </g>
                       </svg>
-                    </Link>
+                    {/* </Link> */}
                   </div>
                 </Link>
               ))}
