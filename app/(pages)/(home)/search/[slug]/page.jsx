@@ -33,8 +33,15 @@ export async function generateMetadata({ params, searchParams }) {
     }
     
     // Generate title in format: "Food Ordering Website Templates | WebbyTemplate"
+    // If the slug already contains "website templates", don't add it again
+    const slugLower = formattedSlug.toLowerCase();
+    const alreadyHasWebsiteTemplates = slugLower.includes('website templates') || 
+                                       slugLower.includes('website template');
+    
     const title = formattedSlug 
-        ? `${formattedSlug} Website Templates | WebbyTemplate`
+        ? alreadyHasWebsiteTemplates 
+            ? `${formattedSlug} | WebbyTemplate`
+            : `${formattedSlug} Website Templates | WebbyTemplate`
         : 'Search - WebbyTemplate';
     
     return {
