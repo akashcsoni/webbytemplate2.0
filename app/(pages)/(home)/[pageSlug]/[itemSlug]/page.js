@@ -1,5 +1,5 @@
 import GlobalComponent from "@/components/global/global-component";
-import PageNotFound from "@/components/PageNotFound/PageNotFound";
+import GlobalNotFound from "@/app/(pages)/global-not-found";
 import SearchPage from "@/components/search/SearchPage";
 import SingleBlogPage from "@/components/SingleBlogPage";
 import SinglePage from "@/components/SinglePage";
@@ -70,8 +70,12 @@ export async function generateMetadata({ params }) {
 
         if (!pageData.result || !pageData.data || Object.keys(pageData.data).length === 0) {
             return {
-                title: itemSlug,
-                description: "Premium website templates and themes",
+                title: '404 - Page Not Found | WebbyTemplate',
+                description: 'The page you are looking for does not exist.',
+                robots: {
+                    index: false,
+                    follow: false,
+                },
                 alternates: {
                     canonical: currentUrl,
                 },
@@ -225,6 +229,22 @@ export async function generateMetadata({ params }) {
         };
     } catch (error) {
         console.error('Error generating metadata:', error);
+        
+        // Check if it's a 404 error
+        if (error?.response?.status === 404 || error?.status === 404) {
+            return {
+                title: '404 - Page Not Found | WebbyTemplate',
+                description: 'The page you are looking for does not exist.',
+                robots: {
+                    index: false,
+                    follow: false,
+                },
+                alternates: {
+                    canonical: currentUrl,
+                },
+            };
+        }
+        
         // Default to indexing for error cases (unless specifically a category with no_index)
         const shouldIndexFallback = true;
 
@@ -280,7 +300,7 @@ export default async function DynamicPage({ params, searchParams }) {
                 pageSlug,
                 itemSlug
             });
-            return <PageNotFound />;
+            return <GlobalNotFound />;
         }
 
         // Handle empty or invalid data
@@ -290,7 +310,7 @@ export default async function DynamicPage({ params, searchParams }) {
                 hasData: !!pageData?.data,
                 dataKeys: pageData?.data ? Object.keys(pageData.data) : []
             });
-            return <PageNotFound />;
+            return <GlobalNotFound />;
         }
 
         // Additional validation for blog-specific requirements
@@ -302,7 +322,7 @@ export default async function DynamicPage({ params, searchParams }) {
                     hasComponents: !!pageData.data.components,
                     itemSlug
                 });
-                return <PageNotFound />;
+                return <GlobalNotFound />;
             }
         }
 
@@ -621,7 +641,7 @@ export default async function DynamicPage({ params, searchParams }) {
                     hasComponents: !!pageData?.data?.components,
                     dataKeys: pageData?.data ? Object.keys(pageData.data) : []
                 });
-                return <PageNotFound />;
+                return <GlobalNotFound />;
             }
 
             // Additional validation for required blog fields
@@ -630,7 +650,7 @@ export default async function DynamicPage({ params, searchParams }) {
 
             if (missingFields.length > 0) {
                 console.error('Missing required blog fields:', missingFields);
-                return <PageNotFound />;
+                return <GlobalNotFound />;
             }
 
             // Generate blog metadata and structured data
@@ -1052,6 +1072,13 @@ export default async function DynamicPage({ params, searchParams }) {
         }
         return <GlobalComponent data={pageData.data} />;
     } catch (error) {
+        console.error('Error loading page:', error);
+        
+        // Check if it's a 404 error
+        if (error?.response?.status === 404 || error?.status === 404) {
+            return <GlobalNotFound />;
+        }
+        
         return <SomethingWrong />;
     }
 }

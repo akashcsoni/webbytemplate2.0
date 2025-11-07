@@ -1,8 +1,44 @@
 import { NextResponse } from "next/server";
+import { isValidSlug } from "@/lib/utils/slugValidation";
 
 export async function middleware(request) {
   const { pathname } = request.nextUrl;
   const url = request.nextUrl.clone();
+  
+  // Validate slug format for dynamic routes to prevent invalid URLs from being crawled
+  // This applies to all dynamic routes: /[pageSlug], /[pageSlug]/[itemSlug], /[pageSlug]/[itemSlug]/[categorySlug]
+  const pathSegments = pathname.split('/').filter(Boolean);
+  
+  // Skip validation for static routes, API routes, and known static paths
+  const isStaticRoute = pathname.startsWith('/_next') || 
+                        pathname.startsWith('/api') || 
+                        pathname.startsWith('/favicon') ||
+                        pathname === '/' ||
+                        pathname.match(/\.(ico|png|jpg|jpeg|gif|webp|svg|css|js|json|xml)$/);
+  
+  if (!isStaticRoute && pathSegments.length > 0) {
+    // Validate all path segments (slugs) in the URL
+    // Decode URL-encoded characters (e.g., %20 for space) before validation
+    const invalidSlugs = pathSegments.filter(slug => {
+      try {
+        // Decode URL-encoded characters (e.g., %20 -> space, %2B -> +)
+        const decodedSlug = decodeURIComponent(slug);
+        return !isValidSlug(decodedSlug);
+      } catch (e) {
+        // If decoding fails, treat as invalid
+        return true;
+      }
+    });
+    
+    if (invalidSlugs.length > 0) {
+      // Return proper 404 status for invalid slugs
+      // This shows the PageNotFound component and prevents invalid URLs from being indexed
+      const notFoundUrl = new URL('/404', request.url);
+      const response = NextResponse.rewrite(notFoundUrl);
+      response.headers.set('X-Robots-Tag', 'noindex, nofollow');
+      return response;
+    }
+  }
   
   // Handle non-www redirect
   const isNonWww = request.nextUrl.hostname === 'webbytemplate.com';

@@ -12,7 +12,7 @@ import { strapiPost } from "@/lib/api/strapiClient";
 import { NO_FOUND_PRODUCT_GRID_IMAGE, themeConfig } from "@/config/theamConfig";
 import Image from "next/image";
 import Link from "next/link";
-import PageNotFound from "@/components/PageNotFound/PageNotFound";
+import GlobalNotFound from "@/app/(pages)/global-not-found";
 
 const page = ({ params }) => {
   const [author, setAuthor] = useState({});
@@ -594,7 +594,7 @@ const page = ({ params }) => {
       </div>
     </section>
   ) : (
-    <PageNotFound />
+    <GlobalNotFound />
   );
 };
 
