@@ -1,8 +1,5 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Enable trailing slashes for all URLs for SEO consistency
-  trailingSlash: true,
-  
   // Redirects configuration
   async redirects() {
     const pairs = [
@@ -264,7 +261,7 @@ const nextConfig = {
       },
       {
         from: "/blog/romantic-love-website-templates-perfect-designs-to-celebrate-your-love-story",
-        to: "/product/kia-weds-wedding-planner-website-template-next-js",
+        to: "/product/kiaweds-wedding-planner-website-template-next-js",
       },
       {
         from: "/blog/thank-you-for-your-purchase-best-email-templates",
