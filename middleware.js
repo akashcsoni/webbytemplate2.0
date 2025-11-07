@@ -50,7 +50,17 @@ export async function middleware(request) {
   
   if (!isStaticRoute && pathSegments.length > 0) {
     // Validate all path segments (slugs) in the URL
-    const invalidSlugs = pathSegments.filter(slug => !isValidSlug(slug));
+    // Decode URL-encoded characters (e.g., %20 for space) before validation
+    const invalidSlugs = pathSegments.filter(slug => {
+      try {
+        // Decode URL-encoded characters (e.g., %20 -> space, %2B -> +)
+        const decodedSlug = decodeURIComponent(slug);
+        return !isValidSlug(decodedSlug);
+      } catch (e) {
+        // If decoding fails, treat as invalid
+        return true;
+      }
+    });
     
     if (invalidSlugs.length > 0) {
       // Return proper 404 status for invalid slugs
