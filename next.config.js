@@ -1,5 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  experimental: {
+    globalNotFound: true,
+  },
   // Redirects configuration
   async redirects() {
     const pairs = [
@@ -138,10 +141,6 @@ const nextConfig = {
       {
         from: "/blog/best-gsap-animation-templates-will-inspire-you",
         to: "/category/motion-graphics",
-      },
-      {
-        from: "/blog/best-fashion-website-templates-create-clothing-website",
-        to: "/product/quickbasket-fashion-ecommerce-store-tailwindcss-template",
       },
       {
         from: "/blog/the-advantages-of-using-premium-html-templates",

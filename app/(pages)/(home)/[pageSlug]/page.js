@@ -1,5 +1,5 @@
 import GlobalComponent from "@/components/global/global-component";
-import PageNotFound from "@/components/PageNotFound/PageNotFound";
+import GlobalNotFound from "@/app/(pages)/global-not-found";
 import SomethingWrong from "@/components/somethingWrong/page";
 import { themeConfig } from "@/config/theamConfig";
 import { strapiGet } from "@/lib/api/strapiClient";
@@ -118,6 +118,19 @@ export async function generateMetadata({ params }) {
         };
     } catch (error) {
         console.error('Error generating metadata:', error);
+        
+        // Check if it's a 404 error
+        if (error?.response?.status === 404 || error?.status === 404) {
+            return {
+                title: '404 - Page Not Found | WebbyTemplate',
+                description: 'The page you are looking for does not exist.',
+                robots: {
+                    index: false,
+                    follow: false,
+                },
+            };
+        }
+        
         return {
             title: {
                 template: '%s | WebbyTemplate',
@@ -176,7 +189,7 @@ export default async function DynamicPage({ params, searchParams }) {
         if (!pageData.result || !pageData.data || Object.keys(pageData.data).length === 0) {
             // Check if it's a 404 specifically
             if (pageData.status === 404) {
-                return <PageNotFound />;
+                return <GlobalNotFound />;
             }
             return <SomethingWrong />;
         }
@@ -284,6 +297,12 @@ export default async function DynamicPage({ params, searchParams }) {
         );
     } catch (error) {
         console.error('Error loading page:', error);
+        
+        // Check if it's a 404 error
+        if (error?.response?.status === 404 || error?.status === 404) {
+            return <GlobalNotFound />;
+        }
+        
         return <SomethingWrong />;
     }
 }

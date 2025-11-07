@@ -22,7 +22,8 @@ export default function CheckoutPage() {
   const [isCountryDropdownOpen, setIsCountryDropdownOpen] = useState(false);
   const [isStateDropdownOpen, setIsStateDropdownOpen] = useState(false);
   const [selectedState, setSelectedState] = useState("");
-  const [selectedCountry, setSelectedCountry] = useState("");
+  const [selectedCountry, setSelectedCountry] = useState("United States");
+
   const [filteredStates, setFilteredStates] = useState([]);
   const [stateSearchTerm, setStateSearchTerm] = useState("");
   const [countrySearchTerm, setCountrySearchTerm] = useState("");
@@ -48,7 +49,6 @@ export default function CheckoutPage() {
   });
 
   const [errors, setErrors] = useState({});
-
 
   // Filter states based on selected country for billing
   useEffect(() => {
@@ -418,13 +418,12 @@ export default function CheckoutPage() {
     script.src = "https://checkout.razorpay.com/v1/checkout.js";
     script.async = true;
     script.defer = true;
-    script.onload = () => {
-    };
+    script.onload = () => {};
     script.onerror = () => {
       console.error("Failed to load Razorpay script");
     };
     document.head.appendChild(script); // Append to head instead of body
-    
+
     // Cleanup function
     return () => {
       if (document.head.contains(script)) {
@@ -531,7 +530,6 @@ export default function CheckoutPage() {
 
       if (response?.result && response?.data) {
         const orderData = response.data;
-        
 
         // Set redirect loading when payment process starts
         setRedirectLoading(true);
@@ -619,7 +617,6 @@ export default function CheckoutPage() {
             redirect_id: orderData?.documentId,
           });
 
-
           if (stripeRes?.url) {
             // Keep redirect loading active for Stripe redirect
             window.location.href = stripeRes.url;
@@ -682,7 +679,7 @@ export default function CheckoutPage() {
   );
 
   // Show loading state while checking cart
-  if (userDataLoading) {
+  if (userDataLoading || isLoading) {
     return (
       <div className="container px-4 py-8">
         <div className="flex items-center justify-center min-h-[400px]">
@@ -706,15 +703,24 @@ export default function CheckoutPage() {
         <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-[9999] backdrop-blur-sm">
           <div className="text-white p-8 bg-gray-900/95 rounded-xl shadow-2xl text-center min-w-[300px] max-w-[400px] mx-4">
             <div className="animate-spin rounded-full h-16 w-16 border-4 border-white border-t-transparent mx-auto mb-6"></div>
-            <h3 className="text-xl font-semibold mb-2">Processing Payment...</h3>
+            <h3 className="text-xl font-semibold mb-2">
+              Processing Payment...
+            </h3>
             <p className="text-sm text-gray-300 mb-4">
-              Please wait while we confirm your payment and redirect you to the confirmation page.
+              Please wait while we confirm your payment and redirect you to the
+              confirmation page.
             </p>
             <div className="flex justify-center">
               <div className="flex space-x-1">
                 <div className="w-2 h-2 bg-white rounded-full animate-bounce"></div>
-                <div className="w-2 h-2 bg-white rounded-full animate-bounce" style={{animationDelay: '0.1s'}}></div>
-                <div className="w-2 h-2 bg-white rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
+                <div
+                  className="w-2 h-2 bg-white rounded-full animate-bounce"
+                  style={{ animationDelay: "0.1s" }}
+                ></div>
+                <div
+                  className="w-2 h-2 bg-white rounded-full animate-bounce"
+                  style={{ animationDelay: "0.2s" }}
+                ></div>
               </div>
             </div>
           </div>
@@ -722,7 +728,7 @@ export default function CheckoutPage() {
       )}
       {/* Login prompt for returning customers */}
       {!authLoading && !isAuthenticated && (
-        <div className="m-3">
+        // <div className="m-3">
           <div className="text-lg w-full rounded-1xl border border-green-100 font-bold leading-tight bg-[#d8efff] p-4 pr-8 relative">
             Returning customer?{" "}
             <button
@@ -732,7 +738,7 @@ export default function CheckoutPage() {
               Click here to login
             </button>
           </div>
-        </div>
+        // </div>
       )}
 
       {/* Show user status if authenticated */}
@@ -796,25 +802,6 @@ export default function CheckoutPage() {
               </div>
             )} */}
 
-            {selectedCountry === "India" && (
-              <div>
-                <label className="p2 !text-black mb-[6px]">GST Number</label>
-                <input
-                  type="text"
-                  placeholder="GST Number"
-                  value={form.gst_number || ""}
-                  onChange={(e) => handleChange("gst_number", e.target.value)} // ✅
-                  className={inputClass("gst_number")} // ✅
-                  maxLength={50}
-                />
-                {/* {errors.gst_number && ( // ✅
-                  <p className="text-red-500 text-xs mt-1">
-                    {errors.gst_number}
-                  </p>
-                )} */}
-              </div>
-            )}
-
             {/* gst number field */}
 
             {/* Last Name */}
@@ -832,6 +819,24 @@ export default function CheckoutPage() {
                 <p className="text-red-500 text-xs mt-1">{errors.last_name}</p>
               )}
             </div>
+
+            {/* email for other country */}
+            {selectedCountry !== "India" && (
+              <div>
+                <label className="p2 !text-black mb-[6px]">Email *</label>
+                <input
+                  type="email"
+                  placeholder="Email Address"
+                  value={form.email || ""}
+                  onChange={(e) => handleChange("email", e.target.value)}
+                  className={inputClass("email")}
+                  maxLength={100}
+                />
+                {errors.email && (
+                  <p className="text-red-500 text-xs mt-1">{errors.email}</p>
+                )}
+              </div>
+            )}
 
             {/* Company Name */}
             <div>
@@ -853,162 +858,24 @@ export default function CheckoutPage() {
               )}
             </div>
 
-            {/* Email Address */}
-            <div>
-              <label className="p2 !text-black mb-[6px]">Email *</label>
-              <input
-                type="email"
-                placeholder="Email Address"
-                value={form.email || ""}
-                onChange={(e) => handleChange("email", e.target.value)}
-                className={inputClass("email")}
-                maxLength={100}
-              />
-              {errors.email && (
-                <p className="text-red-500 text-xs mt-1">{errors.email}</p>
-              )}
-            </div>
-
-            {/* Address */}
-            <div>
-              <label className="p2 !text-black mb-[6px]">
-                Street address *
-              </label>
-              <input
-                type="text"
-                placeholder="Street Address"
-                value={form.address || ""}
-                onChange={(e) => handleChange("address", e.target.value)}
-                className={inputClass("address")}
-                maxLength={200}
-              />
-              {errors.address && (
-                <p className="text-red-500 text-xs mt-1">{errors.address}</p>
-              )}
-            </div>
-
-            {/* City */}
-            <div>
-              <label className="p2 !text-black mb-[6px]">Town/City *</label>
-              <input
-                type="text"
-                placeholder="City"
-                value={form.city || ""}
-                onChange={(e) => handleChange("city", e.target.value)}
-                className={inputClass("city")}
-                maxLength={50}
-              />
-              {errors.city && (
-                <p className="text-red-500 text-xs mt-1">{errors.city}</p>
-              )}
-            </div>
-
-            {/* ZIP/Postal Code */}
-            <div>
-              <label className="p2 !text-black mb-[6px]">
-                Postcode / ZIP *
-              </label>
-              <input
-                type="text"
-                placeholder="ZIP/Postal Code"
-                value={form.pincode || ""}
-                onChange={(e) => handleChange("pincode", e.target.value)}
-                className={inputClass("pincode")}
-                maxLength={20}
-              />
-              {errors.pincode && (
-                <p className="text-red-500 text-xs mt-1">{errors.pincode}</p>
-              )}
-            </div>
-
-            {/* Phone Number */}
-            <div>
-              <label className="p2 !text-black block">Phone Number *</label>
-              <div
-                className={`flex items-center border rounded-md overflow-visible py-[11px] px-2 bg-white ${
-                  errors.phone_no ? "border-red-500" : "border-gray-100"
-                }`}
-              >
-                {/* Custom flag-only dropdown */}
-                <Listbox
-                  // value={selectedCountry}
-                  // onChange={setSelectedCountryCode}
-                  className="border-r border-gray-100 pr-[10px]"
-                >
-                  <div className="relative">
-                    <Listbox.Button className="relative w-full flex items-center justify-center cursor-pointer">
-                      <Image
-                        src={
-                          filteredflag?.[0]?.flag ||
-                          "/placeholder.svg?height=16&width=24"
-                        }
-                        alt={`${filteredflag?.[0]?.name} flag`}
-                        width={24}
-                        height={16}
-                        className="rounded-sm mr-2"
-                      />
-                      <span className="text-xs text-gray-600 mr-1">
-                        {filteredflag?.[0]?.dialCode}
-                      </span>
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="15"
-                        height="15"
-                        viewBox="0 0 9 9"
-                        fill="none"
-                      >
-                        <g clipPath="url(#clip0_1233_287)">
-                          <path
-                            d="M4.11673 7.15175C4.33218 7.35027 4.66391 7.35027 4.87937 7.15175L8.81858 3.52223C8.93421 3.41568 9 3.26561 9 3.10837V2.78716C9 2.29637 8.4156 2.04078 8.05523 2.37395L4.88007 5.30948C4.66441 5.50886 4.33168 5.50886 4.11602 5.30948L0.940859 2.37395C0.58049 2.04078 -0.00390625 2.29637 -0.00390625 2.78716V3.10837C-0.00390625 3.26561 0.0618803 3.41568 0.177518 3.52223L4.11673 7.15175Z"
-                            fill="#808080"
-                          />
-                        </g>
-                      </svg>
-                    </Listbox.Button>
-                    {/* <Listbox.Options className="absolute mt-3 rounded shadow-xl left-0 z-20 w-80 py-1 outline-none border-gray-100 border bg-white max-h-60 overflow-y-auto">
-                      {countries.map((country) => (
-                        <Listbox.Option
-                          key={country.code}
-                          value={country}
-                          className="flex items-center cursor-pointer py-2 px-3 hover:bg-gray-100"
-                        >
-                          <Image
-                            src={country.flag || "/placeholder.svg?height=14&width=20"}
-                            alt={`${country.name} flag`}
-                            width={20}
-                            height={14}
-                            className="rounded-sm mr-3"
-                          />
-                          <span className="text-sm mr-2">{country.dialCode}</span>
-                          <span className="text-sm">{country.name}</span>
-                        </Listbox.Option>
-                      ))}
-                    </Listbox.Options> */}
-                  </div>
-                </Listbox>
-
-                {/* Phone number input */}
+            {selectedCountry === "India" && (
+              <div>
+                <label className="p2 !text-black mb-[6px]">GST Number</label>
                 <input
-                  type="tel"
-                  placeholder="Phone Number"
-                  value={form.phone_no || ""}
-                  onChange={(e) => {
-                    // Only allow digits
-                    const value = e.target.value.replace(/\D/g, "");
-                    handleChange("phone_no", value);
-                  }}
-                  className="outline-none w-full ml-2 text-gray-200"
-                  maxLength={15}
+                  type="text"
+                  placeholder="GST Number"
+                  value={form.gst_number || ""}
+                  onChange={(e) => handleChange("gst_number", e.target.value)} // ✅
+                  className={inputClass("gst_number")} // ✅
+                  maxLength={50}
                 />
+                {/* {errors.gst_number && ( // ✅
+                  <p className="text-red-500 text-xs mt-1">
+                    {errors.gst_number}
+                  </p>
+                )} */}
               </div>
-              {errors.phone_no && (
-                <p className="text-red-500 text-xs mt-1">{errors.phone_no}</p>
-              )}
-              <p className="text-xs text-gray-500 mt-1">
-                Expected format: {filteredflag?.[0]?.phoneLength.join(" or ")}{" "}
-                digits
-              </p>
-            </div>
+            )}
 
             {/* Country Dropdown */}
             <div className="relative" ref={countryRef}>
@@ -1177,6 +1044,165 @@ export default function CheckoutPage() {
               {errors.state && (
                 <p className="text-red-500 text-xs mt-1">{errors.state}</p>
               )}
+            </div>
+
+            {/* City */}
+            <div>
+              <label className="p2 !text-black mb-[6px]">Town/City *</label>
+              <input
+                type="text"
+                placeholder="City"
+                value={form.city || ""}
+                onChange={(e) => handleChange("city", e.target.value)}
+                className={inputClass("city")}
+                maxLength={50}
+              />
+              {errors.city && (
+                <p className="text-red-500 text-xs mt-1">{errors.city}</p>
+              )}
+            </div>
+
+            {/* ZIP/Postal Code */}
+            <div>
+              <label className="p2 !text-black mb-[6px]">
+                Postcode / ZIP *
+              </label>
+              <input
+                type="text"
+                placeholder="ZIP/Postal Code"
+                value={form.pincode || ""}
+                onChange={(e) => handleChange("pincode", e.target.value)}
+                className={inputClass("pincode")}
+                maxLength={20}
+              />
+              {errors.pincode && (
+                <p className="text-red-500 text-xs mt-1">{errors.pincode}</p>
+              )}
+            </div>
+
+            {/* Address */}
+            <div>
+              <label className="p2 !text-black mb-[6px]">
+                Street address *
+              </label>
+              <input
+                type="text"
+                placeholder="Street Address"
+                value={form.address || ""}
+                onChange={(e) => handleChange("address", e.target.value)}
+                className={inputClass("address")}
+                maxLength={200}
+              />
+              {errors.address && (
+                <p className="text-red-500 text-xs mt-1">{errors.address}</p>
+              )}
+            </div>
+
+            {/* Email Address */}
+            {selectedCountry === "India" && (
+              <div>
+                <label className="p2 !text-black mb-[6px]">Email *</label>
+                <input
+                  type="email"
+                  placeholder="Email Address"
+                  value={form.email || ""}
+                  onChange={(e) => handleChange("email", e.target.value)}
+                  className={inputClass("email")}
+                  maxLength={100}
+                />
+                {errors.email && (
+                  <p className="text-red-500 text-xs mt-1">{errors.email}</p>
+                )}
+              </div>
+            )}
+
+            {/* Phone Number */}
+            <div>
+              <label className="p2 !text-black block">Phone Number *</label>
+              <div
+                className={`flex items-center border rounded-md overflow-visible py-[11px] px-2 bg-white ${
+                  errors.phone_no ? "border-red-500" : "border-gray-100"
+                }`}
+              >
+                {/* Custom flag-only dropdown */}
+                <Listbox
+                  // value={selectedCountry}
+                  // onChange={setSelectedCountryCode}
+                  className="border-r border-gray-100 pr-[10px]"
+                >
+                  <div className="relative">
+                    <Listbox.Button className="relative w-full flex items-center justify-center cursor-pointer">
+                      <Image
+                        src={
+                          filteredflag?.[0]?.flag ||
+                          "/placeholder.svg?height=16&width=24"
+                        }
+                        alt={`${filteredflag?.[0]?.name} flag`}
+                        width={24}
+                        height={16}
+                        className="rounded-sm mr-2"
+                      />
+                      <span className="text-xs text-gray-600 mr-1">
+                        {filteredflag?.[0]?.dialCode}
+                      </span>
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="15"
+                        height="15"
+                        viewBox="0 0 9 9"
+                        fill="none"
+                      >
+                        <g clipPath="url(#clip0_1233_287)">
+                          <path
+                            d="M4.11673 7.15175C4.33218 7.35027 4.66391 7.35027 4.87937 7.15175L8.81858 3.52223C8.93421 3.41568 9 3.26561 9 3.10837V2.78716C9 2.29637 8.4156 2.04078 8.05523 2.37395L4.88007 5.30948C4.66441 5.50886 4.33168 5.50886 4.11602 5.30948L0.940859 2.37395C0.58049 2.04078 -0.00390625 2.29637 -0.00390625 2.78716V3.10837C-0.00390625 3.26561 0.0618803 3.41568 0.177518 3.52223L4.11673 7.15175Z"
+                            fill="#808080"
+                          />
+                        </g>
+                      </svg>
+                    </Listbox.Button>
+                    {/* <Listbox.Options className="absolute mt-3 rounded shadow-xl left-0 z-20 w-80 py-1 outline-none border-gray-100 border bg-white max-h-60 overflow-y-auto">
+                      {countries.map((country) => (
+                        <Listbox.Option
+                          key={country.code}
+                          value={country}
+                          className="flex items-center cursor-pointer py-2 px-3 hover:bg-gray-100"
+                        >
+                          <Image
+                            src={country.flag || "/placeholder.svg?height=14&width=20"}
+                            alt={`${country.name} flag`}
+                            width={20}
+                            height={14}
+                            className="rounded-sm mr-3"
+                          />
+                          <span className="text-sm mr-2">{country.dialCode}</span>
+                          <span className="text-sm">{country.name}</span>
+                        </Listbox.Option>
+                      ))}
+                    </Listbox.Options> */}
+                  </div>
+                </Listbox>
+
+                {/* Phone number input */}
+                <input
+                  type="tel"
+                  placeholder="Phone Number"
+                  value={form.phone_no || ""}
+                  onChange={(e) => {
+                    // Only allow digits
+                    const value = e.target.value.replace(/\D/g, "");
+                    handleChange("phone_no", value);
+                  }}
+                  className="outline-none w-full ml-2 text-gray-200"
+                  maxLength={15}
+                />
+              </div>
+              {errors.phone_no && (
+                <p className="text-red-500 text-xs mt-1">{errors.phone_no}</p>
+              )}
+              <p className="text-xs text-gray-500 mt-1">
+                Expected format: {filteredflag?.[0]?.phoneLength.join(" or ")}{" "}
+                digits
+              </p>
             </div>
           </div>
 

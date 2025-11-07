@@ -1,5 +1,5 @@
 import GlobalComponent from "@/components/global/global-component";
-import PageNotFound from "@/components/PageNotFound/PageNotFound";
+import GlobalNotFound from "@/app/(pages)/global-not-found";
 import SearchPage from "@/components/search/SearchPage";
 import SinglePage from "@/components/SinglePage";
 import SomethingWrong from "@/components/somethingWrong/page";
@@ -180,7 +180,7 @@ export default async function DynamicPage({ params, searchParams }) {
                 itemSlug,
                 categorySlug
             });
-            return <PageNotFound />;
+            return <GlobalNotFound />;
         }
 
         // Handle empty or invalid data
@@ -190,7 +190,7 @@ export default async function DynamicPage({ params, searchParams }) {
                 hasData: !!pageData?.data,
                 dataKeys: pageData?.data ? Object.keys(pageData.data) : []
             });
-            return <PageNotFound />;
+            return <GlobalNotFound />;
         }
 
         if (pageSlug === 'product') {

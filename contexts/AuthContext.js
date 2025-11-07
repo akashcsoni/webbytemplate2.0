@@ -79,9 +79,10 @@ export function AuthProvider({ children }) {
         setauthUser(null)
         setauthToken(null)
         setIsAuthenticated(false)
-        setTimeout(() => {
-            window.location.reload();
-        }, 500);
+        window.location.replace("/"); // replaces current page in history
+        // setTimeout(() => {
+        //     window.location.reload();
+        // }, 500);
     }
 
     return (

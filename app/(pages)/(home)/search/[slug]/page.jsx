@@ -8,13 +8,30 @@ export const dynamic = 'force-dynamic'; // Force no caching, SSR on every reques
 export async function generateMetadata({ params, searchParams }) {
     const { slug } = await params;
     
-    // Format slug for display: convert "food-ordering" to "Food Ordering"
+    // Format slug for display: handles both hyphens and spaces
+    // Examples: "food-ordering" → "Food Ordering"
+    //           "WooCommerce%20Dynamic%20Pricing" → "WooCommerce Dynamic Pricing"
     const formatSlug = (slug) => {
         if (!slug) return '';
-        return slug
-            .split('-')
-            .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-            .join(' ');
+        
+        try {
+            // Decode URL-encoded characters (e.g., %20 → space)
+            const decodedSlug = decodeURIComponent(slug);
+            
+            // Split by both hyphens and spaces, then filter out empty strings
+            const words = decodedSlug.split(/[-\s]+/).filter(word => word.length > 0);
+            
+            // Capitalize each word: first letter uppercase, rest lowercase
+            return words
+                .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+                .join(' ');
+        } catch (e) {
+            // If decoding fails, try with original slug
+            const words = slug.split(/[-\s]+/).filter(word => word.length > 0);
+            return words
+                .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+                .join(' ');
+        }
     };
     
     const formattedSlug = formatSlug(slug);
