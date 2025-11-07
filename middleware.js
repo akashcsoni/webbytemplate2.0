@@ -62,25 +62,6 @@ export async function middleware(request) {
     }
   }
   
-  // Add trailing slash to all URLs for SEO consistency
-  // Next.js trailingSlash: true handles most cases, but we add explicit redirects for SEO
-  // Skip for root path, API routes, static files, and paths that already have trailing slash
-  const hasFileExtension = pathname.match(/\.(ico|png|jpg|jpeg|gif|webp|svg|css|js|json|xml|txt|pdf|woff|woff2|ttf|eot)$/);
-  const isExcludedPath = pathname === '/' || 
-                         pathname === '/404' ||
-                         pathname.startsWith('/api') ||
-                         pathname.startsWith('/_next') ||
-                         pathname.startsWith('/404/') ||
-                         hasFileExtension;
-  
-  // Only redirect if path doesn't end with slash and is not excluded
-  // This ensures proper 301 redirects for SEO while avoiding loops
-  if (!isExcludedPath && !pathname.endsWith('/') && pathname.length > 1) {
-    const newPathname = `${pathname}/`;
-    const urlWithTrailingSlash = new URL(newPathname + request.nextUrl.search, request.url);
-    return NextResponse.redirect(urlWithTrailingSlash, 301);
-  }
-  
   // Check and clean tracking parameters first
   const cleanedSearch = stripTrackingParams(request.nextUrl.search);
   const needsRedirect = cleanedSearch !== request.nextUrl.search;
