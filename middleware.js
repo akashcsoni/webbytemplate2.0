@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { isValidSlug } from "@/lib/utils/slugValidation";
 
 /**
  * Strip unwanted tracking parameters from URLs to prevent them from being indexed
@@ -35,6 +36,50 @@ function stripTrackingParams(searchParams) {
 export async function middleware(request) {
   const { pathname } = request.nextUrl;
   const url = request.nextUrl.clone();
+  
+  // Validate slug format for dynamic routes to prevent invalid URLs from being crawled
+  // This applies to all dynamic routes: /[pageSlug], /[pageSlug]/[itemSlug], /[pageSlug]/[itemSlug]/[categorySlug]
+  const pathSegments = pathname.split('/').filter(Boolean);
+  
+  // Skip validation for static routes, API routes, and known static paths
+  const isStaticRoute = pathname.startsWith('/_next') || 
+                        pathname.startsWith('/api') || 
+                        pathname.startsWith('/favicon') ||
+                        pathname === '/' ||
+                        pathname.match(/\.(ico|png|jpg|jpeg|gif|webp|svg|css|js|json|xml)$/);
+  
+  if (!isStaticRoute && pathSegments.length > 0) {
+    // Validate all path segments (slugs) in the URL
+    const invalidSlugs = pathSegments.filter(slug => !isValidSlug(slug));
+    
+    if (invalidSlugs.length > 0) {
+      // Rewrite to 404 page for invalid slugs
+      // This shows the PageNotFound component and prevents invalid URLs from being indexed
+      const notFoundUrl = new URL('/404', request.url);
+      const response = NextResponse.rewrite(notFoundUrl);
+      response.headers.set('X-Robots-Tag', 'noindex, nofollow');
+      return response;
+    }
+  }
+  
+  // Add trailing slash to all URLs for SEO consistency
+  // Next.js trailingSlash: true handles most cases, but we add explicit redirects for SEO
+  // Skip for root path, API routes, static files, and paths that already have trailing slash
+  const hasFileExtension = pathname.match(/\.(ico|png|jpg|jpeg|gif|webp|svg|css|js|json|xml|txt|pdf|woff|woff2|ttf|eot)$/);
+  const isExcludedPath = pathname === '/' || 
+                         pathname === '/404' ||
+                         pathname.startsWith('/api') ||
+                         pathname.startsWith('/_next') ||
+                         pathname.startsWith('/404/') ||
+                         hasFileExtension;
+  
+  // Only redirect if path doesn't end with slash and is not excluded
+  // This ensures proper 301 redirects for SEO while avoiding loops
+  if (!isExcludedPath && !pathname.endsWith('/') && pathname.length > 1) {
+    const newPathname = `${pathname}/`;
+    const urlWithTrailingSlash = new URL(newPathname + request.nextUrl.search, request.url);
+    return NextResponse.redirect(urlWithTrailingSlash, 301);
+  }
   
   // Check and clean tracking parameters first
   const cleanedSearch = stripTrackingParams(request.nextUrl.search);
