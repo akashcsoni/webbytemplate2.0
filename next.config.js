@@ -1,5 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // Enable trailing slashes for all URLs for SEO consistency
+  trailingSlash: true,
+  
   // Redirects configuration
   async redirects() {
     const pairs = [
