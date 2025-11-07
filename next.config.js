@@ -174,7 +174,6 @@ const nextConfig = {
         from: "/blog/top-most-popular-wordpress-themes-for-travel-blogs-in-2023",
         to: "/product/journeya-tours-travel-agency-react-next-js-template",
       },
-      { from: "/category/ui-templates", to: "/category/ui-templates" },
       { from: "/jamstack-templates", to: "/category/joomla-extensions" },
       { from: "/technical-illustration", to: "/category/illustrations" },
       {

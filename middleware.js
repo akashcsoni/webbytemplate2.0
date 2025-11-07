@@ -53,13 +53,22 @@ export async function middleware(request) {
     const invalidSlugs = pathSegments.filter(slug => !isValidSlug(slug));
     
     if (invalidSlugs.length > 0) {
-      // Rewrite to 404 page for invalid slugs
+      // Return proper 404 status for invalid slugs
       // This shows the PageNotFound component and prevents invalid URLs from being indexed
       const notFoundUrl = new URL('/404', request.url);
       const response = NextResponse.rewrite(notFoundUrl);
       response.headers.set('X-Robots-Tag', 'noindex, nofollow');
       return response;
     }
+  }
+  
+  // Check for srsltid parameter - return 404 if present (Google Ads tracking)
+  // This prevents Google from indexing URLs with tracking parameters
+  if (request.nextUrl.searchParams.has('srsltid')) {
+    const notFoundUrl = new URL('/404', request.url);
+    const response = NextResponse.rewrite(notFoundUrl);
+    response.headers.set('X-Robots-Tag', 'noindex, nofollow');
+    return response;
   }
   
   // Check and clean tracking parameters first
