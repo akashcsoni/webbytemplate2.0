@@ -21,7 +21,6 @@ import { containsTargetURL } from "@/lib/containsTargetURL";
 import { useCart } from "@/contexts/CartContext";
 import { URL } from "@/config/theamConfig";
 
-
 const SinglePageSwiper = ({
   gallery_images = [],
   className = "",
@@ -32,10 +31,12 @@ const SinglePageSwiper = ({
   title,
   author,
   pageData,
-  product
+  product,
+  // New: sync selected license/addons from parent product page
+  selectedLicense: selectedLicenseProp,
+  selectedAddons: selectedAddonsProp,
+  product_status,
 }) => {
-
-
   const prevRef = useRef(null);
   const nextRef = useRef(null);
   const swiperRef = useRef(null);
@@ -87,13 +88,10 @@ const SinglePageSwiper = ({
     }
   }, [imagesLoaded]);
 
-
   const productUrl = `${URL}/product/${pageData?.slug}`;
   const text =
     `Hi friend! I came across an amazing ${product?.name} on WebbyTemplate.com ` +
     `that you would absolutely like. Just click on the link below to view it.`;
-
-
 
   // Social share buttons data
   const socialButtons = [
@@ -255,6 +253,16 @@ const SinglePageSwiper = ({
   );
   const [selectedAddons, setSelectedAddons] = useState([]);
 
+  // Sync from parent whenever user changes selection on the main page
+  useEffect(() => {
+    if (selectedLicenseProp) {
+      setSelectedLicense(selectedLicenseProp);
+    }
+    if (Array.isArray(selectedAddonsProp)) {
+      setSelectedAddons(selectedAddonsProp);
+    }
+  }, [selectedLicenseProp, selectedAddonsProp]);
+
   return (
     <div className={("relative w-full pb-5", className)}>
       <div className="2xl:w-[59vw] lg:w-[68vw] w-[98vw] [@media(max-width:426px)]:w-full">
@@ -293,7 +301,10 @@ const SinglePageSwiper = ({
                 <div className="relative group w-full h-full lg:before:pt-[69%] before:pt-[64%] before:block overflow-hidden">
                   <Image
                     src={containsTargetURL(img?.url) ? img?.url : `${img?.url}`}
-                    alt={img?.alternativeText || `${title || 'Product'} gallery image ${i + 1}`}
+                    alt={
+                      img?.alternativeText ||
+                      `${title || "Product"} gallery image ${i + 1}`
+                    }
                     width={imageWidth}
                     height={imageHeight}
                     className="flex-shrink-0 w-full h-full absolute top-0 left-0 bottom-0 right-0"
@@ -398,31 +409,33 @@ const SinglePageSwiper = ({
                                       </p>
                                     </div>
                                   </div>
-                                  <button
-                                    className="btn btn-primary gap-[10px] sm:w-auto w-full"
-                                    onClick={handleAddToCart}
-                                    disabled={loading}
-                                  >
-                                    <svg
-                                      xmlns="http://www.w3.org/2000/svg"
-                                      width="18"
-                                      height="21"
-                                      viewBox="0 0 18 21"
-                                      fill="none"
+                                  {product_status !== "coming-soon" && (
+                                    <button
+                                      className="btn btn-primary gap-[10px] sm:w-auto w-full"
+                                      onClick={handleAddToCart}
+                                      disabled={loading}
                                     >
-                                      <path
-                                        d="M5.7474 7.25V4C5.7474 2.20507 7.20247 0.75 8.9974 0.75C10.7923 0.75 12.2474 2.20507 12.2474 4V7.25M2.4974 5.08333H15.4974L16.5807 19.1667H1.41406L2.4974 5.08333Z"
-                                        stroke="white"
-                                        strokeWidth="1.5"
-                                        strokeLinecap="round"
-                                      />
-                                    </svg>
-                                    {loading
-                                      ? "Processing..."
-                                      : isProductInCart
-                                        ? "Update Cart"
-                                        : "Add to Cart"}
-                                  </button>
+                                      <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        width="18"
+                                        height="21"
+                                        viewBox="0 0 18 21"
+                                        fill="none"
+                                      >
+                                        <path
+                                          d="M5.7474 7.25V4C5.7474 2.20507 7.20247 0.75 8.9974 0.75C10.7923 0.75 12.2474 2.20507 12.2474 4V7.25M2.4974 5.08333H15.4974L16.5807 19.1667H1.41406L2.4974 5.08333Z"
+                                          stroke="white"
+                                          strokeWidth="1.5"
+                                          strokeLinecap="round"
+                                        />
+                                      </svg>
+                                      {loading
+                                        ? "Processing..."
+                                        : isProductInCart
+                                          ? "Update Cart"
+                                          : "Add to Cart"}
+                                    </button>
+                                  )}
                                 </div>
                                 {/* Progress bar at top */}
                               </div>
@@ -508,8 +521,9 @@ const SinglePageSwiper = ({
             <button
               ref={prevRef}
               aria-label="Previous slide"
-              className={` ${isBeginning ? "opacity-50 cursor-not-allowed" : "opacity-100"
-                }`}
+              className={` ${
+                isBeginning ? "opacity-50 cursor-not-allowed" : "opacity-100"
+              }`}
               disabled={isBeginning}
             >
               <svg
@@ -531,8 +545,9 @@ const SinglePageSwiper = ({
             <button
               ref={nextRef}
               aria-label="Next slide"
-              className={` ${isEnd ? "opacity-50 cursor-not-allowed" : "opacity-100"
-                }`}
+              className={` ${
+                isEnd ? "opacity-50 cursor-not-allowed" : "opacity-100"
+              }`}
               disabled={isEnd}
             >
               <svg

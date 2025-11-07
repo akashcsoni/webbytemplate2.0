@@ -395,7 +395,7 @@ export default function AuthorHeader({ authUser }) {
               </svg>
 
               {/* 🔹 Wishlist count badge */}
-              <span className="author-badge">{cartItems?.length || 0}</span>
+              <span className="author-badge">{wishlistItems?.length || 0}</span>
             </Link>
 
             <div className="flex items-center relative 1xl:pl-[15px] pl-1.5 pr-1">

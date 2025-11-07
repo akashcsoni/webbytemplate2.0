@@ -233,6 +233,7 @@ export default function wishlistPage() {
                     key={item.id}
                     className={`transition-all ease-in-out duration-500 ${removingItemId === item.id ? "opacity-0" : "opacity-100"}`}
                   >
+                    
                     <td className="xl:p-4 p-3">
                       <Image
                         src={item.product?.grid_image?.url}
@@ -252,26 +253,28 @@ export default function wishlistPage() {
                     </td>
                     <td className="xl:p-4 p-3">${item.total.toFixed(2)}</td>
                     <td className="xl:p-4 p-3">
-                      <button
-                        onClick={() => handleAddToCart(item)}
-                        className="text-blue-500 hover:underline flex items-center gap-2"
-                      >
-                        Add to cart{" "}
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          width="15"
-                          height="15"
-                          viewBox="0 0 15 15"
-                          fill="none"
+                      {item?.product?.product_status !== "coming-soon" && (
+                        <button
+                          onClick={() => handleAddToCart(item)}
+                          className="text-blue-500 hover:underline flex items-center gap-2"
                         >
-                          <path
-                            fillRule="evenodd"
-                            clipRule="evenodd"
-                            d="M6.30057 7.49988L0.988281 2.18928L2.18342 0.994141L8.68747 7.49988L2.18342 14.0056L0.988281 12.8122L6.30057 7.49988ZM11.3647 7.49988L6.05243 2.18928L7.24757 0.994141L13.7516 7.49988L7.24757 14.0056L6.05243 12.8122L11.3647 7.49988Z"
-                            fill="currentColor"
-                          />
-                        </svg>
-                      </button>
+                          Add to cart{" "}
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="15"
+                            height="15"
+                            viewBox="0 0 15 15"
+                            fill="none"
+                          >
+                            <path
+                              fillRule="evenodd"
+                              clipRule="evenodd"
+                              d="M6.30057 7.49988L0.988281 2.18928L2.18342 0.994141L8.68747 7.49988L2.18342 14.0056L0.988281 12.8122L6.30057 7.49988ZM11.3647 7.49988L6.05243 2.18928L7.24757 0.994141L13.7516 7.49988L7.24757 14.0056L6.05243 12.8122L11.3647 7.49988Z"
+                              fill="currentColor"
+                            />
+                          </svg>
+                        </button>
+                      )}
                     </td>
                     <td className="xl:p-4 p-3">
                       <button

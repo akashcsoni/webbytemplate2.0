@@ -766,6 +766,8 @@ const ProductItem = ({
               </Button>
               {/* download */}
 
+
+{product_status === "authorised" && (
 <Button
   onPress={async () => {
     try {
@@ -854,7 +856,7 @@ const ProductItem = ({
   </svg>
   Download
 </Button>
-
+)}
 
               {/* remove */}
               {/* <Button

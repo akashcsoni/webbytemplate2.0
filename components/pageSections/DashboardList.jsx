@@ -711,7 +711,9 @@ export default function DashboardPage({ title }) {
                                 <p className="font-bold text-black">
                                   ${WalletSetting?.[0]?.value}
                                 </p>
+                                
                               </div>
+                              {WalletSetting?.[0]?.value < 0 && (
                               <div>
                                 <button
                                   className="btn btn-primary h-auto flex items-center justify-center xl:gap-[10px] gap-1"
@@ -737,6 +739,7 @@ export default function DashboardPage({ title }) {
                                   Withdraw
                                 </button>
                               </div>
+                            )}
                             </div>
                           </div>
                         </div>

@@ -46,6 +46,11 @@ function FeatureItem({ text }) {
 }
 
 export default function SinglePage({ pageData }) {
+  // console.log(
+  //   pageData?.product_status === "coming-soon",
+  //   "this is for pagedata test"
+  // );
+
   const { addToCart, openCart, cartItems } = useCart();
   const { addToWishlist, wishlistItems } = useWishlist();
   const [wishlistLoading, setWishlistLoading] = useState(false);
@@ -135,8 +140,8 @@ export default function SinglePage({ pageData }) {
 
   const [totalPrice, setTotalPrice] = useState(
     pageData?.price?.sales_price === null
-      ? (pageData?.price?.regular_price || 0)
-      : (pageData?.price?.sales_price || 0)
+      ? pageData?.price?.regular_price || 0
+      : pageData?.price?.sales_price || 0
   );
   const [totalRegularPrice, setTotalRegularPrice] = useState(
     pageData?.price?.regular_price || 0
@@ -223,25 +228,41 @@ export default function SinglePage({ pageData }) {
 
     // Calculate regular price based on selected license and addons
     let regularPrice = 0;
-    
+
     try {
-      if (licenseId && pageData?.all_license && Array.isArray(pageData.all_license)) {
+      if (
+        licenseId &&
+        pageData?.all_license &&
+        Array.isArray(pageData.all_license)
+      ) {
         const selectedLicenseObj = pageData.all_license.find(
           (license) => license && license.id === licenseId
         );
-        
-        if (selectedLicenseObj && typeof selectedLicenseObj.regular_price === 'number') {
+
+        if (
+          selectedLicenseObj &&
+          typeof selectedLicenseObj.regular_price === "number"
+        ) {
           regularPrice += selectedLicenseObj.regular_price;
         }
       }
 
-      if (addonIds && Array.isArray(addonIds) && pageData?.all_license && Array.isArray(pageData.all_license)) {
+      if (
+        addonIds &&
+        Array.isArray(addonIds) &&
+        pageData?.all_license &&
+        Array.isArray(pageData.all_license)
+      ) {
         const selectedAddonObjs = pageData.all_license.filter(
           (license) => license && license.id && addonIds.includes(license.id)
         );
-        
+
         selectedAddonObjs.forEach((addon) => {
-          if (addon && !addon.contact_sale && typeof addon.regular_price === 'number') {
+          if (
+            addon &&
+            !addon.contact_sale &&
+            typeof addon.regular_price === "number"
+          ) {
             regularPrice += addon.regular_price;
           }
         });
@@ -332,7 +353,8 @@ export default function SinglePage({ pageData }) {
 
     const flushList = () => {
       if (listBuffer.length) {
-        result += "<ul>" + listBuffer.map(li => `<li>${li}</li>`).join("") + "</ul>";
+        result +=
+          "<ul>" + listBuffer.map((li) => `<li>${li}</li>`).join("") + "</ul>";
         listBuffer = [];
       }
     };
@@ -346,11 +368,11 @@ export default function SinglePage({ pageData }) {
 
     const parseInlineMarkdown = (text) => {
       return text
-        .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")     // bold (**) 
-        .replace(/__(.*?)__/g, "<strong>$1</strong>")         // bold (__)
-        .replace(/\*(.*?)\*/g, "<em>$1</em>")                 // italic (*)
-        .replace(/_(.*?)_/g, "<em>$1</em>")                   // italic (_)
-        .replace(/~~(.*?)~~/g, "<del>$1</del>")               // strikethrough
+        .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>") // bold (**)
+        .replace(/__(.*?)__/g, "<strong>$1</strong>") // bold (__)
+        .replace(/\*(.*?)\*/g, "<em>$1</em>") // italic (*)
+        .replace(/_(.*?)_/g, "<em>$1</em>") // italic (_)
+        .replace(/~~(.*?)~~/g, "<del>$1</del>") // strikethrough
         .replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2" target="_blank">$1</a>'); // links
     };
 
@@ -597,9 +619,15 @@ export default function SinglePage({ pageData }) {
             )}
 
             {pageData?.schedule_meeting && (
-              <button 
-              onClick={() => window.open("https://calendly.com/webbytemplate-support/45min", "_blank")}
-              className="gap-2 inline-flex items-center justify-center rounded-md btn text-primary border border-gray-100 hover:border-primary focus:border-primary active:border-primary transition-colors">
+              <button
+                onClick={() =>
+                  window.open(
+                    "https://calendly.com/webbytemplate-support/45min",
+                    "_blank"
+                  )
+                }
+                className="gap-2 inline-flex items-center justify-center rounded-md btn text-primary border border-gray-100 hover:border-primary focus:border-primary active:border-primary transition-colors"
+              >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   width="22"
@@ -626,6 +654,9 @@ export default function SinglePage({ pageData }) {
             <SinglePageSwiper
               gallery_images={pageData?.gallery_image}
               product={pageData}
+              pageData={pageData}
+              selectedLicense={selectedLicense}
+              selectedAddons={selectedAddons}
             />
           )}
         </div>
@@ -633,6 +664,8 @@ export default function SinglePage({ pageData }) {
         <div className="lg:flex gap-[60px] w-full bg-white pb-8">
           <div className="w-full lg:w-[40%] 2xl:space-y-[35px] 1xl:space-y-6 lg:space-y-5 space-y-4 sm:mb-5 lg:mb-0 divide-y divide-primary/10">
             {/* License Selection */}
+
+            {/* {console.log(pageData?.all_license, "this is for license")} */}
 
             {pageData?.all_license && pageData?.all_license.length > 0 && (
               <>
@@ -664,7 +697,9 @@ export default function SinglePage({ pageData }) {
                   Lifetime
                 </h3>
                 <div>
-                  <span className="font-bold">${(totalPrice || 0).toFixed(2)}</span>
+                  <span className="font-bold">
+                    ${(totalPrice || 0).toFixed(2)}
+                  </span>
                   <br />
                   <span className="text-[#969ba3] font-light text-small line-through italic">
                     ${(totalRegularPrice || 0).toFixed(2)}
@@ -682,36 +717,40 @@ export default function SinglePage({ pageData }) {
                     {!isWhiteLabel && (
                       <div className="space-y-3">
                         <div className="flex items-center gap-4">
-                          <div className="w-full ">
-                            <button
-                              className={`w-full btn flex items-center justify-center transition-all duration-200 ${isProductInCart
-                                ? "btn-secondary border-2 border-primary text-primary hover:btn-primary"
-                                : "btn-primary"
+                          {pageData?.product_status !== "coming-soon" && (
+                            <div className="w-full ">
+                              <button
+                                className={`w-full btn flex items-center justify-center transition-all duration-200 ${
+                                  isProductInCart
+                                    ? "btn-secondary border-2 border-primary text-primary hover:btn-primary"
+                                    : "btn-primary"
                                 }`}
-                              onClick={handleAddToCart}
-                              disabled={loading}
-                            >
-                              <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                                strokeWidth="2"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                className="xl:w-5 xl:h-5 w-4 h-4 mr-2"
+                                onClick={handleAddToCart}
+                                disabled={loading}
                               >
-                                <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" />
-                                <line x1="3" y1="6" x2="21" y2="6" />
-                                <path d="M16 10a4 4 0 0 1-8 0" />
-                              </svg>
-                              {loading
-                                ? "Processing..."
-                                : isProductInCart
-                                  ? "Update Cart"
-                                  : "Add to Cart"}
-                            </button>
-                          </div>
+                                <svg
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  viewBox="0 0 24 24"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  strokeWidth="2"
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  className="xl:w-5 xl:h-5 w-4 h-4 mr-2"
+                                >
+                                  <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" />
+                                  <line x1="3" y1="6" x2="21" y2="6" />
+                                  <path d="M16 10a4 4 0 0 1-8 0" />
+                                </svg>
+                                {loading
+                                  ? "Processing..."
+                                  : isProductInCart
+                                    ? "Update Cart"
+                                    : "Add to Cart"}
+                              </button>
+                            </div>
+                          )}
+
                           <div className="w-full">
                             <button
                               className="w-full btn btn-secondary border-2 border-primary text-primary hover:btn-primary flex items-center justify-center transition-all duration-200"
@@ -841,7 +880,7 @@ export default function SinglePage({ pageData }) {
                       {pageData.features.map((feature, index) => (
                         <div
                           key={index}
-                          className={`border-b border-primary/10 py-3 ${index >= 5 && !showAllFeatures ? 'hidden' : ''}`}
+                          className={`border-b border-primary/10 py-3 ${index >= 5 && !showAllFeatures ? "hidden" : ""}`}
                         >
                           <FeatureItem text={feature.title} />
                         </div>
@@ -905,6 +944,9 @@ export default function SinglePage({ pageData }) {
                     title={pageData?.title}
                     author={pageData?.author}
                     pageData={pageData}
+                    selectedLicense={selectedLicense}
+                    selectedAddons={selectedAddons}
+                    product_status={pageData?.product_status}
                   />
                 )}
               </div>
