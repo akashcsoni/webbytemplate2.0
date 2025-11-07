@@ -1,104 +1,16 @@
 import { NextResponse } from "next/server";
-import { isValidSlug } from "@/lib/utils/slugValidation";
-
-/**
- * Strip unwanted tracking parameters from URLs to prevent them from being indexed
- * This removes Google's tracking parameters (srsltid, gclid, etc.)
- */
-function stripTrackingParams(searchParams) {
-  if (!searchParams) return '';
-  
-  const params = new URLSearchParams(searchParams);
-  
-  // List of tracking parameters to remove
-  const trackingParams = [
-    'srsltid',     // Google search results tracking
-    'gclid',       // Google Ads click tracking
-    'gclsrc',      // Google Ads source
-    'utm_source',  // Marketing source
-    'utm_medium',  // Marketing medium
-    'utm_campaign', // Marketing campaign
-    'utm_content', // Marketing content
-    'utm_term',    // Marketing term
-    'fbclid',      // Facebook click tracking
-    'igshid',      // Instagram sharing tracking
-    'ref',         // Generic referrer parameter
-  ];
-  
-  // Remove all tracking parameters
-  trackingParams.forEach(param => params.delete(param));
-  
-  // Return the cleaned search string
-  const cleaned = params.toString();
-  return cleaned ? `?${cleaned}` : '';
-}
 
 export async function middleware(request) {
   const { pathname } = request.nextUrl;
   const url = request.nextUrl.clone();
   
-  // Validate slug format for dynamic routes to prevent invalid URLs from being crawled
-  // This applies to all dynamic routes: /[pageSlug], /[pageSlug]/[itemSlug], /[pageSlug]/[itemSlug]/[categorySlug]
-  const pathSegments = pathname.split('/').filter(Boolean);
-  
-  // Skip validation for static routes, API routes, and known static paths
-  const isStaticRoute = pathname.startsWith('/_next') || 
-                        pathname.startsWith('/api') || 
-                        pathname.startsWith('/favicon') ||
-                        pathname === '/' ||
-                        pathname.match(/\.(ico|png|jpg|jpeg|gif|webp|svg|css|js|json|xml)$/);
-  
-  if (!isStaticRoute && pathSegments.length > 0) {
-    // Validate all path segments (slugs) in the URL
-    // Decode URL-encoded characters (e.g., %20 for space) before validation
-    const invalidSlugs = pathSegments.filter(slug => {
-      try {
-        // Decode URL-encoded characters (e.g., %20 -> space, %2B -> +)
-        const decodedSlug = decodeURIComponent(slug);
-        return !isValidSlug(decodedSlug);
-      } catch (e) {
-        // If decoding fails, treat as invalid
-        return true;
-      }
-    });
-    
-    if (invalidSlugs.length > 0) {
-      // Return proper 404 status for invalid slugs
-      // This shows the PageNotFound component and prevents invalid URLs from being indexed
-      const notFoundUrl = new URL('/404', request.url);
-      const response = NextResponse.rewrite(notFoundUrl);
-      response.headers.set('X-Robots-Tag', 'noindex, nofollow');
-      return response;
-    }
-  }
-  
-  // Check for srsltid parameter - return 404 if present (Google Ads tracking)
-  // This prevents Google from indexing URLs with tracking parameters
-  if (request.nextUrl.searchParams.has('srsltid')) {
-    const notFoundUrl = new URL('/404', request.url);
-    const response = NextResponse.rewrite(notFoundUrl);
-    response.headers.set('X-Robots-Tag', 'noindex, nofollow');
-    return response;
-  }
-  
-  // Check and clean tracking parameters first
-  const cleanedSearch = stripTrackingParams(request.nextUrl.search);
-  const needsRedirect = cleanedSearch !== request.nextUrl.search;
+  // Handle non-www redirect
   const isNonWww = request.nextUrl.hostname === 'webbytemplate.com';
-  
-  // Handle non-www redirect with cleaned search params
   if (isNonWww) {
     return NextResponse.redirect(
-      new URL(`https://www.webbytemplate.com${pathname}${cleanedSearch}`, request.url),
+      new URL(`https://www.webbytemplate.com${pathname}${request.nextUrl.search}`, request.url),
       301
     );
-  }
-  
-  // Strip tracking parameters from all requests to prevent them from being indexed
-  if (needsRedirect) {
-    const cleanedUrl = request.nextUrl.clone();
-    cleanedUrl.search = cleanedSearch;
-    return NextResponse.redirect(cleanedUrl, 308);
   }
 
   // Only apply authentication checks for /user/* routes
