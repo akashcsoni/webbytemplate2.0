@@ -8,6 +8,17 @@ export const dynamic = 'force-dynamic'; // Force no caching, SSR on every reques
 export async function generateMetadata({ params, searchParams }) {
     const { slug } = await params;
     
+    // Format slug for display: convert "food-ordering" to "Food Ordering"
+    const formatSlug = (slug) => {
+        if (!slug) return '';
+        return slug
+            .split('-')
+            .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+            .join(' ');
+    };
+    
+    const formattedSlug = formatSlug(slug);
+    
     // Build canonical URL with search parameters
     const baseUrl = themeConfig.SITE_URL;
     const searchUrl = new URL(`/search/${slug}`, baseUrl);
@@ -21,9 +32,16 @@ export async function generateMetadata({ params, searchParams }) {
         });
     }
     
+    // Generate title in format: "Food Ordering Website Templates | WebbyTemplate"
+    const title = formattedSlug 
+        ? `${formattedSlug} Website Templates | WebbyTemplate`
+        : 'Search - WebbyTemplate';
+    
     return {
-        title: `Search ${slug ? `- ${slug}` : ''} - WebbyTemplate`,
-        description: `Search results for ${slug || 'templates, graphics, and digital products'}`,
+        title: title,
+        description: formattedSlug 
+            ? `Browse our collection of ${formattedSlug.toLowerCase()} website templates. Find premium, responsive templates for your next project.`
+            : `Search results for templates, graphics, and digital products`,
         alternates: {
             canonical: searchUrl.toString(),
         },

@@ -1,4 +1,5 @@
 import PageNotFound from "@/components/PageNotFound/PageNotFound";
+import { notFound } from 'next/navigation';
 
 export const metadata = {
   title: '404 - Page Not Found | WebbyTemplate',
@@ -10,6 +11,7 @@ export const metadata = {
 };
 
 export default function NotFoundPage() {
-  return <PageNotFound />;
+  // Use notFound() to ensure proper 404 status code
+  notFound();
 }
 
