@@ -332,7 +332,7 @@ const nextConfig = {
         destination: "/blog/best-tours-travel-templates-agencies",
         permanent: true,
       },
-      
+      // Product URL redirects (when product slugs are changed in Strapi)
       {
         source: "/product/fashino-responsive-shop-html-email-template",
         destination:
@@ -345,37 +345,23 @@ const nextConfig = {
 
   images: {
     remotePatterns: [
-      {
-        protocol: "https",
-        hostname: "studio.webbytemplate.com",
-      },
-      {
-        protocol: "https",
-        hostname: "webbytemplate-store-com.s3.ap-south-1.amazonaws.com",
-      },
-      {
-        protocol: "https",
-        hostname: "flagcdn.com",
-      },
+      { protocol: "https", hostname: "studio.webbytemplate.com" },
+      { protocol: "https", hostname: "webbytemplate-store-com.s3.ap-south-1.amazonaws.com" },
+      { protocol: "https", hostname: "flagcdn.com" },
     ],
-    // Optimize image loading
     formats: ["image/webp", "image/avif"],
     minimumCacheTTL: 60,
     dangerouslyAllowSVG: true,
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
   },
 
-  // Performance optimizations
   experimental: {
     optimizePackageImports: ["@heroui/react", "framer-motion", "swiper"],
   },
 
-  // Compress responses
   compress: true,
 
-  // Optimize bundle
   webpack: (config, { dev, isServer }) => {
-    // Optimize bundle splitting
     if (!dev && !isServer) {
       config.optimization.splitChunks = {
         chunks: "all",
@@ -394,7 +380,6 @@ const nextConfig = {
         },
       };
     }
-
     return config;
   },
 };
