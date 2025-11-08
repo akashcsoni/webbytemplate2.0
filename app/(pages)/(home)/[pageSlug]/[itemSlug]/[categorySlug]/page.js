@@ -162,27 +162,6 @@ export default async function DynamicPage({ params, searchParams }) {
             token: themeConfig.TOKEN,
         });
 
-        // Handle API response errors
-        if (!pageData.result) {
-            console.error('API request failed:', {
-                endpoint,
-                status: pageData.status,
-                error: pageData.error
-            });
-            return <SomethingWrong />;
-        }
-
-        // Handle 404 responses
-        if (pageData.status === 404) {
-            console.error('Resource not found:', {
-                endpoint,
-                pageSlug,
-                itemSlug,
-                categorySlug
-            });
-            return <GlobalNotFound />;
-        }
-
         // Handle empty or invalid data
         if (!pageData || !pageData.data || Object.keys(pageData.data).length === 0) {
             console.error('Empty or invalid data received:', {
@@ -416,7 +395,13 @@ export default async function DynamicPage({ params, searchParams }) {
         }
         return <GlobalComponent data={pageData.data} />;
     } catch (error) {
-        console.error('Error in DynamicPage:', error);
+        console.error('Error loading page:', error);
+
+        // Check if it's a 404 error
+        if (error?.response?.status === 404 || error?.status === 404) {
+            return <GlobalNotFound />;
+        }
+
         return <SomethingWrong />;
     }
 }
