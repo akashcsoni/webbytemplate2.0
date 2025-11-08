@@ -1,5 +1,5 @@
 import GlobalComponent from "@/components/global/global-component";
-import GlobalNotFound from "@/app/(pages)/global-not-found";
+import { notFound } from "next/navigation";
 import SearchPage from "@/components/search/SearchPage";
 import SingleBlogPage from "@/components/SingleBlogPage";
 import SinglePage from "@/components/SinglePage";
@@ -300,7 +300,7 @@ export default async function DynamicPage({ params, searchParams }) {
                 pageSlug,
                 itemSlug
             });
-            return <GlobalNotFound />;
+            notFound();
         }
 
         // Handle empty or invalid data
@@ -310,7 +310,7 @@ export default async function DynamicPage({ params, searchParams }) {
                 hasData: !!pageData?.data,
                 dataKeys: pageData?.data ? Object.keys(pageData.data) : []
             });
-            return <GlobalNotFound />;
+            notFound();
         }
 
         // Additional validation for blog-specific requirements
@@ -641,7 +641,7 @@ export default async function DynamicPage({ params, searchParams }) {
                     hasComponents: !!pageData?.data?.components,
                     dataKeys: pageData?.data ? Object.keys(pageData.data) : []
                 });
-                return <GlobalNotFound />;
+                notFound();
             }
 
             // Additional validation for required blog fields
@@ -650,7 +650,7 @@ export default async function DynamicPage({ params, searchParams }) {
 
             if (missingFields.length > 0) {
                 console.error('Missing required blog fields:', missingFields);
-                return <GlobalNotFound />;
+                notFound();
             }
 
             // Generate blog metadata and structured data
@@ -1076,7 +1076,7 @@ export default async function DynamicPage({ params, searchParams }) {
         
         // Check if it's a 404 error
         if (error?.response?.status === 404 || error?.status === 404) {
-            return <GlobalNotFound />;
+            notFound();
         }
         
         return <SomethingWrong />;

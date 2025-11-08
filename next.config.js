@@ -1,9 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   trailingSlash: true, // Add trailing slash to all URLs
-  experimental: {
-    globalNotFound: true,
-  },
   // Redirects configuration
   async redirects() {
     const pairs = [

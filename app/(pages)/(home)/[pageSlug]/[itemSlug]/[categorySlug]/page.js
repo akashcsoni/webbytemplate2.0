@@ -1,5 +1,5 @@
 import GlobalComponent from "@/components/global/global-component";
-import GlobalNotFound from "@/app/(pages)/global-not-found";
+import { notFound } from "next/navigation";
 import SearchPage from "@/components/search/SearchPage";
 import SinglePage from "@/components/SinglePage";
 import SomethingWrong from "@/components/somethingWrong/page";
@@ -169,7 +169,7 @@ export default async function DynamicPage({ params, searchParams }) {
                 hasData: !!pageData?.data,
                 dataKeys: pageData?.data ? Object.keys(pageData.data) : []
             });
-            return <GlobalNotFound />;
+            notFound();
         }
 
         if (pageSlug === 'product') {
@@ -399,7 +399,7 @@ export default async function DynamicPage({ params, searchParams }) {
 
         // Check if it's a 404 error
         if (error?.response?.status === 404 || error?.status === 404) {
-            return <GlobalNotFound />;
+            notFound();
         }
 
         return <SomethingWrong />;
