@@ -4,18 +4,73 @@ import { isValidSlug } from "@/lib/utils/slugValidation";
 export async function middleware(request) {
   const { pathname } = request.nextUrl;
   const url = request.nextUrl.clone();
-  
+
+  // Skip all processing for static files, API routes, and Next.js internal routes
+  const hasFileExtension = pathname.match(/\.(ico|png|jpg|jpeg|gif|webp|svg|css|js|json|xml|txt|pdf|zip|woff|woff2|ttf|eot)$/);
+  const isApiRoute = pathname.startsWith('/api');
+  const isNextInternal = pathname.startsWith('/_next');
+  const isFavicon = pathname.startsWith('/favicon');
+
+  if (hasFileExtension || isApiRoute || isNextInternal || isFavicon) {
+    return NextResponse.next();
+  }
+
+  // Validate URL patterns for product, category, and blog routes
+  // Valid patterns (with trailing slash):
+  // - /product/{slug}/
+  // - /category/{slug}/
+  // - /category/{slug}/{subslug}/
+  // - /blog/{slug}/
+  // - /blogs (static)
+  // Note: pathname now has trailing slash after redirect above
+  if (pathname.startsWith('/product/') || pathname.startsWith('/category/') || pathname.startsWith('/blog/')) {
+    const pathSegments = pathname.split('/').filter(Boolean);
+
+    // Check for invalid patterns
+    let isInvalidPattern = false;
+
+    if (pathname.startsWith('/product/')) {
+      // /product/{slug}/ - exactly 2 segments (product, slug)
+      // Invalid: /product/ or /product/{slug}/{anything}/
+      if (pathSegments.length !== 2 || pathSegments[0] !== 'product') {
+        isInvalidPattern = true;
+      }
+    } else if (pathname.startsWith('/category/')) {
+      // /category/{slug}/ - exactly 2 segments (category, slug)
+      // /category/{slug}/{subslug}/ - exactly 3 segments (category, slug, subslug)
+      // Invalid: /category/ or /category/{slug}/{subslug}/{anything}/
+      if (pathSegments.length < 2 || pathSegments.length > 3 || pathSegments[0] !== 'category') {
+        isInvalidPattern = true;
+      }
+    } else if (pathname.startsWith('/blog/')) {
+      // /blog/{slug}/ - exactly 2 segments (blog, slug)
+      // /blogs is handled separately (static route)
+      // Invalid: /blog/ or /blog/{slug}/{anything}/
+      if (pathSegments.length !== 2 || pathSegments[0] !== 'blog') {
+        isInvalidPattern = true;
+      }
+    }
+
+    if (isInvalidPattern) {
+      const notFoundUrl = new URL('/404', request.url);
+      const response = NextResponse.rewrite(notFoundUrl);
+      response.headers.set('X-Robots-Tag', 'noindex, nofollow');
+      return response;
+    }
+  }
+
   // Validate slug format for dynamic routes to prevent invalid URLs from being crawled
   // This applies to all dynamic routes: /[pageSlug], /[pageSlug]/[itemSlug], /[pageSlug]/[itemSlug]/[categorySlug]
   const pathSegments = pathname.split('/').filter(Boolean);
-  
+
   // Skip validation for static routes, API routes, and known static paths
-  const isStaticRoute = pathname.startsWith('/_next') || 
-                        pathname.startsWith('/api') || 
-                        pathname.startsWith('/favicon') ||
-                        pathname === '/' ||
-                        pathname.match(/\.(ico|png|jpg|jpeg|gif|webp|svg|css|js|json|xml)$/);
-  
+  const isStaticRoute = pathname.startsWith('/_next') ||
+    pathname.startsWith('/api') ||
+    pathname.startsWith('/favicon') ||
+    pathname === '/' ||
+    pathname === '/blogs' ||
+    pathname.match(/\.(ico|png|jpg|jpeg|gif|webp|svg|css|js|json|xml)$/);
+
   if (!isStaticRoute && pathSegments.length > 0) {
     // Validate all path segments (slugs) in the URL
     // Decode URL-encoded characters (e.g., %20 for space) before validation
@@ -29,7 +84,7 @@ export async function middleware(request) {
         return true;
       }
     });
-    
+
     if (invalidSlugs.length > 0) {
       // Return proper 404 status for invalid slugs
       // This shows the PageNotFound component and prevents invalid URLs from being indexed
@@ -39,7 +94,7 @@ export async function middleware(request) {
       return response;
     }
   }
-  
+
   // Handle non-www redirect
   const isNonWww = request.nextUrl.hostname === 'webbytemplate.com';
   if (isNonWww) {
@@ -69,7 +124,7 @@ export async function middleware(request) {
     return NextResponse.redirect(new URL("/", request.url));
   }
 
-// for checkout test
+  // for checkout test
 
   if (pathname.startsWith("/checkout")) {
     const cartFlag = request.cookies.get("cartHasItems")?.value;
@@ -77,7 +132,7 @@ export async function middleware(request) {
       return NextResponse.redirect(new URL("/", request.url));
     }
   }
-  
+
 
   if (isUserPath) {
     isLogin = Boolean(accessToken && userData);
