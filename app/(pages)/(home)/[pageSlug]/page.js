@@ -1,5 +1,5 @@
 import GlobalComponent from "@/components/global/global-component";
-import GlobalNotFound from "@/app/(pages)/global-not-found";
+import { notFound } from "next/navigation";
 import SomethingWrong from "@/components/somethingWrong/page";
 import { themeConfig } from "@/config/theamConfig";
 import { strapiGet } from "@/lib/api/strapiClient";
@@ -189,7 +189,7 @@ export default async function DynamicPage({ params, searchParams }) {
         if (!pageData.result || !pageData.data || Object.keys(pageData.data).length === 0) {
             // Check if it's a 404 specifically
             if (pageData.status === 404) {
-                return <GlobalNotFound />;
+                notFound();
             }
             return <SomethingWrong />;
         }
@@ -300,7 +300,7 @@ export default async function DynamicPage({ params, searchParams }) {
         
         // Check if it's a 404 error
         if (error?.response?.status === 404 || error?.status === 404) {
-            return <GlobalNotFound />;
+            notFound();
         }
         
         return <SomethingWrong />;

@@ -12,7 +12,7 @@ import { strapiPost } from "@/lib/api/strapiClient";
 import { NO_FOUND_PRODUCT_GRID_IMAGE, themeConfig } from "@/config/theamConfig";
 import Image from "next/image";
 import Link from "next/link";
-import GlobalNotFound from "@/app/(pages)/global-not-found";
+import GlobalNotFound from "@/app/not-found";
 
 const page = ({ params }) => {
   const [author, setAuthor] = useState({});
