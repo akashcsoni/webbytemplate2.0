@@ -17,6 +17,19 @@ export async function generateStaticParams() {
 // Generate metadata for SEO
 export async function generateMetadata({ params }) {
     const { pageSlug } = await params;
+    
+    // Skip handling "search" as a pageSlug - it's a reserved route
+    if (pageSlug === 'search') {
+        return {
+            title: '404 - Page Not Found | WebbyTemplate',
+            description: 'The page you are looking for does not exist.',
+            robots: {
+                index: false,
+                follow: false,
+            },
+        };
+    }
+    
     const headersList = await headers();
     const host = headersList.get('host') || 'webbytemplate.com';
     const protocol = headersList.get('x-forwarded-proto') || 'https';
@@ -174,6 +187,12 @@ export async function generateMetadata({ params }) {
 
 export default async function DynamicPage({ params, searchParams }) {
     const { pageSlug } = await params;
+    
+    // Skip handling "search" as a pageSlug - it's a reserved route
+    if (pageSlug === 'search') {
+        notFound();
+    }
+    
     const headersList = await headers();
     const host = headersList.get('host') || 'webbytemplate.com';
     const protocol = headersList.get('x-forwarded-proto') || 'https';
