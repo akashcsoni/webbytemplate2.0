@@ -71,7 +71,11 @@ export async function middleware(request) {
     pathname === '/blogs' ||
     pathname.match(/\.(ico|png|jpg|jpeg|gif|webp|svg|css|js|json|xml)$/);
 
-  if (!isStaticRoute && pathSegments.length > 0) {
+  // Skip slug validation for /search/ routes since search queries can contain spaces and special characters
+  // Handle both with and without trailing slash
+  const isSearchRoute = pathname.startsWith('/search/') || pathname === '/search';
+
+  if (!isStaticRoute && !isSearchRoute && pathSegments.length > 0) {
     // Validate all path segments (slugs) in the URL
     // Decode URL-encoded characters (e.g., %20 for space) before validation
     const invalidSlugs = pathSegments.filter(slug => {
