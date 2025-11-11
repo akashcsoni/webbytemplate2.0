@@ -98,7 +98,12 @@ export async function generateMetadata({ params }) {
         }
 
         // Check if category should be indexed based on no_index field
-        const shouldIndex = pageSlug === 'category' ? (data?.no_index !== true) : true;
+        // Check if product should be indexed (coming-soon products should not be indexed)
+        const shouldIndex = pageSlug === 'category' 
+            ? (data?.no_index !== true) 
+            : (pageSlug === 'product' && data?.product_status === 'coming-soon' 
+                ? false 
+                : true);
 
         // Get canonical image URL from seo_meta with validation
         let imageUrl = null;
@@ -190,10 +195,10 @@ export async function generateMetadata({ params }) {
             },
             robots: {
                 index: shouldIndex,
-                follow: true,
+                follow: shouldIndex, // Set follow to false for coming-soon products (noindex, nofollow)
                 googleBot: {
                     index: shouldIndex,
-                    follow: true,
+                    follow: shouldIndex, // Set follow to false for coming-soon products
                     'max-video-preview': -1,
                     'max-image-preview': 'large',
                     'max-snippet': -1,
