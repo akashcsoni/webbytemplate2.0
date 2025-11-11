@@ -30,8 +30,6 @@ export default function TrackPageViewClient() {
       ? `${window.location.origin}${prevPathRef.current}`
       : document.referrer || "";
 
-    console.log("📡 Tracking page view:", { user_id, pathname, referer });
-
     trackPageView({ user_id, referer });
 
     // Update references

@@ -224,8 +224,6 @@ export function CartProvider({ children }) {
         // ✅ Step 5: Track the add-to-cart action
         try {
           const productId = product?.product || null;
-          console.log(product,"this is for product");
-          console.log(productId,"this is for productId");
           if (productId) {
             await trackAddToCart({ user_id: userId, product_id: productId });
           }

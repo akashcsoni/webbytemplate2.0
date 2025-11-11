@@ -46,11 +46,6 @@ function FeatureItem({ text }) {
 }
 
 export default function SinglePage({ pageData }) {
-  // console.log(
-  //   pageData?.product_status === "coming-soon",
-  //   "this is for pagedata test"
-  // );
-
   const { addToCart, openCart, cartItems } = useCart();
   const { addToWishlist, wishlistItems } = useWishlist();
   const [wishlistLoading, setWishlistLoading] = useState(false);
@@ -664,8 +659,6 @@ export default function SinglePage({ pageData }) {
         <div className="lg:flex gap-[60px] w-full bg-white pb-8">
           <div className="w-full lg:w-[40%] 2xl:space-y-[35px] 1xl:space-y-6 lg:space-y-5 space-y-4 sm:mb-5 lg:mb-0 divide-y divide-primary/10">
             {/* License Selection */}
-
-            {/* {console.log(pageData?.all_license, "this is for license")} */}
 
             {pageData?.all_license && pageData?.all_license.length > 0 && (
               <>
