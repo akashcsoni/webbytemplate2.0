@@ -718,15 +718,72 @@ export default function SinglePage({ pageData }) {
                       <div className="space-y-3">
                         <div className="flex items-center gap-4">
                           {pageData?.product_status !== "coming-soon" && (
-                            <div className="w-full ">
+                            <>
+                              <div className="w-full ">
+                                <button
+                                  className={`w-full btn flex items-center justify-center transition-all duration-200 ${
+                                    isProductInCart
+                                      ? "btn-secondary border-2 border-primary text-primary hover:btn-primary"
+                                      : "btn-primary"
+                                  }`}
+                                  onClick={handleAddToCart}
+                                  disabled={loading}
+                                >
+                                  <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    strokeWidth="2"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    className="xl:w-5 xl:h-5 w-4 h-4 mr-2"
+                                  >
+                                    <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" />
+                                    <line x1="3" y1="6" x2="21" y2="6" />
+                                    <path d="M16 10a4 4 0 0 1-8 0" />
+                                  </svg>
+                                  {loading
+                                    ? "Processing..."
+                                    : isProductInCart
+                                      ? "Update Cart"
+                                      : "Add to Cart"}
+                                </button>
+                              </div>
+
+                              <div className="w-full">
+                                <button
+                                  className="w-full btn btn-secondary border-2 border-primary text-primary hover:btn-primary flex items-center justify-center transition-all duration-200"
+                                  onClick={handleAddToWishlist}
+                                  disabled={wishlistLoading}
+                                >
+                                  <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    strokeWidth="2"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    className="xl:w-5 xl:h-5 w-4 h-4 mr-2"
+                                  >
+                                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+                                  </svg>
+                                  {wishlistLoading
+                                    ? "Processing..."
+                                    : isProductInWishlist
+                                      ? "Update Wishlist"
+                                      : "Add to Wishlist"}
+                                </button>
+                              </div>
+                            </>
+                          )}
+
+                          {pageData?.product_status === "coming-soon" && (
+                            <div className="w-full">
                               <button
-                                className={`w-full btn flex items-center justify-center transition-all duration-200 ${
-                                  isProductInCart
-                                    ? "btn-secondary border-2 border-primary text-primary hover:btn-primary"
-                                    : "btn-primary"
-                                }`}
-                                onClick={handleAddToCart}
-                                disabled={loading}
+                                className="w-full btn btn-secondary border-2 border-primary text-primary cursor-not-allowed opacity-75 flex items-center justify-center transition-all duration-200"
+                                disabled
                               >
                                 <svg
                                   xmlns="http://www.w3.org/2000/svg"
@@ -738,44 +795,13 @@ export default function SinglePage({ pageData }) {
                                   strokeLinejoin="round"
                                   className="xl:w-5 xl:h-5 w-4 h-4 mr-2"
                                 >
-                                  <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" />
-                                  <line x1="3" y1="6" x2="21" y2="6" />
-                                  <path d="M16 10a4 4 0 0 1-8 0" />
+                                  <circle cx="12" cy="12" r="10" />
+                                  <polyline points="12 6 12 12 16 14" />
                                 </svg>
-                                {loading
-                                  ? "Processing..."
-                                  : isProductInCart
-                                    ? "Update Cart"
-                                    : "Add to Cart"}
+                                Coming Soon
                               </button>
                             </div>
                           )}
-
-                          <div className="w-full">
-                            <button
-                              className="w-full btn btn-secondary border-2 border-primary text-primary hover:btn-primary flex items-center justify-center transition-all duration-200"
-                              onClick={handleAddToWishlist}
-                              disabled={wishlistLoading}
-                            >
-                              <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                                strokeWidth="2"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                className="xl:w-5 xl:h-5 w-4 h-4 mr-2"
-                              >
-                                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
-                              </svg>
-                              {wishlistLoading
-                                ? "Processing..."
-                                : isProductInWishlist
-                                  ? "Update Wishlist"
-                                  : "Add to Wishlist"}
-                            </button>
-                          </div>
                         </div>
                         {/* Removed 'Added to cart' and 'Wishlisted' messages below the buttons. Now, button text will reflect 'Update Cart' or 'Update Wishlist' when present. */}
                       </div>
