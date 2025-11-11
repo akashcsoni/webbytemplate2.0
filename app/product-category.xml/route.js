@@ -41,11 +41,9 @@ export async function GET() {
                         if (parentSlug) {
                             // Has parent: /category/parent-slug/category-slug
                             categoryUrl = `${baseUrl}/category/${parentSlug}/${slug}`;
-                            console.log(`Sub-category: ${slug} -> Parent: ${parentSlug} -> URL: ${categoryUrl}`);
                         } else {
                             // No parent: /category/category-slug
                             categoryUrl = `${baseUrl}/category/${slug}`;
-                            console.log(`Main category: ${slug} -> URL: ${categoryUrl}`);
                         }
                         
                         sitemapEntries.push({

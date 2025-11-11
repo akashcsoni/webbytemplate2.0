@@ -1232,7 +1232,6 @@ xl:relative xl:translate-x-0 z-20 xl:p-0 xl:shadow-none xl:block
                       return (
                         <React.Fragment key={`category-group-${index}`}>
                           <li className="flex justify-between items-center rounded cursor-pointer group">
-                            {console.log(categoryUrl, "this is categoryUrl")}
                             <Link
                               href={categoryUrl}
                               // className="p2 group-hover:text-primary flex-1"
@@ -1260,10 +1259,6 @@ xl:relative xl:translate-x-0 z-20 xl:p-0 xl:shadow-none xl:block
                                 key={`subcat-${index}-${subIndex}`}
                                 className="flex justify-between items-center rounded cursor-pointer group"
                               >
-                                {console.log(
-                                  subCategoryUrl,
-                                  "subCategoryUrlsubCategoryUrl"
-                                )}
                                 <Link
                                   href={subCategoryUrl}
                                   // className="p2 group-hover:text-primary flex-1"
@@ -1564,7 +1559,6 @@ xl:relative xl:translate-x-0 z-20 xl:p-0 xl:shadow-none xl:block
           {/* Filter Tabs */}
           <div className="flex items-center justify-between w-full sm:mb-6 mb-3">
             <div>
-              {console.log(heading, "this is forproduct")}
               <p className="p2">
                 You found {totalProducts} {heading}
               </p>
