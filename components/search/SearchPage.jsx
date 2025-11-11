@@ -9,7 +9,6 @@ import ProductGrid from "../product/product-grid";
 import ProductDummyGrid from "../product/product-dummy-grid";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 
-
 // Skeleton components for loading states
 const FilterSkeleton = ({ count = 5 }) => (
   <ul className="text-sm 1xl:space-y-[14px] space-y-3 h-44 pr-2 overflow-auto">
@@ -54,8 +53,9 @@ const DropdownSection = ({ title, children }) => {
         <span className="text-sm text-gray-500">
           <svg
             xmlns="http://www.w3.org/2000/svg"
-            className={`h-4 w-4 transform transition-transform duration-300 ease-in-out ${open ? "rotate-180" : "rotate-0"
-              }`}
+            className={`h-4 w-4 transform transition-transform duration-300 ease-in-out ${
+              open ? "rotate-180" : "rotate-0"
+            }`}
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -105,11 +105,14 @@ const SearchPageLoading = () => (
 
 // Main SearchPage component
 const SearchPageContent = ({ slug }) => {
-
   const router = useRouter();
   const searchParams = useSearchParams();
   const pathname = usePathname();
-  const pathsegment = pathname.split("/").filter(Boolean); // remove empty
+  
+  // Normalize pathname by removing trailing slash to handle trailingSlash: true
+  // This ensures consistent pathname parsing regardless of trailing slash setting
+  const normalizedPathname = pathname.replace(/\/$/, '') || '/';
+  const pathsegment = normalizedPathname.split("/").filter(Boolean); // remove empty
   const prevFilterState = useRef({});
 
   // Add mounted state to handle client-side rendering
@@ -147,10 +150,9 @@ const SearchPageContent = ({ slug }) => {
 
   // Initialize search query from pathname
   const initialSearchQuery = (() => {
-    const segments = pathname.split("/");
-    return segments[2] || "";
+    const segments = normalizedPathname.split("/").filter(Boolean);
+    return segments[1] || "";
   })();
-
 
   const [searchQuery, setSearchQuery] = useState(initialSearchQuery);
   // const filtteredSearchQuery = initialSearchQuery.replace(/%20/g, " ");
@@ -253,7 +255,6 @@ const SearchPageContent = ({ slug }) => {
     tags: [],
   });
 
-
   const [searchFilterData, setsearchFilterData] = useState({
     categories: [],
     features: [],
@@ -307,12 +308,12 @@ const SearchPageContent = ({ slug }) => {
   // Function to create URL with ordered parameters
   const createOrderedUrl = (params) => {
     const orderedParams = [];
-    const segments = pathname.split("/");
+    const segments = normalizedPathname.split("/").filter(Boolean);
     const currentPath =
-      segments[1] === "category"
-        ? `/category/${segments[2] || ""}`
-        : segments[2]
-          ? `/search/${segments[2]}`
+      segments[0] === "category"
+        ? `/category/${segments[1] || ""}`
+        : segments[1]
+          ? `/search/${segments[1]}`
           : "/search";
 
     // Add term if it exists
@@ -401,9 +402,9 @@ const SearchPageContent = ({ slug }) => {
           paramsCopy.set("term", "");
         }
 
-        let newPath = pathname;
-        const parts = pathname.split("/");
-        if (parts[1] === "search" && parts.length > 2) {
+        let newPath = normalizedPathname;
+        const parts = normalizedPathname.split("/").filter(Boolean);
+        if (parts[0] === "search" && parts.length > 1) {
           newPath = "/search";
         }
 
@@ -414,17 +415,16 @@ const SearchPageContent = ({ slug }) => {
     }
 
     // ✅ Always force ?term= for category routes
-    let finalPath = pathname;
+    let finalPath = normalizedPathname;
     let finalQuery = params.toString();
 
-    if (pathname.startsWith("/category")) {
+    if (normalizedPathname.startsWith("/category")) {
       // Ensure ?term= exists, even if nothing else is left
       if (!params.has("term")) {
         params.set("term", "");
       }
       finalQuery = params.toString();
     }
-
 
     const newUrl = finalQuery ? `${finalPath}?${finalQuery}` : finalPath;
     router.push(newUrl);
@@ -501,9 +501,9 @@ const SearchPageContent = ({ slug }) => {
     }));
 
     // Check if we're on a category page
-    if (pathname.startsWith("/category")) {
+    if (normalizedPathname.startsWith("/category")) {
       // Stay on the category page but clear all filters and add ?term=
-      const newUrl = `${pathname}?term=`;
+      const newUrl = `${normalizedPathname}?term=`;
       router.push(newUrl);
     } else {
       // For search pages, go to /search
@@ -658,8 +658,8 @@ const SearchPageContent = ({ slug }) => {
         setfilterLoading(true);
         setError(null);
 
-        const segments = pathname.split("/");
-        const searchFromPath = segments[2] || "";
+        const segments = normalizedPathname.split("/").filter(Boolean);
+        const searchFromPath = segments[1] || "";
         const termQuery = searchParams.get("term");
 
         const urlTags = searchParams.get("tags")?.split(",") || [];
@@ -674,7 +674,7 @@ const SearchPageContent = ({ slug }) => {
         const sort = searchParams.get("sort");
 
         // Handle search term update
-        if (segments[1] === "category") {
+        if (segments[0] === "category") {
           setSearchQuery(termQuery || "");
         } else {
           if (termQuery) {
@@ -712,7 +712,6 @@ const SearchPageContent = ({ slug }) => {
           }
         }
 
-
         // Prepare API parameters
         const apiParams = {
           page_size: pageSize,
@@ -727,16 +726,16 @@ const SearchPageContent = ({ slug }) => {
           apiParams.type = sort;
         }
 
-        if (segments[1] === "category") {
-          if (segments.length > 3) {
-            apiParams.base = segments[3];
+        if (segments[0] === "category") {
+          if (segments.length > 2) {
+            apiParams.base = segments[2];
           } else {
             apiParams.base = searchFromPath;
           }
           if (termQuery) {
             apiParams.search = termQuery;
           }
-        } else if (segments[1] === "search") {
+        } else if (segments[0] === "search") {
           if (termQuery) {
             apiParams.search = termQuery;
             apiParams.base = searchFromPath;
@@ -766,7 +765,6 @@ const SearchPageContent = ({ slug }) => {
         const [filterResponse] = await Promise.all([
           strapiPost("product/filter", apiParams, themeConfig.TOKEN),
         ]);
-
 
         const parsedResponse = safeParseResponse(filterResponse);
 
@@ -812,7 +810,15 @@ const SearchPageContent = ({ slug }) => {
     };
 
     fetchData();
-  }, [searchParams, sort, sortDirection, pathname, activePage, pageSize, selected]);
+  }, [
+    searchParams,
+    sort,
+    sortDirection,
+    pathname,
+    activePage,
+    pageSize,
+    selected,
+  ]);
 
   // Handle page change
   const handlePageChange = (newPage) => {
@@ -843,7 +849,6 @@ const SearchPageContent = ({ slug }) => {
   const filterTags = (event) => {
     const searchTerm = event.target.value;
 
-
     if (!searchTerm) {
       // If search term is empty, reset to the original list of tags
       setsearchFilterData((prevData) => ({
@@ -869,7 +874,6 @@ const SearchPageContent = ({ slug }) => {
   const filterFeature = (event) => {
     const searchTerm = event.target.value;
 
-
     if (!searchTerm) {
       // If search term is empty, reset to the original list of features
       setsearchFilterData((prevData) => ({
@@ -886,7 +890,6 @@ const SearchPageContent = ({ slug }) => {
     const filteredFeatures = filterData.features.filter((item) =>
       item.title.toLowerCase().includes(searchTerm.toLowerCase())
     );
-
 
     // Update the filtered features in the state
     setsearchFilterData((prevData) => ({
@@ -917,7 +920,7 @@ const SearchPageContent = ({ slug }) => {
     params.delete("search");
 
     // Add term in query for category pages
-    if (pathname.startsWith("/category")) {
+    if (normalizedPathname.startsWith("/category")) {
       if (searchQuery.trim()) {
         params.set("term", searchQuery.trim());
       } else {
@@ -945,11 +948,10 @@ const SearchPageContent = ({ slug }) => {
     const queryString =
       orderedParams.length > 0 ? "?" + orderedParams.join("&") : "";
 
-
     let newUrl = "";
-    if (pathname.startsWith("/category")) {
+    if (normalizedPathname.startsWith("/category")) {
       // ✅ Keep category path
-      newUrl = `${pathname}${queryString}`;
+      newUrl = `${normalizedPathname}${queryString}`;
     } else {
       // ✅ Use /search path
       const searchPath = searchQuery.trim()
@@ -957,7 +959,6 @@ const SearchPageContent = ({ slug }) => {
         : "/search";
       newUrl = `${searchPath}${queryString}`;
     }
-
 
     router.push(newUrl);
   };
@@ -1095,22 +1096,20 @@ const SearchPageContent = ({ slug }) => {
       url += `?${queryString}`;
     }
 
-
     return url;
   };
 
   // Inside your component
-  const segments = pathname.split("/");
+  const segments = normalizedPathname.split("/").filter(Boolean);
   let query = "";
   let heading = "Website Templates";
 
-
-  if (segments[1] === "category" && segments[2]) {
+  if (segments[0] === "category" && segments[1]) {
     // Use last part of the path (could be main or sub-category)
     heading = slugToTitle(segments[segments.length - 1]);
   }
 
-  if (segments[1] === "search" && segments[2]) {
+  if (segments[0] === "search" && segments[1]) {
     // Use last part of the path (could be main or sub-category)
     query = slugToTitle(segments[segments.length - 1]);
     heading = query.replace(/%20/g, " ");
@@ -1200,14 +1199,15 @@ xl:relative xl:translate-x-0 z-20 xl:p-0 xl:shadow-none xl:block
 
                           router.push(newUrl);
                         }}
-                        className={`p2 group-hover:text-primary flex-1 text-left ${!searchParams.get("tags") &&
-                            !searchParams.get("sales") &&
-                            !searchParams.get("feature") &&
-                            !searchParams.get("price_min") &&
-                            !searchParams.get("price_max")
+                        className={`p2 group-hover:text-primary flex-1 text-left ${
+                          !searchParams.get("tags") &&
+                          !searchParams.get("sales") &&
+                          !searchParams.get("feature") &&
+                          !searchParams.get("price_min") &&
+                          !searchParams.get("price_max")
                             ? "font-bold"
                             : ""
-                          }`}
+                        }`}
                       >
                         All Categories
                       </button>
@@ -1222,7 +1222,6 @@ xl:relative xl:translate-x-0 z-20 xl:p-0 xl:shadow-none xl:block
                       </span>
                     </li>
 
-
                     {filterData?.categories?.map((cat, index) => {
                       const categorySlug = cat.slug;
                       const categoryUrl = createCategoryUrl(
@@ -1233,13 +1232,15 @@ xl:relative xl:translate-x-0 z-20 xl:p-0 xl:shadow-none xl:block
                       return (
                         <React.Fragment key={`category-group-${index}`}>
                           <li className="flex justify-between items-center rounded cursor-pointer group">
+                            {console.log(categoryUrl, "this is categoryUrl")}
                             <Link
                               href={categoryUrl}
                               // className="p2 group-hover:text-primary flex-1"
-                              className={`p2 group-hover:text-primary flex-1 ${pathname.startsWith(`/category/${categorySlug}`)
+                              className={`p2 group-hover:text-primary flex-1 ${
+                                normalizedPathname.startsWith(`/category/${categorySlug}`)
                                   ? "font-bold"
                                   : ""
-                                }`}
+                              }`}
                             >
                               {cat.title}
                             </Link>
@@ -1259,13 +1260,18 @@ xl:relative xl:translate-x-0 z-20 xl:p-0 xl:shadow-none xl:block
                                 key={`subcat-${index}-${subIndex}`}
                                 className="flex justify-between items-center rounded cursor-pointer group"
                               >
+                                {console.log(
+                                  subCategoryUrl,
+                                  "subCategoryUrlsubCategoryUrl"
+                                )}
                                 <Link
                                   href={subCategoryUrl}
                                   // className="p2 group-hover:text-primary flex-1"
-                                  className={`p2 group-hover:text-primary flex-1 ${pathname === `/category/${subCategorySlug}`
+                                  className={`p2 group-hover:text-primary flex-1 ${
+                                    normalizedPathname === `/category/${subCategorySlug}`
                                       ? "font-bold"
                                       : ""
-                                    }`}
+                                  }`}
                                 >
                                   {subCat.title}
                                 </Link>
@@ -1383,14 +1389,16 @@ xl:relative xl:translate-x-0 z-20 xl:p-0 xl:shadow-none xl:block
                       return (
                         <li
                           key={index}
-                          className={`flex items-center justify-between ${isDisabled ? "no-drop" : ""
-                            }`}
+                          className={`flex items-center justify-between ${
+                            isDisabled ? "no-drop" : ""
+                          }`}
                         >
                           <label
-                            className={`flex items-center 1xl:space-x-3 space-x-1.5 ${isDisabled
+                            className={`flex items-center 1xl:space-x-3 space-x-1.5 ${
+                              isDisabled
                                 ? "cursor-not-allowed"
                                 : "cursor-pointer"
-                              }`}
+                            }`}
                           >
                             <div className="relative flex items-center justify-center">
                               <input
@@ -1496,7 +1504,6 @@ xl:relative xl:translate-x-0 z-20 xl:p-0 xl:shadow-none xl:block
 
         {/* Main section */}
 
-
         <main className="w-full xl:w-4/5">
           <h1 className="h2 mb-4">{heading}</h1>
           <div className="flex item-center gap-2 mb-4">
@@ -1507,45 +1514,45 @@ xl:relative xl:translate-x-0 z-20 xl:p-0 xl:shadow-none xl:block
               searchParams.get("price_min") ||
               searchParams.get("price_max") ||
               searchParams.get("term")) && (
-                <>
-                  {categories.length > 0 && (
-                    <button
-                      onClick={() => {
-                        const params = new URLSearchParams(
-                          searchParams.toString()
-                        );
+              <>
+                {categories.length > 0 && (
+                  <button
+                    onClick={() => {
+                      const params = new URLSearchParams(
+                        searchParams.toString()
+                      );
 
-                        // Remove only category-related stuff (base/subcategory if you use them)
-                        params.delete("base");
-                        params.delete("subcategory");
+                      // Remove only category-related stuff (base/subcategory if you use them)
+                      params.delete("base");
+                      params.delete("subcategory");
 
-                        // Build new URL with /search as the base
-                        const queryString = params.toString();
-                        const newUrl = queryString
-                          ? `/search?${queryString}`
-                          : "/search";
+                      // Build new URL with /search as the base
+                      const queryString = params.toString();
+                      const newUrl = queryString
+                        ? `/search?${queryString}`
+                        : "/search";
 
-                        router.push(newUrl);
-                      }}
-                      className="!text-lg font-medium whitespace-nowrap underline underline-offset-2 hover:text-primary"
-                    >
-                      All Categories
-                    </button>
-                  )}
+                      router.push(newUrl);
+                    }}
+                    className="!text-lg font-medium whitespace-nowrap underline underline-offset-2 hover:text-primary"
+                  >
+                    All Categories
+                  </button>
+                )}
 
-                  {categories.map((cat, idx) => (
-                    <p
-                      key={idx}
-                      className="text-md font-normal mr-2 flex items-center gap-1"
-                    >
-                      <span className="text-gray-400 whitespace-nowrap">/</span>
-                      <span className="font-medium text-gray-900 whitespace-nowrap">
-                        {cat}
-                      </span>
-                    </p>
-                  ))}
-                </>
-              )}
+                {categories.map((cat, idx) => (
+                  <p
+                    key={idx}
+                    className="text-md font-normal mr-2 flex items-center gap-1"
+                  >
+                    <span className="text-gray-400 whitespace-nowrap">/</span>
+                    <span className="font-medium text-gray-900 whitespace-nowrap">
+                      {cat}
+                    </span>
+                  </p>
+                ))}
+              </>
+            )}
           </div>
           {renderSearchForm()}
 
@@ -1557,6 +1564,7 @@ xl:relative xl:translate-x-0 z-20 xl:p-0 xl:shadow-none xl:block
           {/* Filter Tabs */}
           <div className="flex items-center justify-between w-full sm:mb-6 mb-3">
             <div>
+              {console.log(heading, "this is forproduct")}
               <p className="p2">
                 You found {totalProducts} {heading}
               </p>
@@ -1565,10 +1573,11 @@ xl:relative xl:translate-x-0 z-20 xl:p-0 xl:shadow-none xl:block
               {options.map((opt) => (
                 <button
                   key={opt.value}
-                  className={`btn rounded font-normal flex items-center justify-center gap-[6px] ${sort === opt.value
+                  className={`btn rounded font-normal flex items-center justify-center gap-[6px] ${
+                    sort === opt.value
                       ? "bg-primary text-white border border-primary"
                       : "bg-white text-black border border-primary/10"
-                    }`}
+                  }`}
                   onClick={() => handleSortChange(opt.value)}
                 >
                   {opt.name}
@@ -1640,10 +1649,12 @@ xl:relative xl:translate-x-0 z-20 xl:p-0 xl:shadow-none xl:block
                 onClick={() => setOpen(!open)}
                 className="inline-flex items-center px-[15px] py-[7px] border border-primary/10 rounded-md text-sm font-medium text-black bg-white hover:bg-gray-50 focus:outline-none"
               >
-                {options.find((opt) => opt.value === selected)?.name || selected}
+                {options.find((opt) => opt.value === selected)?.name ||
+                  selected}
                 <svg
-                  className={`ml-2 h-4 w-4 transition-transform duration-300 ease-in-out ${open ? "rotate-180" : "rotate-0"
-                    }`}
+                  className={`ml-2 h-4 w-4 transition-transform duration-300 ease-in-out ${
+                    open ? "rotate-180" : "rotate-0"
+                  }`}
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -1707,19 +1718,19 @@ xl:relative xl:translate-x-0 z-20 xl:p-0 xl:shadow-none xl:block
                 </div>
               )}
 
-              {(pathname.split("/")?.[1] === "search" ||
+              {(normalizedPathname.split("/").filter(Boolean)?.[0] === "search" ||
                 searchParams.get("term")) &&
-                (searchParams.get("term") || pathname.split("/")?.[2]) && (
+                (searchParams.get("term") || normalizedPathname.split("/").filter(Boolean)?.[1]) && (
                   <div className="flex items-center justify-center divide-x divide-primary/10 bg-blue-300 border border-primary/10 p-[1px] rounded-[4px] flex-shrink-0">
                     <p className="p2 sm:px-2 px-1">
                       Term :{" "}
                       <span className="!text-black truncate max-w-[200px]">
                         {searchParams.get("term")
                           ? formatLabel(searchParams.get("term"))
-                          : formatLabel(pathname.split("/")?.[2]).replace(
-                            /%20/g,
-                            " "
-                          )}
+                          : formatLabel(normalizedPathname.split("/").filter(Boolean)?.[1] || "").replace(
+                              /%20/g,
+                              " "
+                            )}
                       </span>
                     </p>
                     <svg
@@ -1830,30 +1841,30 @@ xl:relative xl:translate-x-0 z-20 xl:p-0 xl:shadow-none xl:block
               {/* Price Range */}
               {(searchParams.get("price_min") ||
                 searchParams.get("price_max")) && (
-                  <div className="flex items-center justify-center divide-x divide-primary/10 bg-blue-300 border border-primary/10 p-[1px] rounded-[4px] flex-shrink-0">
-                    <p className="p2 sm:px-2 px-1">
-                      Price :{" "}
-                      <span className="!text-black">
-                        ${searchParams.get("price_min")} - $
-                        {searchParams.get("price_max")}
-                      </span>
-                    </p>
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="27"
-                      height="27"
-                      viewBox="0 0 9 9"
-                      fill="none"
-                      className="px-2 flex-shrink-0 cursor-pointer"
-                      onClick={() => removeFilter("price")}
-                    >
-                      <path
-                        d="M8.80065 0.206172C8.7375 0.142889 8.66249 0.0926821 8.5799 0.0584261C8.49732 0.02417 8.40879 0.00653721 8.31939 0.00653721C8.22999 0.00653721 8.14146 0.02417 8.05888 0.0584261C7.97629 0.0926821 7.90128 0.142889 7.83813 0.206172L4.5 3.53747L1.16187 0.199346C1.09867 0.136145 1.02364 0.086012 0.941068 0.0518081C0.858492 0.0176043 0.769989 6.65925e-10 0.68061 0C0.591231 -6.65925e-10 0.502727 0.0176043 0.420151 0.0518081C0.337576 0.086012 0.262546 0.136145 0.199346 0.199346C0.136145 0.262546 0.086012 0.337576 0.0518081 0.420151C0.0176043 0.502727 -6.65925e-10 0.591231 0 0.68061C6.65925e-10 0.769989 0.0176043 0.858492 0.0518081 0.941068C0.086012 1.02364 0.136145 1.09867 0.199346 1.16187L3.53747 4.5L0.199346 7.83813C0.136145 7.90133 0.086012 7.97636 0.0518081 8.05893C0.0176043 8.14151 0 8.23001 0 8.31939C0 8.40877 0.0176043 8.49727 0.0518081 8.57985C0.086012 8.66242 0.136145 8.73745 0.199346 8.80065C0.262546 8.86385 0.337576 8.91399 0.420151 8.94819C0.502727 8.9824 0.591231 9 0.68061 9C0.769989 9 0.858492 8.9824 0.941068 8.94819C1.02364 8.91399 1.09867 8.86385 1.16187 8.80065L4.5 5.46253L7.83813 8.80065C7.90133 8.86385 7.97636 8.91399 8.05893 8.94819C8.14151 8.9824 8.23001 9 8.31939 9C8.40877 9 8.49727 8.9824 8.57985 8.94819C8.66242 8.91399 8.73745 8.86385 8.80065 8.80065C8.86385 8.73745 8.91399 8.66242 8.94819 8.57985C8.9824 8.49727 9 8.40877 9 8.31939C9 8.23001 8.9824 8.14151 8.94819 8.05893C8.91399 7.97636 8.86385 7.90133 8.80065 7.83813L5.46253 4.5L8.80065 1.16187C9.06006 0.902469 9.06006 0.465577 8.80065 0.206172Z"
-                        fill="#0156D5"
-                      />
-                    </svg>
-                  </div>
-                )}
+                <div className="flex items-center justify-center divide-x divide-primary/10 bg-blue-300 border border-primary/10 p-[1px] rounded-[4px] flex-shrink-0">
+                  <p className="p2 sm:px-2 px-1">
+                    Price :{" "}
+                    <span className="!text-black">
+                      ${searchParams.get("price_min")} - $
+                      {searchParams.get("price_max")}
+                    </span>
+                  </p>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="27"
+                    height="27"
+                    viewBox="0 0 9 9"
+                    fill="none"
+                    className="px-2 flex-shrink-0 cursor-pointer"
+                    onClick={() => removeFilter("price")}
+                  >
+                    <path
+                      d="M8.80065 0.206172C8.7375 0.142889 8.66249 0.0926821 8.5799 0.0584261C8.49732 0.02417 8.40879 0.00653721 8.31939 0.00653721C8.22999 0.00653721 8.14146 0.02417 8.05888 0.0584261C7.97629 0.0926821 7.90128 0.142889 7.83813 0.206172L4.5 3.53747L1.16187 0.199346C1.09867 0.136145 1.02364 0.086012 0.941068 0.0518081C0.858492 0.0176043 0.769989 6.65925e-10 0.68061 0C0.591231 -6.65925e-10 0.502727 0.0176043 0.420151 0.0518081C0.337576 0.086012 0.262546 0.136145 0.199346 0.199346C0.136145 0.262546 0.086012 0.337576 0.0518081 0.420151C0.0176043 0.502727 -6.65925e-10 0.591231 0 0.68061C6.65925e-10 0.769989 0.0176043 0.858492 0.0518081 0.941068C0.086012 1.02364 0.136145 1.09867 0.199346 1.16187L3.53747 4.5L0.199346 7.83813C0.136145 7.90133 0.086012 7.97636 0.0518081 8.05893C0.0176043 8.14151 0 8.23001 0 8.31939C0 8.40877 0.0176043 8.49727 0.0518081 8.57985C0.086012 8.66242 0.136145 8.73745 0.199346 8.80065C0.262546 8.86385 0.337576 8.91399 0.420151 8.94819C0.502727 8.9824 0.591231 9 0.68061 9C0.769989 9 0.858492 8.9824 0.941068 8.94819C1.02364 8.91399 1.09867 8.86385 1.16187 8.80065L4.5 5.46253L7.83813 8.80065C7.90133 8.86385 7.97636 8.91399 8.05893 8.94819C8.14151 8.9824 8.23001 9 8.31939 9C8.40877 9 8.49727 8.9824 8.57985 8.94819C8.66242 8.91399 8.73745 8.86385 8.80065 8.80065C8.86385 8.73745 8.91399 8.66242 8.94819 8.57985C8.9824 8.49727 9 8.40877 9 8.31939C9 8.23001 8.9824 8.14151 8.94819 8.05893C8.91399 7.97636 8.86385 7.90133 8.80065 7.83813L5.46253 4.5L8.80065 1.16187C9.06006 0.902469 9.06006 0.465577 8.80065 0.206172Z"
+                      fill="#0156D5"
+                    />
+                  </svg>
+                </div>
+              )}
               {/* Clear All button - only show if there are any filters */}
               {(searchParams.get("sort") ||
                 searchParams.get("tags") ||
@@ -1862,29 +1873,29 @@ xl:relative xl:translate-x-0 z-20 xl:p-0 xl:shadow-none xl:block
                 searchParams.get("price_min") ||
                 searchParams.get("price_max") ||
                 searchParams.get("term")) && (
-                  <Link
-                    href="/search"
-                    className="2xl:!text-base sm:!text-[15px] !text-sm all-btn inline-flex items-center border-b border-transparent hover:border-primary gap-2"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      clearAllFilters();
-                    }}
+                <Link
+                  href="/search"
+                  className="2xl:!text-base sm:!text-[15px] !text-sm all-btn inline-flex items-center border-b border-transparent hover:border-primary gap-2"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    clearAllFilters();
+                  }}
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="9"
+                    height="9"
+                    viewBox="0 0 9 9"
+                    fill="none"
                   >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="9"
-                      height="9"
-                      viewBox="0 0 9 9"
-                      fill="none"
-                    >
-                      <path
-                        d="M8.80065 0.206172C8.7375 0.142889 8.66249 0.0926821 8.5799 0.0584261C8.49732 0.02417 8.40879 0.00653721 8.31939 0.00653721C8.22999 0.00653721 8.14146 0.02417 8.05888 0.0584261C7.97629 0.0926821 7.90128 0.142889 7.83813 0.206172L4.5 3.53747L1.16187 0.199346C1.09867 0.136145 1.02364 0.086012 0.941068 0.0518081C0.858492 0.0176043 0.769989 6.65925e-10 0.68061 0C0.591231 -6.65925e-10 0.502727 0.0176043 0.420151 0.0518081C0.337576 0.086012 0.262546 0.136145 0.199346 0.199346C0.136145 0.262546 0.086012 0.337576 0.0518081 0.420151C0.0176043 0.502727 -6.65925e-10 0.591231 0 0.68061C6.65925e-10 0.769989 0.0176043 0.858492 0.0518081 0.941068C0.086012 1.02364 0.136145 1.09867 0.199346 1.16187L3.53747 4.5L0.199346 7.83813C0.136145 7.90133 0.086012 7.97636 0.0518081 8.05893C0.0176043 8.14151 0 8.23001 0 8.31939C0 8.40877 0.0176043 8.49727 0.0518081 8.57985C0.086012 8.66242 0.136145 8.73745 0.199346 8.80065C0.262546 8.86385 0.337576 8.91399 0.420151 8.94819C0.502727 8.9824 0.591231 9 0.68061 9C0.769989 9 0.858492 8.9824 0.941068 8.94819C1.02364 8.91399 1.09867 8.86385 1.16187 8.80065L4.5 5.46253L7.83813 8.80065C7.90133 8.86385 7.97636 8.91399 8.05893 8.94819C8.14151 8.9824 8.23001 9 8.31939 9C8.40877 9 8.49727 8.9824 8.57985 8.94819C8.66242 8.91399 8.73745 8.86385 8.80065 8.80065C8.86385 8.73745 8.91399 8.66242 8.94819 8.57985C8.9824 8.49727 9 8.40877 9 8.31939C9 8.23001 8.9824 8.14151 8.94819 8.05893C8.91399 7.97636 8.86385 7.90133 8.80065 7.83813L5.46253 4.5L8.80065 1.16187C9.06006 0.902469 9.06006 0.465577 8.80065 0.206172Z"
-                        fill="#0156D5"
-                      />
-                    </svg>
-                    Clear All
-                  </Link>
-                )}
+                    <path
+                      d="M8.80065 0.206172C8.7375 0.142889 8.66249 0.0926821 8.5799 0.0584261C8.49732 0.02417 8.40879 0.00653721 8.31939 0.00653721C8.22999 0.00653721 8.14146 0.02417 8.05888 0.0584261C7.97629 0.0926821 7.90128 0.142889 7.83813 0.206172L4.5 3.53747L1.16187 0.199346C1.09867 0.136145 1.02364 0.086012 0.941068 0.0518081C0.858492 0.0176043 0.769989 6.65925e-10 0.68061 0C0.591231 -6.65925e-10 0.502727 0.0176043 0.420151 0.0518081C0.337576 0.086012 0.262546 0.136145 0.199346 0.199346C0.136145 0.262546 0.086012 0.337576 0.0518081 0.420151C0.0176043 0.502727 -6.65925e-10 0.591231 0 0.68061C6.65925e-10 0.769989 0.0176043 0.858492 0.0518081 0.941068C0.086012 1.02364 0.136145 1.09867 0.199346 1.16187L3.53747 4.5L0.199346 7.83813C0.136145 7.90133 0.086012 7.97636 0.0518081 8.05893C0.0176043 8.14151 0 8.23001 0 8.31939C0 8.40877 0.0176043 8.49727 0.0518081 8.57985C0.086012 8.66242 0.136145 8.73745 0.199346 8.80065C0.262546 8.86385 0.337576 8.91399 0.420151 8.94819C0.502727 8.9824 0.591231 9 0.68061 9C0.769989 9 0.858492 8.9824 0.941068 8.94819C1.02364 8.91399 1.09867 8.86385 1.16187 8.80065L4.5 5.46253L7.83813 8.80065C7.90133 8.86385 7.97636 8.91399 8.05893 8.94819C8.14151 8.9824 8.23001 9 8.31939 9C8.40877 9 8.49727 8.9824 8.57985 8.94819C8.66242 8.91399 8.73745 8.86385 8.80065 8.80065C8.86385 8.73745 8.91399 8.66242 8.94819 8.57985C8.9824 8.49727 9 8.40877 9 8.31939C9 8.23001 8.9824 8.14151 8.94819 8.05893C8.91399 7.97636 8.86385 7.90133 8.80065 7.83813L5.46253 4.5L8.80065 1.16187C9.06006 0.902469 9.06006 0.465577 8.80065 0.206172Z"
+                      fill="#0156D5"
+                    />
+                  </svg>
+                  Clear All
+                </Link>
+              )}
             </div>
           </div>
 
@@ -1904,7 +1915,6 @@ xl:relative xl:translate-x-0 z-20 xl:p-0 xl:shadow-none xl:block
               </div>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-              
                 {filteredProducts?.map((product, index) => (
                   <ProductGrid key={index} product={product} />
                 ))}
@@ -1942,8 +1952,9 @@ xl:relative xl:translate-x-0 z-20 xl:p-0 xl:shadow-none xl:block
                 {generatePageNumbers().map((page) => (
                   <button
                     key={page}
-                    className={`px-3 py-1 w-10 h-10 btn border rounded flex items-center justify-center ${activePage === page ? "bg-primary text-white" : ""
-                      }`}
+                    className={`px-3 py-1 w-10 h-10 btn border rounded flex items-center justify-center ${
+                      activePage === page ? "bg-primary text-white" : ""
+                    }`}
                     onClick={() => handlePageChange(page)}
                   >
                     {page}
