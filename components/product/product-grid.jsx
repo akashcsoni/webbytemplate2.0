@@ -47,13 +47,13 @@ export default function ProductCard({ product }) {
         prefetch={true}
         href={`/product/${encodeURIComponent(productSlug)}`}
       >
-        <div className="cursor-pointer relative rounded-lg overflow-hidden mb-4 transition-transform duration-300 group-hover:shadow-lg">
+        <div className="cursor-pointer relative rounded-lg overflow-hidden mb-4 transition-transform duration-300 group-hover:shadow-lg product-grid-image-container">
           <Image
             src={productImage}
             alt={`${productTitle} - Premium website template by ${authorName}`}
             width={270}
             height={345}
-            className="w-full h-auto aspect-[1/1.2]"
+            className="w-full h-full object-cover"
             loading="lazy"
             sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
             placeholder="blur"
