@@ -349,9 +349,6 @@ const nextConfig = {
     minimumCacheTTL: 60,
     dangerouslyAllowSVG: true,
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
-    // Optimize image loading to prevent CLS
-    deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
-    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
   },
 
   experimental: {
@@ -360,65 +357,23 @@ const nextConfig = {
 
   compress: true,
 
-  // Note: swcMinify is enabled by default in Next.js 15, no need to specify
-
   webpack: (config, { dev, isServer }) => {
     if (!dev && !isServer) {
-      // Optimize for smaller bundles and faster parsing
-      // Split heavy libraries into separate chunks for better code splitting
       config.optimization.splitChunks = {
         chunks: "all",
         cacheGroups: {
-          default: false,
-          // Group framework code together (React, Next.js)
-          framework: {
-            chunks: 'all',
-            name: 'framework',
-            test: /[\\/]node_modules[\\/](react|react-dom|scheduler|next)[\\/]/,
-            priority: 50,
-            enforce: true,
-          },
-          // Split heavy animation/chart libraries into separate chunks
-          heavyLibs: {
-            test: /[\\/]node_modules[\\/](framer-motion|swiper|recharts|react-tabulator|tabulator-tables)[\\/]/,
-            name: 'heavy-libs',
-            priority: 40,
-            chunks: 'async', // Load only when needed
-            reuseExistingChunk: true,
-          },
-          // Split HeroUI/NextUI into separate chunk
-          uiLibs: {
-            test: /[\\/]node_modules[\\/](@heroui|@nextui-org)[\\/]/,
-            name: 'ui-libs',
-            priority: 35,
-            chunks: 'all',
-            reuseExistingChunk: true,
-          },
-          // Group other vendor libraries (exclude already split libraries)
           vendor: {
-            test(module) {
-              // Exclude already split libraries
-              const modulePath = module.identifier();
-              const excluded = /[\\/]node_modules[\\/](react|react-dom|scheduler|next|framer-motion|swiper|recharts|react-tabulator|tabulator-tables|@heroui|@nextui-org)[\\/]/;
-              return /[\\/]node_modules[\\/]/.test(modulePath) && !excluded.test(modulePath);
-            },
+            test: /[\\/]node_modules[\\/]/,
             name: "vendors",
-            priority: 20,
-            reuseExistingChunk: true,
+            chunks: "all",
           },
-          // Common shared code
           common: {
             name: "common",
             minChunks: 2,
-            priority: 10,
-            reuseExistingChunk: true,
-            minSize: 20000,
+            chunks: "all",
+            enforce: true,
           },
         },
-        // Limit chunk count to reduce parsing overhead
-        maxAsyncRequests: 15,
-        maxInitialRequests: 10,
-        minSize: 20000,
       };
     }
     return config;
