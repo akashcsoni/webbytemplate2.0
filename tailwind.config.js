@@ -7,6 +7,10 @@ module.exports = {
     "./app/**/*.{js,ts,jsx,tsx,mdx}",
     "./node_modules/@heroui/theme/dist/**/*.{js,ts,jsx,tsx}",
   ],
+  // Optimize CSS generation - only include what's needed
+  // Tailwind automatically purges unused classes based on content paths
+  // No need for safelist unless you have dynamic classes
+  safelist: [],
   theme: {
     keyframes: {
       zoom: {
