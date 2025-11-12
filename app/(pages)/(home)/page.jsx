@@ -300,6 +300,11 @@ export default async function HomePage() {
       });
     }
 
+    // Extract HomeHero component data for server-side rendering
+    const homeHeroComponent = data?.components?.find(
+      (comp) => comp?.__component === "shared.home-hero"
+    );
+
     return (
       <>
         {/* Structured Data */}
@@ -337,6 +342,24 @@ export default async function HomePage() {
             }}
           />
         ))}
+
+        {/* Render HomeHero h1 server-side immediately for LCP optimization */}
+        {homeHeroComponent && homeHeroComponent.title && (
+          <section className="xl:pb-[35px] lg:pb-[30px] pb-[25px] 2xl:pt-20 1xl:pt-16 lg:pt-14 sm:pt-10 pt-8">
+            <div className="container mx-auto">
+              <div className={`flex flex-col items-${homeHeroComponent.alignment || 'center'} text-${homeHeroComponent.alignment || 'center'}`}>
+                <h1 className="lg:mb-[22px] mb-3 1xl:w-[88rem] w-[62rem] max-w-full">
+                  {homeHeroComponent.title}
+                </h1>
+                {(homeHeroComponent.with_description || homeHeroComponent.with_description == null) && homeHeroComponent.description && (
+                  <p className="2xl:max-w-5xl xl:max-w-4xl max-w-[49rem] mb-5 md:mb-9 2xl:text-lg lg:text-[16px] md:text-base text-sm">
+                    {homeHeroComponent.description}
+                  </p>
+                )}
+              </div>
+            </div>
+          </section>
+        )}
 
         <GlobalComponent data={pageData.data} />
       </>
