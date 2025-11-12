@@ -1,6 +1,5 @@
 import SearchPage from '@/components/search/SearchPage'
 import React from 'react'
-import { Metadata } from 'next'
 import { themeConfig } from '@/config/theamConfig'
 
 export const dynamic = 'force-dynamic'; // Force no caching, SSR on every request

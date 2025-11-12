@@ -357,39 +357,43 @@ const nextConfig = {
 
   compress: true,
 
-  // Optimize CSS output
-  swcMinify: true,
+  // Note: swcMinify is enabled by default in Next.js 15, no need to specify
 
   webpack: (config, { dev, isServer }) => {
     if (!dev && !isServer) {
-      // Optimize CSS chunking
+      // Optimize for smaller bundles and faster parsing
+      // Limit chunk count to reduce parsing overhead
       config.optimization.splitChunks = {
         chunks: "all",
         cacheGroups: {
           default: false,
-          vendors: false,
-          // Separate CSS into its own chunk
-          styles: {
-            name: 'styles',
-            test: /\.(css|scss|sass)$/,
+          // Group framework code together (React, Next.js)
+          framework: {
             chunks: 'all',
-            enforce: true,
+            name: 'framework',
+            test: /[\\/]node_modules[\\/](react|react-dom|scheduler|next)[\\/]/,
             priority: 40,
+            enforce: true,
           },
+          // Group vendor libraries
           vendor: {
             test: /[\\/]node_modules[\\/]/,
             name: "vendors",
-            chunks: "all",
             priority: 20,
+            reuseExistingChunk: true,
           },
+          // Common shared code
           common: {
             name: "common",
             minChunks: 2,
-            chunks: "all",
-            enforce: true,
             priority: 10,
+            reuseExistingChunk: true,
           },
         },
+        // Limit chunk count to reduce parsing overhead
+        maxAsyncRequests: 10,
+        maxInitialRequests: 10,
+        minSize: 20000,
       };
     }
     return config;
