@@ -24,15 +24,9 @@ body {
 }
 
 /* Prevent layout shifts from images */
-img, Image {
+img {
   max-width: 100%;
   height: auto;
-}
-
-/* Reserve space for product grid images */
-.product-grid-image-container {
-  aspect-ratio: 1 / 1.2;
-  min-height: 345px;
 }
 
 /* Prevent layout shifts from dynamic content */
