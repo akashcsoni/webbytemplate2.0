@@ -58,17 +58,19 @@ export default function RootLayout({ children }) {
           }}
           strategy="lazyOnload"
         />
-        {/* Google Analytics */}
+        {/* Google Analytics - Deferred to reduce main-thread blocking */}
         <Script
           src="https://www.googletagmanager.com/gtag/js?id=G-W2K9LVCP3D"
           strategy="lazyOnload"
         />
-        <Script id="google-analytics" strategy="afterInteractive">
+        <Script id="google-analytics" strategy="lazyOnload">
           {`
             window.dataLayer = window.dataLayer || [];
             function gtag(){dataLayer.push(arguments);}
             gtag('js', new Date());
-            gtag('config', 'G-W2K9LVCP3D');
+            gtag('config', 'G-W2K9LVCP3D', {
+              page_path: window.location.pathname,
+            });
           `}
         </Script>
         <Script
