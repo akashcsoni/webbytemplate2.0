@@ -76,6 +76,14 @@ export default function GlobalComponent({ data, params = {} }) {
 
         const pascalCaseName = convertToPascalCase(rawName);
         const DynamicComponent = components[pascalCaseName];
+        
+        // For HomeHero, skip the heading (already rendered server-side) but render interactive parts
+        if (pascalCaseName === "HomeHero") {
+            return DynamicComponent ? (
+                <DynamicComponent key={index} {...component} params={params} skipHeading={true} />
+            ) : null;
+        }
+        
         return DynamicComponent ? (
             <DynamicComponent key={index} {...component} params={params} />
         ) : null;
