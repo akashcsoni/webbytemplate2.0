@@ -362,7 +362,7 @@ const nextConfig = {
   webpack: (config, { dev, isServer }) => {
     if (!dev && !isServer) {
       // Optimize for smaller bundles and faster parsing
-      // Limit chunk count to reduce parsing overhead
+      // Split heavy libraries into separate chunks for better code splitting
       config.optimization.splitChunks = {
         chunks: "all",
         cacheGroups: {
@@ -372,12 +372,33 @@ const nextConfig = {
             chunks: 'all',
             name: 'framework',
             test: /[\\/]node_modules[\\/](react|react-dom|scheduler|next)[\\/]/,
-            priority: 40,
+            priority: 50,
             enforce: true,
           },
-          // Group vendor libraries
+          // Split heavy animation/chart libraries into separate chunks
+          heavyLibs: {
+            test: /[\\/]node_modules[\\/](framer-motion|swiper|recharts|react-tabulator|tabulator-tables)[\\/]/,
+            name: 'heavy-libs',
+            priority: 40,
+            chunks: 'async', // Load only when needed
+            reuseExistingChunk: true,
+          },
+          // Split HeroUI/NextUI into separate chunk
+          uiLibs: {
+            test: /[\\/]node_modules[\\/](@heroui|@nextui-org)[\\/]/,
+            name: 'ui-libs',
+            priority: 35,
+            chunks: 'all',
+            reuseExistingChunk: true,
+          },
+          // Group other vendor libraries (exclude already split libraries)
           vendor: {
-            test: /[\\/]node_modules[\\/]/,
+            test(module) {
+              // Exclude already split libraries
+              const modulePath = module.identifier();
+              const excluded = /[\\/]node_modules[\\/](react|react-dom|scheduler|next|framer-motion|swiper|recharts|react-tabulator|tabulator-tables|@heroui|@nextui-org)[\\/]/;
+              return /[\\/]node_modules[\\/]/.test(modulePath) && !excluded.test(modulePath);
+            },
             name: "vendors",
             priority: 20,
             reuseExistingChunk: true,
@@ -388,10 +409,11 @@ const nextConfig = {
             minChunks: 2,
             priority: 10,
             reuseExistingChunk: true,
+            minSize: 20000,
           },
         },
         // Limit chunk count to reduce parsing overhead
-        maxAsyncRequests: 10,
+        maxAsyncRequests: 15,
         maxInitialRequests: 10,
         minSize: 20000,
       };
