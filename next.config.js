@@ -357,21 +357,37 @@ const nextConfig = {
 
   compress: true,
 
+  // Optimize CSS output
+  swcMinify: true,
+
   webpack: (config, { dev, isServer }) => {
     if (!dev && !isServer) {
+      // Optimize CSS chunking
       config.optimization.splitChunks = {
         chunks: "all",
         cacheGroups: {
+          default: false,
+          vendors: false,
+          // Separate CSS into its own chunk
+          styles: {
+            name: 'styles',
+            test: /\.(css|scss|sass)$/,
+            chunks: 'all',
+            enforce: true,
+            priority: 40,
+          },
           vendor: {
             test: /[\\/]node_modules[\\/]/,
             name: "vendors",
             chunks: "all",
+            priority: 20,
           },
           common: {
             name: "common",
             minChunks: 2,
             chunks: "all",
             enforce: true,
+            priority: 10,
           },
         },
       };
