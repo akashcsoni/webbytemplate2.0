@@ -1223,6 +1223,12 @@ h4 {
     .single-blog .content-grid .left-content ol li {
     @apply 1xl:mt-[12px] mt-[10px] 2xl:text-lg 1xl:text-[17px] sm:text-base text-[15px] 2xl:leading-[30px] xl:leading-7 sm:leading-6 leading-[19px] text-gray-200;
     }
+    .single-blog pre {
+      @apply bg-[#E6EFFB] !text-primary p-4 rounded-[10px] overflow-x-auto font-['Fira_Code',monospace] text-[15px] leading-[1.6] border border-[#E6EFFB];
+    }
+    .single-blog pre p {
+      @apply !text-primary
+    }
     .insight-sticky {
     @apply sticky top-6;
     }
