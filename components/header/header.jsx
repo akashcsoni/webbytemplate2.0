@@ -422,7 +422,7 @@ Hurry!
           {/* Logo */}
           <div className="nav-logo">
             {isSettingsLoading ? (
-              <Skeleton className="rounded-md main-logo-skeleton h-[40px] w-[265px]" />
+              <Skeleton className="rounded-md main-logo-skeleton h-[40px]" />
             ) : (
               headerSettingData?.logo && (
                 <Link href="/" className="flex items-center">
@@ -432,12 +432,13 @@ Hurry!
                         ? headerSettingData?.logo?.url
                         : `${headerSettingData?.logo?.url}`
                     }
-                    width={265}
-                    height={40}
-                    priority
                     alt={
-                      headerSettingData?.logo?.name || "WebbyTemplate Logo"
+                      headerSettingData?.logo?.url
+                        ? headerSettingData?.logo?.name
+                        : "WebbyTemplate"
                     }
+                    width={180}
+                    height={40}
                     className="main-logo"
                   />
                 </Link>
@@ -449,12 +450,11 @@ Hurry!
           <nav className="links-content flex items-center justify-between relative">
             <div className="navigation-links">
               {isSettingsLoading
-                ? // Skeletons based on actual menu length - fixed dimensions to prevent CLS
+                ? // Skeletons based on actual menu length
                 [...Array(6)].map((_, index) => (
                   <Skeleton
                     key={index}
                     className="h-5 2xl:w-[115px] xl:w-[100px] w-[85px] rounded-md navigation-skeleton"
-                    style={{ minWidth: '85px', minHeight: '20px' }}
                   />
                 ))
                 : !isSettingsLoading && headerSettingData?.menu?.length > 0

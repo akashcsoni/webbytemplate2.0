@@ -2,40 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Prevent layout shifts - reserve space for common elements */
-header {
-  min-height: 64px; /* Reserve space for header to prevent CLS */
-  position: relative; /* Prevent layout shifts */
-}
-
-/* Prevent font-related layout shifts */
-body {
-  font-display: optional;
-}
-
-/* Reserve space for skeleton loaders to prevent CLS */
-.main-logo-skeleton,
-.navigation-skeleton,
-.login-skeleton,
-.schedule-skeleton {
-  min-width: 100px; /* Reserve minimum width */
-  min-height: 40px; /* Reserve minimum height */
-  display: inline-block; /* Prevent layout shift */
-}
-
-/* Prevent layout shifts from images */
-img {
-  max-width: 100%;
-  height: auto;
-}
-
-/* Prevent layout shifts from dynamic content */
-.container {
-  width: 100%;
-  margin-left: auto;
-  margin-right: auto;
-}
-
 /* product sans font */
 @font-face {
   font-family: "Product Sans";

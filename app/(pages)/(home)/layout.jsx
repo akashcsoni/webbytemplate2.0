@@ -30,11 +30,6 @@ export default function RootLayout({ children }) {
   return (
     <html suppressHydrationWarning lang="en">
       <head>
-        {/* Preconnect to external domains for faster resource loading */}
-        <link rel="preconnect" href="https://www.googletagmanager.com" />
-        <link rel="preconnect" href="https://www.clarity.ms" />
-        <link rel="dns-prefetch" href="https://salesiq.zohopublic.in" />
-        <link rel="dns-prefetch" href="https://studio.webbytemplate.com" />
         <Script id="ms-clarity" strategy="afterInteractive">
           {`
             (function(c,l,a,r,i,t,y){
@@ -63,19 +58,17 @@ export default function RootLayout({ children }) {
           }}
           strategy="lazyOnload"
         />
-        {/* Google Analytics - Deferred to reduce main-thread blocking */}
+        {/* Google Analytics */}
         <Script
           src="https://www.googletagmanager.com/gtag/js?id=G-W2K9LVCP3D"
           strategy="lazyOnload"
         />
-        <Script id="google-analytics" strategy="lazyOnload">
+        <Script id="google-analytics" strategy="afterInteractive">
           {`
             window.dataLayer = window.dataLayer || [];
             function gtag(){dataLayer.push(arguments);}
             gtag('js', new Date());
-            gtag('config', 'G-W2K9LVCP3D', {
-              page_path: window.location.pathname,
-            });
+            gtag('config', 'G-W2K9LVCP3D');
           `}
         </Script>
         <Script
