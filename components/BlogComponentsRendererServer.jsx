@@ -109,14 +109,31 @@ const RichTextComponentServer = ({ data }) => {
       
       // Restore links with their original URLs intact
       linkPlaceholders.forEach(({ placeholder, linkText, linkUrl }) => {
-        // Process markdown in link text (but not in URL)
-        const processedLinkText = linkText
+        // Protect URLs in link text before processing markdown
+        const urlPlaceholders = [];
+        let urlCounter = 0;
+        
+        // Extract URLs from link text (http://, https://, www.)
+        let protectedLinkText = linkText.replace(/(https?:\/\/[^\s\)]+|www\.[^\s\)]+)/gi, (url) => {
+          const urlPlaceholder = `URLPLACEHOLDER${urlCounter}URLPLACEHOLDER`;
+          urlPlaceholders.push({ placeholder: urlPlaceholder, url });
+          urlCounter++;
+          return urlPlaceholder;
+        });
+        
+        // Process markdown in link text (URLs are protected)
+        protectedLinkText = protectedLinkText
           .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
           .replace(/__(.*?)__/g, "<strong>$1</strong>")
           .replace(/\*(.*?)\*/g, "<em>$1</em>")
           .replace(/_(.*?)_/g, "<em>$1</em>");
         
-        const linkHtml = `<a href="${linkUrl}" target="_blank" rel="noopener noreferrer">${processedLinkText}</a>`;
+        // Restore URLs in link text
+        urlPlaceholders.forEach(({ placeholder: urlPlaceholder, url }) => {
+          protectedLinkText = protectedLinkText.split(urlPlaceholder).join(url);
+        });
+        
+        const linkHtml = `<a href="${linkUrl}" target="_blank" rel="noopener noreferrer">${protectedLinkText}</a>`;
         processedText = processedText.replace(placeholder, linkHtml);
       });
       
