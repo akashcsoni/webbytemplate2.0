@@ -25,9 +25,6 @@ export default function RichText({ body, read_more, with_bg }) {
         let result = "";
         let listBuffer = [];
         let blockquoteBuffer = [];
-        let tableBuffer = [];
-        let paragraphBuffer = [];
-        let inTable = false;
         const usedIds = new Set(); // Track used IDs to ensure uniqueness
 
         const flushList = () => {
@@ -44,32 +41,112 @@ export default function RichText({ body, read_more, with_bg }) {
             }
         };
 
-        const flushTable = () => {
-            if (tableBuffer.length) {
-                result += "<table>" + tableBuffer.join("") + "</table>";
-                tableBuffer = [];
-                inTable = false;
-            }
-        };
-
-        const flushParagraph = () => {
-            if (paragraphBuffer.length) {
-                const paragraphText = paragraphBuffer.join(" ").trim();
-                if (paragraphText) {
-                    result += `<p>${parseInlineMarkdown(paragraphText)}</p>`;
-                }
-                paragraphBuffer = [];
-            }
-        };
-
         const parseInlineMarkdown = (text) => {
-            return text
+            // Store for link placeholders
+            const linkPlaceholders = [];
+            let linkCounter = 0;
+
+            // First, extract and protect HTML links <a href="..." ...>...</a>
+            // This preserves existing HTML links with their attributes (like rel="nofollow")
+            let processedText = text.replace(/<a\s+([^>]+)>([^<]*)<\/a>/gi, (match, attributes, linkText) => {
+                const placeholder = `HTMLINKPLACEHOLDER${linkCounter}HTMLINKPLACEHOLDER`;
+                linkPlaceholders.push({
+                    placeholder,
+                    linkText,
+                    attributes,
+                    isHtml: true
+                });
+                linkCounter++;
+                return placeholder;
+            });
+
+            // Then, extract and protect markdown links [text](url)
+            // This prevents URLs from being processed by markdown formatting
+            // Use a placeholder format that won't be affected by markdown (no _, *, ~, etc.)
+            processedText = processedText.replace(/\[(.*?)\]\((.*?)\)/g, (match, linkText, linkUrl) => {
+                const placeholder = `LINKPLACEHOLDER${linkCounter}LINKPLACEHOLDER`;
+                linkPlaceholders.push({
+                    placeholder,
+                    linkText,
+                    linkUrl,
+                    isHtml: false
+                });
+                linkCounter++;
+                return placeholder;
+            });
+
+            // Now process markdown formatting on the remaining text
+            // URLs are already protected in placeholders, so we can safely process markdown
+            processedText = processedText
                 .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")     // bold (**) 
                 .replace(/__(.*?)__/g, "<strong>$1</strong>")         // bold (__)
                 .replace(/\*(.*?)\*/g, "<em>$1</em>")                 // italic (*)
-                .replace(/_(.*?)_/g, "<em>$1</em>")                   // italic (_)
-                .replace(/~~(.*?)~~/g, "<del>$1</del>")               // strikethrough
-                .replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2" target="_blank">$1</a>'); // links
+                .replace(/_(.*?)_/g, "<em>$1</em>")                    // italic (_) - safe because URLs are already extracted
+                .replace(/~~(.*?)~~/g, "<del>$1</del>");               // strikethrough
+
+            // Restore links with their original URLs intact
+            linkPlaceholders.forEach(({ placeholder, linkText, linkUrl, attributes, isHtml }) => {
+                if (isHtml) {
+                    // For HTML links, preserve the original attributes and restore the link
+                    // Process markdown in link text if needed
+                    let protectedLinkText = linkText;
+
+                    // Protect URLs in link text before processing markdown
+                    const urlPlaceholders = [];
+                    let urlCounter = 0;
+                    protectedLinkText = protectedLinkText.replace(/(https?:\/\/[^\s\)]+|www\.[^\s\)]+)/gi, (url) => {
+                        const urlPlaceholder = `URLPLACEHOLDER${urlCounter}URLPLACEHOLDER`;
+                        urlPlaceholders.push({ placeholder: urlPlaceholder, url });
+                        urlCounter++;
+                        return urlPlaceholder;
+                    });
+
+                    // Process markdown in link text (URLs are protected)
+                    protectedLinkText = protectedLinkText
+                        .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
+                        .replace(/__(.*?)__/g, "<strong>$1</strong>")
+                        .replace(/\*(.*?)\*/g, "<em>$1</em>")
+                        .replace(/_(.*?)_/g, "<em>$1</em>");
+
+                    // Restore URLs in link text
+                    urlPlaceholders.forEach(({ placeholder: urlPlaceholder, url }) => {
+                        protectedLinkText = protectedLinkText.split(urlPlaceholder).join(url);
+                    });
+
+                    const linkHtml = `<a ${attributes}>${protectedLinkText}</a>`;
+                    processedText = processedText.replace(placeholder, linkHtml);
+                } else {
+                    // For markdown links, convert to HTML with default attributes
+                    // Protect URLs in link text before processing markdown
+                    const urlPlaceholders = [];
+                    let urlCounter = 0;
+
+                    // Extract URLs from link text (http://, https://, www.)
+                    let protectedLinkText = linkText.replace(/(https?:\/\/[^\s\)]+|www\.[^\s\)]+)/gi, (url) => {
+                        const urlPlaceholder = `URLPLACEHOLDER${urlCounter}URLPLACEHOLDER`;
+                        urlPlaceholders.push({ placeholder: urlPlaceholder, url });
+                        urlCounter++;
+                        return urlPlaceholder;
+                    });
+
+                    // Process markdown in link text (URLs are protected)
+                    protectedLinkText = protectedLinkText
+                        .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
+                        .replace(/__(.*?)__/g, "<strong>$1</strong>")
+                        .replace(/\*(.*?)\*/g, "<em>$1</em>")
+                        .replace(/_(.*?)_/g, "<em>$1</em>");
+
+                    // Restore URLs in link text
+                    urlPlaceholders.forEach(({ placeholder: urlPlaceholder, url }) => {
+                        protectedLinkText = protectedLinkText.split(urlPlaceholder).join(url);
+                    });
+
+                    const linkHtml = `<a href="${linkUrl}" target="_blank" rel="noopener noreferrer">${protectedLinkText}</a>`;
+                    processedText = processedText.replace(placeholder, linkHtml);
+                }
+            });
+
+            return processedText;
         };
 
         const generateHeadingId = (text) => {
@@ -88,55 +165,17 @@ export default function RichText({ body, read_more, with_bg }) {
             return uniqueId;
         };
 
-        lines.forEach((line, index) => {
+        lines.forEach((line) => {
             const trimmed = line.trim();
-            
-            // Handle empty lines - flush any pending content
             if (!trimmed) {
                 flushList();
                 flushBlockquote();
-                flushTable();
-                flushParagraph();
-                return;
-            }
-
-            // Check for table start/end comments
-            if (trimmed.includes("<!-- table start -->")) {
-                flushList();
-                flushBlockquote();
-                flushTable();
-                flushParagraph();
-                inTable = true;
-                return;
-            }
-            
-            if (trimmed.includes("<!-- end start -->") || trimmed.includes("<!-- end -->")) {
-                flushTable();
-                return;
-            }
-
-            // Handle table rows when in table mode
-            if (inTable && trimmed.includes("<table>")) {
-                // Skip the opening table tag as we handle it in flushTable
-                return;
-            }
-
-            if (inTable && trimmed.includes("</table>")) {
-                // Skip the closing table tag as we handle it in flushTable
-                return;
-            }
-
-            if (inTable) {
-                // Process table content directly
-                tableBuffer.push(trimmed);
                 return;
             }
 
             // Blockquote lines (group contiguous '>' lines)
             if (/^>\s?/.test(trimmed)) {
                 flushList(); // end any open list before blockquote
-                flushTable();
-                flushParagraph();
                 const inner = trimmed.replace(/^>\s?/, "");
                 // support headings inside blockquote
                 const headingMatchBQ = /^(#{1,6})\s+(.+)$/.exec(inner);
@@ -156,8 +195,6 @@ export default function RichText({ body, read_more, with_bg }) {
             if (headingMatch) {
                 flushList();
                 flushBlockquote();
-                flushTable();
-                flushParagraph();
                 const level = headingMatch[1].length; // count of "#"
                 const text = parseInlineMarkdown(headingMatch[2]);
                 const headingId = generateHeadingId(headingMatch[2]);
@@ -167,26 +204,19 @@ export default function RichText({ body, read_more, with_bg }) {
 
             // Lists
             if (/^[-*]\s+/.test(trimmed)) {
-                flushTable();
-                flushParagraph();
                 listBuffer.push(parseInlineMarkdown(trimmed.replace(/^[-*]\s+/, "")));
             }
 
-            // Regular text - add to paragraph buffer
+            // Paragraph
             else {
                 flushList();
                 flushBlockquote();
-                flushTable();
-                paragraphBuffer.push(trimmed);
+                result += `<p>${parseInlineMarkdown(trimmed)}</p>`;
             }
         });
 
         flushList();
         flushBlockquote();
-        flushTable();
-        flushParagraph();
-        
-        
         return result;
     }, []);
 

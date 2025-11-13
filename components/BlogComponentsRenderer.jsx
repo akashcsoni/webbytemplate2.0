@@ -83,13 +83,111 @@ const RichTextComponent = ({ data }) => {
     };
 
     const parseInlineMarkdown = (text) => {
-      return text
+      // Store for link placeholders
+      const linkPlaceholders = [];
+      let linkCounter = 0;
+      
+      // First, extract and protect HTML links <a href="..." ...>...</a>
+      // This preserves existing HTML links with their attributes (like rel="nofollow")
+      let processedText = text.replace(/<a\s+([^>]+)>([^<]*)<\/a>/gi, (match, attributes, linkText) => {
+        const placeholder = `HTMLINKPLACEHOLDER${linkCounter}HTMLINKPLACEHOLDER`;
+        linkPlaceholders.push({
+          placeholder,
+          linkText,
+          attributes,
+          isHtml: true
+        });
+        linkCounter++;
+        return placeholder;
+      });
+      
+      // Then, extract and protect markdown links [text](url)
+      // This prevents URLs from being processed by markdown formatting
+      // Use a placeholder format that won't be affected by markdown (no _, *, ~, etc.)
+      processedText = processedText.replace(/\[(.*?)\]\((.*?)\)/g, (match, linkText, linkUrl) => {
+        const placeholder = `LINKPLACEHOLDER${linkCounter}LINKPLACEHOLDER`;
+        linkPlaceholders.push({
+          placeholder,
+          linkText,
+          linkUrl,
+          isHtml: false
+        });
+        linkCounter++;
+        return placeholder;
+      });
+      
+      // Now process markdown formatting on the remaining text
+      // URLs are already protected in placeholders, so we can safely process markdown
+      processedText = processedText
         .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")     // bold (**) 
         .replace(/__(.*?)__/g, "<strong>$1</strong>")         // bold (__)
         .replace(/\*(.*?)\*/g, "<em>$1</em>")                 // italic (*)
-        .replace(/_(.*?)_/g, "<em>$1</em>")                   // italic (_)
-        .replace(/~~(.*?)~~/g, "<del>$1</del>")               // strikethrough
-        .replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2" target="_blank">$1</a>'); // links
+        .replace(/_(.*?)_/g, "<em>$1</em>")                    // italic (_) - safe because URLs are already extracted
+        .replace(/~~(.*?)~~/g, "<del>$1</del>");               // strikethrough
+      
+      // Restore links with their original URLs intact
+      linkPlaceholders.forEach(({ placeholder, linkText, linkUrl, attributes, isHtml }) => {
+        if (isHtml) {
+          // For HTML links, preserve the original attributes and restore the link
+          // Process markdown in link text if needed
+          let protectedLinkText = linkText;
+          
+          // Protect URLs in link text before processing markdown
+          const urlPlaceholders = [];
+          let urlCounter = 0;
+          protectedLinkText = protectedLinkText.replace(/(https?:\/\/[^\s\)]+|www\.[^\s\)]+)/gi, (url) => {
+            const urlPlaceholder = `URLPLACEHOLDER${urlCounter}URLPLACEHOLDER`;
+            urlPlaceholders.push({ placeholder: urlPlaceholder, url });
+            urlCounter++;
+            return urlPlaceholder;
+          });
+          
+          // Process markdown in link text (URLs are protected)
+          protectedLinkText = protectedLinkText
+            .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
+            .replace(/__(.*?)__/g, "<strong>$1</strong>")
+            .replace(/\*(.*?)\*/g, "<em>$1</em>")
+            .replace(/_(.*?)_/g, "<em>$1</em>");
+          
+          // Restore URLs in link text
+          urlPlaceholders.forEach(({ placeholder: urlPlaceholder, url }) => {
+            protectedLinkText = protectedLinkText.split(urlPlaceholder).join(url);
+          });
+          
+          const linkHtml = `<a ${attributes}>${protectedLinkText}</a>`;
+          processedText = processedText.replace(placeholder, linkHtml);
+        } else {
+          // For markdown links, convert to HTML with default attributes
+          // Protect URLs in link text before processing markdown
+          const urlPlaceholders = [];
+          let urlCounter = 0;
+          
+          // Extract URLs from link text (http://, https://, www.)
+          let protectedLinkText = linkText.replace(/(https?:\/\/[^\s\)]+|www\.[^\s\)]+)/gi, (url) => {
+            const urlPlaceholder = `URLPLACEHOLDER${urlCounter}URLPLACEHOLDER`;
+            urlPlaceholders.push({ placeholder: urlPlaceholder, url });
+            urlCounter++;
+            return urlPlaceholder;
+          });
+          
+          // Process markdown in link text (URLs are protected)
+          protectedLinkText = protectedLinkText
+            .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
+            .replace(/__(.*?)__/g, "<strong>$1</strong>")
+            .replace(/\*(.*?)\*/g, "<em>$1</em>")
+            .replace(/_(.*?)_/g, "<em>$1</em>");
+          
+          // Restore URLs in link text
+          urlPlaceholders.forEach(({ placeholder: urlPlaceholder, url }) => {
+            protectedLinkText = protectedLinkText.split(urlPlaceholder).join(url);
+          });
+          
+          const linkHtml = `<a href="${linkUrl}" target="_blank" rel="noopener noreferrer">${protectedLinkText}</a>`;
+          processedText = processedText.replace(placeholder, linkHtml);
+        }
+      });
+      
+      return processedText;
     };
 
     const generateHeadingId = (text) => {
