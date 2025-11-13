@@ -80,13 +80,47 @@ const RichTextComponentServer = ({ data }) => {
     };
 
     const parseInlineMarkdown = (text) => {
-      return text
+      // Store for link placeholders
+      const linkPlaceholders = [];
+      let linkCounter = 0;
+      
+      // First, extract and protect markdown links [text](url)
+      // This prevents URLs from being processed by markdown formatting
+      // Use a placeholder format that won't be affected by markdown (no _, *, ~, etc.)
+      let processedText = text.replace(/\[(.*?)\]\((.*?)\)/g, (match, linkText, linkUrl) => {
+        const placeholder = `LINKPLACEHOLDER${linkCounter}LINKPLACEHOLDER`;
+        linkPlaceholders.push({
+          placeholder,
+          linkText,
+          linkUrl
+        });
+        linkCounter++;
+        return placeholder;
+      });
+      
+      // Now process markdown formatting on the remaining text
+      // URLs are already protected in placeholders, so we can safely process markdown
+      processedText = processedText
         .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")     // bold (**) 
         .replace(/__(.*?)__/g, "<strong>$1</strong>")         // bold (__)
         .replace(/\*(.*?)\*/g, "<em>$1</em>")                 // italic (*)
-        .replace(/_(.*?)_/g, "<em>$1</em>")                   // italic (_)
-        .replace(/~~(.*?)~~/g, "<del>$1</del>")               // strikethrough
-        .replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2" target="_blank">$1</a>'); // links
+        .replace(/_(.*?)_/g, "<em>$1</em>")                    // italic (_) - safe because URLs are already extracted
+        .replace(/~~(.*?)~~/g, "<del>$1</del>");               // strikethrough
+      
+      // Restore links with their original URLs intact
+      linkPlaceholders.forEach(({ placeholder, linkText, linkUrl }) => {
+        // Process markdown in link text (but not in URL)
+        const processedLinkText = linkText
+          .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
+          .replace(/__(.*?)__/g, "<strong>$1</strong>")
+          .replace(/\*(.*?)\*/g, "<em>$1</em>")
+          .replace(/_(.*?)_/g, "<em>$1</em>");
+        
+        const linkHtml = `<a href="${linkUrl}" target="_blank" rel="noopener noreferrer">${processedLinkText}</a>`;
+        processedText = processedText.replace(placeholder, linkHtml);
+      });
+      
+      return processedText;
     };
 
     const generateHeadingId = (text) => {
