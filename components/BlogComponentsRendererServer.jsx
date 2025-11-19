@@ -3,6 +3,7 @@ import Link from "next/link";
 import React from "react";
 import BlogFaqSection from "./BlogFaqSection";
 import LinkThumbnailPreviewServer from "./LinkThumbnailPreviewServer";
+import BlogProductImageSliderServer from "./BlogProductImageSliderServer";
 
 const BlogComponentsRendererServer = ({ components = [] }) => {
   if (!components || components.length === 0) {
@@ -41,6 +42,14 @@ const BlogComponentsRendererServer = ({ components = [] }) => {
         return (
           <LinkThumbnailPreviewServer
             key={`link-thumbnail-preview-${id || index}`}
+            data={component}
+          />
+        );
+
+      case "shared.blog-product-image-slider":
+        return (
+          <BlogProductImageSliderServer
+            key={`blog-product-image-slider-${id || index}`}
             data={component}
           />
         );

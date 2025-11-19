@@ -281,7 +281,7 @@ const nextConfig = {
       },
       {
         from: "/blog/best-custom-ring-builder-plugin-for-jewelry-woocommerce-stores",
-        to: "/product/christmas-html-email-template",
+        to: "/product/ring-builder-for-woocommerce",
       },
       {
         from: "/blog/responsive-html-email-templates-download-free-premium",

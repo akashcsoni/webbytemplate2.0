@@ -1189,7 +1189,7 @@ h4 {
     @apply flex items-start xl:gap-[60px] gap-[50px];
     }
     .left-content {
-    @apply  w-full;
+    @apply lg:w-[74%] w-full;
     }
     .right-content {
     @apply  w-[36%] h-full lg:block hidden;
