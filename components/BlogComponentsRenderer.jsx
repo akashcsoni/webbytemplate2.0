@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import React from "react";
 import BlogFaqSection from "./BlogFaqSection";
+import BlogProductImageSlider from "./BlogProductImageSlider";
 
 const BlogComponentsRenderer = ({ components = [] }) => {
   if (!components || components.length === 0) {
@@ -43,6 +44,14 @@ const BlogComponentsRenderer = ({ components = [] }) => {
         return (
           <LinkThumbnailPreviewComponent
             key={`link-thumbnail-preview-${id || index}`}
+            data={component}
+          />
+        );
+
+      case "shared.blog-product-image-slider":
+        return (
+          <BlogProductImageSlider
+            key={`blog-product-image-slider-${id || index}`}
             data={component}
           />
         );
