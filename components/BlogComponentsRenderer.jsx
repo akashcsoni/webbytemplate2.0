@@ -39,6 +39,14 @@ const BlogComponentsRenderer = ({ components = [] }) => {
           />
         );
 
+      case "shared.link-thumbnail-preview":
+        return (
+          <LinkThumbnailPreviewComponent
+            key={`link-thumbnail-preview-${id || index}`}
+            data={component}
+          />
+        );
+
       default:
         console.warn(`Unknown component type: ${__component}`);
         return null;
@@ -329,6 +337,62 @@ const SingleBlogImageComponent = ({ data }) => {
           {image.caption}
         </p>
       )}
+    </div>
+  );
+};
+
+// Link Thumbnail Preview Component
+const LinkThumbnailPreviewComponent = ({ data }) => {
+  const { link } = data;
+
+  if (!link) return null;
+
+  // Generate thum.io thumbnail URL
+  const getThumbnailUrl = (url) => {
+    try {
+      return `https://image.thum.io/get/${url}`;
+    } catch (error) {
+      return null;
+    }
+  };
+
+  const thumbnailUrl = getThumbnailUrl(link);
+
+  return (
+    <div className="mb-6">
+      <a
+        href={link}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="block group relative overflow-hidden rounded-lg bg-white border border-primary/10 shadow-sm hover:shadow-md transition-all duration-300"
+        style={{ width: '815px', maxWidth: '100%', aspectRatio: '815/457' }}
+      >
+        {thumbnailUrl && (
+          <div className="relative w-full" style={{ aspectRatio: '815/457', height: 'auto' }}>
+            <img
+              src={thumbnailUrl}
+              alt={`Preview of ${link}`}
+              className="w-full h-full object-contain"
+              style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+              width={815}
+              height={457}
+              loading="lazy"
+              onError={(e) => {
+                // Fallback if image fails to load
+                e.target.style.display = 'none';
+              }}
+            />
+            {/* Overlay on hover */}
+            <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition-all duration-300 flex items-center justify-center">
+              <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                <div className="bg-primary px-4 py-2 rounded-md">
+                  <span className="text-white font-medium text-sm">Visit Site</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </a>
     </div>
   );
 };

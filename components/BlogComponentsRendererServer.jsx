@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import React from "react";
 import BlogFaqSection from "./BlogFaqSection";
+import LinkThumbnailPreviewServer from "./LinkThumbnailPreviewServer";
 
 const BlogComponentsRendererServer = ({ components = [] }) => {
   if (!components || components.length === 0) {
@@ -33,6 +34,14 @@ const BlogComponentsRendererServer = ({ components = [] }) => {
             key={component.list}
             list={component.list}
             type="full"
+          />
+        );
+
+      case "shared.link-thumbnail-preview":
+        return (
+          <LinkThumbnailPreviewServer
+            key={`link-thumbnail-preview-${id || index}`}
+            data={component}
           />
         );
 
