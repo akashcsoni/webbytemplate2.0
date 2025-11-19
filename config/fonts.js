@@ -6,6 +6,7 @@ export const fontSans = FontSans({
   display: "swap",
   preload: true,
   fallback: ["system-ui", "arial"],
+  adjustFontFallback: false, // Prevents network requests during build
 });
 
 export const fontMono = FontMono({
@@ -14,4 +15,5 @@ export const fontMono = FontMono({
   display: "swap",
   preload: false, // Not critical for initial render
   fallback: ["monospace"],
+  adjustFontFallback: false, // Prevents network requests during build
 });
