@@ -87,7 +87,7 @@ h2,
 
 h3,
 .h3 {
-@apply 2xl:text-2xl sm:text-[23px] text-xl font-medium 1xl:leading-[35px] sm:leading-[33px] leading-[30px];
+  @apply 2xl:text-2xl sm:text-[23px] text-xl font-medium 1xl:leading-[35px] sm:leading-[33px] leading-[30px];
 }
 
 h4,
@@ -140,7 +140,7 @@ p,
 .btn-secondary {
   @apply bg-blue-300 text-primary border border-blue-300 hover:border-primary focus:border-primary active:border-primary hover:text-white focus:text-white active:text-white hover:bg-primary focus:bg-primary active:bg-primary transition-all duration-400 ease-in-out;
 }
-.black-btn{
+.black-btn {
   @apply bg-white text-black border border-[#00193E1A] hover:text-white focus:text-white active:text-white hover:bg-primary focus:bg-primary active:bg-primary transition-all duration-400 ease-in-out;
 }
 .full_bg {
@@ -439,8 +439,6 @@ p,
   .login-skeleton {
     @apply w-[150px] 1xl:h-[40px];
   }
-
- 
 }
 @media (max-width: 1615px) {
   .author-links-content {
@@ -1110,14 +1108,14 @@ h4 {
   background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20' fill='none'><g clip-path='url(%23clip0_1668_2776)'><path opacity='0.4' fill-rule='evenodd' clip-rule='evenodd' d='M10.002 1.53876C5.32786 1.53876 1.53876 5.32786 1.53876 10.002C1.53876 14.6761 5.32786 18.4651 10.002 18.4651C14.6761 18.4651 18.4651 14.6761 18.4651 10.002C18.4651 5.32786 14.6761 1.53876 10.002 1.53876ZM0 10.002C0 4.47803 4.47803 0 10.002 0C15.526 0 20.0039 4.47803 20.0039 10.002C20.0039 15.526 15.526 20.0039 10.002 20.0039C4.47803 20.0039 0 15.526 0 10.002Z' fill='%230156D5'/><path fill-rule='evenodd' clip-rule='evenodd' d='M15.9375 6.6994L9.0131 13.6238C8.86881 13.7681 8.67311 13.8491 8.46906 13.8491C8.265 13.8491 8.06932 13.7681 7.92503 13.6238L4.07812 9.77693L5.1662 8.68887L8.46906 11.9917L14.8495 5.61133L15.9375 6.6994Z' fill='%230156D5'/></g></svg>");
 }
 .cms-content table {
-  @apply w-full border-collapse text-left 2xl:text-lg 1xl:text-[17px] sm:text-base text-[14x] 2xl:leading-[30px] sm:leading-6 leading-[19px] my-[25px]
+  @apply w-full border-collapse text-left 2xl:text-lg 1xl:text-[17px] sm:text-base text-[14x] 2xl:leading-[30px] sm:leading-6 leading-[19px] my-[25px];
 }
 
 .cms-content table th,
 .cms-content table td {
   @apply border border-black 1xl:p-[14px] sm:p-[12px] p-[10px];
 }
-.cms-content table tbody tr td{
+.cms-content table tbody tr td {
   @apply text-[#505050];
 }
 
@@ -1125,16 +1123,16 @@ h4 {
   @apply font-bold;
 }
 
-.reactstar span{
+.reactstar span {
   @apply md:!text-[37px] !text-[32px];
 }
-.cms-content a{
+.cms-content a {
   @apply text-primary hover:text-black focus:text-black active:text-black;
 }
 
 /* Custom scrollbar for a specific section */
 .scrollbar-custom::-webkit-scrollbar {
-  @apply w-[3px]; 
+  @apply w-[3px];
 }
 .scrollbar-custom::-webkit-scrollbar-thumb {
   @apply bg-primary rounded-full;
@@ -1145,142 +1143,168 @@ h4 {
 
 .product-overview h2 {
   @apply 2xl:text-2xl sm:text-[23px] text-xl font-medium 1xl:leading-[35px] sm:leading-[33px] leading-[30px];
-  }
-  
-  .product-overview ul li {
+}
+
+.product-overview ul li {
   @apply relative before:content-[''] before:absolute before:left-0 xl:pl-[30px] pl-[26px] xl:before:w-[19px] xl:before:h-[19px] lg:before:w-[18px] lg:before:h-[18px] before:w-4 before:h-4 before:bg-no-repeat before:bg-contain before:mt-[5px];
-  }
-  .product-overview ul li::before {
+}
+.product-overview ul li::before {
   background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20' fill='none'><g clip-path='url(%23clip0_1668_2776)'><path opacity='0.4' fill-rule='evenodd' clip-rule='evenodd' d='M10.002 1.53876C5.32786 1.53876 1.53876 5.32786 1.53876 10.002C1.53876 14.6761 5.32786 18.4651 10.002 18.4651C14.6761 18.4651 18.4651 14.6761 18.4651 10.002C18.4651 5.32786 14.6761 1.53876 10.002 1.53876ZM0 10.002C0 4.47803 4.47803 0 10.002 0C15.526 0 20.0039 4.47803 20.0039 10.002C20.0039 15.526 15.526 20.0039 10.002 20.0039C4.47803 20.0039 0 15.526 0 10.002Z' fill='%230156D5'/><path fill-rule='evenodd' clip-rule='evenodd' d='M15.9375 6.6994L9.0131 13.6238C8.86881 13.7681 8.67311 13.8491 8.46906 13.8491C8.265 13.8491 8.06932 13.7681 7.92503 13.6238L4.07812 9.77693L5.1662 8.68887L8.46906 11.9917L14.8495 5.61133L15.9375 6.6994Z' fill='%230156D5'/></g></svg>");
-  }
-  .product-overview ul li,
-  .product-overview ol li {
+}
+.product-overview ul li,
+.product-overview ol li {
   @apply mt-[10px] 2xl:text-lg 1xl:text-[17px] sm:text-base text-[15px] 2xl:leading-[30px] xl:leading-7 sm:leading-6 leading-[19px] text-gray-200;
-  }
-  .product-overview ul li {
+}
+.product-overview ul li {
   @apply 2xl:text-lg 1xl:text-[17px] sm:text-base text-[15px] 2xl:leading-[30px] xl:leading-7 sm:leading-6 leading-[19px] text-gray-200;
-  }
-  
-  
+}
 
 /* =================== template insights ======== */
 .single-post-header h1 {
   @apply sm:mb-5 mb-4 2xl:text-3xl xl:text-[32px] lg:text-[30px] sm:text-[28px] text-[22px] font-medium xl:leading-[45px] md:leading-[40px] sm:leading-9 leading-8;
-  }
-  .single-post-header .tags {
+}
+.single-post-header .tags {
   @apply flex items-center flex-wrap gap-[10px] lg:mb-8 mb-6;
-  }
-  .template-info {
+}
+.template-info {
   @apply flex items-center gap-5 justify-between flex-wrap w-full 1xl:py-[30px] md:py-[22px] py-[18px] border-t border-[#00193E1A];
-  }
-  .template-info div {
+}
+.template-info div {
   @apply flex items-center gap-2;
-  }
-  .single-post-header .template-info h3 {
+}
+.single-post-header .template-info h3 {
   @apply xl:text-base md:text-[15px] text-sm leading-5 text-gray-200;
-  }
-  .single-post-header .container {
+}
+.single-post-header .container {
   @apply py-5;
-  }
-  .single-blog .container {
-    @apply xl:!max-w-[1200px] mx-auto;
-    }
-    .content-grid {
-    @apply flex items-start xl:gap-[60px] gap-[50px];
-    }
-    .left-content {
-    @apply lg:w-[74%] w-full;
-    }
-    .right-content {
-    @apply  w-[36%] h-full lg:block hidden;
-    }
-    /* Text Styles */
-    .single-blog .content-grid .left-content h2 {
-    @apply 2xl:text-2xl sm:text-[23px] text-xl font-medium 1xl:leading-[35px] sm:leading-[33px] leading-[30px] 2xl:mt-[30px] 2xl:mb-[20px] xl:mt-6 xl:mb-4 mt-4 mb-[14px];
-    }
-    .single-blog .content-grid .left-content h3 {
-    @apply font-medium 2xl:text-xl 1xl:text-[19px] md:text-lg sm:text-[17px] sm:text-base text-[15px] mt-[20px] mb-[15px];
-    }
-    .single-blog .content-grid .left-content img{
-    @apply sm:py-5 py-4;
-    }
-    .single-blog .content-grid .left-content ol {
-    @apply pl-[18px];
-    list-style-type: decimal !important;
-    }
-    .single-blog .content-grid .left-content ul li {
-    @apply relative before:content-[''] before:absolute before:left-0 xl:pl-[30px] pl-[26px] xl:before:w-5 xl:before:h-5 lg:before:w-[18px] lg:before:h-[18px] before:w-4 before:h-4 before:bg-no-repeat before:bg-contain before:mt-[5px];
-    }
-    .single-blog .content-grid .left-content ul li::before {
-    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20' fill='none'><g clip-path='url(%23clip0_1668_2776)'><path opacity='0.4' fill-rule='evenodd' clip-rule='evenodd' d='M10.002 1.53876C5.32786 1.53876 1.53876 5.32786 1.53876 10.002C1.53876 14.6761 5.32786 18.4651 10.002 18.4651C14.6761 18.4651 18.4651 14.6761 18.4651 10.002C18.4651 5.32786 14.6761 1.53876 10.002 1.53876ZM0 10.002C0 4.47803 4.47803 0 10.002 0C15.526 0 20.0039 4.47803 20.0039 10.002C20.0039 15.526 15.526 20.0039 10.002 20.0039C4.47803 20.0039 0 15.526 0 10.002Z' fill='%230156D5'/><path fill-rule='evenodd' clip-rule='evenodd' d='M15.9375 6.6994L9.0131 13.6238C8.86881 13.7681 8.67311 13.8491 8.46906 13.8491C8.265 13.8491 8.06932 13.7681 7.92503 13.6238L4.07812 9.77693L5.1662 8.68887L8.46906 11.9917L14.8495 5.61133L15.9375 6.6994Z' fill='%230156D5'/></g></svg>");
-    }
-    .single-blog .content-grid .left-content p,
-    .single-blog .content-grid .left-content ul li,
-    .terms-condition p {
-    @apply mb-[10px] text-gray-200;
-    }
-    .single-blog .content-grid .left-content ul li,
-    .single-blog .content-grid .left-content ol li {
-    @apply 1xl:mt-[12px] mt-[10px] 2xl:text-lg 1xl:text-[17px] sm:text-base text-[15px] 2xl:leading-[30px] xl:leading-7 sm:leading-6 leading-[19px] text-gray-200;
-    }
-    .single-blog pre {
-      @apply bg-[#E6EFFB] !text-primary p-4 rounded-[10px] overflow-x-auto font-['Fira_Code',monospace] text-[15px] leading-[1.6] border border-[#E6EFFB];
-    }
-    .single-blog pre p {
-      @apply !text-primary
-    }
-    .insight-sticky {
-    @apply sticky top-6;
-    }
-    .insight-box h3 {
-    @apply text-xs font-semibold text-slate-500 uppercase tracking-wide mb-4;
-    }
-    .insight-main-box {
-    @apply space-y-2;
-    }
-    .insight-main-box p {
-    @apply block pl-4 xl:py-2.5 py-2 text-gray-200 border-l-2 border-blue-300 bg-white hover:text-primary transition-all ease-in-out cursor-pointer;
-    }
-    .insight-main-box p.active {
-    @apply border-primary text-primary-900;
-    }
-    .this-page-content {
-    @apply flex items-center gap-[11px] mb-4;
-    }
-    .global-icon {
-    @apply bg-primary flex items-center justify-center w-[34px] h-[34px] rounded-[7px] mb-9;
-    }
-    .logo-box {
-    @apply w-8 h-8 rounded-full overflow-hidden mb-4;
-    }
-    
-    /* Table of Contents Styles */
-    .insight-main-box p {
-    @apply block pl-4 xl:py-2.5 py-2 text-gray-200 border-l-2 border-blue-300 bg-white hover:text-primary hover:border-primary transition-all ease-in-out cursor-pointer rounded-r-md;
-    }
-    
-    .insight-main-box p:hover {
-    @apply bg-blue-50;
-    }
-    
-    .insight-main-box p.active {
-    @apply border-primary text-primary bg-blue-50;
-    }
-    
-    /* Smooth scrolling for the entire page */
-    html {
-    scroll-behavior: smooth;
-    }
+}
+.single-blog .container {
+  @apply xl:!max-w-[1200px] mx-auto;
+}
+.content-grid {
+  @apply flex items-start xl:gap-[60px] gap-[50px];
+}
+.left-content {
+  @apply lg:w-[74%] w-full;
+}
+.right-content {
+  @apply w-[36%] h-full lg:block hidden;
+}
+/* Text Styles */
+.single-blog .content-grid .left-content h2 {
+  @apply 2xl:text-2xl sm:text-[23px] text-xl font-medium 1xl:leading-[35px] sm:leading-[33px] leading-[30px] 2xl:mt-[30px] 2xl:mb-[20px] xl:mt-6 xl:mb-4 mt-4 mb-[14px];
+}
+.single-blog .content-grid .left-content h3 {
+  @apply font-medium 2xl:text-xl 1xl:text-[19px] md:text-lg sm:text-[17px] sm:text-base text-[15px] mt-[20px] mb-[15px];
+}
+.single-blog .content-grid .left-content img {
+  @apply p-4;
+}
+.single-blog .content-grid .left-content ol {
+  @apply pl-[18px];
+  list-style-type: decimal !important;
+}
+.single-blog .content-grid .left-content ul li {
+  @apply relative before:content-[''] before:absolute before:left-0 xl:pl-[30px] pl-[26px] xl:before:w-5 xl:before:h-5 lg:before:w-[18px] lg:before:h-[18px] before:w-4 before:h-4 before:bg-no-repeat before:bg-contain before:mt-[5px];
+}
+.single-blog .content-grid .left-content ul li::before {
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20' fill='none'><g clip-path='url(%23clip0_1668_2776)'><path opacity='0.4' fill-rule='evenodd' clip-rule='evenodd' d='M10.002 1.53876C5.32786 1.53876 1.53876 5.32786 1.53876 10.002C1.53876 14.6761 5.32786 18.4651 10.002 18.4651C14.6761 18.4651 18.4651 14.6761 18.4651 10.002C18.4651 5.32786 14.6761 1.53876 10.002 1.53876ZM0 10.002C0 4.47803 4.47803 0 10.002 0C15.526 0 20.0039 4.47803 20.0039 10.002C20.0039 15.526 15.526 20.0039 10.002 20.0039C4.47803 20.0039 0 15.526 0 10.002Z' fill='%230156D5'/><path fill-rule='evenodd' clip-rule='evenodd' d='M15.9375 6.6994L9.0131 13.6238C8.86881 13.7681 8.67311 13.8491 8.46906 13.8491C8.265 13.8491 8.06932 13.7681 7.92503 13.6238L4.07812 9.77693L5.1662 8.68887L8.46906 11.9917L14.8495 5.61133L15.9375 6.6994Z' fill='%230156D5'/></g></svg>");
+}
+.single-blog .content-grid .left-content p,
+.single-blog .content-grid .left-content ul li,
+.terms-condition p {
+  @apply mb-[10px] text-gray-200;
+}
+.single-blog .content-grid .left-content ul li,
+.single-blog .content-grid .left-content ol li {
+  @apply 1xl:mt-[12px] mt-[10px] 2xl:text-lg 1xl:text-[17px] sm:text-base text-[15px] 2xl:leading-[30px] xl:leading-7 sm:leading-6 leading-[19px] text-gray-200;
+}
+.single-blog pre {
+  @apply bg-[#E6EFFB] !text-primary p-4 rounded-[10px] overflow-x-auto font-['Fira_Code',monospace] text-[15px] leading-[1.6] border border-[#E6EFFB];
+}
+.single-blog pre p {
+  @apply !text-primary;
+}
+.insight-sticky {
+  @apply sticky top-6;
+}
+.insight-box h3 {
+  @apply text-xs font-semibold text-slate-500 uppercase tracking-wide mb-4;
+}
+.insight-main-box {
+  @apply space-y-2;
+}
+.insight-main-box p {
+  @apply block pl-4 xl:py-2.5 py-2 text-gray-200 border-l-2 border-blue-300 bg-white hover:text-primary transition-all ease-in-out cursor-pointer;
+}
+.insight-main-box p.active {
+  @apply border-primary text-primary-900;
+}
+.this-page-content {
+  @apply flex items-center gap-[11px] mb-4;
+}
+.global-icon {
+  @apply bg-primary flex items-center justify-center w-[34px] h-[34px] rounded-[7px] mb-9;
+}
+.logo-box {
+  @apply w-8 h-8 rounded-full overflow-hidden mb-4;
+}
 
-    .left-content a{
-      @apply text-primary border-b border-primary font-medium;
-    }
-    
-    /* Add some spacing for headings when scrolling */
-    .prose h1, .prose h2, .prose h3, .prose h4, .prose h5, .prose h6 {
-    scroll-margin-top: 80px;
-    }
-      
-    .left-content a {
-      @apply xl:w-[74%] lg:w-[68%] w-full;
-      }
+/* Table of Contents Styles */
+.insight-main-box p {
+  @apply block pl-4 xl:py-2.5 py-2 text-gray-200 border-l-2 border-blue-300 bg-white hover:text-primary hover:border-primary transition-all ease-in-out cursor-pointer rounded-r-md;
+}
+
+.insight-main-box p:hover {
+  @apply bg-blue-50;
+}
+
+.insight-main-box p.active {
+  @apply border-primary text-primary bg-blue-50;
+}
+
+/* Smooth scrolling for the entire page */
+html {
+  scroll-behavior: smooth;
+}
+
+.left-content a {
+  @apply text-primary border border-primary/10 font-medium;
+}
+
+/* Add some spacing for headings when scrolling */
+.prose h1,
+.prose h2,
+.prose h3,
+.prose h4,
+.prose h5,
+.prose h6 {
+  scroll-margin-top: 80px;
+}
+
+.left-content a {
+  @apply xl:w-[74%] lg:w-[68%] w-full;
+}
+.blog-product-swiper .swiper-button-next::after,
+.blog-product-swiper .swiper-button-prev::after{
+  @apply text-[14px] text-white;
+}
+.blog-product-swiper .swiper-button-next,
+.blog-product-swiper .swiper-button-prev{
+  @apply bg-primary rounded-full p-[14px] w-5 h-5 flex items-center justify-center;
+}
+.blog-product-swiper .swiper-pagination-bullet.swiper-pagination-bullet-active{
+  @apply bg-primary;
+}
+.blog-product-swiper .swiper-pagination{
+  @apply !bottom-[20px];
+}
+.blog-product-swiper .swiper-pagination-bullet{
+  @apply w-[8px] h-[8px];
+}
+.swiper-button-prev{
+  @apply !left-[2px];
+}
+.swiper-button-next{
+  @apply !right-[2px];
+}

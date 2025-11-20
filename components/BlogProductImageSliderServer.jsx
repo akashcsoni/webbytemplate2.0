@@ -26,7 +26,7 @@ const BlogProductImageSliderServer = ({ data }) => {
         pagination={{
           clickable: true,
         }}
-        className="!w-full blog-product-swiper"
+        className="!w-full blog-product-swiper "
       >
         {swiper.map((item, index) => {
           const image = item?.image;
@@ -56,15 +56,17 @@ const BlogProductImageSliderServer = ({ data }) => {
                   href={link}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="block group relative overflow-hidden rounded-lg !w-full"
+                  className="block group relative overflow-hidden rounded-lg !w-full bg-blue-300"
                 >
                   <div className="relative">
                     {imageElement}
                     {/* Hover Overlay */}
-                    <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition-all duration-300 flex items-center justify-center opacity-0 group-hover:opacity-100">
+                    <div className="absolute inset-0 p-4 bg-transparent transition-all duration-300 opacity-0 group-hover:opacity-100">
+                      <div className="bg-black w-full h-full bg-opacity-0 group-hover:bg-opacity-10 flex items-center justify-center">
                       <div className="bg-primary px-4 py-2 rounded-md">
                         <span className="text-white font-medium text-sm">Visit Link</span>
                       </div>
+                    </div>
                     </div>
                   </div>
                 </Link>
