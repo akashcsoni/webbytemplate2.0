@@ -221,7 +221,7 @@ export default async function HomePage() {
       "@context": "https://schema.org",
       "@type": "Organization",
       "name": "WebbyTemplate Inc.",
-      "url": baseUrl,
+      "url": `${baseUrl}/`,
       "logo": `${baseUrl}/logo/webbytemplate-logo.svg`,
       "sameAs": [
         "https://twitter.com/webbytemplate",
@@ -257,7 +257,7 @@ export default async function HomePage() {
                 },
                 "offers": {
                   "@type": "Offer",
-                  "url": `${baseUrl}/product/${review.product.slug}`,
+                  "url": `${baseUrl}/product/${review.product.slug}/`,
                   "price": "29.99",
                   "priceCurrency": "USD",
                   "availability": "https://schema.org/InStock",

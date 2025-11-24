@@ -51,7 +51,7 @@ export async function generateStaticParams() {
 export async function generateMetadata({ params }) {
     const { pageSlug, itemSlug } = await params;
     const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.webbytemplate.com';
-    const currentUrl = `${baseUrl}/${pageSlug}/${itemSlug}`;
+    const currentUrl = `${baseUrl}/${pageSlug}/${itemSlug}/`;
 
     try {
         let endpoint = `${pageSlug}/${itemSlug}`;
@@ -332,7 +332,7 @@ export default async function DynamicPage({ params, searchParams }) {
         if (pageSlug === 'product') {
             // Safe data extraction with fallbacks
             const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.webbytemplate.com';
-            const currentUrl = `${baseUrl}/${pageSlug}/${itemSlug}`;
+            const currentUrl = `${baseUrl}/${pageSlug}/${itemSlug}/`;
 
             // Generate title and description from seo_meta with fallbacks (same as metadata)
             const title = pageData?.data?.seo_meta?.title || pageData?.data?.title || itemSlug;
@@ -386,7 +386,7 @@ export default async function DynamicPage({ params, searchParams }) {
                     "brand": {
                         "@type": "Brand",
                         "name": "WebbyTemplate",
-                        "url": baseUrl
+                        "url": `${baseUrl}/`
                     },
                     "offers": offers.length > 0 ? offers : null,
                     "mainEntityOfPage": {
@@ -396,7 +396,7 @@ export default async function DynamicPage({ params, searchParams }) {
                     "publisher": {
                         "@type": "Organization",
                         "name": "WebbyTemplate",
-                        "url": baseUrl,
+                        "url": `${baseUrl}/`,
                         "logo": createImageObjectSchema(
                             `https://webbytemplate-store-com.s3.ap-south-1.amazonaws.com/image_2_74b59265ec.png`,
                             baseUrl,
@@ -441,7 +441,7 @@ export default async function DynamicPage({ params, searchParams }) {
                     productSchema.author = {
                         "@type": "Person",
                         "name": pageData.data.author.full_name || pageData.data.author.username,
-                        "url": pageData.data.author.username ? `${baseUrl}/author/${pageData.data.author.username}` : null
+                        "url": pageData.data.author.username ? `${baseUrl}/author/${pageData.data.author.username}/` : null
                     };
                 }
 
@@ -528,7 +528,7 @@ export default async function DynamicPage({ params, searchParams }) {
                         "@type": "ListItem",
                         "position": 2,
                         "name": pageData.data.categories[0].title,
-                        "item": `${baseUrl}/category/${pageData.data.categories[0].slug}`
+                        "item": `${baseUrl}/category/${pageData.data.categories[0].slug}/`
                     });
                 }
 
@@ -542,7 +542,7 @@ export default async function DynamicPage({ params, searchParams }) {
                         "@type": "ListItem",
                         "position": breadcrumbData.itemListElement.length + 1,
                         "name": pageData.data.sub_categories[0].title,
-                        "item": `${baseUrl}/category/${pageData.data.sub_categories[0].slug}`
+                        "item": `${baseUrl}/category/${pageData.data.sub_categories[0].slug}/`
                     });
                 }
 
@@ -657,7 +657,7 @@ export default async function DynamicPage({ params, searchParams }) {
 
             // Generate blog metadata and structured data
             const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.webbytemplate.com';
-            const currentUrl = `${baseUrl}/${pageSlug}/${itemSlug}`;
+            const currentUrl = `${baseUrl}/${pageSlug}/${itemSlug}/`;
 
             // Generate title and description from seo_meta with fallbacks
             const title = pageData?.data?.seo_meta?.title || pageData?.data?.title || itemSlug;
@@ -705,12 +705,12 @@ export default async function DynamicPage({ params, searchParams }) {
                     "author": {
                         "@type": "Person",
                         "name": pageData?.data?.author?.full_name || "Anonymous",
-                        "url": pageData?.data?.author?.username ? `${baseUrl}/author/${pageData.data.author.username}` : null
+                        "url": pageData?.data?.author?.username ? `${baseUrl}/author/${pageData.data.author.username}/` : null
                     },
                     "publisher": {
                         "@type": "Organization",
                         "name": "WebbyTemplate",
-                        "url": baseUrl,
+                        "url": `${baseUrl}/`,
                         "logo": createImageObjectSchema(
                             `https://webbytemplate-store-com.s3.ap-south-1.amazonaws.com/image_2_74b59265ec.png`,
                             baseUrl,
@@ -749,13 +749,13 @@ export default async function DynamicPage({ params, searchParams }) {
                             "@type": "ListItem",
                             "position": 1,
                             "name": "Home",
-                            "item": baseUrl
+                            "item": `${baseUrl}/`
                         },
                         {
                             "@type": "ListItem",
                             "position": 2,
                             "name": "Blog",
-                            "item": `${baseUrl}/blogs`
+                            "item": `${baseUrl}/blogs/`
                         },
                         {
                             "@type": "ListItem",
@@ -873,7 +873,7 @@ export default async function DynamicPage({ params, searchParams }) {
         } else if (pageSlug === 'category') {
             // Generate CollectionPage and ItemList structured data for category pages
             const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.webbytemplate.com';
-            const currentUrl = `${baseUrl}/${pageSlug}/${itemSlug}`;
+            const currentUrl = `${baseUrl}/${pageSlug}/${itemSlug}/`;
 
             // Generate title and description from seo_meta with fallbacks
             const title = pageData?.data?.seo_meta?.title || pageData?.data?.title || itemSlug;
@@ -903,20 +903,20 @@ export default async function DynamicPage({ params, searchParams }) {
                                 "@type": "ListItem",
                                 "position": 1,
                                 "name": "Home",
-                                "item": baseUrl
-                            },
-                            {
-                                "@type": "ListItem",
-                                "position": 2,
-                                "name": title,
-                                "item": currentUrl
-                            }
+                            "item": `${baseUrl}/`
+                        },
+                        {
+                            "@type": "ListItem",
+                            "position": 2,
+                            "name": title,
+                            "item": currentUrl
+                        }
                         ]
                     },
                     "publisher": {
                         "@type": "Organization",
                         "name": "WebbyTemplate",
-                        "url": baseUrl
+                        "url": `${baseUrl}/`
                     }
                 };
 
@@ -928,7 +928,7 @@ export default async function DynamicPage({ params, searchParams }) {
                         "item": {
                             "@type": "Product",
                             "name": product.title || product.name,
-                            "url": `${baseUrl}/product/${product.slug}`,
+                            "url": `${baseUrl}/product/${product.slug}/`,
                             "image": getBestCanonicalImage(
                                 product.image || product.gallery_image?.[0] || product.gallery_image,
                                 baseUrl

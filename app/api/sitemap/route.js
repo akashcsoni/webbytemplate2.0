@@ -29,7 +29,7 @@ export async function GET() {
                 productsData.data.forEach(product => {
                     if (product.slug) {
                         sitemapEntries.push({
-                            url: `${baseUrl}/product/${product.slug}`,
+                            url: `${baseUrl}/product/${product.slug}/`,
                             lastmod: product.updatedAt || currentDate,
                             changefreq: 'weekly',
                             priority: '0.7'
@@ -51,7 +51,7 @@ export async function GET() {
                 blogsData.data.forEach(blog => {
                     if (blog.slug) {
                         sitemapEntries.push({
-                            url: `${baseUrl}/blog/${blog.slug}`,
+                            url: `${baseUrl}/blog/${blog.slug}/`,
                             lastmod: blog.updatedAt || currentDate,
                             changefreq: 'weekly',
                             priority: '0.6'

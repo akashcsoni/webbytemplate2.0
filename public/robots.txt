@@ -15,7 +15,6 @@ Disallow: /checkout/
 Disallow: /_next/
 
 # Block URLs with tracking parameters (prevents duplicate content from Google tracking)
-Disallow: /*?*srsltid=*
 Disallow: /*?*gclid=*
 Disallow: /*?*fbclid=*
 Disallow: /*?*utm_*
