@@ -21,7 +21,7 @@ export async function GET() {
                 productsData.data.forEach(product => {
                     if (product.slug) {
                         sitemapEntries.push({
-                            url: `${baseUrl}/product/${product.slug}`,
+                            url: `${baseUrl}/product/${product.slug}/`,
                             lastmod: product.updatedAt || currentDate,
                             changefreq: 'weekly',
                             priority: '0.8' // Higher priority for product-specific sitemap

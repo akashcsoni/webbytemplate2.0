@@ -11,7 +11,7 @@ export async function GET() {
 
         // Add home page only
         pageEntries.push({
-            url: `${baseUrl}`,
+            url: `${baseUrl}/`,
             lastmod: currentDate,
             changefreq: 'daily',
             priority: '1.0'
@@ -75,7 +75,7 @@ export async function GET() {
                     
                     if (slug && slug !== 'home') {
                         pageEntries.push({
-                            url: `${baseUrl}/${slug}`,
+                            url: `${baseUrl}/${slug}/`,
                             lastmod: updatedAt || currentDate,
                             changefreq: 'weekly',
                             priority: '0.8'

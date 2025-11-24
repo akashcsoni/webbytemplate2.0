@@ -236,7 +236,7 @@ export default async function DynamicPage({ params, searchParams }) {
                 '@type': 'ListItem',
                 position: 1,
                 name: 'Home',
-                item: `${protocol}://${host}`
+                item: `${protocol}://${host}/`
             },
             {
                 '@type': 'ListItem',
@@ -257,7 +257,7 @@ export default async function DynamicPage({ params, searchParams }) {
                 publisher: {
                     '@type': 'Organization',
                     name: 'WebbyTemplate',
-                    url: `${protocol}://${host}`,
+                    url: `${protocol}://${host}/`,
                     logo: {
                         '@type': 'ImageObject',
                         url: 'https://webbytemplate-store-com.s3.ap-south-1.amazonaws.com/image_2_74b59265ec.png',

@@ -22,7 +22,7 @@ export async function GET() {
                     
                     if (slug) {
                         sitemapEntries.push({
-                            url: `${baseUrl}/blog/${slug}`,
+                            url: `${baseUrl}/blog/${slug}/`,
                             lastmod: updatedAt || currentDate,
                             changefreq: 'weekly',
                             priority: '0.8'

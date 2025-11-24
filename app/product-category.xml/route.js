@@ -39,11 +39,11 @@ export async function GET() {
                         
                         // Create URL based on whether parent exists
                         if (parentSlug) {
-                            // Has parent: /category/parent-slug/category-slug
-                            categoryUrl = `${baseUrl}/category/${parentSlug}/${slug}`;
+                            // Has parent: /category/parent-slug/category-slug/
+                            categoryUrl = `${baseUrl}/category/${parentSlug}/${slug}/`;
                         } else {
-                            // No parent: /category/category-slug
-                            categoryUrl = `${baseUrl}/category/${slug}`;
+                            // No parent: /category/category-slug/
+                            categoryUrl = `${baseUrl}/category/${slug}/`;
                         }
                         
                         sitemapEntries.push({
