@@ -6,7 +6,7 @@ export async function middleware(request) {
   const url = request.nextUrl.clone();
 
   // Skip all processing for static files, API routes, and Next.js internal routes
-  const hasFileExtension = pathname.match(/\.(ico|png|jpg|jpeg|gif|webp|svg|css|js|json|xml|txt|pdf|zip|woff|woff2|ttf|eot)$/);
+  const hasFileExtension = pathname.match(/\.(ico|png|jpg|jpeg|gif|webp|svg|css|js|json|xml|txt|pdf|zip|woff|woff2|ttf|eot|html)$/);
   const isApiRoute = pathname.startsWith('/api');
   const isNextInternal = pathname.startsWith('/_next');
   const isFavicon = pathname.startsWith('/favicon');
@@ -69,7 +69,7 @@ export async function middleware(request) {
     pathname.startsWith('/favicon') ||
     pathname === '/' ||
     pathname === '/blogs' ||
-    pathname.match(/\.(ico|png|jpg|jpeg|gif|webp|svg|css|js|json|xml)$/);
+    pathname.match(/\.(ico|png|jpg|jpeg|gif|webp|svg|css|js|json|xml|html)$/);
 
   // Skip slug validation for /search/ routes since search queries can contain spaces and special characters
   // Handle both with and without trailing slash
@@ -254,6 +254,6 @@ export async function middleware(request) {
 
 export const config = {
   matcher: [
-    "/((?!api|_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
+    "/((?!api|_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|html)$).*)",
   ],
 };
