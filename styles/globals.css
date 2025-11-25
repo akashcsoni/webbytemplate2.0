@@ -1123,6 +1123,99 @@ h4 {
   @apply font-bold;
 }
 
+/* Blog Components Table Styles */
+.blog-components table {
+  @apply w-full border-collapse text-left 2xl:text-lg 1xl:text-[17px] sm:text-base text-sm 2xl:leading-[30px] sm:leading-6 leading-[19px] my-6 rounded-lg overflow-hidden shadow-sm;
+  border: 1px solid #0043A2;
+}
+
+.blog-components table a {
+  @apply !w-full;
+}
+
+.blog-components table thead {
+  @apply bg-primary;
+}
+
+.blog-components table thead th {
+  @apply font-semibold text-white 1xl:p-4 sm:p-3 p-2.5 text-left border-r border-white/20;
+}
+
+.blog-components table thead th:first-child {
+  @apply border-l-0;
+}
+
+.blog-components table thead th:last-child {
+  @apply border-r-0;
+}
+
+.blog-components table thead tr:first-child th {
+  @apply border-t-0;
+}
+
+.blog-components table tbody tr {
+  @apply border-b border-primary/20 transition-colors hover:bg-blue-300/30;
+}
+
+.blog-components table tbody tr:last-child {
+  @apply border-b-0;
+}
+
+.blog-components table tbody td {
+  @apply text-gray-200 1xl:p-4 sm:p-3 p-2.5 border-r border-primary/20;
+}
+
+.blog-components table tbody td:first-child {
+  @apply border-l-0;
+}
+
+.blog-components table tbody td:last-child {
+  @apply border-r-0;
+}
+
+.blog-components table tbody tr:first-child td {
+  @apply border-t-0;
+}
+
+.blog-components table tbody tr:nth-child(even) {
+  @apply bg-blue-300/10;
+}
+
+/* Anchor tag button styling inside table cells */
+.blog-components table tbody tr td a {
+  @apply inline-block bg-primary text-white font-medium 1xl:px-4 sm:px-3 px-2.5 1xl:py-2 sm:py-1.5 py-1 rounded-[5px] border border-primary hover:bg-white hover:text-primary focus:bg-white focus:text-primary active:bg-white active:text-primary transition-all duration-300 ease-in-out text-center no-underline;
+}
+
+.blog-components table tbody tr td a:hover,
+.blog-components table tbody tr td a:focus,
+.blog-components table tbody tr td a:active {
+  @apply no-underline;
+}
+
+/* Responsive table wrapper */
+.blog-components .table-wrapper {
+  @apply overflow-x-auto -mx-4 sm:mx-0;
+}
+
+.blog-components .table-wrapper table {
+  @apply min-w-full;
+}
+
+@media (max-width: 640px) {
+  .blog-components .table-wrapper {
+    @apply mx-0;
+  }
+  
+  .blog-components table {
+    @apply text-xs;
+  }
+  
+  .blog-components table thead th,
+  .blog-components table tbody td {
+    @apply p-2;
+  }
+}
+
 .reactstar span {
   @apply md:!text-[37px] !text-[32px];
 }
