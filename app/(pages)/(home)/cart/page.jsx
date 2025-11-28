@@ -125,7 +125,7 @@ export default function Page() {
                     <div className="flex-1 sm:w-auto w-full">
                       <div className="flex justify-between items-start sm:flex-nowrap flex-wrap">
                         <h5 className="xl:w-[350px] w-[300px] sm:mb-[11px] mb-1 hover:text-primary">
-                          <Link href={`product/${item?.product?.slug}`}>
+                          <Link href={`/product/${item?.product?.slug}`}>
                             {item?.product?.title}
                           </Link>
                         </h5>

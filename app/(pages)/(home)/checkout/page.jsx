@@ -1281,7 +1281,7 @@ export default function CheckoutPage() {
                   className="flex justify-between py-1 1xl:gap-20 xl:gap-12 gap-4"
                 >
                   <span className="p2 hover:text-primary">
-                    <Link href={`product/${item?.product?.slug}`}>
+                    <Link href={`/product/${item?.product?.slug}`}>
                       {item?.product?.title}
                     </Link>
                   </span>
