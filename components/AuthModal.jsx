@@ -1515,7 +1515,7 @@ export default function AuthModal() {
 
     if (isEmail) {
       payload = {
-        email: inputValue.trim(),
+        email: inputValue.trim().toLowerCase(),
         type: "email",
       };
     } else {
@@ -1599,7 +1599,7 @@ export default function AuthModal() {
         onClose={closeAuth}
         identifier={
           inputMode === "email"
-            ? inputValue
+            ? inputValue.toLowerCase()
             : `${selectedCountry.code}${inputValue}`
         }
         type={inputMode === "email" ? "email" : "mobile"}
