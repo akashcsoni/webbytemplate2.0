@@ -126,17 +126,20 @@ p,
 }
 
 .btn-primary {
-  @apply bg-primary text-white border border-primary hover:text-primary focus:text-primary active:text-primary hover:bg-white focus:bg-white active:bg-white transition-all duration-400 ease-in-out;
+  @apply !bg-primary !text-white border !border-primary hover:!text-primary focus:!text-primary active:!text-primary hover:!bg-white focus:!bg-white active:!bg-white transition-all duration-400 ease-in-out;
 }
 
 .btn-primary-reverse {
-  @apply bg-white text-primary border border-white hover:text-white focus:text-white active:text-white hover:bg-primary focus:bg-primary active:bg-primary transition-all duration-400 ease-in-out;
+  @apply !bg-white !text-primary border !border-white hover:!text-white focus:!text-white active:!text-white hover:!bg-primary focus:!bg-primary active:!bg-primary transition-all duration-400 ease-in-out;
 }
 
 .btn-secondary-reverse {
   @apply bg-white text-primary hover:text-black focus:text-black active:text-black transition-all duration-400 ease-in-out;
 }
 
+.btn-new {
+  @apply !bg-white !text-primary border !border-blue-300 hover:!border-primary focus:!border-primary active:!border-primary hover:!text-white focus:!text-white active:!text-white hover:!bg-primary focus:!bg-primary active:!bg-primary transition-all duration-400 ease-in-out;
+}
 .btn-secondary {
   @apply bg-blue-300 text-primary border border-blue-300 hover:border-primary focus:border-primary active:border-primary hover:text-white focus:text-white active:text-white hover:bg-primary focus:bg-primary active:bg-primary transition-all duration-400 ease-in-out;
 }

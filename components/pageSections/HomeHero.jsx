@@ -17,6 +17,18 @@ export default function HomeHero({
   skipHeading = false // Skip h1 if already rendered server-side for LCP
 }) {
 
+  console.log("HomeHero component props:", {
+    title,
+    description,
+    tags,
+    categories,
+    isLoading,
+    with_description,
+    alignment,
+    with_search,
+    with_tags,
+    skipHeading
+  });
 
   const router = useRouter()
   const [searchTerm, setSearchTerm] = useState('')
@@ -89,7 +101,6 @@ export default function HomeHero({
       </div>
     );
   }
-
 
   if (!title || !description) {
     return (
