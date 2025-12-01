@@ -5,17 +5,17 @@ import React from 'react'
 const BlogGrid = ({ blog }) => {
     // Safe data extraction with comprehensive fallbacks
     const blogData = blog || {};
-    
+
     // Safe date formatting with error handling
     const formatDate = (dateString) => {
         try {
             if (!dateString) return "Recently";
             const date = new Date(dateString);
             if (isNaN(date.getTime())) return "Recently";
-            return date.toLocaleDateString('en-US', { 
-                month: 'short', 
-                day: 'numeric', 
-                year: 'numeric' 
+            return date.toLocaleDateString('en-US', {
+                month: 'short',
+                day: 'numeric',
+                year: 'numeric'
             });
         } catch (error) {
             console.warn('Date formatting error:', error);
@@ -115,7 +115,9 @@ const BlogGrid = ({ blog }) => {
                         </div>
                     )}
                     <h2 className="1xl:mb-4 lg:mb-3 mb-[10px] h5 line-clamp-2">
-                        {getTitle()}
+                        <Link href={getSlug() ? `/blog/${getSlug()}` : "#"} className="hover:text-[#0156d5]">
+                            {getTitle()}
+                        </Link>
                     </h2>
                     <div className="flex items-center gap-[10px]">
                         <div className="1xl:w-8 1xl:h-8 lg:w-[30px] lg:h-[30px] w-7 h-7 rounded-full overflow-hidden">
