@@ -775,7 +775,7 @@ const SearchPageContent = ({ slug }) => {
           if (data && Array.isArray(data)) {
             const shuffledData = data.sort(() => Math.random() - 0.5);
             setfilteredProducts(shuffledData);
-            setTotalProducts(data.length);
+            setTotalProducts(pagination.total || 0);
             setPagination(pagination);
 
             const updatedFilterData = safeUpdateFilterData(
