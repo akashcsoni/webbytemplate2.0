@@ -70,6 +70,11 @@ const profileSetting = ({ title, sub_title, form, image, button }) => {
     setCountrySearchTerm("");
     handleFieldChange("country", countryName);
     handleFieldChange("state", ""); // Reset state in form values
+    // Clear phone validation error when country changes
+    setValidationErrors((prevErrors) => ({
+      ...prevErrors,
+      phone_no: "",
+    }));
   };
 
   const handleStateSelect = (stateName, e) => {
@@ -204,7 +209,28 @@ const profileSetting = ({ title, sub_title, form, image, button }) => {
       }
     } catch (error) {
       console.error("Update error:", error);
-      toast.error("User update failed!");
+      // Extract error message from API response
+      let errorMessage = "User update failed!";
+      
+      if (error.response) {
+        // Strapi error format: error.response.data.error.message
+        if (error.response.data?.error?.message) {
+          errorMessage = error.response.data.error.message;
+        } 
+        // Alternative format: error.response.data.message
+        else if (error.response.data?.message) {
+          errorMessage = error.response.data.message;
+        }
+        // Check for validation errors array
+        else if (error.response.data?.error?.details?.errors) {
+          const validationErrors = error.response.data.error.details.errors;
+          errorMessage = validationErrors.map(err => err.message).join(", ");
+        }
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      
+      toast.error(errorMessage);
     } finally {
       setFromSaveLoading(false);
     }
@@ -318,7 +344,7 @@ const profileSetting = ({ title, sub_title, form, image, button }) => {
       placeholder: "Enter email address",
       type: "email",
       html: "input",
-      readOnly: true,
+      readOnly: false,
       description: "Valid email format required",
       validation: { required: "Email is required" },
       rules: ["required"],
@@ -484,26 +510,33 @@ const profileSetting = ({ title, sub_title, form, image, button }) => {
           ? countries.find((c) => c.name === selectedCountry)
           : selectedCountry;
 
-      if (countryObj && countryObj.phonePattern) {
-        const phoneRegex = new RegExp(countryObj.phonePattern);
-        if (!phoneRegex.test(formValues.phone_no)) {
-          if (!errors.phone_no) errors.phone_no = [];
-          errors.phone_no.push(
-            `Invalid phone number format for ${countryObj.name}`
-          );
-          isValid = false;
-        }
-      } else if (countryObj && countryObj.phoneLength) {
-        const phoneLength = formValues.phone_no.replace(/\D/g, "").length;
-        const validLengths = Array.isArray(countryObj.phoneLength)
-          ? countryObj.phoneLength
-          : [countryObj.phoneLength];
-        if (!validLengths.includes(phoneLength)) {
-          if (!errors.phone_no) errors.phone_no = [];
-          errors.phone_no.push(
-            `Phone number should be ${validLengths.join(" or ")} digits for ${countryObj.name}`
-          );
-          isValid = false;
+      if (countryObj) {
+        // Strip any dial code (from any country) and clean the phone number for validation
+        // This handles cases where country is changed but phone still has old dial code
+        let cleanPhone = stripDialCode(formValues.phone_no);
+        // Remove any remaining non-digit characters (spaces, dashes, etc.)
+        cleanPhone = cleanPhone.replace(/\D/g, "");
+
+        if (countryObj.phonePattern) {
+          const phoneRegex = new RegExp(countryObj.phonePattern);
+          if (!phoneRegex.test(cleanPhone)) {
+            if (!errors.phone_no) errors.phone_no = [];
+            errors.phone_no.push(
+              `Invalid phone number format for ${countryObj.name} Expected format: ${countryObj.phoneLength?.join(" or ") || "10"} digits`
+            );
+            isValid = false;
+          }
+        } else if (countryObj.phoneLength) {
+          const validLengths = Array.isArray(countryObj.phoneLength)
+            ? countryObj.phoneLength
+            : [countryObj.phoneLength];
+          if (!validLengths.includes(cleanPhone.length)) {
+            if (!errors.phone_no) errors.phone_no = [];
+            errors.phone_no.push(
+              `Invalid phone number format for ${countryObj.name} Expected format: ${validLengths.join(" or ")} digits`
+            );
+            isValid = false;
+          }
         }
       }
     }
