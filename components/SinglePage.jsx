@@ -50,6 +50,8 @@ export default function SinglePage({ pageData }) {
   const { addToWishlist, wishlistItems } = useWishlist();
   const [wishlistLoading, setWishlistLoading] = useState(false);
   const [showAllFeatures, setShowAllFeatures] = useState(false);
+  const hasFeatures =
+    Array.isArray(pageData?.features) && pageData.features.length > 0;
 
   // Scroll to top when component mounts or pageData changes
   useEffect(() => {
@@ -1003,69 +1005,64 @@ export default function SinglePage({ pageData }) {
                 </div>
               </div>
 
-              {/* Features Section - Always render for SEO */}
-              <div className="sm:py-4 py-3">
-                <h2 className="font-medium border-b border-primary/10 sm:pb-[18px] pb-3 text-[20px]">
-                  Template Features:
-                </h2>
-                <div className="space-y-0">
-                  {pageData?.features && pageData?.features.length > 0 ? (
-                    <>
-                      {/* Render ALL features for SEO - all visible in HTML source */}
-                      {pageData.features.map((feature, index) => (
-                        <div
-                          key={index}
-                          className={`border-b border-primary/10 py-3 ${index >= 5 && !showAllFeatures ? "hidden" : ""}`}
-                        >
-                          <FeatureItem text={feature.title} />
-                        </div>
-                      ))}
-                      {pageData.features.length > 5 && (
-                        <button
-                          onClick={() => setShowAllFeatures(!showAllFeatures)}
-                          className="!mt-3 text-primary hover:text-primary/80 text-sm font-medium flex items-center gap-1 transition-colors"
-                        >
-                          {showAllFeatures ? (
-                            <>
-                              <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                                strokeWidth="2"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                className="w-4 h-4"
-                              >
-                                <polyline points="6 15 12 9 18 15" />
-                              </svg>
-                              Show Less
-                            </>
-                          ) : (
-                            <>
-                              <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                                strokeWidth="2"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                className="w-4 h-4"
-                              >
-                                <polyline points="6 9 12 15 18 9" />
-                              </svg>
-                              Show All ({pageData.features.length})
-                            </>
-                          )}
-                        </button>
-                      )}
-                    </>
-                  ) : (
-                    <span className="text-gray-500">No features available</span>
-                  )}
+              {/* Features Section - render only when provided */}
+              {hasFeatures && (
+                <div className="sm:py-4 py-3">
+                  <h2 className="font-medium border-b border-primary/10 sm:pb-[18px] pb-3 text-[20px]">
+                    Template Features:
+                  </h2>
+                  <div className="space-y-0">
+                    {pageData.features.map((feature, index) => (
+                      <div
+                        key={index}
+                        className={`border-b border-primary/10 py-3 ${index >= 5 && !showAllFeatures ? "hidden" : ""}`}
+                      >
+                        <FeatureItem text={feature.title} />
+                      </div>
+                    ))}
+                    {pageData.features.length > 5 && (
+                      <button
+                        onClick={() => setShowAllFeatures(!showAllFeatures)}
+                        className="!mt-3 text-primary hover:text-primary/80 text-sm font-medium flex items-center gap-1 transition-colors"
+                      >
+                        {showAllFeatures ? (
+                          <>
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              className="w-4 h-4"
+                            >
+                              <polyline points="6 15 12 9 18 15" />
+                            </svg>
+                            Show Less
+                          </>
+                        ) : (
+                          <>
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              className="w-4 h-4"
+                            >
+                              <polyline points="6 9 12 15 18 9" />
+                            </svg>
+                            Show All ({pageData.features.length})
+                          </>
+                        )}
+                      </button>
+                    )}
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
           </div>
 
