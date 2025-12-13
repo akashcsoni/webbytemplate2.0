@@ -1411,6 +1411,8 @@ export default function AuthModal() {
   });
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const inputRef = useRef(null);
+  const prevInputModeRef = useRef("");
+  const isModeChangingRef = useRef(false);
 
   const isValidEmail = useCallback((email) => {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -1451,26 +1453,66 @@ export default function AuthModal() {
 
   const handleInputChange = (e) => {
     const rawValue = e.target.value;
+    const previousMode = inputMode;
+    let newMode = inputMode;
+    const wasFocused = e.target === document.activeElement;
+    const cursorPosition = e.target.selectionStart || rawValue.length;
 
     // Clear error when user starts typing
     if (error) setError("");
 
     // Determine input mode based on content
+    // Priority: Check for email indicators first (letters or @ symbol)
     if (rawValue.includes("@") || /[a-zA-Z]/.test(rawValue)) {
+      newMode = "email";
       setInputMode("email");
       setInputValue(rawValue);
     } else if (rawValue === "") {
+      newMode = "";
       setInputMode("");
       setInputValue("");
     } else if (/^\d+$/.test(rawValue)) {
+      // Only digits - mobile mode
+      newMode = "mobile";
       setInputMode("mobile");
       setInputValue(rawValue);
-    } else if (inputMode === "mobile") {
-      // Prevent non-digit characters in mobile mode
-      return;
     } else {
-      setInputMode("");
+      // Mixed characters or other - default to email mode
+      newMode = "email";
+      setInputMode("email");
       setInputValue(rawValue);
+    }
+
+    // If mode changed and input was focused, ensure it stays focused after re-render
+    if (previousMode !== newMode && wasFocused) {
+      isModeChangingRef.current = true;
+      // Use multiple animation frames to ensure DOM is updated
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          if (inputRef.current) {
+            inputRef.current.focus();
+            // Restore cursor position
+            const newCursorPos = Math.min(cursorPosition, rawValue.length);
+            inputRef.current.setSelectionRange(newCursorPos, newCursorPos);
+          }
+          // Reset flag after focus is restored
+          setTimeout(() => {
+            isModeChangingRef.current = false;
+          }, 100);
+        });
+      });
+    }
+  };
+
+  const handleInputBlur = (e) => {
+    // If we're in the middle of a mode change, prevent blur and refocus
+    if (isModeChangingRef.current && inputRef.current) {
+      e.preventDefault();
+      setTimeout(() => {
+        if (inputRef.current) {
+          inputRef.current.focus();
+        }
+      }, 0);
     }
   };
 
@@ -1539,7 +1581,7 @@ export default function AuthModal() {
 
 
       if (response?.message) {
-        setSuccessMessage("OTP has been sent.");
+        setSuccessMessage("Code has been sent.");
         setTimeout(() => {
           switchToOtp(isEmail ? payload.email : payload.mobile);
           setSuccessMessage("");
@@ -1563,23 +1605,29 @@ export default function AuthModal() {
     if (e.key === "Enter") {
       handleSubmit();
     }
-    // Prevent typing non-digits in mobile mode
+    // Allow letters and @ symbol to enable switching from mobile to email mode
+    // Only prevent special characters (not letters, digits, or @)
     if (
       inputMode === "mobile" &&
-      !/[\d]|Backspace|Delete|ArrowLeft|ArrowRight|Tab/.test(e.key)
+      !/[\d@a-zA-Z]|Backspace|Delete|ArrowLeft|ArrowRight|Tab/.test(e.key)
     ) {
       e.preventDefault();
     }
   };
 
-  // Focus input when switching to mobile mode
+
+  // Focus input when modal opens
   useEffect(() => {
-    if (inputMode === "mobile" && inputRef.current) {
-      setTimeout(() => {
-        inputRef.current?.focus();
-      }, 50);
+    if (isAuthOpen && inputRef.current) {
+      // Small delay to ensure modal is fully rendered
+      const timeoutId = setTimeout(() => {
+        if (inputRef.current) {
+          inputRef.current.focus();
+        }
+      }, 100);
+      return () => clearTimeout(timeoutId);
     }
-  }, [inputMode]);
+  }, [isAuthOpen]);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -1594,7 +1642,7 @@ export default function AuthModal() {
 
   if (authMode === "otp") {
     return (
-      <OtpModal
+      <CodeModal
         isOpen={isAuthOpen}
         onClose={closeAuth}
         identifier={
@@ -1623,6 +1671,7 @@ export default function AuthModal() {
                 onClick={onClose}
                 className="cursor-pointer p-1 hover:bg-gray-100 rounded-full transition-colors"
                 aria-label="Close modal"
+                tabIndex={-1}
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -1646,9 +1695,8 @@ export default function AuthModal() {
               </p>
               {inputMode === "mobile" ? (
                 <div
-                  className={`flex items-center border ${
-                    error ? "border-red-500" : "border-gray-200"
-                  } rounded-md py-[11px] px-2 relative country-dropdown`}
+                  className={`flex items-center border ${error ? "border-red-500" : "border-gray-200"
+                    } rounded-md py-[11px] px-2 relative country-dropdown`}
                 >
                   <div className="z-10">
                     <button
@@ -1667,9 +1715,8 @@ export default function AuthModal() {
                         height="11"
                         viewBox="0 0 9 11"
                         fill="none"
-                        className={`ml-2 transition-transform duration-300 flex-shrink-0 ${
-                          isDropdownOpen ? "rotate-0" : "rotate-180"
-                        }`}
+                        className={`ml-2 transition-transform duration-300 flex-shrink-0 ${isDropdownOpen ? "rotate-0" : "rotate-180"
+                          }`}
                       >
                         <path
                           d="M4.1612 2.31217C4.35263 2.13578 4.64737 2.13578 4.8388 2.31217L8.8388 5.9977C8.94155 6.09237 9 6.22571 9 6.36541V6.85679C9 7.29285 8.48076 7.51995 8.16057 7.22393L4.83943 4.15343C4.64781 3.97628 4.35219 3.97628 4.16057 4.15343L0.839427 7.22393C0.519237 7.51995 0 7.29285 0 6.85679V6.36541C0 6.22571 0.0584515 6.09237 0.161196 5.9977L4.1612 2.31217Z"
@@ -1683,11 +1730,10 @@ export default function AuthModal() {
                           <li
                             key={country.short_name}
                             onClick={() => selectCountry(country)}
-                            className={`cursor-pointer px-4 py-2 text-sm font-normal text-[#505050] hover:bg-gray-100 transition-colors ${
-                              selectedCountry.code === country.code
+                            className={`cursor-pointer px-4 py-2 text-sm font-normal text-[#505050] hover:bg-gray-100 transition-colors ${selectedCountry.code === country.code
                                 ? "bg-primary text-white hover:bg-primary"
                                 : ""
-                            }`}
+                              }`}
                           >
                             {country.name} {country.code}
                           </li>
@@ -1703,15 +1749,16 @@ export default function AuthModal() {
                     value={inputValue}
                     onChange={handleInputChange}
                     onKeyDown={handleKeyDown}
+                    onBlur={handleInputBlur}
+                    onFocus={(e) => e.target.focus()}
                     className="h-full w-full text-sm text-black placeholder:text-gray-400 px-2 mb-0.5 rounded-[5px] outline-none"
                     aria-label="Mobile number"
                   />
                 </div>
               ) : (
                 <div
-                  className={`flex items-center border ${
-                    error ? "border-red-500" : "border-gray-200"
-                  } rounded-md py-[11px] px-2`}
+                  className={`flex items-center border ${error ? "border-red-500" : "border-gray-200"
+                    } rounded-md py-[11px] px-2`}
                 >
                   <input
                     ref={inputRef}
@@ -1720,6 +1767,8 @@ export default function AuthModal() {
                     value={inputValue}
                     onChange={handleInputChange}
                     onKeyDown={handleKeyDown}
+                    onBlur={handleInputBlur}
+                    onFocus={(e) => e.target.focus()}
                     className="h-full w-full text-sm text-black placeholder:text-gray-400 px-2 mb-0.5 rounded-[5px] outline-none"
                     aria-label="Email or mobile number"
                   />
@@ -1727,8 +1776,20 @@ export default function AuthModal() {
               )}
 
               {error && (
-                <div className="mt-2 text-red-500 text-sm" role="alert">
-                  {error}
+                <div className="mt-2 text-red-500 text-sm flex items-center gap-2" role="alert">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-5 w-5 flex-shrink-0"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                  <span>{error}</span>
                 </div>
               )}
 
@@ -1785,19 +1846,25 @@ export default function AuthModal() {
   );
 }
 
-function OtpModal({ isOpen, onClose, identifier, type }) {
+function CodeModal({ isOpen, onClose, identifier, type }) {
   const { login } = useAuth();
-  const [otpValues, setOtpValues] = useState(["", "", "", "", "", ""]);
+  const [codeValues, setCodeValues] = useState(["", "", "", "", "", ""]);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [otpError, setOtpError] = useState("");
+  const [codeError, setCodeError] = useState("");
   const [resendMessage, setResendMessage] = useState("");
   const [resendCooldown, setResendCooldown] = useState(0);
   const firstInputRef = useRef(null);
+  const hasAutoSubmittedRef = useRef(false);
+  const lastSubmittedCodeRef = useRef("");
 
-  // Focus first input when modal opens
+  // Focus first input when modal opens and reset auto-submit flag
   useEffect(() => {
-    if (isOpen && firstInputRef.current) {
-      setTimeout(() => firstInputRef.current?.focus(), 100);
+    if (isOpen) {
+      hasAutoSubmittedRef.current = false;
+      lastSubmittedCodeRef.current = "";
+      if (firstInputRef.current) {
+        setTimeout(() => firstInputRef.current?.focus(), 100);
+      }
     }
   }, [isOpen]);
 
@@ -1818,27 +1885,77 @@ function OtpModal({ isOpen, onClose, identifier, type }) {
     return () => clearInterval(timer);
   }, [resendCooldown]);
 
-  const handleOtpChange = (index, value) => {
+  // Auto-submit when all 6 digits are filled and valid
+  useEffect(() => {
+    const isComplete = codeValues.every((val) => val && /^\d$/.test(val));
+    const allFilled = codeValues.length === 6 && isComplete;
+    const currentCode = codeValues.join("");
+
+    // Reset auto-submit flag when code values are cleared (e.g., on resend)
+    if (codeValues.every((val) => !val)) {
+      hasAutoSubmittedRef.current = false;
+      lastSubmittedCodeRef.current = "";
+      return;
+    }
+
+    // Only auto-submit if:
+    // 1. All 6 digits are filled and valid
+    // 2. Not currently submitting
+    // 3. Haven't already auto-submitted this exact code
+    // 4. The current code is different from the last submitted one
+    if (
+      allFilled &&
+      !isSubmitting &&
+      !hasAutoSubmittedRef.current &&
+      currentCode !== lastSubmittedCodeRef.current
+    ) {
+      hasAutoSubmittedRef.current = true;
+      lastSubmittedCodeRef.current = currentCode;
+      // Small delay to ensure UI updates
+      setTimeout(() => {
+        // Double-check the code is still valid before submitting
+        const codeString = codeValues.join("");
+        if (
+          codeString.length === 6 &&
+          codeValues.every((val) => val && /^\d$/.test(val))
+        ) {
+          handleSubmit();
+        } else {
+          hasAutoSubmittedRef.current = false;
+          lastSubmittedCodeRef.current = "";
+        }
+      }, 100);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [codeValues, isSubmitting]);
+
+  const handleCodeChange = (index, value) => {
     // Only allow digits
     if (value && !/^\d$/.test(value)) return;
 
-    const newOtpValues = [...otpValues];
-    newOtpValues[index] = value;
-    setOtpValues(newOtpValues);
+    const newCodeValues = [...codeValues];
+    newCodeValues[index] = value;
+    setCodeValues(newCodeValues);
 
     // Clear error when user starts typing
-    if (otpError) setOtpError("");
+    if (codeError) setCodeError("");
+
+    // Reset auto-submit flag when user edits code (allows re-submission of new code)
+    const newCode = newCodeValues.join("");
+    if (newCode !== lastSubmittedCodeRef.current) {
+      hasAutoSubmittedRef.current = false;
+    }
 
     // Auto-focus next input
     if (value && index < 5) {
-      const nextInput = document.querySelector(`input[name=otp-${index + 1}]`);
+      const nextInput = document.querySelector(`input[name=code-${index + 1}]`);
       if (nextInput) nextInput.focus();
     }
   };
 
   const handleKeyDown = (index, e) => {
-    if (e.key === "Backspace" && !otpValues[index] && index > 0) {
-      const prevInput = document.querySelector(`input[name=otp-${index - 1}]`);
+    if (e.key === "Backspace" && !codeValues[index] && index > 0) {
+      const prevInput = document.querySelector(`input[name=code-${index - 1}]`);
       if (prevInput) prevInput.focus();
     }
 
@@ -1854,27 +1971,33 @@ function OtpModal({ isOpen, onClose, identifier, type }) {
       .trim()
       .replace(/\D/g, "");
 
-    const newOtpValues = [...otpValues];
+    const newCodeValues = [...codeValues];
     for (let i = 0; i < Math.min(numbersOnly.length, 6); i++) {
-      newOtpValues[i] = numbersOnly[i];
+      newCodeValues[i] = numbersOnly[i];
     }
-    setOtpValues(newOtpValues);
+    setCodeValues(newCodeValues);
+
+    // Reset auto-submit flag when user pastes new code
+    const newCode = newCodeValues.join("");
+    if (newCode !== lastSubmittedCodeRef.current) {
+      hasAutoSubmittedRef.current = false;
+    }
 
     // Focus next empty input or last input
-    const nextEmptyIndex = newOtpValues.findIndex((val) => !val);
+    const nextEmptyIndex = newCodeValues.findIndex((val) => !val);
     const targetIndex = nextEmptyIndex !== -1 ? nextEmptyIndex : 5;
-    const target = document.querySelector(`input[name=otp-${targetIndex}]`);
+    const target = document.querySelector(`input[name=code-${targetIndex}]`);
     if (target) target.focus();
   };
 
-  const validateOtp = () => {
-    if (otpValues.some((val) => !val)) {
-      setOtpError("Please enter the complete 6-digit OTP");
+  const validateCode = () => {
+    if (codeValues.some((val) => !val)) {
+      setCodeError("Please enter the complete 6-digit code");
       return false;
     }
 
-    if (otpValues.some((val) => !/^\d$/.test(val))) {
-      setOtpError("OTP must contain only numbers");
+    if (codeValues.some((val) => !/^\d$/.test(val))) {
+      setCodeError("Code must contain only numbers");
       return false;
     }
 
@@ -1883,7 +2006,11 @@ function OtpModal({ isOpen, onClose, identifier, type }) {
 
   const handleSubmit = async () => {
     setResendMessage("");
-    if (!validateOtp()) return;
+    if (!validateCode()) {
+      // Don't reset hasAutoSubmittedRef here - let it stay true to prevent re-submission
+      // The flag will be reset when user changes the code
+      return;
+    }
 
     setIsSubmitting(true);
     const cart_id = Cookies.get("cart_id");
@@ -1895,7 +2022,7 @@ function OtpModal({ isOpen, onClose, identifier, type }) {
         {
           [type === "email" ? "email" : "mobile"]: identifier,
           type: type,
-          otp: otpValues.join(""),
+          otp: codeValues.join(""),
           cart_id: cart_id,
           wishlist_id: wishlist_id,
         },
@@ -1933,23 +2060,29 @@ function OtpModal({ isOpen, onClose, identifier, type }) {
           throw new Error("Failed to set authentication cookies");
         }
       } else {
-        setOtpError("Invalid OTP. Please try again.");
+        setCodeError("Invalid code. Please try again.");
+        // Don't reset hasAutoSubmittedRef on error - prevents re-submission of same invalid code
+        // User must change the code to trigger a new submission
       }
     } catch (error) {
-      setOtpError(
+      setCodeError(
         error?.response?.data?.error?.message ||
-          "An error occurred. Please try again later."
+        "An error occurred. Please try again later."
       );
+      // Don't reset hasAutoSubmittedRef on error - prevents re-submission of same invalid code
+      // User must change the code to trigger a new submission
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const handleResendOtp = async () => {
+  const handleResendCode = async () => {
     if (resendCooldown > 0) return;
 
     setResendMessage("");
-    setOtpValues(["", "", "", "", "", ""]);
+    setCodeValues(["", "", "", "", "", ""]);
+    hasAutoSubmittedRef.current = false;
+    lastSubmittedCodeRef.current = "";
 
     try {
       const payload =
@@ -1959,11 +2092,18 @@ function OtpModal({ isOpen, onClose, identifier, type }) {
 
       await strapiPost("login-register-user", payload, themeConfig.TOKEN);
 
-      setResendMessage("OTP has been resent successfully.");
-      setOtpError("");
+      // setResendMessage("Code has been resent successfully.");
+      setCodeError("");
       setResendCooldown(30); // 30 second cooldown
+      
+      // Focus the first OTP input box after resending
+      setTimeout(() => {
+        if (firstInputRef.current) {
+          firstInputRef.current.focus();
+        }
+      }, 100);
     } catch (error) {
-      setOtpError("Failed to resend OTP. Please try again.");
+      setCodeError("Failed to resend code. Please try again.");
       setResendMessage("");
     }
 
@@ -2006,7 +2146,7 @@ function OtpModal({ isOpen, onClose, identifier, type }) {
         {(onClose) => (
           <>
             <ModalHeader className="p-0 text-2xl font-bold gap-1 flex items-center justify-between w-full mb-[10px]">
-              OTP Verification
+              Welcome to WebbyTemplate
               <button
                 onClick={onClose}
                 className="cursor-pointer p-1 hover:bg-gray-100 rounded-full transition-colors"
@@ -2031,9 +2171,9 @@ function OtpModal({ isOpen, onClose, identifier, type }) {
               <p className="text-gray-600 sm:mb-[30px] mb-5">
                 {identifier ? (
                   <>
-                    We have sent a code to{" "}
-                    <span className="font-medium">
-                    {isNaN(identifier) ? maskIdentifier(identifier) : `+${maskIdentifier(identifier)}`}
+                    Enter the code sent to{" "}
+                    <span className="font-bold">
+                      {isNaN(identifier) ? maskIdentifier(identifier) : `+${maskIdentifier(identifier)}`}
                     </span>
                   </>
                 ) : (
@@ -2041,31 +2181,46 @@ function OtpModal({ isOpen, onClose, identifier, type }) {
                 )}
               </p>
 
-              <div className="flex justify-center md:space-x-[18px] space-x-3 mb-[18px]">
-                {otpValues.map((value, index) => (
-                  <input
-                    key={index}
-                    type="text"
-                    name={`otp-${index}`}
-                    maxLength={1}
-                    value={value}
-                    onChange={(e) => handleOtpChange(index, e.target.value)}
-                    onKeyDown={(e) => handleKeyDown(index, e)}
-                    onPaste={index === 0 ? handlePaste : undefined}
-                    ref={index === 0 ? firstInputRef : null}
-                    className={`2xl:w-[60px] 2xl:h-[60px] xl:w-[55px] xl:h-[55px] md:w-[50px] md:h-[50px] w-[45px] h-[45px] text-center text-lg font-medium border ${
-                      otpError ? "border-red-500" : "border-gray-200"
-                    } text-black placeholder:text-gray-400 rounded-[5px] focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent transition-all`}
-                    aria-label={`OTP digit ${index + 1}`}
-                  />
-                ))}
-              </div>
-
-              {otpError && (
-                <div className="mt-2 text-red-500 text-sm mb-2" role="alert">
-                  {otpError}
+              <div>
+                <div className="flex justify-center md:space-x-[18px] space-x-3 mb-[18px]">
+                  {codeValues.map((value, index) => (
+                    <input
+                      key={index}
+                      type="text"
+                      name={`code-${index}`}
+                      maxLength={1}
+                      value={value}
+                      onChange={(e) => handleCodeChange(index, e.target.value)}
+                      onKeyDown={(e) => handleKeyDown(index, e)}
+                      onPaste={index === 0 ? handlePaste : undefined}
+                      ref={index === 0 ? firstInputRef : null}
+                      className={`2xl:w-[60px] 2xl:h-[60px] xl:w-[55px] xl:h-[55px] md:w-[50px] md:h-[50px] w-[45px] h-[45px] text-center text-lg font-medium border ${codeError ? "border-red-500" : "border-gray-200"
+                        } text-black placeholder:text-gray-400 rounded-[5px] focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent transition-all`}
+                      aria-label={`Code digit ${index + 1}`}
+                    />
+                  ))}
                 </div>
-              )}
+
+                {codeError && (
+                  <div className="flex justify-center mb-2">
+                    <div className="text-red-500 text-sm flex items-center gap-2 w-full max-w-[330px] md:max-w-[384px] xl:max-w-[423px] 2xl:max-w-[468px] justify-start" role="alert">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-5 w-5 flex-shrink-0"
+                        viewBox="0 0 20 20"
+                        fill="currentColor"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                      <span>{codeError}</span>
+                    </div>
+                  </div>
+                )}
+              </div>
 
               {resendMessage && (
                 <div className="mt-2 text-green-600 text-sm mb-2" role="status">
@@ -2077,30 +2232,26 @@ function OtpModal({ isOpen, onClose, identifier, type }) {
                 <p className="text-sm text-gray-500">
                   {"Didn't receive the code? "}
                   <button
-                    className={`font-medium transition-colors ${
-                      resendCooldown > 0
+                    className={`font-medium transition-colors ${resendCooldown > 0
                         ? "text-gray-400 cursor-not-allowed"
                         : "text-blue-600 hover:text-blue-800 hover:underline"
-                    }`}
-                    onClick={handleResendOtp}
+                      }`}
+                    onClick={handleResendCode}
                     disabled={resendCooldown > 0}
                   >
                     {resendCooldown > 0
                       ? `Resend in ${resendCooldown}s`
-                      : "Resend OTP"}
+                      : "Resend code"}
                   </button>
                 </p>
               </div>
 
-              <Button
-                className="w-full btn-primary hover:bg-blue-700 text-white hover:text-white font-medium py-3 px-4 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                onClick={handleSubmit}
-                isLoading={isSubmitting}
-                disabled={isSubmitting}
-              >
-                {isSubmitting ? "Verifying..." : "Verify OTP"}
-              </Button>
-            </ModalBody>
+              {isSubmitting && (
+                <div className="w-full text-center py-3">
+                  <p className="text-sm text-gray-600">Verifying code...</p>
+                </div>
+              )}
+            </ModalBody>  
           </>
         )}
       </ModalContent>
