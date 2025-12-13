@@ -69,6 +69,12 @@ const page = ({ params }) => {
       setCategory(productData?.categories);
       setProduct(productData?.products);
       setPagination(productData?.pagination);
+      
+      // Check if total product count is 0, redirect to 404
+      if (!productData?.pagination?.total || productData?.pagination?.total === 0) {
+        setNotFound(true);
+      }
+      
       setLoading(false);
     } catch (err) {
       console.error("Failed to fetch product data:", err.response.status);
