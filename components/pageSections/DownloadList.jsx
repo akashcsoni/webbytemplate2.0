@@ -361,7 +361,52 @@ const DownloadPage = ({ title }) => {
         }
       },
     },
+    {
+      title: "Status",
+      field: "status",
+      hozAlign: "center",
+      vertAlign: "middle",
+      formatter: function (cell) {
+        const value = cell.getValue()?.toLowerCase();
+        let style = "";
+        let colorDot = "";
 
+        switch (value) {
+          case "pending":
+            style = "bg-yellow-100 text-yellow-800 border border-yellow-400";
+            colorDot = "bg-yellow-400";
+            break;
+          case "complete":
+            style = "bg-green-100 text-green-800 border border-green-500";
+            colorDot = "bg-green-500";
+            break;
+          case "hold":
+            style = "bg-red-100 text-red-700 border border-red-500";
+            colorDot = "bg-red-500";
+            break;
+          case "authorized":
+            style = "bg-primary/20 text-primary border border-primary";
+            colorDot = "bg-primary";
+            break;
+          case "rejected":
+            style = "bg-red-100 text-red-600 border border-red-500";
+            colorDot = "bg-red-500";
+            break;
+          default:
+            style = "bg-gray-100 text-gray-800 border border-gray-400";
+            colorDot = "bg-gray-400";
+        }
+
+        return `
+      <div class="flex items-center justify-center w-full h-full">
+        <span class="px-3 py-1 text-xs font-semibold rounded-full flex items-center gap-2 justify-center ${style}">
+          <span class="w-2 h-2 rounded-full ${colorDot}"></span>
+          ${value ? value.charAt(0).toUpperCase() + value.slice(1) : "N/A"}
+        </span>
+      </div>
+    `;
+      },
+    },
     {
       title: "Download Link",
       field: "product_zip",
@@ -369,14 +414,23 @@ const DownloadPage = ({ title }) => {
       formatter: (cell) => {
         const data = cell.getData();
 
-
-        return data.product_zip
+        // Only show download button if status is "complete" and product_zip exists
+        const isComplete = data.status?.toLowerCase() === "complete";
+        return data.product_zip && isComplete
           ? `<div class="flex items-center gap-2 truncate"><button class="btn btn-primary !py-1 !px-4">Download</button></div>`
           : "";
       },
       cellClick: (e, cell) => {
-        const url = cell.getRow().getData()?.product_zip;
-        url ? window.open(url, "_blank") : alert("No download link found.");
+        const rowData = cell.getRow().getData();
+        const isComplete = rowData.status?.toLowerCase() === "complete";
+        const url = rowData?.product_zip;
+        if (isComplete && url) {
+          window.open(url, "_blank");
+        } else if (!isComplete) {
+          alert("Download is only available for completed orders.");
+        } else {
+          alert("No download link found.");
+        }
       },
     },
     {
@@ -387,17 +441,24 @@ const DownloadPage = ({ title }) => {
       formatter: (cell) => {
         const data = cell.getData();
 
-        // ✅ Only show button if it's NOT a "Multi-Product Order"
+        // Only show button if status is "complete" AND it's NOT a "Multi-Product Order"
+        const isComplete = data.status?.toLowerCase() === "complete";
         if (
-          data?.products == "Multi-Product Order" ||
-          data?._children === null
+          isComplete &&
+          (data?.products == "Multi-Product Order" ||
+            data?._children === null)
         ) {
           return `<button class="review-btn !px-3 !py-1 btn btn-primary !text-sm">Download Invoice</button>`;
         }
-        return ""; // no button for multi-orders
+        return ""; // no button if not complete or for multi-orders
       },
       cellClick: async (e, cell) => {
         const orderData = cell.getRow().getData();
+        const isComplete = orderData.status?.toLowerCase() === "complete";
+        if (!isComplete) {
+          toast.error("Invoice download is only available for completed orders.");
+          return;
+        }
         if (orderData.documentId) {
           await downloadInvoice(orderData);
         } else {
@@ -424,20 +485,27 @@ const DownloadPage = ({ title }) => {
       formatter: (cell) => {
         const rowData = cell.getRow().getData();
 
-        // ✅ Only show button if it's NOT a "Multi-Product Order"
-        if (rowData?.products !== "Multi-Product Order") {
+        // Only show button if status is "complete" AND it's NOT a "Multi-Product Order"
+        const isComplete = rowData.status?.toLowerCase() === "complete";
+        if (isComplete && rowData?.products !== "Multi-Product Order") {
           return `<button class="review-btn !px-3 !py-1 btn btn-primary !text-sm">Add Review</button>`;
         }
-        return ""; // no button for multi-orders
+        return ""; // no button if not complete or for multi-orders
       },
       cellClick: (e, cell) => {
         const rowData = cell.getRow().getData();
+        const isComplete = rowData.status?.toLowerCase() === "complete";
 
+        // Only allow review if status is complete
+        if (!isComplete) {
+          toast.error("Reviews can only be added for completed orders.");
+          return;
+        }
 
-        // if (rowData?.products !== "Multi-Product Order") {
-        setSelectedProduct(rowData);
-        setIsOpen(true);
-        // }
+        if (rowData?.products !== "Multi-Product Order") {
+          setSelectedProduct(rowData);
+          setIsOpen(true);
+        }
       },
     },
   ];
@@ -500,12 +568,14 @@ const DownloadPage = ({ title }) => {
                 product_zip:
                   p.product?.product_zip_url || p.product?.product_zip || null,
                 product_slug: p.product?.slug || null, // ✅ added slug
+                status: item.order_status || "N/A", // ✅ inherit parent order status
               }));
 
 
             return {
               ...item,
               documentId: item.documentId || 1,
+              status: item.order_status || "N/A",
               _children: isMultipleProducts
                 ? redirectProduct(item.products)
                 : null,
