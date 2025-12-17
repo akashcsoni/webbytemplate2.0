@@ -148,7 +148,8 @@ export default function ProductsPage({
           <div>
             <Button
               onPress={() => {
-                window.open(`/user/${authUser?.username}/products/${button?.link}`, "_blank");
+                const documentId = authUser?.documentId || authUser?.id;
+                window.open(`/user/${documentId}/products/${button?.link}`, "_blank");
               }}
               // href={button?.link}
               className="btn btn-primary 2xl:!px-5 !px-[18px] !py-[7px] flex items-center gap-[10px] group h-auto"
@@ -726,7 +727,8 @@ const ProductItem = ({
               <Button
                 // href={slug + "/" + id}
                 onPress={() => {
-                  window.open(`/user/${authUser?.username}/products/edit/${documentId}`, "_blank");
+                  const userDocumentId = authUser?.documentId || authUser?.id;
+                  window.open(`/user/${userDocumentId}/products/edit/${documentId}`, "_blank");
                 }}
                 target="_blank"
                 size="sm"

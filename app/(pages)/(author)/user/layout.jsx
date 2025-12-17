@@ -14,8 +14,19 @@ export default function Layout({ children }) {
   const [authUser, setAuthUser] = useState({});
   const pathname = usePathname();
 
+  const normalizePath = (path) => (path ? path.replace(/\/+$/, "") : "");
+
   const isActive = (path) => {
-    return pathname === path;
+    const current = normalizePath(pathname);
+    const target = normalizePath(path);
+    return current === target || current.startsWith(`${target}/`);
+  };
+
+  // Get documentId from authUser (documentId || id)
+  const getDocumentId = () => {
+    // Use auth data if available, otherwise derive the id from the URL
+    const pathId = pathname?.split("/")?.[2] || "";
+    return authUser?.documentId || authUser?.id || pathId;
   };
 
   const getTokenData = async () => {
@@ -76,32 +87,32 @@ export default function Layout({ children }) {
                         {
                           id: "dashboard",
                           label: "DASHBOARD",
-                          path: `/user/${authUser?.username}/dashboard`,
+                          path: `/user/${getDocumentId()}/dashboard`,
                         },
                         {
                           id: "products",
                           label: "PRODUCTS",
-                          path: `/user/${authUser?.username}/products/list`,
+                          path: `/user/${getDocumentId()}/products/list`,
                         },
-                        // {
-                        //   id: "paymentTax",
-                        //   label: "PAYMENT & TAX SET UP",
-                        //   path: `/user/${authUser?.username}/paymentTax`,
-                        // },
                         {
                           id: "ticket-support",
                           label: "TICKETS / SUPPORT",
-                          path: `/user/${authUser?.username}/support`,
+                          path: `/user/${getDocumentId()}/support`,
                         },
                         {
                           id: "downloads",
                           label: "DOWNLOADS",
-                          path: `/user/${authUser?.username}/download`,
+                          path: `/user/${getDocumentId()}/download`,
                         },
                         {
-                          id: "profile-settiings",
-                          label: "PROFILE SETTINGS",
-                          path: `/user/${authUser?.username}/setting`,
+                          id: "profile",
+                          label: "PROFILE",
+                          path: `/user/${getDocumentId()}/profile`,
+                        },
+                        {
+                          id: "settiings",
+                          label: "SETTINGS",
+                          path: `/user/${getDocumentId()}/setting`,
                         },
                       ].map((tab, index, arr) => (
                         <li
@@ -136,23 +147,23 @@ export default function Layout({ children }) {
                       {[
                         {
                           id: "profile-settiings",
-                          label: "PROFILE SETTINGS",
-                          path: `/user/${authUser?.username}/setting`,
+                          label: "SETTINGS",
+                          path: `/user/${getDocumentId()}/setting`,
                         },
                         {
                           id: "downloads",
                           label: "DOWNLOADS",
-                          path: `/user/${authUser?.username}/download`,
+                          path: `/user/${getDocumentId()}/download`,
                         },
                         {
                           id: "ticket-support",
                           label: "SUPPORT",
-                          path: `/user/${authUser?.username}/support`,
+                          path: `/user/${getDocumentId()}/support`,
                         },
                         {
                           id: "become-an-author",
                           label: "BECOME AN AUTHOR",
-                          path: `/user/${authUser?.username}/become-an-author`,
+                          path: `/user/${getDocumentId()}/become-an-author`,
                         },
                       ].map((tab, index, arr) => (
                         <li

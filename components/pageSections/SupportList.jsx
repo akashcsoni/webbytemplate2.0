@@ -34,6 +34,7 @@ const ticketSupportPage = ({ title }) => {
   const [filteredSupportAuthor, setFilteredSupportAuthor] = useState([]);
   const [TabsSelected, setTabsSelected] = useState("checkTicketStatus");
   const [formSubmitLoading, setFormSubmitLoading] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [orderData, setOrderData] = useState([]);
   const [openTicket, setOpenTicket] = useState(null);
   const [openTicketData, setOpenTicketData] = useState({});
@@ -45,7 +46,6 @@ const ticketSupportPage = ({ title }) => {
 
   const debouncedInputChange = useCallback(
     debounce((name, value) => {
-      j;
       setFilterData((prev) => ({ ...prev, [name]: value }));
     }, 300),
     []
@@ -283,7 +283,7 @@ const ticketSupportPage = ({ title }) => {
   const page_size = 10;
 
   const fetchSupportData = async (id, position) => {
-    // setLoading(true);
+    setLoading(true);
     if (id) {
       try {
         const payload = {
@@ -319,7 +319,7 @@ const ticketSupportPage = ({ title }) => {
         toast.error("Failed to load product data.");
         setFilteredSupport([]);
       } finally {
-        // setLoading(false);
+        setLoading(false);
       }
     }
   };
@@ -331,8 +331,8 @@ const ticketSupportPage = ({ title }) => {
 
   useEffect(() => {
     const fetchSupportAuthorData = async (id, position) => {
-      // setLoading(true);
       if (id && position === true) {
+        setLoading(true);
         try {
           const payload = {
             page_size,
@@ -369,7 +369,7 @@ const ticketSupportPage = ({ title }) => {
           toast.error("Failed to load product data.");
           setFilteredSupportAuthor([]);
         } finally {
-          // setLoading(false);
+          setLoading(false);
         }
       }
     };
@@ -1300,42 +1300,41 @@ const ticketSupportPage = ({ title }) => {
 
                             <Card className="shadow-none !max-w-full">
                               <CardBody className="sm:px-5 px-4 py-5">
-                                {/* {loading && (
-                            <div className="p-4">
-                              <div className="overflow-x-auto rounded-lg border border-gray-100">
-                                <table className="min-w-full divide-y divide-gray-100 bg-white text-sm">
-                                  <tbody className="divide-y divide-gray-100">
-                                    {[...Array(10)].map((_, idx) => (
-                                      <tr
-                                        key={idx}
-                                        className="hover:bg-gray-50"
-                                      >
-                                        <td className="px-4 py-3">
-                                          <div className="h-4 w-24 bg-gray-100 animate-pulse rounded" />
-                                        </td>
-                                        <td className="px-4 py-3">
-                                          <div className="h-4 w-64 bg-gray-100 animate-pulse rounded mb-1" />
-                                          <div className="h-4 w-56 bg-gray-100 animate-pulse rounded" />
-                                        </td>
-                                        <td className="px-4 py-3">
-                                          <div className="h-8 w-20 bg-gray-100 animate-pulse rounded" />
-                                        </td>
-                                        <td className="px-4 py-3">
-                                          <div className="h-8 w-28 bg-gray-100 animate-pulse rounded" />
-                                        </td>
-                                        <td className="px-4 py-3">
-                                          <div className="h-4 w-20 bg-gray-100 animate-pulse rounded" />
-                                        </td>
-                                      </tr>
-                                    ))}
-                                  </tbody>
-                                </table>
-                              </div>
-                            </div>
-                          )} */}
-                                {filteredSupport ? (
+                                {loading && (
+                                  <div className="p-4">
+                                    <div className="overflow-x-auto rounded-lg border border-gray-100">
+                                      <table className="min-w-full divide-y divide-gray-100 bg-white text-sm">
+                                        <tbody className="divide-y divide-gray-100">
+                                          {[...Array(10)].map((_, idx) => (
+                                            <tr
+                                              key={idx}
+                                              className="hover:bg-gray-50"
+                                            >
+                                              <td className="px-4 py-3">
+                                                <div className="h-4 w-24 bg-gray-100 animate-pulse rounded" />
+                                              </td>
+                                              <td className="px-4 py-3">
+                                                <div className="h-4 w-48 bg-gray-100 animate-pulse rounded" />
+                                              </td>
+                                              <td className="px-4 py-3">
+                                                <div className="h-4 w-64 bg-gray-100 animate-pulse rounded" />
+                                              </td>
+                                              <td className="px-4 py-3">
+                                                <div className="h-8 w-24 bg-gray-100 animate-pulse rounded" />
+                                              </td>
+                                              <td className="px-4 py-3">
+                                                <div className="h-4 w-28 bg-gray-100 animate-pulse rounded" />
+                                              </td>
+                                            </tr>
+                                          ))}
+                                        </tbody>
+                                      </table>
+                                    </div>
+                                  </div>
+                                )}
+
+                                {!loading && filteredSupport ? (
                                   <DynamicTable
-                                    // id={loading}
                                     data={filteredSupport}
                                     columns={columns}
                                     options={{
@@ -1350,8 +1349,6 @@ const ticketSupportPage = ({ title }) => {
                                     }}
                                     classes="download-table"
                                     layout="fitColumns"
-                                    // "fitDataFill"
-                                    // : "fitColumns",
                                   />
                                 ) : (
                                   !loading && (
@@ -2085,9 +2082,41 @@ const ticketSupportPage = ({ title }) => {
 
                           <Card className="shadow-none !max-w-full">
                             <CardBody className="sm:px-5 px-4 py-5">
-                              {filteredSupportAuthor ? (
+                              {loading && (
+                                <div className="p-4">
+                                  <div className="overflow-x-auto rounded-lg border border-gray-100">
+                                    <table className="min-w-full divide-y divide-gray-100 bg-white text-sm">
+                                      <tbody className="divide-y divide-gray-100">
+                                        {[...Array(10)].map((_, idx) => (
+                                          <tr
+                                            key={idx}
+                                            className="hover:bg-gray-50"
+                                          >
+                                            <td className="px-4 py-3">
+                                              <div className="h-4 w-24 bg-gray-100 animate-pulse rounded" />
+                                            </td>
+                                            <td className="px-4 py-3">
+                                              <div className="h-4 w-48 bg-gray-100 animate-pulse rounded" />
+                                            </td>
+                                            <td className="px-4 py-3">
+                                              <div className="h-4 w-64 bg-gray-100 animate-pulse rounded" />
+                                            </td>
+                                            <td className="px-4 py-3">
+                                              <div className="h-8 w-24 bg-gray-100 animate-pulse rounded" />
+                                            </td>
+                                            <td className="px-4 py-3">
+                                              <div className="h-4 w-28 bg-gray-100 animate-pulse rounded" />
+                                            </td>
+                                          </tr>
+                                        ))}
+                                      </tbody>
+                                    </table>
+                                  </div>
+                                </div>
+                              )}
+
+                              {!loading && filteredSupportAuthor ? (
                                 <DynamicTable
-                                  // id={loading}
                                   data={filteredSupportAuthor}
                                   columns={columns}
                                   options={{
@@ -2102,8 +2131,6 @@ const ticketSupportPage = ({ title }) => {
                                   }}
                                   classes="download-table"
                                   layout="fitColumns"
-                                  // "fitDataFill"
-                                  // : "fitColumns",
                                 />
                               ) : (
                                 !loading && (
@@ -2395,9 +2422,41 @@ const ticketSupportPage = ({ title }) => {
 
                         <Card className="shadow-none !max-w-full">
                           <CardBody className="sm:px-5 px-4 py-5">
-                            {filteredSupport ? (
+                            {loading && (
+                              <div className="p-4">
+                                <div className="overflow-x-auto rounded-lg border border-gray-100">
+                                  <table className="min-w-full divide-y divide-gray-100 bg-white text-sm">
+                                    <tbody className="divide-y divide-gray-100">
+                                      {[...Array(10)].map((_, idx) => (
+                                        <tr
+                                          key={idx}
+                                          className="hover:bg-gray-50"
+                                        >
+                                          <td className="px-4 py-3">
+                                            <div className="h-4 w-24 bg-gray-100 animate-pulse rounded" />
+                                          </td>
+                                          <td className="px-4 py-3">
+                                            <div className="h-4 w-48 bg-gray-100 animate-pulse rounded" />
+                                          </td>
+                                          <td className="px-4 py-3">
+                                            <div className="h-4 w-64 bg-gray-100 animate-pulse rounded" />
+                                          </td>
+                                          <td className="px-4 py-3">
+                                            <div className="h-8 w-24 bg-gray-100 animate-pulse rounded" />
+                                          </td>
+                                          <td className="px-4 py-3">
+                                            <div className="h-4 w-28 bg-gray-100 animate-pulse rounded" />
+                                          </td>
+                                        </tr>
+                                      ))}
+                                    </tbody>
+                                  </table>
+                                </div>
+                              </div>
+                            )}
+
+                            {!loading && filteredSupport ? (
                               <DynamicTable
-                                // id={loading}
                                 data={filteredSupport}
                                 columns={columns}
                                 options={{
@@ -2412,8 +2471,6 @@ const ticketSupportPage = ({ title }) => {
                                 }}
                                 classes="download-table"
                                 layout="fitColumns"
-                                // "fitDataFill"
-                                // : "fitColumns",
                               />
                             ) : (
                               !loading && (

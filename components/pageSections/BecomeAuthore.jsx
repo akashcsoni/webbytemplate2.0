@@ -13,8 +13,9 @@ const BecomeAuthore = ({ button_link = '', button_name = '', description = '', t
     const router = useRouter();
 
     const handleButtonClick = () => {
-        if (authUser && authUser.username) {
-            router.push(`/user/${authUser.username}/become-an-author`);
+        const documentId = authUser?.documentId || authUser?.id;
+        if (authUser && documentId) {
+            router.push(`/user/${documentId}/become-an-author`);
         } else {
             openAuth("login")
         }

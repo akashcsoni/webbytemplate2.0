@@ -1,7 +1,7 @@
 "use client";
 
-import { strapiGet, strapiPost, strapiPut } from "@/lib/api/strapiClient";
-import { Input, Button, Image } from "@heroui/react";
+import { strapiGet, strapiPut } from "@/lib/api/strapiClient";
+import { Button, Image, Skeleton } from "@heroui/react";
 import {
   FormInput,
   FormTextArea,
@@ -16,16 +16,12 @@ import toast from "react-hot-toast";
 import { countries, stripDialCode } from "@/lib/data/countries";
 import { Listbox } from "@headlessui/react";
 
-const profileSetting = ({ title, sub_title, form, image, button }) => {
-  const [profileImage, setProfileImage] = useState(null);
-  const [imageId, setImageId] = useState(null);
-  const [imageLoading, setImageLoading] = useState(false);
+const profileSetting = ({ title, sub_title, form, button }) => {
   const [fromSaveLoading, setFromSaveLoading] = useState(false);
   const [fromSetLoading, setFromSetLoading] = useState(true);
   const [formValues, setFormValues] = useState({});
   const [validationErrors, setValidationErrors] = useState({});
   const [defaultValueData, setDefaultValueData] = useState({});
-  const [hasNewImage, setHasNewImage] = useState(false);
 
   const [selectedCountry, setSelectedCountry] = useState("");
   const [selectedState, setSelectedState] = useState("");
@@ -70,10 +66,15 @@ const profileSetting = ({ title, sub_title, form, image, button }) => {
     setCountrySearchTerm("");
     handleFieldChange("country", countryName);
     handleFieldChange("state", ""); // Reset state in form values
+    // Clear GSTIN if country is not India
+    if (countryName !== "India") {
+      handleFieldChange("gstin", "");
+    }
     // Clear phone validation error when country changes
     setValidationErrors((prevErrors) => ({
       ...prevErrors,
       phone_no: "",
+      gstin: "",
     }));
   };
 
@@ -101,27 +102,6 @@ const profileSetting = ({ title, sub_title, form, image, button }) => {
     };
   }, []);
 
-  const handleImageUpload = async (e) => {
-    setImageLoading(true);
-    const file = e.target.files[0];
-    const formData = new FormData();
-    formData.append("files", file);
-
-    try {
-      const fileData = await strapiPost(`upload`, formData, themeConfig.TOKEN);
-      setImageId(fileData[0].id);
-      setProfileImage(fileData[0].url);
-      setHasNewImage(true);
-      setImageLoading(false);
-    } catch (error) {
-      setImageLoading(false);
-      if (error.status === 413) {
-        setImageLoading(false);
-        toast.error(error.response.data.error.message);
-      }
-    }
-  };
-
   const save_user_details = async (event) => {
     event.preventDefault();
     setFromSaveLoading(true);
@@ -137,7 +117,9 @@ const profileSetting = ({ title, sub_title, form, image, button }) => {
 
     Object.keys(formValues).forEach((key) => {
       const newValue = formValues[key];
-      const oldValue = defaultValueData[key];
+      // Handle gstin -> gst_number mapping for comparison
+      const compareKey = key === "gstin" ? "gst_number" : key;
+      const oldValue = defaultValueData[compareKey];
       if (newValue !== oldValue) {
         updatedData[key] = newValue;
         hasChanges = true;
@@ -153,10 +135,6 @@ const profileSetting = ({ title, sub_title, form, image, button }) => {
       hasChanges = true;
     }
 
-    if (hasNewImage && imageId !== null) {
-      updatedData.image = imageId;
-      hasChanges = true;
-    }
     // ["pincode", "phone_no"].forEach((field) => {
     //   if (updatedData.hasOwnProperty(field)) {
     //     const val = updatedData[field];
@@ -188,6 +166,12 @@ const profileSetting = ({ title, sub_title, form, image, button }) => {
       updatedData.phone_no = `${countryDialCode}${purePhone}`;
     }
 
+    // Map gstin to gst_number for backend
+    if (updatedData.hasOwnProperty("gstin")) {
+      updatedData.gst_number = updatedData.gstin;
+      delete updatedData.gstin;
+    }
+
     if (!hasChanges) {
       toast.success("No changes detected.");
       setFromSaveLoading(false);
@@ -202,7 +186,6 @@ const profileSetting = ({ title, sub_title, form, image, button }) => {
       );
       if (updateUserData) {
         toast.success("User updated successfully!");
-        setHasNewImage(false);
         getUserData();
       } else {
         toast.error("User update failed!");
@@ -257,14 +240,14 @@ const profileSetting = ({ title, sub_title, form, image, button }) => {
       });
       if (userData) {
         setDefaultValueData(userData);
-        setFormValues(userData);
+        // Map gst_number to gstin for form
+        const formData = { ...userData };
+        if (userData.gst_number) {
+          formData.gstin = userData.gst_number;
+        }
+        setFormValues(formData);
         setSelectedCountry(userData.country || "");
         setSelectedState(userData.state || "");
-        setProfileImage(
-          userData?.image?.url ? userData?.image?.url : "/images/no-image.svg"
-        );
-        setImageId(userData?.image?.id || null);
-        setHasNewImage(false);
         setFromSetLoading(false);
       }
     }
@@ -311,31 +294,6 @@ const profileSetting = ({ title, sub_title, form, image, button }) => {
       validation: { required: "Last name is required" },
       rules: [],
       class: "w-full sm:w-full md:w-1/3 xl:w-1/3 !p-[5px]",
-    },
-    {
-      position: 3,
-      name: "username",
-      label: "User Name",
-      placeholder: "Enter user name",
-      type: "text",
-      html: "input",
-      readOnly: true,
-      description: "Maximum 50 characters; no special symbols",
-      validation: { required: "Username is required" },
-      rules: ["required"],
-      class: "w-full sm:w-full md:w-1/3 xl:w-1/3 !p-[5px]",
-    },
-    {
-      position: 4,
-      name: "bio",
-      label: "About Bio",
-      placeholder: "Write about bio...",
-      type: "textarea",
-      html: "textarea",
-      description: "Maximum 500 characters; no links or special symbols",
-      validation: { required: "Bio is required" },
-      rules: [],
-      class: "w-full !p-[5px]",
     },
     {
       position: 5,
@@ -475,6 +433,66 @@ const profileSetting = ({ title, sub_title, form, image, button }) => {
     }
   };
 
+  // Skeleton loader component
+  const FormSkeleton = () => (
+    <div className="space-y-6">
+      <div className="flex flex-wrap">
+        {/* First Name */}
+        <div className="w-full sm:w-full md:w-1/3 xl:w-1/3 !p-[5px]">
+          <Skeleton className="h-4 w-20 mb-2 rounded" />
+          <Skeleton className="h-11 w-full rounded-md" />
+        </div>
+        {/* Last Name */}
+        <div className="w-full sm:w-full md:w-1/3 xl:w-1/3 !p-[5px]">
+          <Skeleton className="h-4 w-20 mb-2 rounded" />
+          <Skeleton className="h-11 w-full rounded-md" />
+        </div>
+        {/* Email */}
+        <div className="w-full sm:w-full md:w-1/3 xl:w-1/3 !p-[5px]">
+          <Skeleton className="h-4 w-24 mb-2 rounded" />
+          <Skeleton className="h-11 w-full rounded-md" />
+        </div>
+        {/* Company Name */}
+        <div className="w-full sm:w-full md:w-1/3 xl:w-1/3 !p-[5px]">
+          <Skeleton className="h-4 w-28 mb-2 rounded" />
+          <Skeleton className="h-11 w-full rounded-md" />
+        </div>
+        {/* Phone Number */}
+        <div className="w-full sm:w-full md:w-1/3 xl:w-1/3 !p-[5px]">
+          <Skeleton className="h-4 w-28 mb-2 rounded" />
+          <Skeleton className="h-11 w-full rounded-md" />
+        </div>
+        {/* Address */}
+        <div className="w-full !p-[5px]">
+          <Skeleton className="h-4 w-20 mb-2 rounded" />
+          <Skeleton className="h-24 w-full rounded-md" />
+        </div>
+        {/* City */}
+        <div className="w-full sm:w-full md:w-1/3 xl:w-1/3 !p-[5px]">
+          <Skeleton className="h-4 w-16 mb-2 rounded" />
+          <Skeleton className="h-11 w-full rounded-md" />
+        </div>
+        {/* Country */}
+        <div className="w-full sm:w-full md:w-1/3 xl:w-1/3 !p-[5px]">
+          <Skeleton className="h-4 w-20 mb-2 rounded" />
+          <Skeleton className="h-11 w-full rounded-md" />
+        </div>
+        {/* State */}
+        <div className="w-full sm:w-full md:w-1/3 xl:w-1/3 !p-[5px]">
+          <Skeleton className="h-4 w-28 mb-2 rounded" />
+          <Skeleton className="h-11 w-full rounded-md" />
+        </div>
+        {/* Zip/Postal Code */}
+        <div className="w-full sm:w-full md:w-1/3 xl:w-1/3 !p-[5px]">
+          <Skeleton className="h-4 w-32 mb-2 rounded" />
+          <Skeleton className="h-11 w-full rounded-md" />
+        </div>
+      </div>
+      {/* Submit Button */}
+      <Skeleton className="h-11 w-[220px] rounded-md mt-5" />
+    </div>
+  );
+
   const validateFields = (formValues) => {
     let isValid = true;
     const errors = {};
@@ -570,6 +588,22 @@ const profileSetting = ({ title, sub_title, form, image, button }) => {
       }
     }
 
+    // GSTIN validation (only for India)
+    if (selectedCountry === "India") {
+      if (formValues.gstin?.trim()) {
+        // GSTIN format: 15 characters, alphanumeric
+        // Format: 2 digits (state code) + 10 alphanumeric (PAN) + 1 letter (entity number) + 1 digit (blank) + 1 letter (check digit)
+        const gstinRegex = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/;
+        const gstinValue = formValues.gstin.trim().toUpperCase();
+        
+        if (!gstinRegex.test(gstinValue)) {
+          if (!errors.gstin) errors.gstin = [];
+          errors.gstin.push("Invalid GSTIN format. Format: 15 characters (e.g., 27AAAAA0000A1Z5)");
+          isValid = false;
+        }
+      }
+    }
+
     setValidationErrors(errors);
     return isValid;
   };
@@ -586,255 +620,11 @@ const profileSetting = ({ title, sub_title, form, image, button }) => {
               </div>
             )}
             <div className="sm:py-6 py-4 sm:px-5 px-4">
-              {form && defaultValueData && (
-                <form onSubmit={save_user_details} className="space-y-6">
-                  {image && (
-                    <div className="flex items-center justify-between sm:flex-row flex-col w-full border-b border-primary/10 pb-[25px] mb-[25px] gap-3">
-                      <div className="flex items-center sm:flex-row flex-col sm:gap-[22px] gap-1.5">
-                        <div className="1xl:w-[100px] 1xl:h-[100px] md:w-[90px] md:h-[90px] sm:w-[85px] sm:h-[85px] w-20 h-20 flex-shrink-0 rounded-full bg-transparent flex items-center justify-center profile-picture">
-                          {profileImage !== null &&
-                          profileImage !== undefined &&
-                          profileImage !== "" ? (
-                            <Image
-                              src={profileImage || "/placeholder.svg"}
-                              alt="Profile"
-                              width={100}
-                              height={100}
-                              className="1xl:!h-[100px] 1xl:w-[100px] md:w-[90px] md!:h-[90px] sm:w-[85px] sm:!h-[85px] w-20 1h-20 object-cover rounded-full"
-                            />
-                          ) : (
-                            <Image
-                              src="/images/no-image.svg"
-                              alt="No Profile"
-                              width={100}
-                              height={100}
-                              className="1xl:!h-[100px] 1xl:w-[100px] md:w-[90px] md!:h-[90px] sm:w-[85px] sm:!h-[85px] w-20 !h-20 object-cover rounded-full"
-                            />
-                          )}
-                        </div>
-                        <div>
-                          {defaultValueData?.first_name &&
-                            defaultValueData?.last_name && (
-                              <h3 className="h2 md:mb-[6px] mb-1 sm:text-start text-center">
-                                {defaultValueData?.first_name +
-                                  " " +
-                                  defaultValueData?.last_name}
-                              </h3>
-                            )}
-                          <p className="text-sm text-gray-500 sm:text-start text-center">
-                            Image upload: 400x400 Min, 2MB Max
-                          </p>
-                        </div>
-                      </div>
-                      <div className="relative">
-                        <Input
-                          type="file"
-                          id="fileInput"
-                          accept="image/png,image/jpeg,image/jpg"
-                          className="absolute inset-0 opacity-0 cursor-pointer"
-                          onChange={handleImageUpload}
-                        />
-
-                        <Button
-                          disabled={imageLoading}
-                          onPress={(e) => {
-                            document.getElementById("fileInput").click();
-                          }}
-                          htmlFor="fileInput"
-                          className="btn btn-primary flex items-center justify-center gap-[10px]"
-                        >
-                          {imageLoading ? (
-                            <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              width="20"
-                              height="20"
-                              viewBox="0 0 50 50"
-                              fill="none"
-                            >
-                              <circle cx="40" cy="25" r="3" fill="currentColor">
-                                <animate
-                                  attributeName="opacity"
-                                  values="1;0.2;1"
-                                  dur="1.2s"
-                                  begin="0s"
-                                  repeatCount="indefinite"
-                                />
-                              </circle>
-                              <circle
-                                cx="37.99038105676658"
-                                cy="32.5"
-                                r="3"
-                                fill="currentColor"
-                              >
-                                <animate
-                                  attributeName="opacity"
-                                  values="1;0.2;1"
-                                  dur="1.2s"
-                                  begin="0.1s"
-                                  repeatCount="indefinite"
-                                />
-                              </circle>
-                              <circle
-                                cx="32.5"
-                                cy="37.99038105676658"
-                                r="3"
-                                fill="currentColor"
-                              >
-                                <animate
-                                  attributeName="opacity"
-                                  values="1;0.2;1"
-                                  dur="1.2s"
-                                  begin="0.2s"
-                                  repeatCount="indefinite"
-                                />
-                              </circle>
-                              <circle cx="25" cy="40" r="3" fill="currentColor">
-                                <animate
-                                  attributeName="opacity"
-                                  values="1;0.2;1"
-                                  dur="1.2s"
-                                  begin="0.30000000000000004s"
-                                  repeatCount="indefinite"
-                                />
-                              </circle>
-                              <circle
-                                cx="17.500000000000004"
-                                cy="37.99038105676658"
-                                r="3"
-                                fill="currentColor"
-                              >
-                                <animate
-                                  attributeName="opacity"
-                                  values="1;0.2;1"
-                                  dur="1.2s"
-                                  begin="0.4s"
-                                  repeatCount="indefinite"
-                                />
-                              </circle>
-                              <circle
-                                cx="12.00961894323342"
-                                cy="32.5"
-                                r="3"
-                                fill="currentColor"
-                              >
-                                <animate
-                                  attributeName="opacity"
-                                  values="1;0.2;1"
-                                  dur="1.2s"
-                                  begin="0.5s"
-                                  repeatCount="indefinite"
-                                />
-                              </circle>
-                              <circle
-                                cx="10"
-                                cy="25.000000000000004"
-                                r="3"
-                                fill="currentColor"
-                              >
-                                <animate
-                                  attributeName="opacity"
-                                  values="1;0.2;1"
-                                  dur="1.2s"
-                                  begin="0.6000000000000001s"
-                                  repeatCount="indefinite"
-                                />
-                              </circle>
-                              <circle
-                                cx="12.009618943233418"
-                                cy="17.500000000000004"
-                                r="3"
-                                fill="currentColor"
-                              >
-                                <animate
-                                  attributeName="opacity"
-                                  values="1;0.2;1"
-                                  dur="1.2s"
-                                  begin="0.7000000000000001s"
-                                  repeatCount="indefinite"
-                                />
-                              </circle>
-                              <circle
-                                cx="17.499999999999993"
-                                cy="12.009618943233423"
-                                r="3"
-                                fill="currentColor"
-                              >
-                                <animate
-                                  attributeName="opacity"
-                                  values="1;0.2;1"
-                                  dur="1.2s"
-                                  begin="0.8s"
-                                  repeatCount="indefinite"
-                                />
-                              </circle>
-                              <circle
-                                cx="24.999999999999996"
-                                cy="10"
-                                r="3"
-                                fill="currentColor"
-                              >
-                                <animate
-                                  attributeName="opacity"
-                                  values="1;0.2;1"
-                                  dur="1.2s"
-                                  begin="0.9s"
-                                  repeatCount="indefinite"
-                                />
-                              </circle>
-                              <circle
-                                cx="32.5"
-                                cy="12.009618943233422"
-                                r="3"
-                                fill="currentColor"
-                              >
-                                <animate
-                                  attributeName="opacity"
-                                  values="1;0.2;1"
-                                  dur="1.2s"
-                                  begin="1s"
-                                  repeatCount="indefinite"
-                                />
-                              </circle>
-                              <circle
-                                cx="37.99038105676658"
-                                cy="17.499999999999993"
-                                r="3"
-                                fill="currentColor"
-                              >
-                                <animate
-                                  attributeName="opacity"
-                                  values="1;0.2;1"
-                                  dur="1.2s"
-                                  begin="1.1s"
-                                  repeatCount="indefinite"
-                                />
-                              </circle>
-                            </svg>
-                          ) : (
-                            <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              width="15"
-                              height="15"
-                              viewBox="0 0 15 15"
-                              fill="none"
-                            >
-                              <g clipPath="url(#clip0_3267_7117)">
-                                <path
-                                  d="M1.38281 10.9412V12.4706C1.38281 12.8762 1.54395 13.2652 1.83077 13.552C2.11759 13.8389 2.5066 14 2.91222 14H12.0887C12.4943 14 12.8833 13.8389 13.1702 13.552C13.457 13.2652 13.6181 12.8762 13.6181 12.4706V10.9412M3.67693 4.82353L7.50046 1M7.50046 1L11.324 4.82353M7.50046 1V10.1765"
-                                  stroke="currentColor"
-                                  strokeWidth="1.5"
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                />
-                              </g>
-                            </svg>
-                          )}
-                          Upload Image
-                        </Button>
-                      </div>
-                    </div>
-                  )}
-
+              {fromSetLoading ? (
+                <FormSkeleton />
+              ) : (
+                form && defaultValueData && (
+                  <form onSubmit={save_user_details} className="space-y-6">
                   <div className="flex flex-wrap ">
                     {field
                       .sort((a, b) => a.position - b.position)
@@ -1023,6 +813,43 @@ const profileSetting = ({ title, sub_title, form, image, button }) => {
                               )}
                             </div>
                           );
+
+                          // Add GSTIN field for Indian users only (right after Country)
+                          if (selectedCountry === "India") {
+                            elements.push(
+                              <div
+                                key="gstin-field"
+                                className="w-full sm:w-full md:w-1/3 xl:w-1/3 !p-[5px]"
+                              >
+                                <label className="p2 !text-black block pb-1">
+                                  GSTIN
+                                </label>
+                                <input
+                                  type="text"
+                                  placeholder="Enter GSTIN (e.g., 27AAAAA0000A1Z5)"
+                                  value={formValues.gstin || ""}
+                                  onChange={(e) => {
+                                    const value = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 15);
+                                    handleFieldChange("gstin", value);
+                                  }}
+                                  className={`w-full border p2 ${
+                                    validationErrors.gstin
+                                      ? "border-red-500"
+                                      : "border-gray-100"
+                                  } text-gray-300 placeholder:text-gray-300 2xl:py-[11px] py-[10px] rounded-[5px] 1xl:px-5 px-3 outline-none`}
+                                  maxLength={15}
+                                />
+                                {validationErrors.gstin && (
+                                  <p className="text-red-500 text-xs mt-1">
+                                    {validationErrors.gstin}
+                                  </p>
+                                )}
+                                <p className="text-xs text-gray-500 mt-1">
+                                  Format: 15 characters (e.g., 27AAAAA0000A1Z5)
+                                </p>
+                              </div>
+                            );
+                          }
                         }
 
                         // Add state after country (position 9, but after country field)
@@ -1307,6 +1134,7 @@ const profileSetting = ({ title, sub_title, form, image, button }) => {
                     </Button>
                   )}
                 </form>
+                )
               )}
             </div>
           </div>

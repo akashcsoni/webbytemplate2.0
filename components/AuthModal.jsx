@@ -2047,11 +2047,11 @@ function CodeModal({ isOpen, onClose, identifier, type }) {
           login();
           const currentUrl = window.location.href;
           const hasAuthorQuery = currentUrl.includes("author=true");
-          const username = response.user?.username;
+          const documentId = response.user?.documentId || response.user?.id;
 
           setTimeout(() => {
-            if (hasAuthorQuery && username) {
-              window.location.href = `/user/${username}/become-an-author`;
+            if (hasAuthorQuery && documentId) {
+              window.location.href = `/user/${documentId}/become-an-author`;
             } else {
               window.location.reload();
             }

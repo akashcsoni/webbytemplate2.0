@@ -23,5 +23,12 @@ export default async function Home() {
     fetchSession();
   }, [pathname]);
 
-  return document.location.replace(`/user/${authUser.username}/dashboard`);
+  useEffect(() => {
+    const documentId = authUser?.documentId || authUser?.id;
+    if (documentId) {
+      document.location.replace(`/user/${documentId}/dashboard`);
+    }
+  }, [authUser]);
+
+  return null;
 }

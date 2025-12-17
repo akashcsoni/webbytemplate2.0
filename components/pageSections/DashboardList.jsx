@@ -137,6 +137,8 @@ export default function DashboardPage({ title }) {
   const [success, setSuccess] = useState(false);
 
   const [filteredProducts, setFilteredProducts] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [summaryLoading, setSummaryLoading] = useState(false);
 
   const { authUser } = useAuth();
   const formRef = useRef(null);
@@ -254,6 +256,7 @@ export default function DashboardPage({ title }) {
 
   useEffect(() => {
     const fetchProductData = async (id) => {
+      setLoading(true);
       try {
         setFilteredProducts([]);
 
@@ -284,6 +287,8 @@ export default function DashboardPage({ title }) {
       } catch (err) {
         console.error("Error fetching products:", err);
         setFilteredProducts([]);
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -294,6 +299,7 @@ export default function DashboardPage({ title }) {
 
   useEffect(() => {
     const fetchSummaryProductData = async (id) => {
+      setSummaryLoading(true);
       try {
         // setFilteredProducts([]);
 
@@ -326,6 +332,8 @@ export default function DashboardPage({ title }) {
       } catch (err) {
         console.error("Error fetching products:", err);
         // setFilteredProducts([]);
+      } finally {
+        setSummaryLoading(false);
       }
     };
 
@@ -496,22 +504,24 @@ export default function DashboardPage({ title }) {
     },
   ];
 
-  const tableSummaryData = SummaryOrderData.map((item, index) => ({
-    no: index + 1,
-    date: new Date(item?.date_sold).toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    }),
-    product: item?.productTitle, // static for now
-    buyer: item?.buyer_name,
-    liIcense: item?.license_title,
-    status: item?.status,
-    price: `$${item?.price?.toFixed(2) || "0.00"}`,
-    // order_id: item.order_id?.documentId || "N/A",
-    // type: item?.for || "N/A",
-    // amount: `$${item.amounts?.toFixed(2) || "0.00"}`,
-  }));
+  const tableSummaryData = Array.isArray(SummaryOrderData) 
+    ? SummaryOrderData.map((item, index) => ({
+        no: index + 1,
+        date: new Date(item?.date_sold).toLocaleDateString("en-US", {
+          year: "numeric",
+          month: "short",
+          day: "numeric",
+        }),
+        product: item?.productTitle, // static for now
+        buyer: item?.buyer_name,
+        liIcense: item?.license_title,
+        status: item?.status,
+        price: `$${item?.price?.toFixed(2) || "0.00"}`,
+        // order_id: item.order_id?.documentId || "N/A",
+        // type: item?.for || "N/A",
+        // amount: `$${item.amounts?.toFixed(2) || "0.00"}`,
+      }))
+    : [];
 
   // const loginUserId
 
@@ -902,10 +912,54 @@ export default function DashboardPage({ title }) {
                         </div>
 
                         <div className="bg-white overflow-x-auto">
-                          <DynamicTable
-                            data={tableSummaryData}
-                            columns={summarycolums}
-                          />
+                          {summaryLoading && (
+                            <div className="p-4">
+                              <div className="overflow-x-auto rounded-lg border border-gray-100">
+                                <table className="min-w-full divide-y divide-gray-100 bg-white text-sm">
+                                  <tbody className="divide-y divide-gray-100">
+                                    {[...Array(10)].map((_, idx) => (
+                                      <tr key={idx} className="hover:bg-gray-50">
+                                        <td className="px-4 py-3">
+                                          <div className="h-4 w-8 bg-gray-100 animate-pulse rounded" />
+                                        </td>
+                                        <td className="px-4 py-3">
+                                          <div className="h-4 w-48 bg-gray-100 animate-pulse rounded" />
+                                        </td>
+                                        <td className="px-4 py-3">
+                                          <div className="h-4 w-32 bg-gray-100 animate-pulse rounded" />
+                                        </td>
+                                        <td className="px-4 py-3">
+                                          <div className="h-4 w-28 bg-gray-100 animate-pulse rounded" />
+                                        </td>
+                                        <td className="px-4 py-3">
+                                          <div className="h-4 w-20 bg-gray-100 animate-pulse rounded" />
+                                        </td>
+                                        <td className="px-4 py-3">
+                                          <div className="h-4 w-28 bg-gray-100 animate-pulse rounded" />
+                                        </td>
+                                        <td className="px-4 py-3">
+                                          <div className="h-8 w-24 bg-gray-100 animate-pulse rounded" />
+                                        </td>
+                                      </tr>
+                                    ))}
+                                  </tbody>
+                                </table>
+                              </div>
+                            </div>
+                          )}
+
+                          {!summaryLoading && tableSummaryData && tableSummaryData.length > 0 && (
+                            <DynamicTable
+                              data={tableSummaryData}
+                              columns={summarycolums}
+                            />
+                          )}
+
+                          {!summaryLoading && (!tableSummaryData || tableSummaryData.length === 0) && (
+                            <div className="flex justify-center items-center h-[343px]">
+                              <p>No data is currently available.</p>
+                            </div>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -1061,21 +1115,65 @@ export default function DashboardPage({ title }) {
                         </div>
                       )}
 
-                    <DynamicTable
-                      data={tableData}
-                      columns={columns}
-                      options={{
-                        responsiveLayout: true,
-                        rowHeader: {
-                          formatter: "rownum",
-                          headerSort: false,
-                          hozAlign: "center",
-                          resizable: false,
-                          frozen: true,
-                        },
-                      }}
-                      className="pt-5"
-                    />
+                    {loading && (
+                      <div className="p-4">
+                        <div className="overflow-x-auto rounded-lg border border-gray-100">
+                          <table className="min-w-full divide-y divide-gray-100 bg-white text-sm">
+                            <tbody className="divide-y divide-gray-100">
+                              {[...Array(10)].map((_, idx) => (
+                                <tr key={idx} className="hover:bg-gray-50">
+                                  <td className="px-4 py-3">
+                                    <div className="h-4 w-8 bg-gray-100 animate-pulse rounded" />
+                                  </td>
+                                  <td className="px-4 py-3">
+                                    <div className="h-4 w-28 bg-gray-100 animate-pulse rounded" />
+                                  </td>
+                                  <td className="px-4 py-3">
+                                    <div className="h-4 w-32 bg-gray-100 animate-pulse rounded" />
+                                  </td>
+                                  <td className="px-4 py-3">
+                                    <div className="h-4 w-24 bg-gray-100 animate-pulse rounded" />
+                                  </td>
+                                  <td className="px-4 py-3">
+                                    <div className="h-4 w-48 bg-gray-100 animate-pulse rounded" />
+                                  </td>
+                                  <td className="px-4 py-3">
+                                    <div className="h-4 w-20 bg-gray-100 animate-pulse rounded" />
+                                  </td>
+                                  <td className="px-4 py-3">
+                                    <div className="h-4 w-20 bg-gray-100 animate-pulse rounded" />
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                    )}
+
+                    {!loading && tableData && tableData.length > 0 && (
+                      <DynamicTable
+                        data={tableData}
+                        columns={columns}
+                        options={{
+                          responsiveLayout: true,
+                          rowHeader: {
+                            formatter: "rownum",
+                            headerSort: false,
+                            hozAlign: "center",
+                            resizable: false,
+                            frozen: true,
+                          },
+                        }}
+                        className="pt-5"
+                      />
+                    )}
+
+                    {!loading && (!tableData || tableData.length === 0) && (
+                      <div className="flex justify-center items-center h-[343px]">
+                        <p>No data is currently available.</p>
+                      </div>
+                    )}
                   </CardBody>
                 </Card>
               </Tab>

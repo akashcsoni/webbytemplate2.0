@@ -23,5 +23,9 @@ export default async function Home() {
     fetchSession();
   }, [pathname]);
 
-  return redirect(`/user/${authUser.username}/dashboard`);
+  const documentId = authUser?.documentId || authUser?.id;
+  if (documentId) {
+    return redirect(`/user/${documentId}/dashboard`);
+  }
+  return null;
 }
