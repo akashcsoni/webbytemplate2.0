@@ -153,6 +153,22 @@ export function CartProvider({ children }) {
     }
   }, [isLoggedIn, userId, authLoading, pathname]);
 
+  // Listen for storage events to sync cart across tabs
+  useEffect(() => {
+    const handleStorageChange = async (e) => {
+      // When cart is updated in another tab, refresh the cart
+      if (e.key === "cartUpdated" && cartId) {
+        // Small delay to ensure the server has processed the update
+        setTimeout(async () => {
+          await fetchCartById(cartId);
+        }, 100);
+      }
+    };
+
+    window.addEventListener("storage", handleStorageChange);
+    return () => window.removeEventListener("storage", handleStorageChange);
+  }, [cartId]);
+
   const createNewCart = async (includeUser = false) => {
     try {
       const token = themeConfig.TOKEN;
@@ -184,8 +200,22 @@ export function CartProvider({ children }) {
 
       if (!product) return;
 
-      // Step 2: Normalize current cartItems to flat format
-      const normalizedCart = cartItems.map((item) => ({
+      // Step 2: Always fetch the latest cart from server to avoid stale state across tabs
+      let latestCartItems = [];
+      try {
+        const token = themeConfig.TOKEN;
+        const res = await strapiGet(`carts/${currentId}`, { token });
+        if (res?.data?.products) {
+          latestCartItems = res.data.products;
+        }
+      } catch (fetchError) {
+        console.warn("Failed to fetch latest cart, using local state:", fetchError);
+        // Fallback to local state if fetch fails
+        latestCartItems = cartItems;
+      }
+
+      // Step 3: Normalize latest cartItems to flat format
+      const normalizedCart = latestCartItems.map((item) => ({
         product: item.product?.documentId,
         extra_info:
           item.extra_info?.map((info) => ({
@@ -194,7 +224,7 @@ export function CartProvider({ children }) {
           })) || [],
       }));
 
-      // Step 3: Replace existing entry if same product already exists
+      // Step 4: Replace existing entry if same product already exists
       const existingIndex = normalizedCart.findIndex(
         (item) => item.product === product.product
       );
@@ -220,6 +250,13 @@ export function CartProvider({ children }) {
         setCartId(id);
         setTotalPrice(totalPrice || 0);
         setCartItems(products || []);
+
+        // Notify other tabs that cart has been updated
+        try {
+          localStorage.setItem("cartUpdated", Date.now().toString());
+        } catch (e) {
+          // Ignore localStorage errors (e.g., in incognito mode)
+        }
 
         // ✅ Step 5: Track the add-to-cart action
         try {
@@ -257,12 +294,18 @@ export function CartProvider({ children }) {
           setTotalPrice(totalPrice || 0);
           setCartItems(products || []);
 
-                // ✅ Track remove event
-      await trackRemoveFromCart({
-        user_id: isLoggedIn ? userId : null,
-        product_id: productId,
-      });
+          // Notify other tabs that cart has been updated
+          try {
+            localStorage.setItem("cartUpdated", Date.now().toString());
+          } catch (e) {
+            // Ignore localStorage errors (e.g., in incognito mode)
+          }
 
+          // ✅ Track remove event
+          await trackRemoveFromCart({
+            user_id: isLoggedIn ? userId : null,
+            product_id: productId,
+          });
         }
       } catch (err) {
         console.error("Error removing from cart:", err);
