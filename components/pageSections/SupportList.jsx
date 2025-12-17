@@ -83,6 +83,11 @@ const ticketSupportPage = ({ title }) => {
     formRef.current?.reset();
   };
 
+  // Generate unique key for DynamicTable based on filterData to force remount on filter changes
+  const getTableKey = () => {
+    return `support-table-${JSON.stringify(filterData)}-${TabsSelected}`;
+  };
+
   const handleSubmitFormData = (e, name) => {
     setSubmitFormData((prev) => ({
       ...prev,
@@ -426,9 +431,27 @@ const ticketSupportPage = ({ title }) => {
   };
 
   function extractLabelParts(label) {
+    // Handle null, undefined, or empty values
+    if (!label || typeof label !== 'string') {
+      return {
+        orderDocumentId: null,
+        productDocumentId: null,
+        authorDocumentId: null,
+        custommerDocumentId: authUser?.documentId || null,
+        title: null,
+      };
+    }
+
     const parts = label.split(" / ");
     if (parts.length !== 3) {
-      throw new Error("Label format is incorrect");
+      // Return empty values instead of throwing error
+      return {
+        orderDocumentId: null,
+        productDocumentId: null,
+        authorDocumentId: null,
+        custommerDocumentId: authUser?.documentId || null,
+        title: null,
+      };
     }
 
     const [title, orderDocumentId, productDocumentId] = parts;
@@ -1335,6 +1358,7 @@ const ticketSupportPage = ({ title }) => {
 
                                 {!loading && filteredSupport ? (
                                   <DynamicTable
+                                    key={getTableKey()}
                                     data={filteredSupport}
                                     columns={columns}
                                     options={{
@@ -1421,8 +1445,22 @@ const ticketSupportPage = ({ title }) => {
                                           label="Product Name / Order Id / Product Id *"
                                           labelPlacement="outside"
                                           placeholder="Enter product name / order id / product id"
-                                          onSelectionChange={(e) => {
-                                            const result = extractLabelParts(e);
+                                          onSelectionChange={(value) => {
+                                            // Handle null/undefined values from Autocomplete
+                                            if (value === null || value === undefined) {
+                                              handleSubmitFormData(
+                                                {
+                                                  orderDocumentId: null,
+                                                  productDocumentId: null,
+                                                  authorDocumentId: null,
+                                                  custommerDocumentId: authUser?.documentId || null,
+                                                  title: null,
+                                                },
+                                                "product"
+                                              );
+                                              return;
+                                            }
+                                            const result = extractLabelParts(value);
                                             handleSubmitFormData(
                                               result,
                                               "product"
@@ -2117,6 +2155,7 @@ const ticketSupportPage = ({ title }) => {
 
                               {!loading && filteredSupportAuthor ? (
                                 <DynamicTable
+                                  key={getTableKey()}
                                   data={filteredSupportAuthor}
                                   columns={columns}
                                   options={{
@@ -2457,6 +2496,7 @@ const ticketSupportPage = ({ title }) => {
 
                             {!loading && filteredSupport ? (
                               <DynamicTable
+                                key={getTableKey()}
                                 data={filteredSupport}
                                 columns={columns}
                                 options={{
@@ -2543,8 +2583,22 @@ const ticketSupportPage = ({ title }) => {
                                       label="Product Name / Order Id / Product Id *"
                                       labelPlacement="outside"
                                       placeholder="Enter product name / order id / product id"
-                                      onSelectionChange={(e) => {
-                                        const result = extractLabelParts(e);
+                                      onSelectionChange={(value) => {
+                                        // Handle null/undefined values from Autocomplete
+                                        if (value === null || value === undefined) {
+                                          handleSubmitFormData(
+                                            {
+                                              orderDocumentId: null,
+                                              productDocumentId: null,
+                                              authorDocumentId: null,
+                                              custommerDocumentId: authUser?.documentId || null,
+                                              title: null,
+                                            },
+                                            "product"
+                                          );
+                                          return;
+                                        }
+                                        const result = extractLabelParts(value);
                                         handleSubmitFormData(result, "product");
                                       }}
                                       isInvalid={

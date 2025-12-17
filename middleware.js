@@ -190,6 +190,29 @@ export async function middleware(request) {
       }
     }
 
+    // Author-only route restriction - check BEFORE workspace validation
+    // This prevents non-authors from accessing ANY user's author-only routes
+    const authorOnlyPaths = ["dashboard", "products", "paymentTax", "profile"];
+
+    // Check if pathname is a /user/ path containing any author-only route segment
+    const isAuthorOnlyPath = pathname.startsWith('/user/') && 
+      authorOnlyPaths.some((segment) =>
+        pathname.includes(`/${segment}`) || pathname.includes(`/${segment}/`)
+      );
+
+    // If user is not an author and trying to access any author-only path, block it
+    if (position !== true && isAuthorOnlyPath && urlWorkspace) {
+      // If accessing own workspace, redirect to settings
+      if (documentId === urlWorkspace) {
+        return NextResponse.redirect(
+          new URL(`/user/${documentId}/setting`, request.url)
+        );
+      } else {
+        // If accessing another user's author-only path, redirect to home
+        return NextResponse.redirect(new URL(`/`, request.url));
+      }
+    }
+
     // Redirect if logged in user is accessing another user's workspace
     const notValidWorkspace =
       isLogin && documentId && urlWorkspace && documentId !== urlWorkspace;
@@ -216,19 +239,6 @@ export async function middleware(request) {
     // If not logged in, block access to /user/* paths
     if (!isLogin) {
       return NextResponse.redirect(new URL(`/`, request.url));
-    }
-
-    // Author-only route restriction
-    const authorOnlyPaths = ["dashboard", "products", "paymentTax"];
-
-    const isRestrictedForBuyer = authorOnlyPaths.some((segment) =>
-      pathname.includes(`/user/${documentId}/${segment}`)
-    );
-
-    if (position !== true && isRestrictedForBuyer) {
-      return NextResponse.redirect(
-        new URL(`/user/${documentId}/setting`, request.url)
-      );
     }
 
     // Check if user is trying to access become-an-author page

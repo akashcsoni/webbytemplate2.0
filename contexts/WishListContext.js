@@ -150,6 +150,22 @@ export function WishListProvider({ children }) {
     }
   }, [isLoggedIn, userId, authLoading, pathname]);
 
+  // Listen for storage events to sync wishlist across tabs
+  useEffect(() => {
+    const handleStorageChange = async (e) => {
+      // When wishlist is updated in another tab, refresh the wishlist
+      if (e.key === "wishlistUpdated" && wishlistId) {
+        // Small delay to ensure the server has processed the update
+        setTimeout(async () => {
+          await fetchWishlistById(wishlistId);
+        }, 100);
+      }
+    };
+
+    window.addEventListener("storage", handleStorageChange);
+    return () => window.removeEventListener("storage", handleStorageChange);
+  }, [wishlistId]);
+
   const createNewWishlist = async (includeUser = false) => {
     try {
       const token = themeConfig.TOKEN;
@@ -186,8 +202,22 @@ export function WishListProvider({ children }) {
         return;
       }
 
-      // Normalize current wishlist items
-      const normalizedWishlist = wishlistItems.map((item) => ({
+      // Always fetch the latest wishlist from server to avoid stale state across tabs
+      let latestWishlistItems = [];
+      try {
+        const token = themeConfig.TOKEN;
+        const res = await strapiGet(`wishlists/${currentId}`, { token });
+        if (res?.data?.products) {
+          latestWishlistItems = res.data.products;
+        }
+      } catch (fetchError) {
+        console.warn("Failed to fetch latest wishlist, using local state:", fetchError);
+        // Fallback to local state if fetch fails
+        latestWishlistItems = wishlistItems;
+      }
+
+      // Normalize latest wishlist items
+      const normalizedWishlist = latestWishlistItems.map((item) => ({
         product: item.product?.documentId || item.product?.id,
         extra_info:
           item.extra_info?.map((info) => ({
@@ -231,6 +261,13 @@ export function WishListProvider({ children }) {
         setWishListId(id);
         setTotalPrice(totalPrice || 0);
         setWishlistItems(products || []);
+
+        // Notify other tabs that wishlist has been updated
+        try {
+          localStorage.setItem("wishlistUpdated", Date.now().toString());
+        } catch (e) {
+          // Ignore localStorage errors (e.g., in incognito mode)
+        }
       } else {
         console.error("Invalid response from wishlist update:", res);
         throw new Error("Failed to update wishlist");
@@ -277,6 +314,13 @@ export function WishListProvider({ children }) {
         setWishListId(id);
         setTotalPrice(totalPrice || 0);
         setWishlistItems(products || []);
+
+        // Notify other tabs that wishlist has been updated
+        try {
+          localStorage.setItem("wishlistUpdated", Date.now().toString());
+        } catch (e) {
+          // Ignore localStorage errors (e.g., in incognito mode)
+        }
       } else {
         console.error("Invalid response from wishlist update:", res);
         throw new Error("Failed to update wishlist");
@@ -309,6 +353,13 @@ export function WishListProvider({ children }) {
         setWishListId(null);
         setTotalPrice(0);
         setWishlistItems([]);
+
+        // Notify other tabs that wishlist has been updated
+        try {
+          localStorage.setItem("wishlistUpdated", Date.now().toString());
+        } catch (e) {
+          // Ignore localStorage errors (e.g., in incognito mode)
+        }
       } else {
         console.error("Invalid response from wishlist update:", res);
         throw new Error("Failed to update wishlist");
@@ -341,6 +392,13 @@ export function WishListProvider({ children }) {
           setWishListId(id);
           setTotalPrice(totalPrice || 0);
           setWishlistItems(products || []);
+
+          // Notify other tabs that wishlist has been updated
+          try {
+            localStorage.setItem("wishlistUpdated", Date.now().toString());
+          } catch (e) {
+            // Ignore localStorage errors (e.g., in incognito mode)
+          }
         }
       } catch (err) {
         console.error("Error removing from wishlist:", err);
