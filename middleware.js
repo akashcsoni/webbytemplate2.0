@@ -119,7 +119,7 @@ export async function middleware(request) {
   const accessToken = request.cookies.get("authToken")?.value || null;
   const userData = request.cookies.get("authUser")?.value || null;
 
-  let username = null;
+  let documentId = null;
   let isLogin = false;
   let apiValidation = null;
   let position = false; // default
@@ -144,13 +144,13 @@ export async function middleware(request) {
     try {
       if (userData) {
         const parsedUser = JSON.parse(userData);
-        username = parsedUser?.username || null;
+        documentId = parsedUser?.documentId || parsedUser?.id || null;
         position = parsedUser?.author || false;
       }
     } catch (err) {
       console.error("Invalid JSON in authUser cookie:", err);
     }
-    ``
+    
     // Call API to validate token and get additional user data
     if (accessToken && isLogin) {
       try {
@@ -169,8 +169,8 @@ export async function middleware(request) {
           apiValidation = await apiResponse.json();
           isLogin = apiValidation ? true : false;
 
-          if (apiValidation?.username) {
-            username = apiValidation.username;
+          if (apiValidation?.documentId || apiValidation?.id) {
+            documentId = apiValidation.documentId || apiValidation.id;
           }
 
           if (apiValidation?.author) {
@@ -192,11 +192,11 @@ export async function middleware(request) {
 
     // Redirect if logged in user is accessing another user's workspace
     const notValidWorkspace =
-      isLogin && username && urlWorkspace && username !== urlWorkspace;
+      isLogin && documentId && urlWorkspace && documentId !== urlWorkspace;
 
     if (notValidWorkspace) {
       return NextResponse.redirect(
-        new URL(`/user/${username}/dashboard`, request.url)
+        new URL(`/user/${documentId}/dashboard`, request.url)
       );
     }
 
@@ -204,12 +204,12 @@ export async function middleware(request) {
     if (
       (pathname === "/user" ||
         pathname === "/user/" ||
-        pathname === `/user/${username}` ||
-        pathname === `/user/${username}/`) &&
+        pathname === `/user/${documentId}` ||
+        pathname === `/user/${documentId}/`) &&
       isLogin
     ) {
       return NextResponse.redirect(
-        new URL(`/user/${username}/dashboard`, request.url)
+        new URL(`/user/${documentId}/dashboard`, request.url)
       );
     }
 
@@ -222,21 +222,24 @@ export async function middleware(request) {
     const authorOnlyPaths = ["dashboard", "products", "paymentTax"];
 
     const isRestrictedForBuyer = authorOnlyPaths.some((segment) =>
-      pathname.includes(`/user/${username}/${segment}`)
+      pathname.includes(`/user/${documentId}/${segment}`)
     );
 
     if (position !== true && isRestrictedForBuyer) {
       return NextResponse.redirect(
-        new URL(`/user/${username}/setting`, request.url)
+        new URL(`/user/${documentId}/setting`, request.url)
       );
     }
 
-    const isAuthorTryingToBecomeAuthor =
-      position === true && pathname === `/user/${username}/become-an-author`;
+    // Check if user is trying to access become-an-author page
+    // Handle both with and without trailing slash, and check if user is already an author
+    const isBecomeAuthorPath = pathname.includes('/become-an-author');
+    const isAuthorTryingToBecomeAuthor = position === true && isBecomeAuthorPath;
 
-    if (isAuthorTryingToBecomeAuthor) {
+    if (isAuthorTryingToBecomeAuthor && documentId) {
+      // Redirect to authenticated user's dashboard
       return NextResponse.redirect(
-        new URL(`/user/${username}/dashboard`, request.url)
+        new URL(`/user/${documentId}/dashboard`, request.url)
       );
     }
   }

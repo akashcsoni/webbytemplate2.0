@@ -8,56 +8,42 @@ import {
   Checkbox,
   Image,
   Link,
-  Modal,
-  ModalContent,
-  ModalHeader,
-  ModalBody,
-  useDisclosure,
 } from "@heroui/react";
 import React, { useState } from "react";
 import { toast } from "react-hot-toast";
+import { useRouter } from "next/navigation";
 
 const page = () => {
-
-  const { isOpen, onOpen, onOpenChange } = useDisclosure();
+  const router = useRouter();
   const [isChecked, setIsChecked] = useState(false);
-  const [loading, setLoading] = useState(false); // <-- loading state
+  const [loading, setLoading] = useState(false);
   const { authUser } = useAuth();
 
   const handleCheckboxChange = (checked) => {
     setIsChecked(checked);
   };
 
-  const handleKeepGoing = () => {
-    if (isChecked) {
-      onOpen();
-    }
-  };
-
-  const handleYes = async () => {
-    setLoading(true); // start loading
-    onOpenChange();
+  const handleBecomeAuthor = async () => {
+    if (!isChecked) return;
+    
+    setLoading(true);
     try {
       const response = await strapiPut(`users/${authUser?.id}`, { author: true }, themeConfig.TOKEN)
       if (response) {
         toast.success("Profile Updated Successfully!");
         setIsChecked(false);
+        // Redirect to profile page with full page refresh
         setTimeout(() => {
-          window.location.reload();
-        }, 500)
+          window.location.href = `/user/${authUser?.documentId}/profile`;
+        }, 500);
       } else {
         toast.error("Failed to update profile. Please try again.");
       }
     } catch (error) {
       toast.error("An error occurred. Please try again later.");
     } finally {
-      setLoading(false); // stop loading
+      setLoading(false);
     }
-  };
-
-  const handleNo = () => {
-    onOpenChange();
-    setIsChecked(false);
   };
 
   return (
@@ -281,47 +267,9 @@ const page = () => {
                 </Link>
               </Checkbox>
             </div>
-            <Button className="btn btn-primary" onPress={handleKeepGoing} isDisabled={!isChecked || loading}>
+            <Button className="btn btn-primary" onPress={handleBecomeAuthor} isDisabled={!isChecked || loading}>
               {loading ? "Processing..." : "Keep Going"}
             </Button>
-            <Modal
-              backdrop="opaque"
-              classNames={{
-                body: "py-6",
-                backdrop: "bg-black/50 backdrop-opacity-40",
-                base: "border-[#292f46] bg-white px-2",
-                header: "border-b-[1px] border-primary/10 py-2 px-4",
-                closeButton: "hover:bg-white/5 active:bg-white/10",
-              }}
-              isOpen={isOpen}
-              radius="lg"
-              hideCloseButton={true}
-              onOpenChange={onOpenChange}
-            >
-              <ModalContent>
-                {() => (
-                  <>
-                    <ModalHeader className="flex items-center justify-between w-full gap-1">
-                      <h5>Become an Author</h5>
-                    </ModalHeader>
-                    <ModalBody className="p-4">
-                      <div className="flex flex-col gap-4 items-center">
-                        <p>Are you sure you want to become an author?</p>
-                        <div className="flex gap-4 justify-center">
-                          <Button color="primary" onPress={handleYes} isDisabled={loading}>
-                            {loading ? "Processing..." : "Yes"}
-                          </Button>
-                          <Button color="danger" onPress={handleNo} isDisabled={loading}>
-                            No
-                          </Button>
-                        </div>
-                      </div>
-                    </ModalBody>
-                  </>
-                )}
-              </ModalContent>
-            </Modal>
-            {/* MODAL END */}
           </div>
           <div className="lg:w-1/2">
             <Image

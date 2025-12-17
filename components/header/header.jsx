@@ -78,6 +78,11 @@ export default function Header() {
   const { toggleCart, cartItems } = useCart();
   const { wishlistItems } = useWishlist(); // wishlist count state
 
+  // Get documentId from authUser (documentId || id)
+  const getDocumentId = () => {
+    return authUser?.documentId || authUser?.id || "";
+  };
+
   useEffect(() => {
     const fetchMenuData = async () => {
       setIsMenuLoading(true);
@@ -660,7 +665,7 @@ strokeLinejoin="round"
                           </svg>
 
                           <span className="1xl:block hidden truncate 2xl:w-[80px] w-[75px]">
-                            Hello, {authUser?.username || "Name"}
+                            Hello, {authUser?.full_name || authUser?.username || "Name"}
                           </span>
 
                           {/* Arrow Icon */}
@@ -722,7 +727,7 @@ before:shadow-md before:rounded-sm"
                             <div className="z-20 relative xl:w-[12.5rem] md:w-[11rem] w-[10rem] origin-top-right rounded-md bg-white overflow-hidden">
                               <ul className="divide-y divide-primary/10">
                                 <li className="hover:bg-blue-300 group md:py-[10px] md:px-5 py-2 px-3">
-                                  <Link href={`/user/${authUser?.username}`}>
+                                  <Link href={`/user/${getDocumentId()}`}>
                                     <p className="block text-gray-800 group-hover:text-primary p2">
                                       My Account
                                     </p>
@@ -737,7 +742,7 @@ before:shadow-md before:rounded-sm"
                                 </li>
                                 <li className="hover:bg-blue-300 group md:py-[10px] md:px-5 py-2 px-3">
                                   <Link
-                                    href={`/user/${authUser?.username}/download`}
+                                    href={`/user/${getDocumentId()}/download`}
                                   >
                                     <p className="block text-gray-800 group-hover:text-primary p2">
                                       Downloads

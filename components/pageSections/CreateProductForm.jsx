@@ -572,8 +572,9 @@ export default function ProductsPage({
         }
 
         if (!id) {
+          const documentId = authUser?.documentId || authUser?.id;
           router.push(
-            `/user/${authUser?.username}/products/edit/${response?.data?.documentId}`
+            `/user/${documentId}/products/edit/${response?.data?.documentId}`
           );
         }
       } else {

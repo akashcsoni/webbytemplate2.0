@@ -96,21 +96,26 @@ export default function AuthorHeader({ authUser }) {
 
   const isAuthor = authUser?.author === true;
 
+  // Get documentId from authUser (documentId || id)
+  const getDocumentId = () => {
+    return authUser?.documentId || authUser?.id || "";
+  };
+
   const commonItems = [
     {
-      id: "profile-settiings",
-      label: "Profile Settiings",
-      path: `/user/${authUser?.username}/setting`,
+      id: "settiings",
+      label: "Settiing",
+      path: `/user/${getDocumentId()}/setting`,
     },
     {
       id: "downloads",
       label: "Downloads",
-      path: `/user/${authUser?.username}/download`,
+      path: `/user/${getDocumentId()}/download`,
     },
     {
       id: "ticket-support",
       label: isAuthor ? "Tickets / Support" : "Support",
-      path: `/user/${authUser?.username}/support`,
+      path: `/user/${getDocumentId()}/support`,
     },
   ];
 
@@ -118,25 +123,25 @@ export default function AuthorHeader({ authUser }) {
     {
       id: "dashboard",
       label: "Dashboard",
-      path: `/user/${authUser?.username}/dashboard`,
+      path: `/user/${getDocumentId()}/dashboard`,
     },
     {
       id: "products",
       label: "Products",
-      path: `/user/${authUser?.username}/products/list`,
+      path: `/user/${getDocumentId()}/products/list`,
     },
-    // {
-    //   id: "paymentTax",
-    //   label: "Payment & tax set up",
-    //   path: `/user/${authUser?.username}/paymentTax`,
-    // },
+    {
+      id: "profile",
+      label: "Profile",
+      path: `/user/${getDocumentId()}/profile`,
+    }
   ];
 
   const nonAuthorExtra = [
     {
       id: "become-an-author",
       label: "Become an Author",
-      path: `/user/${authUser?.username}/become-an-author`,
+      path: `/user/${getDocumentId()}/become-an-author`,
     },
   ];
 
@@ -457,7 +462,7 @@ export default function AuthorHeader({ authUser }) {
                 className="inline-flex items-center 1xl:gap-2 text-white rounded-full focus:outline-none sm:m-0 mr-[5px]"
               >
                 <span className="1xl:block hidden truncate 2xl:w-[80px] w-[75px]">
-                  Hello, {authUser?.username || "Name"}
+                  Hello, {authUser?.profile_name || authUser?.username || "Name"}
                 </span>
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
