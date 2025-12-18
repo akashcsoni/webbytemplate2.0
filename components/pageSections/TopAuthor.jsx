@@ -40,6 +40,8 @@ const TopAuthor = ({ title, description }) => {
   const [activePage, setActivePage] = useState(1);
   const [activeFilter, setActiveFilter] = useState("by_sales"); // default
   const [loading, setLoading] = useState(true);
+  const [allAuthors, setAllAuthors] = useState([]); // Store all authors when fetched
+  const [showAllOnOnePage, setShowAllOnOnePage] = useState(false);
   const currentUrl = typeof window !== "undefined" ? window.location.href : "";
   const skeletonCount = 8; // always show 8 skeletons while loading
 
@@ -74,12 +76,12 @@ const TopAuthor = ({ title, description }) => {
 
   const pageSize = 12;
 
-  const getAuthore = async () => {
+  const getAuthore = async (page = activePage, fetchAll = false) => {
     try {
       setLoading(true);
       const payload = {
         page_size: pageSize,
-        page: activePage,
+        page: page,
         filter: activeFilter,
       };
 
@@ -89,8 +91,66 @@ const TopAuthor = ({ title, description }) => {
         themeConfig.TOKEN
       );
 
-      setAuthor(productData?.authors);
-      setPagination(productData?.pagination);
+      if (fetchAll) {
+        // Fetch all pages and combine authors
+        const allPagesData = [productData];
+        const totalPages = productData?.pagination?.pageCount || 1;
+        
+        if (totalPages > 1) {
+          const remainingPages = [];
+          for (let i = 2; i <= totalPages; i++) {
+            const pagePayload = {
+              page_size: pageSize,
+              page: i,
+              filter: activeFilter,
+            };
+            remainingPages.push(
+              strapiPost(`top-authors`, pagePayload, themeConfig.TOKEN)
+            );
+          }
+          const remainingData = await Promise.all(remainingPages);
+          allPagesData.push(...remainingData);
+        }
+
+        // Combine all authors from all pages
+        const combinedAuthors = allPagesData.flatMap((data) => data?.authors || []);
+        setAllAuthors(combinedAuthors);
+        setAuthor(combinedAuthors);
+        setPagination({ ...productData?.pagination, pageCount: 1 }); // Set pageCount to 1 to hide pagination
+        setShowAllOnOnePage(true);
+      } else {
+        const filteredCount = (productData?.authors || []).filter(
+          (company) => company?.totalProducts > 0
+        ).length;
+        const pageCount = productData?.pagination?.pageCount || 0;
+        
+        // If there are multiple pages but very few authors per page (1-2),
+        // automatically fetch all pages and show on one page
+        if (pageCount > 1 && filteredCount <= 2 && page === 1) {
+          // Fetch all pages
+          const allPagesData = [productData];
+          for (let i = 2; i <= pageCount; i++) {
+            const pagePayload = {
+              page_size: pageSize,
+              page: i,
+              filter: activeFilter,
+            };
+            const pageData = await strapiPost(`top-authors`, pagePayload, themeConfig.TOKEN);
+            allPagesData.push(pageData);
+          }
+          
+          const combinedAuthors = allPagesData.flatMap((data) => data?.authors || []);
+          setAllAuthors(combinedAuthors);
+          setAuthor(combinedAuthors);
+          setPagination({ ...productData?.pagination, pageCount: 1 });
+          setShowAllOnOnePage(true);
+        } else {
+          setAuthor(productData?.authors);
+          setPagination(productData?.pagination);
+          setShowAllOnOnePage(false);
+        }
+      }
+      
       setLoading(false);
     } catch (err) {
       setLoading(false);
@@ -433,7 +493,23 @@ const TopAuthor = ({ title, description }) => {
               ))}
         </div>
 
-        {author?.length > 0 && pagination?.total > pageSize && (
+        {(() => {
+          if (!author?.length) return false;
+          
+          // Count authors that actually have products (filtered authors)
+          const filteredAuthors = author.filter((company) => company?.totalProducts > 0);
+          const filteredCount = filteredAuthors.length;
+          
+          // If there are multiple pages (pageCount > 1), always show pagination
+          // This allows navigation between pages even if each page has few authors
+          if (pagination?.pageCount > 1) {
+            return true;
+          }
+          
+          // If only one page, only show pagination if filtered authors exceed page size
+          // This handles cases where backend returns all on one page but we want pagination
+          return filteredCount > pageSize;
+        })() && (
           <div className="flex justify-center sm:mt-[25px] lg:mt-[20px] mt-4 gap-2 text-sm">
             <button
               className="px-3 py-1 w-10 h-10 border rounded flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
