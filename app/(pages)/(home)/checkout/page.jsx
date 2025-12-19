@@ -536,94 +536,78 @@ export default function CheckoutPage() {
         setpayNowLoading(false);
 
         // 2. Create Razorpay order in backend
-        if (selectedCountry === "India") {
-          // ✅ Razorpay Flow
-          const razorpayOrderRes = await strapiPost("razorpay/create-order", {
-            amount: orderData.total_price + orderData.tax_amount || 500, // ₹500 = 50000 paise
-            strapi_order_id: orderData.id,
-            user_id: orderData?.user?.id,
-          });
-          const razorpayOrder = razorpayOrderRes.order;
-          const razorpayKey = razorpayOrderRes.key_id;
-          // 3. Setup Razorpay options
-          const options = {
-            key: razorpayKey, // From backend
-            amount: razorpayOrder.amount,
-            currency: razorpayOrder.currency,
-            name: "WebbyTemplate",
-            description: "Order Payment",
-            order_id: razorpayOrder.id,
-            handler: async function (razorpayResponse) {
-              // Keep redirect loading active during verification
-              try {
-                // 4. Verify payment
-                await strapiPost("razorpay/verify", {
-                  ...razorpayResponse,
-                  strapi_order_id: orderData.id,
-                  user_id: orderData?.user?.id,
-                });
-                // Give the overlay a frame to render before navigation
-                setTimeout(() => {
-                  router.push(`/thank-you/${orderData?.documentId}`);
-                }, 100);
-              } catch (e) {
-                console.error("Verification failed:", e);
-                setRedirectLoading(false);
-                setpayNowLoading(false);
-              }
-            },
-            modal: {
-              ondismiss: function () {
-                // 🚫 User closed popup without doing anything
-                setRedirectLoading(false);
-                setpayNowLoading(false);
-                router.push("/");
-              },
-            },
-            prefill: {
-              name: "Webby Template",
-              email: "webby@example.com",
-              contact: "9876543210",
-            },
-            theme: {
-              color: "#3399cc",
-            },
-          };
-          // 5. Open Razorpay Checkout
-          const rzp = new Razorpay(options);
 
-          rzp.on("payment.failed", async function (response) {
-            const orderId = response.error.metadata?.order_id;
-
-            if (orderId) {
-              await strapiPost("razorpay/fail", {
-                razorpay_order_id: orderId,
-                reason: response.error.description || "Payment failed",
+        // ✅ Razorpay Flow
+        const razorpayOrderRes = await strapiPost("razorpay/create-order", {
+          amount: orderData.total_price + orderData.tax_amount || 500, // ₹500 = 50000 paise
+          strapi_order_id: orderData.id,
+          user_id: orderData?.user?.id,
+        });
+        const razorpayOrder = razorpayOrderRes.order;
+        const razorpayKey = razorpayOrderRes.key_id;
+        // 3. Setup Razorpay options
+        const options = {
+          key: razorpayKey, // From backend
+          amount: razorpayOrder.amount,
+          currency: razorpayOrder.currency,
+          name: "WebbyTemplate",
+          description: "Order Payment",
+          order_id: razorpayOrder.id,
+          handler: async function (razorpayResponse) {
+            // Keep redirect loading active during verification
+            try {
+              // 4. Verify payment
+              await strapiPost("razorpay/verify", {
+                ...razorpayResponse,
                 strapi_order_id: orderData.id,
+                user_id: orderData?.user?.id,
               });
+              // Give the overlay a frame to render before navigation
+              setTimeout(() => {
+                router.push(`/thank-you/${orderData?.documentId}`);
+              }, 100);
+            } catch (e) {
+              console.error("Verification failed:", e);
+              setRedirectLoading(false);
+              setpayNowLoading(false);
             }
+          },
+          modal: {
+            ondismiss: function () {
+              // 🚫 User closed popup without doing anything
+              setRedirectLoading(false);
+              setpayNowLoading(false);
+              router.push("/");
+            },
+          },
+          prefill: {
+            name: "Webby Template",
+            email: "webby@example.com",
+            contact: "9876543210",
+          },
+          theme: {
+            color: "#3399cc",
+          },
+        };
+        // 5. Open Razorpay Checkout
+        const rzp = new Razorpay(options);
 
-            setRedirectLoading(false);
-            setpayNowLoading(false);
-          });
+        rzp.on("payment.failed", async function (response) {
+          const orderId = response.error.metadata?.order_id;
 
-          rzp.open();
-        } else {
-          // ✅ Stripe Flow
-          const stripeRes = await strapiPost("stripe/create-checkout-session", {
-            amount: orderData.total_price,
-            strapi_order_id: orderData.id, // ✅ Required for metadata
-            user_id: orderData.user?.id,
-            redirect_id: orderData?.documentId,
-          });
-
-          if (stripeRes?.url) {
-            // Keep redirect loading active for Stripe redirect
-            window.location.href = stripeRes.url;
-          } else {
-            throw new Error("Stripe session creation failed");
+          if (orderId) {
+            await strapiPost("razorpay/fail", {
+              razorpay_order_id: orderId,
+              reason: response.error.description || "Payment failed",
+              strapi_order_id: orderData.id,
+            });
           }
-        }
+
+          setRedirectLoading(false);
+          setpayNowLoading(false);
+        });
+
+        rzp.open();
       } else {
         setpayNowLoading(false);
         setRedirectLoading(false);
@@ -729,15 +713,15 @@ export default function CheckoutPage() {
       {/* Login prompt for returning customers */}
       {!authLoading && !isAuthenticated && (
         // <div className="m-3">
-          <div className="text-lg w-full rounded-1xl border border-green-100 font-bold leading-tight bg-[#d8efff] p-4 pr-8 relative">
-            Returning customer?{" "}
-            <button
-              onClick={() => openAuth("login")}
-              className="underline underline-offset-1"
-            >
-              Click here to login
-            </button>
-          </div>
+        <div className="text-lg w-full rounded-1xl border border-green-100 font-bold leading-tight bg-[#d8efff] p-4 pr-8 relative">
+          Returning customer?{" "}
+          <button
+            onClick={() => openAuth("login")}
+            className="underline underline-offset-1"
+          >
+            Click here to login
+          </button>
+        </div>
         // </div>
       )}
 
