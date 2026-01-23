@@ -260,7 +260,7 @@ const CreateUserProfileForm = ({
 
     const getTokenData = async () => {
         try {
-            const response = await fetch("/api/auth/session");
+            const response = await fetch("/api/app-auth/session");
             if (!response.ok) {
                 throw new Error("Network response was not ok");
             }

@@ -7,7 +7,7 @@ export default async function Home() {
   const pathname = usePathname();
   const fetchSession = async () => {
     try {
-      const res = await fetch("/api/auth/session");
+      const res = await fetch("/api/app-auth/session");
       if (res.ok) {
         const data = await res.json();
         if (data.authUser) {
