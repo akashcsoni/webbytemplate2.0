@@ -18,7 +18,7 @@ export function AuthProvider({ children }) {
 
     const fetchSession = async () => {
         try {
-            const res = await fetch("/api/auth/session", {
+            const res = await fetch("/api/app-auth/session", {
                 method: "GET",
             }) // Adjust to your endpoint
             if (res.ok) {
@@ -64,7 +64,7 @@ export function AuthProvider({ children }) {
 
     const logout = async () => {
         try {
-            const res = await fetch("/api/auth/logout", {
+            const res = await fetch("/api/app-auth/logout", {
                 method: "POST",
             })
 
