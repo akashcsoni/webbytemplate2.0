@@ -1,24 +1,3 @@
 User-agent: *
-Allow: /
-
-# Block user account and private sections
-Disallow: /account
-Disallow: /my-account/
-Disallow: /admin/
-Disallow: /user
-
-# Block shopping cart and checkout pages
-Disallow: /cart/
-Disallow: /checkout/
-
-# Block technical folders (Next.js output and internal APIs)
-Disallow: /_next/
-
-# Block URLs with tracking parameters (prevents duplicate content from Google tracking)
-Disallow: /*?*gclid=*
-Disallow: /*?*fbclid=*
-Disallow: /*?*utm_*
-
-# Sitemaps
-Sitemap: https://www.webbytemplate.com/sitemap.xml
+Disallow: /
 

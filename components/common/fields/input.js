@@ -55,7 +55,7 @@ export default function FormInput({
       {labelText ? (
         <label
           htmlFor={inputId}
-          className="2xl:text-base md:text-[15px] sm:text-sm !text-black block !pb-1 !font-normal"
+          className="2xl:text-base md:text-[15px] sm:text-sm !text-black block !pb-1.5 !font-normal"
         >
           {labelText}
         </label>
@@ -66,9 +66,8 @@ export default function FormInput({
         name={data?.name}
         aria-label={labelText || data?.placeholder || data?.name || "input"}
         classNames={{
-          input: `xl:!text-base sm:!text-sm placeholder:!text-gray-300 placeholder:!font-light ${
-            data?.startContent && "!pl-3"
-          }  ${data?.classNames?.input || ""}`,
+          input: `xl:!text-base sm:!text-sm placeholder:!text-gray-300 placeholder:!font-light ${data?.startContent && "!pl-3"
+            }  ${data?.classNames?.input || ""}`,
           inputWrapper: `
       block w-full rounded
       xl:px-5 md:px-4 px-3

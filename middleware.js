@@ -228,7 +228,7 @@ export async function middleware(request) {
       (pathname === "/user" ||
         pathname === "/user/" ||
         pathname === `/user/${documentId}` ||
-        pathname === `/user/${documentId}/`) &&
+        pathname === `-`) &&
       isLogin
     ) {
       return NextResponse.redirect(

@@ -13,6 +13,7 @@ import { Listbox } from "@headlessui/react";
 import { input } from "@heroui/theme";
 
 const AccountInformationForm = ({ button, userData }) => {
+
   const [saveLoading, setSaveLoading] = useState(false);
   const [formValues, setFormValues] = useState({});
   const [validationErrors, setValidationErrors] = useState({});
@@ -121,7 +122,7 @@ const AccountInformationForm = ({ button, userData }) => {
       rules: ["required"],
       classNames: {
         inputWrapper: "!overflow-hidden",
-        input:"!outline-none",
+        input: "!outline-none",
       },
       class: "w-full lg:w-1/3 xl:w-1/3 !p-[5px]",
     },
@@ -134,7 +135,7 @@ const AccountInformationForm = ({ button, userData }) => {
       html: "input",
       classNames: {
         inputWrapper: "!overflow-hidden",
-        input:"!outline-none",
+        input: "!outline-none",
       },
       description: "Maximum 50 characters. No special symbols.",
       validation: { required: "Last name is required" },
@@ -150,14 +151,12 @@ const AccountInformationForm = ({ button, userData }) => {
       html: "input",
       readOnly: isEmailLocked,
       classNames: {
-        inputWrapper: `!overflow-hidden ${
-          isEmailLocked
-            ? "!cursor-not-allowed !bg-gray-50 !border-gray-200 !shadow-none !ring-0 focus-within:!ring-0 focus-within:!shadow-none focus-within:!border-gray-200"
+        inputWrapper: `!overflow-hidden ${isEmailLocked
+            ? "!cursor-not-allowed !bg-gray-50 !shadow-none !ring-0 focus-within:!ring-0 focus-within:!shadow-none focus-within:!border-gray-200"
             : ""
-        }`,
-        input: `!outline-none ${
-          isEmailLocked ? "!cursor-not-allowed !text-gray-400" : ""
-        }`,
+          }`,
+        input: `!outline-none ${isEmailLocked ? "!cursor-not-allowed !text-gray-400" : ""
+          }`,
       },
       endContent: isEmailVerified ? <VerifiedBadge /> : null,
       description: isGoogleAuth
@@ -417,7 +416,7 @@ const AccountInformationForm = ({ button, userData }) => {
 
   if (!defaultValueData || Object.keys(defaultValueData).length === 0) {
     return (
-      <div className="border border-primary/10 rounded-md overflow-hidden mb-[20px] bg-white">
+      <div className="border border-primary/10 rounded-md overflow-visible mb-[20px] bg-white">
         <div className="flex items-center justify-between sm:flex-nowrap flex-wrap gap-1.5 w-full border-b border-primary/10 sm:px-5 px-3 py-[6px] bg-white overflow-hidden">
           <p className="text-black">Account Information</p>
         </div>
@@ -479,7 +478,7 @@ const AccountInformationForm = ({ button, userData }) => {
 
 
   return (
-    <div className="border border-primary/10 rounded-md overflow-hidden mb-[20px] bg-white">
+    <div className="border border-primary/10 rounded-md overflow-visible mb-[20px] bg-white">
       <div className="flex items-center justify-between sm:flex-nowrap flex-wrap gap-1.5 w-full border-b border-primary/10 sm:px-5 px-3 py-[6px] bg-white overflow-hidden">
         <p className="text-black">Account Information</p>
       </div>
@@ -513,11 +512,11 @@ const AccountInformationForm = ({ button, userData }) => {
                       className="w-full sm:w-full lg:w-1/2 xl:w-1/2 !p-[5px] relative"
                       ref={countryRef}
                     >
-                      <label className="p2 !text-black pb-[6px] block">Country *</label>
+                      <label className="p2 !text-black pb-1.5 block">Country *</label>
                       <div className="relative">
                         <div
-                          className={`border xl:text-[16px] text-[12px] ${validationErrors.country ? "border-red-500" : "border-gray-100"} text-gray-300 placeholder:text-gray-300 py-[11px] px-2 rounded-[5px] w-full cursor-pointer flex justify-between items-center`}
-                          onClick={toggleCountryDropdown}
+                          className={`border xl:text-[16px] text-[12px] ${validationErrors.country ? "border-red-500" : "border-gray-100"} text-gray-300 placeholder:text-gray-300 py-[11px] px-2 rounded-[5px] w-full flex justify-between items-center ${isPhoneVerified ? "cursor-not-allowed opacity-80 bg-gray-50 pointer-events-none" : "cursor-pointer"}`}
+                          onClick={isPhoneVerified ? undefined : toggleCountryDropdown}
                         >
                           <div className="relative w-full flex gap-2 items-center justify-start cursor-pointer">
                             {filteredflag?.[0] && (
@@ -550,7 +549,7 @@ const AccountInformationForm = ({ button, userData }) => {
                           </div>
                         </div>
 
-                        {isCountryDropdownOpen && (
+                        {!isPhoneVerified && isCountryDropdownOpen && (
                           <div className="p2 absolute left-0 right-0 mt-1 border border-gray-100 bg-white rounded-b-md shadow-lg z-10 max-h-60 overflow-hidden">
                             <div className="p-2 border-b border-gray-100">
                               <input
@@ -628,7 +627,7 @@ const AccountInformationForm = ({ button, userData }) => {
                       key={`account-field-${index}`}
                       className="w-full lg:w-1/2 xl:w-1/2 !p-[5px]"
                     >
-                      <label className="p2 !text-black block mb-[6px]">
+                      <label className="p2 !text-black block pb-1.5">
                         Mobile Number *
                       </label>
                       <div
@@ -661,10 +660,13 @@ const AccountInformationForm = ({ button, userData }) => {
                           placeholder="Enter your mobile number"
                           value={stripDialCode(formValues.phone_no) || ""}
                           onChange={(e) => {
+                            if (isPhoneVerified) return;
                             const value = e.target.value.replace(/\D/g, "");
                             handleFieldChange("phone_no", value);
                           }}
-                          className="outline-none w-full ml-2 text-gray-200 xl:text-base text-sm"
+                          readOnly={isPhoneVerified}
+                          disabled={isPhoneVerified}
+                          className={`outline-none w-full ml-2 text-gray-200 xl:text-base text-sm ${isPhoneVerified ? "cursor-not-allowed bg-gray-50" : ""}`}
                           maxLength={15}
                         />
                         {isPhoneVerified ? <VerifiedBadge /> : null}
@@ -721,13 +723,14 @@ const AccountInformationForm = ({ button, userData }) => {
               <Button
                 type="submit"
                 disabled={saveLoading}
-                className="group btn btn-primary flex items-center justify-center gap-[10px] sm:mt-6 mt-3"
+                className="group btn btn-primary flex items-center justify-center ml-auto mr-0 gap-[10px] sm:mt-6 mt-3"
               >
+                Save and Change
                 {saveLoading && (
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
-                    width="30"
-                    height="30"
+                    width="22"
+                    height="22"
                     viewBox="0 0 50 50"
                     fill="none"
                   >
@@ -777,9 +780,120 @@ const AccountInformationForm = ({ button, userData }) => {
                         repeatCount="indefinite"
                       />
                     </circle>
+                    <circle
+                      cx="17.500000000000004"
+                      cy="37.99038105676658"
+                      r="3"
+                      fill="currentColor"
+                    >
+                      <animate
+                        attributeName="opacity"
+                        values="1;0.2;1"
+                        dur="1.2s"
+                        begin="0.4s"
+                        repeatCount="indefinite"
+                      />
+                    </circle>
+                    <circle
+                      cx="12.00961894323342"
+                      cy="32.5"
+                      r="3"
+                      fill="currentColor"
+                    >
+                      <animate
+                        attributeName="opacity"
+                        values="1;0.2;1"
+                        dur="1.2s"
+                        begin="0.5s"
+                        repeatCount="indefinite"
+                      />
+                    </circle>
+                    <circle
+                      cx="10"
+                      cy="25.000000000000004"
+                      r="3"
+                      fill="currentColor"
+                    >
+                      <animate
+                        attributeName="opacity"
+                        values="1;0.2;1"
+                        dur="1.2s"
+                        begin="0.6000000000000001s"
+                        repeatCount="indefinite"
+                      />
+                    </circle>
+                    <circle
+                      cx="12.009618943233418"
+                      cy="17.500000000000004"
+                      r="3"
+                      fill="currentColor"
+                    >
+                      <animate
+                        attributeName="opacity"
+                        values="1;0.2;1"
+                        dur="1.2s"
+                        begin="0.7000000000000001s"
+                        repeatCount="indefinite"
+                      />
+                    </circle>
+                    <circle
+                      cx="17.499999999999993"
+                      cy="12.009618943233423"
+                      r="3"
+                      fill="currentColor"
+                    >
+                      <animate
+                        attributeName="opacity"
+                        values="1;0.2;1"
+                        dur="1.2s"
+                        begin="0.8s"
+                        repeatCount="indefinite"
+                      />
+                    </circle>
+                    <circle
+                      cx="24.999999999999996"
+                      cy="10"
+                      r="3"
+                      fill="currentColor"
+                    >
+                      <animate
+                        attributeName="opacity"
+                        values="1;0.2;1"
+                        dur="1.2s"
+                        begin="0.9s"
+                        repeatCount="indefinite"
+                      />
+                    </circle>
+                    <circle
+                      cx="32.5"
+                      cy="12.009618943233422"
+                      r="3"
+                      fill="currentColor"
+                    >
+                      <animate
+                        attributeName="opacity"
+                        values="1;0.2;1"
+                        dur="1.2s"
+                        begin="1s"
+                        repeatCount="indefinite"
+                      />
+                    </circle>
+                    <circle
+                      cx="37.99038105676658"
+                      cy="17.499999999999993"
+                      r="3"
+                      fill="currentColor"
+                    >
+                      <animate
+                        attributeName="opacity"
+                        values="1;0.2;1"
+                        dur="1.2s"
+                        begin="1.1s"
+                        repeatCount="indefinite"
+                      />
+                    </circle>
                   </svg>
                 )}
-                Save and Change
               </Button>
             </div>
           )}
@@ -790,4 +904,3 @@ const AccountInformationForm = ({ button, userData }) => {
 };
 
 export default AccountInformationForm;
-

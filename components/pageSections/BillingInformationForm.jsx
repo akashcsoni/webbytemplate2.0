@@ -157,7 +157,7 @@ const BillingInformationForm = ({ button, userData }) => {
         inputWrapper: "!overflow-hidden",
         input: "!outline-none",
       },
-      class: "w-full sm:w-full lg:w-1/3 xl:w-1/3 !p-[5px]",
+      class: "w-full sm:w-full lg:w-1/2 xl:w-1/2 !p-[5px]",
     },
     {
       position: 5,
@@ -620,16 +620,16 @@ const BillingInformationForm = ({ button, userData }) => {
                       key="billing-phone-field"
                       className="w-full lg:w-1/2 xl:w-1/2 !p-[5px]"
                     >
-                      <label className="p2 !text-black block mb-[6px]">
+                      <label className="p2 !text-black block pb-1.5">
                         Billing Mobile Number *
                       </label>
                       <div
                         className={`flex items-center border rounded-[4px] overflow-visible xl:py-[11px] py-[9px] px-2 bg-white ${validationErrors.billing_phone_no
-                            ? "border-red-500"
-                            : "border-gray-100"
+                          ? "border-red-500"
+                          : "border-gray-100"
                           }`}
                       >
-                        <div className="border-r border-gray-100 pr-[10px] flex items-center justify-center">
+                        <div className="border-r border-gray-100 pr-[10px] flex items-center justify-center flex-shrink-0">
                           <Image
                             src={
                               filteredflag?.[0]?.flag ||
@@ -698,10 +698,10 @@ const BillingInformationForm = ({ button, userData }) => {
                   elements.push(
                     <div
                       key="billing-country-field"
-                      className="w-full sm:w-full lg:w-1/3 xl:w-1/3 !p-[5px] relative"
+                      className="w-full sm:w-full lg:w-1/2 xl:w-1/2 !p-[5px] relative"
                       ref={countryRef}
                     >
-                      <label className="p2 !text-black mb-[6px]">Country *</label>
+                      <label className="p2 !text-black pb-1.5 block">Country *</label>
                       <div className="relative">
                         <div
                           className={`border p2 ${validationErrors.billing_country ? "border-red-500" : "border-gray-100"} text-gray-300 placeholder:text-gray-300 2xl:py-[11px] xl:py-[13px] md:py-[11px] py-[10px] rounded-[5px] 1xl:px-5 px-3 w-full cursor-pointer flex justify-between items-center`}
@@ -826,7 +826,7 @@ const BillingInformationForm = ({ button, userData }) => {
                       className="w-full sm:w-full lg:w-1/2 xl:w-1/2 !p-[5px] relative"
                       ref={stateRef}
                     >
-                      <label className="p2 !text-black pb-1">State/Province *</label>
+                      <label className="p2 !text-black pb-1.5 block">State/Province *</label>
                       <div className="relative">
                         <div
                           className={`border p2 ${validationErrors.state ? "border-red-500" : "border-gray-100"} !text-gray-300 placeholder:!text-gray-300 2xl:py-[11px] xl:py-[13px] md:py-[11px] py-[10px] rounded-[5px] 1xl:px-5 px-3 w-full ${selectedCountry ? "cursor-pointer" : "cursor-not-allowed opacity-50"} flex justify-between items-center`}
@@ -900,13 +900,14 @@ const BillingInformationForm = ({ button, userData }) => {
             <Button
               type="submit"
               disabled={saveLoading}
-              className="group btn btn-primary flex items-center justify-center gap-[10px] w-[220px] xl:!py-[11px] py-[10px] h-auto sm:mt-5 mt-3"
+              className="group btn btn-primary flex items-center justify-center gap-[10px] h-auto sm:mt-5 mt-3 ml-auto mr-0"
             >
+              Save Billing Information
               {saveLoading && (
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
-                  width="30"
-                  height="30"
+                  width="22"
+                  height="22"
                   viewBox="0 0 50 50"
                   fill="none"
                 >
@@ -956,9 +957,120 @@ const BillingInformationForm = ({ button, userData }) => {
                       repeatCount="indefinite"
                     />
                   </circle>
+                  <circle
+                    cx="17.500000000000004"
+                    cy="37.99038105676658"
+                    r="3"
+                    fill="currentColor"
+                  >
+                    <animate
+                      attributeName="opacity"
+                      values="1;0.2;1"
+                      dur="1.2s"
+                      begin="0.4s"
+                      repeatCount="indefinite"
+                    />
+                  </circle>
+                  <circle
+                    cx="12.00961894323342"
+                    cy="32.5"
+                    r="3"
+                    fill="currentColor"
+                  >
+                    <animate
+                      attributeName="opacity"
+                      values="1;0.2;1"
+                      dur="1.2s"
+                      begin="0.5s"
+                      repeatCount="indefinite"
+                    />
+                  </circle>
+                  <circle
+                    cx="10"
+                    cy="25.000000000000004"
+                    r="3"
+                    fill="currentColor"
+                  >
+                    <animate
+                      attributeName="opacity"
+                      values="1;0.2;1"
+                      dur="1.2s"
+                      begin="0.6000000000000001s"
+                      repeatCount="indefinite"
+                    />
+                  </circle>
+                  <circle
+                    cx="12.009618943233418"
+                    cy="17.500000000000004"
+                    r="3"
+                    fill="currentColor"
+                  >
+                    <animate
+                      attributeName="opacity"
+                      values="1;0.2;1"
+                      dur="1.2s"
+                      begin="0.7000000000000001s"
+                      repeatCount="indefinite"
+                    />
+                  </circle>
+                  <circle
+                    cx="17.499999999999993"
+                    cy="12.009618943233423"
+                    r="3"
+                    fill="currentColor"
+                  >
+                    <animate
+                      attributeName="opacity"
+                      values="1;0.2;1"
+                      dur="1.2s"
+                      begin="0.8s"
+                      repeatCount="indefinite"
+                    />
+                  </circle>
+                  <circle
+                    cx="24.999999999999996"
+                    cy="10"
+                    r="3"
+                    fill="currentColor"
+                  >
+                    <animate
+                      attributeName="opacity"
+                      values="1;0.2;1"
+                      dur="1.2s"
+                      begin="0.9s"
+                      repeatCount="indefinite"
+                    />
+                  </circle>
+                  <circle
+                    cx="32.5"
+                    cy="12.009618943233422"
+                    r="3"
+                    fill="currentColor"
+                  >
+                    <animate
+                      attributeName="opacity"
+                      values="1;0.2;1"
+                      dur="1.2s"
+                      begin="1s"
+                      repeatCount="indefinite"
+                    />
+                  </circle>
+                  <circle
+                    cx="37.99038105676658"
+                    cy="17.499999999999993"
+                    r="3"
+                    fill="currentColor"
+                  >
+                    <animate
+                      attributeName="opacity"
+                      values="1;0.2;1"
+                      dur="1.2s"
+                      begin="1.1s"
+                      repeatCount="indefinite"
+                    />
+                  </circle>
                 </svg>
               )}
-              Save Billing Information
             </Button>
           )}
         </form>
@@ -968,4 +1080,3 @@ const BillingInformationForm = ({ button, userData }) => {
 };
 
 export default BillingInformationForm;
-

@@ -79,7 +79,7 @@ export default function FormMultiSelect({
 
   return (
     <div className="relative" ref={dropdownRef}>
-      <label className="p2 !text-black mb-[6px] block">
+      <label className="p2 !text-black pb-1.5 block">
         {data?.label}
         {Array.isArray(data.rules) && data.rules.includes("required") && "*"}
       </label>

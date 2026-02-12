@@ -50,25 +50,25 @@ export default function Header() {
   //   }
   // };
 
-    // Clear search query when navigating away from search page
-    useEffect(() => {
-      if (!pathname.startsWith('/search/')) {
-        setQuery("");
-      }
-    }, [pathname]);
+  // Clear search query when navigating away from search page
+  useEffect(() => {
+    if (!pathname.startsWith('/search/')) {
+      setQuery("");
+    }
+  }, [pathname]);
 
-    const handleSubmit = (e) => {
-      e.preventDefault(); // Prevent full page reload
-      const trimmed = query.trim();
-      if (trimmed !== "") {
-        router.push(`/search/${encodeURIComponent(trimmed)}`);
-        // Clear the search query after navigation
-        setQuery("");
-        // Close search bar on mobile/desktop
-        setIsSearchOpen(false);
-      }
-    };
-  
+  const handleSubmit = (e) => {
+    e.preventDefault(); // Prevent full page reload
+    const trimmed = query.trim();
+    if (trimmed !== "") {
+      router.push(`/search/${encodeURIComponent(trimmed)}`);
+      // Clear the search query after navigation
+      setQuery("");
+      // Close search bar on mobile/desktop
+      setIsSearchOpen(false);
+    }
+  };
+
 
   // Initialize apiMenu state as empty array
   const [apiMenu, setApiMenu] = useState([]);
