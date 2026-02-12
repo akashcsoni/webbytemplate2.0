@@ -918,7 +918,7 @@ const DownloadPage = ({ title }) => {
               <p className="p2 sm:mt-4 mt-2 text-center">
                 Once you purchase a product, it will appear here for download.
               </p>
-              <a href="/products" className="btn btn-primary sm:mt-[30px] mt-4">Browse products</a>
+              <a href="/search" className="btn btn-primary sm:mt-[30px] mt-4">Browse products</a>
             </div>
           </div>
         )}
