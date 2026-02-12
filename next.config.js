@@ -345,7 +345,8 @@ const nextConfig = {
   },
 
   experimental: {
-    optimizePackageImports: ["@heroui/react", "framer-motion", "swiper"],
+    // @heroui/react removed - causes "Module not found: Can't resolve './chunk-*.mjs'" on Vercel
+    optimizePackageImports: ["framer-motion", "swiper"],
   },
 
   compress: true,
