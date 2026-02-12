@@ -984,7 +984,7 @@ export default function DashboardPage({ title }) {
                             inputWrapper:
                               "block w-full rounded xl:px-5 md:px-4 px-3 xl:py-[23px] sm:py-[21px] py-[20px] !font-normal border outline-none flex",
                             label:
-                              "2xl:text-base md:text-[15px] sm:text-sm !text-black block !pb-1 !font-normal",
+                              "2xl:text-base md:text-[15px] sm:text-sm !text-black block !pb-1.5 !font-normal",
                           }}
                           onChange={handleInputChange}
                           label="Order Id "
@@ -1004,7 +1004,7 @@ export default function DashboardPage({ title }) {
                             inputWrapper:
                               "block w-full rounded xl:px-5 md:px-4 px-3 xl:py-[23px] sm:py-[21px] py-[20px] !font-normal border outline-none flex",
                             label:
-                              "2xl:text-base md:text-[15px] sm:text-sm !text-black block !pb-1 !font-normal",
+                              "2xl:text-base md:text-[15px] sm:text-sm !text-black block !pb-1.5 !font-normal",
                           }}
                           onChange={handleInputChange}
                           label="Product Name"

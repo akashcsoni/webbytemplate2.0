@@ -871,7 +871,7 @@ p,
 }
 
 .custom-auto-complete [data-slot="label"] {
-  @apply 2xl:text-base md:text-[15px] sm:text-sm !text-black block !pb-1 !font-normal;
+  @apply 2xl:text-base md:text-[15px] sm:text-sm !text-black block !pb-1.5 !font-normal;
 }
 
 .custom-auto-complete.custom-auto-complete-error [data-slot="input-wrapper"] {
@@ -963,6 +963,9 @@ div[tabulator-field="documentId"] {
   @apply 2xl:!w-[260px] 1xl:!w-[220px] xl:!w-[230px] lg:!w-[210px] !w-[200px];
 }
 
+div[tabulator-field="access"] {
+  @apply 2xl:!w-[450px] xl:!w-[440px] lg:!w-[400px] !w-[380px];
+}
 div[tabulator-field="products"] {
   @apply 2xl:!w-[480px] xl:!w-[470px] lg:!w-[430px] !w-[400px];
 }

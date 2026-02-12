@@ -5,6 +5,7 @@ import { useState, useEffect } from "react";
 import { strapiGet } from "@/lib/api/strapiClient";
 import AccountInformationForm from "./AccountInformationForm";
 import BillingInformationForm from "./BillingInformationForm";
+// import SecurityForm from "./SecurityForm";
 
 const profileSetting = ({ title, sub_title, form, button }) => {
   // Skeleton loader component
@@ -120,14 +121,16 @@ const profileSetting = ({ title, sub_title, form, button }) => {
       {fromSetLoading ? (
         <FormSkeleton />
       ) : (
-        form &&
-        defaultValueData && (
+        form && defaultValueData && (
           <div className="space-y-6">
             {/* Account Information Section */}
             <AccountInformationForm button={button} userData={defaultValueData} />
 
             {/* Billing Information Section */}
             <BillingInformationForm button={button} userData={defaultValueData} />
+
+            {/* Security Section */}
+            {/* <SecurityForm button={button} /> */}
           </div>
         )
       )}
@@ -136,4 +139,3 @@ const profileSetting = ({ title, sub_title, form, button }) => {
 };
 
 export default profileSetting;
-

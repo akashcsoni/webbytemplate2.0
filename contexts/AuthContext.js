@@ -7,7 +7,7 @@ const AuthContext = createContext(undefined)
 export function AuthProvider({ children }) {
 
     const [isAuthOpen, setIsAuthOpen] = useState(false)
-    const [authMode, setAuthMode] = useState("login") // "login" or "otp"
+    const [authMode, setAuthMode] = useState("login") // "login", "register", or "otp"
     const [isAuthenticated, setIsAuthenticated] = useState(false)
     const [authUser, setauthUser] = useState(null)
     const [authToken, setauthToken] = useState(null)
@@ -42,7 +42,7 @@ export function AuthProvider({ children }) {
     }, [])
 
     const openAuth = (mode = "login") => {
-        setAuthMode(mode)
+        setAuthMode(mode) // "login" or "register"
         setIsAuthOpen(true)
     }
 

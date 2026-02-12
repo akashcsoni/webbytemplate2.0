@@ -536,78 +536,94 @@ export default function CheckoutPage() {
         setpayNowLoading(false);
 
         // 2. Create Razorpay order in backend
-
-        // ✅ Razorpay Flow
-        const razorpayOrderRes = await strapiPost("razorpay/create-order", {
-          amount: orderData.total_price + orderData.tax_amount || 500, // ₹500 = 50000 paise
-          strapi_order_id: orderData.id,
-          user_id: orderData?.user?.id,
-        });
-        const razorpayOrder = razorpayOrderRes.order;
-        const razorpayKey = razorpayOrderRes.key_id;
-        // 3. Setup Razorpay options
-        const options = {
-          key: razorpayKey, // From backend
-          amount: razorpayOrder.amount,
-          currency: razorpayOrder.currency,
-          name: "WebbyTemplate",
-          description: "Order Payment",
-          order_id: razorpayOrder.id,
-          handler: async function (razorpayResponse) {
-            // Keep redirect loading active during verification
-            try {
-              // 4. Verify payment
-              await strapiPost("razorpay/verify", {
-                ...razorpayResponse,
-                strapi_order_id: orderData.id,
-                user_id: orderData?.user?.id,
-              });
-              // Give the overlay a frame to render before navigation
-              setTimeout(() => {
-                router.push(`/thank-you/${orderData?.documentId}`);
-              }, 100);
-            } catch (e) {
-              console.error("Verification failed:", e);
-              setRedirectLoading(false);
-              setpayNowLoading(false);
-            }
-          },
-          modal: {
-            ondismiss: function () {
-              // 🚫 User closed popup without doing anything
-              setRedirectLoading(false);
-              setpayNowLoading(false);
-              router.push("/");
+        if (selectedCountry === "India") {
+          // ✅ Razorpay Flow
+          const razorpayOrderRes = await strapiPost("razorpay/create-order", {
+            amount: orderData.total_price + orderData.tax_amount || 500, // ₹500 = 50000 paise
+            strapi_order_id: orderData.id,
+            user_id: orderData?.user?.id,
+          });
+          const razorpayOrder = razorpayOrderRes.order;
+          const razorpayKey = razorpayOrderRes.key_id;
+          // 3. Setup Razorpay options
+          const options = {
+            key: razorpayKey, // From backend
+            amount: razorpayOrder.amount,
+            currency: razorpayOrder.currency,
+            name: "WebbyTemplate",
+            description: "Order Payment",
+            order_id: razorpayOrder.id,
+            handler: async function (razorpayResponse) {
+              // Keep redirect loading active during verification
+              try {
+                // 4. Verify payment
+                await strapiPost("razorpay/verify", {
+                  ...razorpayResponse,
+                  strapi_order_id: orderData.id,
+                  user_id: orderData?.user?.id,
+                });
+                // Give the overlay a frame to render before navigation
+                setTimeout(() => {
+                  router.push(`/thank-you/${orderData?.documentId}`);
+                }, 100);
+              } catch (e) {
+                console.error("Verification failed:", e);
+                setRedirectLoading(false);
+                setpayNowLoading(false);
+              }
             },
-          },
-          prefill: {
-            name: "Webby Template",
-            email: "webby@example.com",
-            contact: "9876543210",
-          },
-          theme: {
-            color: "#3399cc",
-          },
-        };
-        // 5. Open Razorpay Checkout
-        const rzp = new Razorpay(options);
+            modal: {
+              ondismiss: function () {
+                // 🚫 User closed popup without doing anything
+                setRedirectLoading(false);
+                setpayNowLoading(false);
+                router.push("/");
+              },
+            },
+            prefill: {
+              name: "Webby Template",
+              email: "webby@example.com",
+              contact: "9876543210",
+            },
+            theme: {
+              color: "#3399cc",
+            },
+          };
+          // 5. Open Razorpay Checkout
+          const rzp = new Razorpay(options);
 
-        rzp.on("payment.failed", async function (response) {
-          const orderId = response.error.metadata?.order_id;
+          rzp.on("payment.failed", async function (response) {
+            const orderId = response.error.metadata?.order_id;
 
-          if (orderId) {
-            await strapiPost("razorpay/fail", {
-              razorpay_order_id: orderId,
-              reason: response.error.description || "Payment failed",
-              strapi_order_id: orderData.id,
-            });
+            if (orderId) {
+              await strapiPost("razorpay/fail", {
+                razorpay_order_id: orderId,
+                reason: response.error.description || "Payment failed",
+                strapi_order_id: orderData.id,
+              });
+            }
+
+            setRedirectLoading(false);
+            setpayNowLoading(false);
+          });
+
+          rzp.open();
+        } else {
+          // ✅ Stripe Flow
+          const stripeRes = await strapiPost("stripe/create-checkout-session", {
+            amount: orderData.total_price,
+            strapi_order_id: orderData.id, // ✅ Required for metadata
+            user_id: orderData.user?.id,
+            redirect_id: orderData?.documentId,
+          });
+
+          if (stripeRes?.url) {
+            // Keep redirect loading active for Stripe redirect
+            window.location.href = stripeRes.url;
+          } else {
+            throw new Error("Stripe session creation failed");
           }
-
-          setRedirectLoading(false);
-          setpayNowLoading(false);
-        });
-
-        rzp.open();
+        }
       } else {
         setpayNowLoading(false);
         setRedirectLoading(false);
@@ -713,15 +729,15 @@ export default function CheckoutPage() {
       {/* Login prompt for returning customers */}
       {!authLoading && !isAuthenticated && (
         // <div className="m-3">
-        <div className="text-lg w-full rounded-1xl border border-green-100 font-bold leading-tight bg-[#d8efff] p-4 pr-8 relative">
-          Returning customer?{" "}
-          <button
-            onClick={() => openAuth("login")}
-            className="underline underline-offset-1"
-          >
-            Click here to login
-          </button>
-        </div>
+          <div className="text-lg w-full rounded-1xl border border-green-100 font-bold leading-tight bg-[#d8efff] p-4 pr-8 relative">
+            Returning customer?{" "}
+            <button
+              onClick={() => openAuth("login")}
+              className="underline underline-offset-1"
+            >
+              Click here to login
+            </button>
+          </div>
         // </div>
       )}
 
@@ -752,7 +768,7 @@ export default function CheckoutPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 2xl:gap-y-5 gap-y-4">
             {/* First Name */}
             <div>
-              <label className="p2 !text-black mb-[6px]">First name *</label>
+              <label className="p2 !text-black pb-1.5 block">First name *</label>
               <input
                 type="text"
                 placeholder="First Name"
@@ -769,7 +785,7 @@ export default function CheckoutPage() {
             {/* gst number field */}
             {/* {selectedCountry === "India" && (
               <div>
-                <label className="p2 !text-black mb-[6px]">GST Number</label>
+                <label className="p2 !text-black pb-1.5 block">GST Number</label>
                 <input
                   type="text"
                   placeholder="GST Number"
@@ -790,7 +806,7 @@ export default function CheckoutPage() {
 
             {/* Last Name */}
             <div>
-              <label className="p2 !text-black mb-[6px]">Last name *</label>
+              <label className="p2 !text-black pb-1.5 block">Last name *</label>
               <input
                 type="text"
                 placeholder="Last Name"
@@ -807,7 +823,7 @@ export default function CheckoutPage() {
             {/* email for other country */}
             {selectedCountry !== "India" && (
               <div>
-                <label className="p2 !text-black mb-[6px]">Email *</label>
+                <label className="p2 !text-black pb-1.5 block">Email *</label>
                 <input
                   type="email"
                   placeholder="Email Address"
@@ -824,7 +840,7 @@ export default function CheckoutPage() {
 
             {/* Company Name */}
             <div>
-              <label className="p2 !text-black mb-[6px]">
+              <label className="p2 !text-black pb-1.5 block">
                 Company name (optional)
               </label>
               <input
@@ -844,7 +860,7 @@ export default function CheckoutPage() {
 
             {selectedCountry === "India" && (
               <div>
-                <label className="p2 !text-black mb-[6px]">GST Number</label>
+                <label className="p2 !text-black pb-1.5 block">GST Number</label>
                 <input
                   type="text"
                   placeholder="GST Number"
@@ -863,7 +879,7 @@ export default function CheckoutPage() {
 
             {/* Country Dropdown */}
             <div className="relative" ref={countryRef}>
-              <label className="p2 !text-black mb-[6px]">Country *</label>
+              <label className="p2 !text-black pb-1.5 block">Country *</label>
               <div className="relative">
                 <div
                   className={`border p2 ${errors.country ? "border-red-500" : "border-gray-100"} text-gray-300 placeholder:text-gray-300 2xl:py-[11px] py-[10px] rounded-[5px] 1xl:px-5 px-3 w-full cursor-pointer flex justify-between items-center`}
@@ -950,7 +966,7 @@ export default function CheckoutPage() {
 
             {/* State Dropdown */}
             <div className="relative" ref={stateRef}>
-              <label className="p2 !text-black mb-[6px]">
+              <label className="p2 !text-black pb-1.5 block">
                 State/Province *
               </label>
               <div className="relative">
@@ -1032,7 +1048,7 @@ export default function CheckoutPage() {
 
             {/* City */}
             <div>
-              <label className="p2 !text-black mb-[6px]">Town/City *</label>
+              <label className="p2 !text-black pb-1.5 block">Town/City *</label>
               <input
                 type="text"
                 placeholder="City"
@@ -1048,7 +1064,7 @@ export default function CheckoutPage() {
 
             {/* ZIP/Postal Code */}
             <div>
-              <label className="p2 !text-black mb-[6px]">
+              <label className="p2 !text-black pb-1.5 block">
                 Postcode / ZIP *
               </label>
               <input
@@ -1066,7 +1082,7 @@ export default function CheckoutPage() {
 
             {/* Address */}
             <div>
-              <label className="p2 !text-black mb-[6px]">
+              <label className="p2 !text-black pb-1.5 block">
                 Street address *
               </label>
               <input
@@ -1085,7 +1101,7 @@ export default function CheckoutPage() {
             {/* Email Address */}
             {selectedCountry === "India" && (
               <div>
-                <label className="p2 !text-black mb-[6px]">Email *</label>
+                <label className="p2 !text-black pb-1.5 block">Email *</label>
                 <input
                   type="email"
                   placeholder="Email Address"

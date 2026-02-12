@@ -1122,7 +1122,7 @@ const ticketSupportPage = ({ title }) => {
                                     inputWrapper:
                                       "block w-full rounded xl:px-5 md:px-4 px-3 xl:py-[23px] sm:py-[21px] py-[20px] !font-normal border outline-none flex",
                                     label:
-                                      "2xl:text-base md:text-[15px] sm:text-sm !text-black block !pb-1 !font-normal",
+                                      "2xl:text-base md:text-[15px] sm:text-sm !text-black block !pb-1.5 !font-normal",
                                   }}
                                   defaultValue={filterData?.id || ""}
                                   onChange={handleInputChange}
@@ -1201,7 +1201,7 @@ const ticketSupportPage = ({ title }) => {
                                     inputWrapper:
                                       "block w-full rounded xl:px-5 md:px-4 px-3 xl:py-[23px] sm:py-[21px] py-[20px] !font-normal border border-gray-100 outline-none flex !bg-white",
                                     label:
-                                      "2xl:text-base md:text-[15px] sm:text-sm !text-black block !pb-1 !font-normal",
+                                      "2xl:text-base md:text-[15px] sm:text-sm !text-black block !pb-1.5 !font-normal",
                                   }}
                                   defaultValue={
                                     filterData?.ticket_date
@@ -1919,7 +1919,7 @@ const ticketSupportPage = ({ title }) => {
                                   inputWrapper:
                                     "block w-full rounded xl:px-5 md:px-4 px-3 xl:py-[23px] sm:py-[21px] py-[20px] !font-normal border outline-none flex",
                                   label:
-                                    "2xl:text-base md:text-[15px] sm:text-sm !text-black block !pb-1 !font-normal",
+                                    "2xl:text-base md:text-[15px] sm:text-sm !text-black block !pb-1.5 !font-normal",
                                 }}
                                 defaultValue={filterData?.id || ""}
                                 onChange={handleInputChange}
@@ -1998,7 +1998,7 @@ const ticketSupportPage = ({ title }) => {
                                   inputWrapper:
                                     "block w-full rounded xl:px-5 md:px-4 px-3 xl:py-[23px] sm:py-[21px] py-[20px] !font-normal border border-gray-100 outline-none flex !bg-white",
                                   label:
-                                    "2xl:text-base md:text-[15px] sm:text-sm !text-black block !pb-1 !font-normal",
+                                    "2xl:text-base md:text-[15px] sm:text-sm !text-black block !pb-1.5 !font-normal",
                                 }}
                                 defaultValue={
                                   filterData?.ticket_date
@@ -2262,7 +2262,7 @@ const ticketSupportPage = ({ title }) => {
                                 inputWrapper:
                                   "block w-full rounded xl:px-5 md:px-4 px-3 xl:py-[23px] sm:py-[21px] py-[20px] !font-normal border outline-none flex",
                                 label:
-                                  "2xl:text-base md:text-[15px] sm:text-sm !text-black block !pb-1 !font-normal",
+                                  "2xl:text-base md:text-[15px] sm:text-sm !text-black block !pb-1.5 !font-normal",
                               }}
                               defaultValue={filterData?.id || ""}
                               onChange={handleInputChange}
@@ -2341,7 +2341,7 @@ const ticketSupportPage = ({ title }) => {
                                 inputWrapper:
                                   "block w-full rounded xl:px-5 md:px-4 px-3 xl:py-[23px] sm:py-[21px] py-[20px] !font-normal border border-gray-100 outline-none flex !bg-white",
                                 label:
-                                  "2xl:text-base md:text-[15px] sm:text-sm !text-black block !pb-1 !font-normal",
+                                  "2xl:text-base md:text-[15px] sm:text-sm !text-black block !pb-1.5 !font-normal",
                               }}
                               defaultValue={
                                 filterData?.ticket_date

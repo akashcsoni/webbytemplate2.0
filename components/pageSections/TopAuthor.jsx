@@ -95,7 +95,7 @@ const TopAuthor = ({ title, description }) => {
         // Fetch all pages and combine authors
         const allPagesData = [productData];
         const totalPages = productData?.pagination?.pageCount || 1;
-        
+
         if (totalPages > 1) {
           const remainingPages = [];
           for (let i = 2; i <= totalPages; i++) {
@@ -123,7 +123,7 @@ const TopAuthor = ({ title, description }) => {
           (company) => company?.totalProducts > 0
         ).length;
         const pageCount = productData?.pagination?.pageCount || 0;
-        
+
         // If there are multiple pages but very few authors per page (1-2),
         // automatically fetch all pages and show on one page
         if (pageCount > 1 && filteredCount <= 2 && page === 1) {
@@ -138,7 +138,7 @@ const TopAuthor = ({ title, description }) => {
             const pageData = await strapiPost(`top-authors`, pagePayload, themeConfig.TOKEN);
             allPagesData.push(pageData);
           }
-          
+
           const combinedAuthors = allPagesData.flatMap((data) => data?.authors || []);
           setAllAuthors(combinedAuthors);
           setAuthor(combinedAuthors);
@@ -150,7 +150,7 @@ const TopAuthor = ({ title, description }) => {
           setShowAllOnOnePage(false);
         }
       }
-      
+
       setLoading(false);
     } catch (err) {
       setLoading(false);
@@ -384,162 +384,161 @@ const TopAuthor = ({ title, description }) => {
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 lg:gap-[30px] gap-5 lg:py-[35px] md:py-[30px] sm:py-6 py-5">
           {loading
             ? Array.from({ length: skeletonCount }).map((_, i) => (
-                <AuthorCardSkeleton key={i} />
-              ))
+              <AuthorCardSkeleton key={i} />
+            ))
             : author.filter((company) => company?.totalProducts > 0).map((company) => (
-                <Link
-                  key={company.id}
-                  className="border border-gray-100 rounded-lg sm:pt-[10px] pt-0 grid content-between"
-                  href={`/author/${company?.slug}`}
-                >
-                  <div className="py-6 px-4 flex flex-col items-center text-center">
-                    {/* Logo */}
+              <Link
+                key={company.id}
+                className="border border-gray-100 rounded-lg sm:pt-[10px] pt-0 grid content-between"
+                href={`/author/${company?.slug}`}
+              >
+                <div className="py-6 px-4 flex flex-col items-center text-center">
+                  {/* Logo */}
 
-                    {company?.image?.url && (
-                      <Image
-                        src={company?.image?.url ? company?.image?.url : ""}
-                        alt="author"
-                        width={270}
-                        height={345}
-                        className="2xl:w-[150px] 2xl:h-[150px] 1xl:w-[130px] 1xl:h-[130px] sm:h-[100px] sm:w-[100px] w-[90px] h-[90px] rounded-full sm:mb-6 mb-4"
-                        onError={(e) => {
-                          e.currentTarget.src = NO_FOUND_PRODUCT_GRID_IMAGE;
-                        }}
-                      />
-                    )}
+                  {company?.image?.url && (
+                    <Image
+                      src={company?.image?.url ? company?.image?.url : ""}
+                      alt="author"
+                      width={270}
+                      height={345}
+                      className="2xl:w-[150px] 2xl:h-[150px] 1xl:w-[130px] 1xl:h-[130px] sm:h-[100px] sm:w-[100px] w-[90px] h-[90px] rounded-full sm:mb-6 mb-4"
+                      onError={(e) => {
+                        e.currentTarget.src = NO_FOUND_PRODUCT_GRID_IMAGE;
+                      }}
+                    />
+                  )}
 
-                    {/* Title */}
+                  {/* Title */}
 
-                    <h3 className="font-semibold 1xl:mb-2 mb-[6px] 2xl:text-2xl lg:text-[23px] text-xl text-black hover:text-primary">
-                      {company?.name?.charAt(0).toUpperCase() +
-                        company?.name?.slice(1)}
-                    </h3>
-                    <p className="text-gray-200 flex items-center gap-2 flex-wrap">
-                      Joined by
-                      <span className="block w-1 h-1 rounded-full bg-gray-200"></span>{" "}
-                      {formatMonthYear(company?.joined)}
-                    </p>
-                  </div>
+                  <h3 className="font-semibold 1xl:mb-2 mb-[6px] 2xl:text-2xl lg:text-[23px] text-xl text-black hover:text-primary">
+                    {company?.name?.charAt(0).toUpperCase() +
+                      company?.name?.slice(1)}
+                  </h3>
+                  <p className="text-gray-200 flex items-center gap-2 flex-wrap">
+                    Joined by
+                    <span className="block w-1 h-1 rounded-full bg-gray-200"></span>{" "}
+                    {formatMonthYear(company?.joined)}
+                  </p>
+                </div>
 
-                  {/* Stats */}
-                  <div className="flex justify-between items-center w-full border-t border-gray-100 1xl:py-[14px] 1xl:px-[22px] py-[10px] px-4">
-                    <div className="flex items-center 2xl:gap-6 gap-[18px]">
-                      <p className="flex items-center 2xl:gap-2 gap-[6px]">
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          width="22"
-                          height="22"
-                          viewBox="0 0 22 22"
-                          fill="none"
-                          className="1xl:w-[22px] 1xl:h-[22px] w-5 h-5"
-                        >
-                          <path
-                            d="M12.1103 1.7531C11.3956 1.4783 10.6044 1.4783 9.88969 1.7531L2.80706 4.47698C2.38561 4.63912 2.02318 4.92517 1.76754 5.2974C1.51189 5.66964 1.37503 6.1106 1.375 6.56216V15.4378C1.37503 15.8894 1.51189 16.3303 1.76754 16.7026C2.02318 17.0748 2.38561 17.3608 2.80706 17.523L9.88969 20.2469C10.6044 20.5217 11.3956 20.5217 12.1103 20.2469L19.1929 17.523C19.6144 17.3608 19.9768 17.0748 20.2325 16.7026C20.4881 16.3303 20.625 15.8894 20.625 15.4378V6.56216C20.625 6.1106 20.4881 5.66964 20.2325 5.2974C19.9768 4.92517 19.6144 4.63912 19.1929 4.47698L12.1103 1.7531ZM10.3833 3.03666C10.7803 2.88407 11.2197 2.88407 11.6167 3.03666L18.0221 5.49998L15.4688 6.4831L8.44663 3.78123L10.3833 3.03666ZM6.53125 4.51685L13.5534 7.21873L11 8.20116L3.97787 5.49998L6.53125 4.51685ZM2.75206 6.50166L10.3125 9.40979V18.9365L3.30069 16.2394C3.13867 16.1771 2.99934 16.0671 2.90104 15.924C2.80274 15.7809 2.75008 15.6114 2.75 15.4378V6.56216C2.75 6.54154 2.75069 6.52137 2.75206 6.50166ZM11.6875 18.9365V9.40979L19.2479 6.50166L19.25 6.56216V15.4378C19.25 15.7932 19.0307 16.1115 18.6993 16.2394L11.6875 18.9365Z"
-                            fill="#0043A2"
-                          />
-                        </svg>
-                        {company?.totalProducts}
-                      </p>
-                      <p className="flex items-center 2xl:gap-2 gap-[6px]">
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          width="22"
-                          height="22"
-                          viewBox="0 0 22 22"
-                          fill="none"
-                          className="1xl:w-[22px] 1xl:h-[22px] w-5 h-5"
-                        >
-                          <path
-                            d="M3.15482 15.2956C2.32751 11.9864 1.91386 10.3327 2.78263 9.22002C3.6514 8.1073 5.35713 8.1073 8.76761 8.1073H13.232C16.6434 8.1073 18.3482 8.1073 19.217 9.22002C20.0857 10.3327 19.6721 11.9874 18.8448 15.2956C18.3183 17.4006 18.056 18.4525 17.2712 19.0658C16.4863 19.6781 15.4015 19.6781 13.232 19.6781H8.76761C6.59809 19.6781 5.51333 19.6781 4.72845 19.0658C3.94356 18.4525 3.68033 17.4006 3.15482 15.2956Z"
-                            stroke="#0043A2"
-                            strokeWidth="1.5"
-                          />
-                          <path
-                            d="M18.2313 8.5894L17.5467 6.07758C17.2825 5.10853 17.1504 4.62448 16.8794 4.25904C16.6093 3.89597 16.2424 3.61629 15.8207 3.45198C15.3964 3.28613 14.895 3.28613 13.8922 3.28613M3.76782 8.5894L4.45243 6.07758C4.71663 5.10853 4.84872 4.62448 5.11967 4.25904C5.38983 3.89597 5.75673 3.61629 6.1784 3.45198C6.60266 3.28613 7.10406 3.28613 8.10686 3.28613"
-                            stroke="#0043A2"
-                            strokeWidth="1.5"
-                          />
-                          <path
-                            d="M8.10718 3.28613C8.10718 3.0304 8.20877 2.78514 8.38959 2.60432C8.57042 2.42349 8.81568 2.3219 9.07141 2.3219H12.9283C13.1841 2.3219 13.4293 2.42349 13.6101 2.60432C13.791 2.78514 13.8926 3.0304 13.8926 3.28613C13.8926 3.54186 13.791 3.78712 13.6101 3.96794C13.4293 4.14877 13.1841 4.25036 12.9283 4.25036H9.07141C8.81568 4.25036 8.57042 4.14877 8.38959 3.96794C8.20877 3.78712 8.10718 3.54186 8.10718 3.28613Z"
-                            stroke="#0043A2"
-                            strokeWidth="1.5"
-                          />
-                        </svg>
-                        {company?.totalSales}
-                      </p>
-                    </div>
-                    {/* <Link href={`/author/${company?.slug}`}> */}
+                {/* Stats */}
+                <div className="flex justify-between items-center w-full border-t border-gray-100 1xl:py-[14px] 1xl:px-[22px] py-[10px] px-4">
+                  <div className="flex items-center 2xl:gap-6 gap-[18px]">
+                    <p className="flex items-center 2xl:gap-2 gap-[6px]">
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
-                        width="12"
-                        height="12"
-                        viewBox="0 0 12 12"
+                        width="22"
+                        height="22"
+                        viewBox="0 0 22 22"
                         fill="none"
-                        className="stroke-primary hover:stroke-black focus:stroke-black active:stroke-black"
+                        className="1xl:w-[22px] 1xl:h-[22px] w-5 h-5"
                       >
-                        <g clipPath="url(#clip0_7481_13718)">
-                          <path
-                            d="M1.05025 1.05027H10.9497M10.9497 1.05027V10.9498M10.9497 1.05027L1.05025 10.9498"
-                            stroke="curretColor"
-                            strokeWidth="1.5"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                          />
-                        </g>
+                        <path
+                          d="M12.1103 1.7531C11.3956 1.4783 10.6044 1.4783 9.88969 1.7531L2.80706 4.47698C2.38561 4.63912 2.02318 4.92517 1.76754 5.2974C1.51189 5.66964 1.37503 6.1106 1.375 6.56216V15.4378C1.37503 15.8894 1.51189 16.3303 1.76754 16.7026C2.02318 17.0748 2.38561 17.3608 2.80706 17.523L9.88969 20.2469C10.6044 20.5217 11.3956 20.5217 12.1103 20.2469L19.1929 17.523C19.6144 17.3608 19.9768 17.0748 20.2325 16.7026C20.4881 16.3303 20.625 15.8894 20.625 15.4378V6.56216C20.625 6.1106 20.4881 5.66964 20.2325 5.2974C19.9768 4.92517 19.6144 4.63912 19.1929 4.47698L12.1103 1.7531ZM10.3833 3.03666C10.7803 2.88407 11.2197 2.88407 11.6167 3.03666L18.0221 5.49998L15.4688 6.4831L8.44663 3.78123L10.3833 3.03666ZM6.53125 4.51685L13.5534 7.21873L11 8.20116L3.97787 5.49998L6.53125 4.51685ZM2.75206 6.50166L10.3125 9.40979V18.9365L3.30069 16.2394C3.13867 16.1771 2.99934 16.0671 2.90104 15.924C2.80274 15.7809 2.75008 15.6114 2.75 15.4378V6.56216C2.75 6.54154 2.75069 6.52137 2.75206 6.50166ZM11.6875 18.9365V9.40979L19.2479 6.50166L19.25 6.56216V15.4378C19.25 15.7932 19.0307 16.1115 18.6993 16.2394L11.6875 18.9365Z"
+                          fill="#0043A2"
+                        />
                       </svg>
-                    {/* </Link> */}
+                      {company?.totalProducts}
+                    </p>
+                    <p className="flex items-center 2xl:gap-2 gap-[6px]">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="22"
+                        height="22"
+                        viewBox="0 0 22 22"
+                        fill="none"
+                        className="1xl:w-[22px] 1xl:h-[22px] w-5 h-5"
+                      >
+                        <path
+                          d="M3.15482 15.2956C2.32751 11.9864 1.91386 10.3327 2.78263 9.22002C3.6514 8.1073 5.35713 8.1073 8.76761 8.1073H13.232C16.6434 8.1073 18.3482 8.1073 19.217 9.22002C20.0857 10.3327 19.6721 11.9874 18.8448 15.2956C18.3183 17.4006 18.056 18.4525 17.2712 19.0658C16.4863 19.6781 15.4015 19.6781 13.232 19.6781H8.76761C6.59809 19.6781 5.51333 19.6781 4.72845 19.0658C3.94356 18.4525 3.68033 17.4006 3.15482 15.2956Z"
+                          stroke="#0043A2"
+                          strokeWidth="1.5"
+                        />
+                        <path
+                          d="M18.2313 8.5894L17.5467 6.07758C17.2825 5.10853 17.1504 4.62448 16.8794 4.25904C16.6093 3.89597 16.2424 3.61629 15.8207 3.45198C15.3964 3.28613 14.895 3.28613 13.8922 3.28613M3.76782 8.5894L4.45243 6.07758C4.71663 5.10853 4.84872 4.62448 5.11967 4.25904C5.38983 3.89597 5.75673 3.61629 6.1784 3.45198C6.60266 3.28613 7.10406 3.28613 8.10686 3.28613"
+                          stroke="#0043A2"
+                          strokeWidth="1.5"
+                        />
+                        <path
+                          d="M8.10718 3.28613C8.10718 3.0304 8.20877 2.78514 8.38959 2.60432C8.57042 2.42349 8.81568 2.3219 9.07141 2.3219H12.9283C13.1841 2.3219 13.4293 2.42349 13.6101 2.60432C13.791 2.78514 13.8926 3.0304 13.8926 3.28613C13.8926 3.54186 13.791 3.78712 13.6101 3.96794C13.4293 4.14877 13.1841 4.25036 12.9283 4.25036H9.07141C8.81568 4.25036 8.57042 4.14877 8.38959 3.96794C8.20877 3.78712 8.10718 3.54186 8.10718 3.28613Z"
+                          stroke="#0043A2"
+                          strokeWidth="1.5"
+                        />
+                      </svg>
+                      {company?.totalSales}
+                    </p>
                   </div>
-                </Link>
-              ))}
+                  {/* <Link href={`/author/${company?.slug}`}> */}
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="12"
+                    height="12"
+                    viewBox="0 0 12 12"
+                    fill="none"
+                    className="stroke-primary hover:stroke-black focus:stroke-black active:stroke-black"
+                  >
+                    <g clipPath="url(#clip0_7481_13718)">
+                      <path
+                        d="M1.05025 1.05027H10.9497M10.9497 1.05027V10.9498M10.9497 1.05027L1.05025 10.9498"
+                        stroke="curretColor"
+                        strokeWidth="1.5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </g>
+                  </svg>
+                  {/* </Link> */}
+                </div>
+              </Link>
+            ))}
         </div>
 
         {(() => {
           if (!author?.length) return false;
-          
+
           // Count authors that actually have products (filtered authors)
           const filteredAuthors = author.filter((company) => company?.totalProducts > 0);
           const filteredCount = filteredAuthors.length;
-          
+
           // If there are multiple pages (pageCount > 1), always show pagination
           // This allows navigation between pages even if each page has few authors
           if (pagination?.pageCount > 1) {
             return true;
           }
-          
+
           // If only one page, only show pagination if filtered authors exceed page size
           // This handles cases where backend returns all on one page but we want pagination
           return filteredCount > pageSize;
         })() && (
-          <div className="flex justify-center sm:mt-[25px] lg:mt-[20px] mt-4 gap-2 text-sm">
-            <button
-              className="px-3 py-1 w-10 h-10 border rounded flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
-              onClick={() => handlePageChange(activePage - 1)}
-              disabled={activePage === 1}
-            >
-              «
-            </button>
-
-            {generatePageNumbers().map((page) => (
+            <div className="flex justify-center sm:mt-[25px] lg:mt-[20px] mt-4 gap-2 text-sm">
               <button
-                key={page}
-                className={`px-3 py-1 w-10 h-10 btn border rounded flex items-center justify-center ${
-                  activePage === page ? "bg-primary text-white" : ""
-                }`}
-                onClick={() => handlePageChange(page)}
+                className="px-3 py-1 w-10 h-10 border rounded flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
+                onClick={() => handlePageChange(activePage - 1)}
+                disabled={activePage === 1}
               >
-                {page}
+                «
               </button>
-            ))}
 
-            <button
-              className="px-3 py-1 w-10 h-10 btn border rounded flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
-              onClick={() => handlePageChange(activePage + 1)}
-              disabled={activePage === pagination.pageCount}
-            >
-              »
-            </button>
-          </div>
-        )}
+              {generatePageNumbers().map((page) => (
+                <button
+                  key={page}
+                  className={`px-3 py-1 w-10 h-10 btn border rounded flex items-center justify-center ${activePage === page ? "bg-primary text-white" : ""
+                    }`}
+                  onClick={() => handlePageChange(page)}
+                >
+                  {page}
+                </button>
+              ))}
+
+              <button
+                className="px-3 py-1 w-10 h-10 btn border rounded flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
+                onClick={() => handlePageChange(activePage + 1)}
+                disabled={activePage === pagination.pageCount}
+              >
+                »
+              </button>
+            </div>
+          )}
       </div>
     </section>
   ) : (

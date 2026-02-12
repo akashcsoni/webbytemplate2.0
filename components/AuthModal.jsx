@@ -12,18 +12,1389 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { themeConfig } from "@/config/theamConfig";
 import { useAuth } from "@/contexts/AuthContext";
 import { strapiPost } from "@/lib/api/strapiClient";
-import { countries as countriesData } from "@/lib/data/countries";
 import Cookies from "js-cookie";
 import { signIn } from "next-auth/react";
 
-const countries =
-  (countriesData || []).map((c) => ({
-    name: c.name,
-    code: c.dialCode,
-    short_name: c.code,
-    phonePattern: c.phonePattern,
-    phoneLength: c.phoneLength,
-  })) || [];
+// Regular expressions for phone validation
+const phonePatterns = {
+  US: /^\d{10}$/,
+  CA: /^\d{10}$/,
+  GB: /^\d{10,11}$/,
+  IN: /^\d{10}$/,
+  AU: /^\d{9,10}$/,
+  DE: /^\d{10,11}$/,
+  FR: /^\d{9,10}$/,
+  JP: /^\d{10,11}$/,
+  CN: /^\d{11}$/,
+  BR: /^\d{10,11}$/,
+  MX: /^\d{10}$/,
+  RU: /^\d{10}$/,
+  IT: /^\d{9,10}$/,
+  ES: /^\d{9}$/,
+  AR: /^\d{10,11}$/,
+  global: /^\d{7,15}$/, // fallback pattern
+};
+
+const countries = [
+  {
+    name: "Afghanistan",
+    code: "+93",
+    short_name: "AF",
+    phonePattern: phonePatterns.global,
+    phoneLength: [7, 15],
+  },
+  {
+    name: "Albania",
+    code: "+355",
+    short_name: "AL",
+    phonePattern: phonePatterns.global,
+    phoneLength: [8, 9],
+  },
+  {
+    name: "Algeria",
+    code: "+213",
+    short_name: "DZ",
+    phonePattern: phonePatterns.global,
+    phoneLength: [8, 9],
+  },
+  {
+    name: "Andorra",
+    code: "+376",
+    short_name: "AD",
+    phonePattern: phonePatterns.global,
+    phoneLength: [6, 8],
+  },
+  {
+    name: "Angola",
+    code: "+244",
+    short_name: "AO",
+    phonePattern: phonePatterns.global,
+    phoneLength: [9],
+  },
+  {
+    name: "Antigua and Barbuda",
+    code: "+1-268",
+    short_name: "AG",
+    phonePattern: phonePatterns.US,
+    phoneLength: [10],
+  },
+  {
+    name: "Argentina",
+    code: "+54",
+    short_name: "AR",
+    phonePattern: phonePatterns.AR,
+    phoneLength: [10, 11],
+  },
+  {
+    name: "Armenia",
+    code: "+374",
+    short_name: "AM",
+    phonePattern: phonePatterns.global,
+    phoneLength: [8],
+  },
+  {
+    name: "Australia",
+    code: "+61",
+    short_name: "AU",
+    phonePattern: phonePatterns.AU,
+    phoneLength: [9, 10],
+  },
+  {
+    name: "Austria",
+    code: "+43",
+    short_name: "AT",
+    phonePattern: phonePatterns.global,
+    phoneLength: [10, 11],
+  },
+  {
+    name: "Azerbaijan",
+    code: "+994",
+    short_name: "AZ",
+    phonePattern: phonePatterns.global,
+    phoneLength: [9],
+  },
+  {
+    name: "Bahamas",
+    code: "+1-242",
+    short_name: "BS",
+    phonePattern: phonePatterns.US,
+    phoneLength: [10],
+  },
+  {
+    name: "Bahrain",
+    code: "+973",
+    short_name: "BH",
+    phonePattern: phonePatterns.global,
+    phoneLength: [8],
+  },
+  {
+    name: "Bangladesh",
+    code: "+880",
+    short_name: "BD",
+    phonePattern: phonePatterns.global,
+    phoneLength: [10, 11],
+  },
+  {
+    name: "Barbados",
+    code: "+1-246",
+    short_name: "BB",
+    phonePattern: phonePatterns.US,
+    phoneLength: [10],
+  },
+  {
+    name: "Belarus",
+    code: "+375",
+    short_name: "BY",
+    phonePattern: phonePatterns.global,
+    phoneLength: [9],
+  },
+  {
+    name: "Belgium",
+    code: "+32",
+    short_name: "BE",
+    phonePattern: phonePatterns.global,
+    phoneLength: [9],
+  },
+  {
+    name: "Belize",
+    code: "+501",
+    short_name: "BZ",
+    phonePattern: phonePatterns.global,
+    phoneLength: [7],
+  },
+  {
+    name: "Benin",
+    code: "+229",
+    short_name: "BJ",
+    phonePattern: phonePatterns.global,
+    phoneLength: [8],
+  },
+  {
+    name: "Bhutan",
+    code: "+975",
+    short_name: "BT",
+    phonePattern: phonePatterns.global,
+    phoneLength: [8],
+  },
+  {
+    name: "Bolivia",
+    code: "+591",
+    short_name: "BO",
+    phonePattern: phonePatterns.global,
+    phoneLength: [8],
+  },
+  {
+    name: "Bosnia and Herzegovina",
+    code: "+387",
+    short_name: "BA",
+    phonePattern: phonePatterns.global,
+    phoneLength: [8, 9],
+  },
+  {
+    name: "Botswana",
+    code: "+267",
+    short_name: "BW",
+    phonePattern: phonePatterns.global,
+    phoneLength: [8],
+  },
+  {
+    name: "Brazil",
+    code: "+55",
+    short_name: "BR",
+    phonePattern: phonePatterns.BR,
+    phoneLength: [10, 11],
+  },
+  {
+    name: "Brunei",
+    code: "+673",
+    short_name: "BN",
+    phonePattern: phonePatterns.global,
+    phoneLength: [7],
+  },
+  {
+    name: "Bulgaria",
+    code: "+359",
+    short_name: "BG",
+    phonePattern: phonePatterns.global,
+    phoneLength: [8, 9],
+  },
+  {
+    name: "Burkina Faso",
+    code: "+226",
+    short_name: "BF",
+    phonePattern: phonePatterns.global,
+    phoneLength: [8],
+  },
+  {
+    name: "Burundi",
+    code: "+257",
+    short_name: "BI",
+    phonePattern: phonePatterns.global,
+    phoneLength: [8],
+  },
+  {
+    name: "Cabo Verde",
+    code: "+238",
+    short_name: "CV",
+    phonePattern: phonePatterns.global,
+    phoneLength: [7],
+  },
+  {
+    name: "Cambodia",
+    code: "+855",
+    short_name: "KH",
+    phonePattern: phonePatterns.global,
+    phoneLength: [8, 9],
+  },
+  {
+    name: "Cameroon",
+    code: "+237",
+    short_name: "CM",
+    phonePattern: phonePatterns.global,
+    phoneLength: [9],
+  },
+  {
+    name: "Canada",
+    code: "+1",
+    short_name: "CA",
+    phonePattern: phonePatterns.CA,
+    phoneLength: [10],
+  },
+  {
+    name: "Central African Republic",
+    code: "+236",
+    short_name: "CF",
+    phonePattern: phonePatterns.global,
+    phoneLength: [8],
+  },
+  {
+    name: "Chad",
+    code: "+235",
+    short_name: "TD",
+    phonePattern: phonePatterns.global,
+    phoneLength: [8],
+  },
+  {
+    name: "Chile",
+    code: "+56",
+    short_name: "CL",
+    phonePattern: phonePatterns.global,
+    phoneLength: [9],
+  },
+  {
+    name: "China",
+    code: "+86",
+    short_name: "CN",
+    phonePattern: phonePatterns.CN,
+    phoneLength: [11],
+  },
+  {
+    name: "Colombia",
+    code: "+57",
+    short_name: "CO",
+    phonePattern: phonePatterns.global,
+    phoneLength: [10],
+  },
+  {
+    name: "Comoros",
+    code: "+269",
+    short_name: "KM",
+    phonePattern: phonePatterns.global,
+    phoneLength: [7],
+  },
+  {
+    name: "Congo",
+    code: "+242",
+    short_name: "CG",
+    phonePattern: phonePatterns.global,
+    phoneLength: [9],
+  },
+  {
+    name: "Congo (Democratic Republic)",
+    code: "+243",
+    short_name: "CD",
+    phonePattern: phonePatterns.global,
+    phoneLength: [9],
+  },
+  {
+    name: "Costa Rica",
+    code: "+506",
+    short_name: "CR",
+    phonePattern: phonePatterns.global,
+    phoneLength: [8],
+  },
+  {
+    name: "Croatia",
+    code: "+385",
+    short_name: "HR",
+    phonePattern: phonePatterns.global,
+    phoneLength: [8, 9],
+  },
+  {
+    name: "Cuba",
+    code: "+53",
+    short_name: "CU",
+    phonePattern: phonePatterns.global,
+    phoneLength: [8],
+  },
+  {
+    name: "Cyprus",
+    code: "+357",
+    short_name: "CY",
+    phonePattern: phonePatterns.global,
+    phoneLength: [8],
+  },
+  {
+    name: "Czech Republic",
+    code: "+420",
+    short_name: "CZ",
+    phonePattern: phonePatterns.global,
+    phoneLength: [9],
+  },
+  {
+    name: "Denmark",
+    code: "+45",
+    short_name: "DK",
+    phonePattern: phonePatterns.global,
+    phoneLength: [8],
+  },
+  {
+    name: "Djibouti",
+    code: "+253",
+    short_name: "DJ",
+    phonePattern: phonePatterns.global,
+    phoneLength: [8],
+  },
+  {
+    name: "Dominica",
+    code: "+1-767",
+    short_name: "DM",
+    phonePattern: phonePatterns.US,
+    phoneLength: [10],
+  },
+  {
+    name: "Dominican Republic",
+    code: "+1-809",
+    short_name: "DO",
+    phonePattern: phonePatterns.US,
+    phoneLength: [10],
+  },
+  {
+    name: "Ecuador",
+    code: "+593",
+    short_name: "EC",
+    phonePattern: phonePatterns.global,
+    phoneLength: [9],
+  },
+  {
+    name: "Egypt",
+    code: "+20",
+    short_name: "EG",
+    phonePattern: phonePatterns.global,
+    phoneLength: [10, 11],
+  },
+  {
+    name: "El Salvador",
+    code: "+503",
+    short_name: "SV",
+    phonePattern: phonePatterns.global,
+    phoneLength: [8],
+  },
+  {
+    name: "Equatorial Guinea",
+    code: "+240",
+    short_name: "GQ",
+    phonePattern: phonePatterns.global,
+    phoneLength: [9],
+  },
+  {
+    name: "Eritrea",
+    code: "+291",
+    short_name: "ER",
+    phonePattern: phonePatterns.global,
+    phoneLength: [7],
+  },
+  {
+    name: "Estonia",
+    code: "+372",
+    short_name: "EE",
+    phonePattern: phonePatterns.global,
+    phoneLength: [7, 8],
+  },
+  {
+    name: "Eswatini",
+    code: "+268",
+    short_name: "SZ",
+    phonePattern: phonePatterns.global,
+    phoneLength: [8],
+  },
+  {
+    name: "Ethiopia",
+    code: "+251",
+    short_name: "ET",
+    phonePattern: phonePatterns.global,
+    phoneLength: [9],
+  },
+  {
+    name: "Fiji",
+    code: "+679",
+    short_name: "FJ",
+    phonePattern: phonePatterns.global,
+    phoneLength: [7],
+  },
+  {
+    name: "Finland",
+    code: "+358",
+    short_name: "FI",
+    phonePattern: phonePatterns.global,
+    phoneLength: [9, 10],
+  },
+  {
+    name: "France",
+    code: "+33",
+    short_name: "FR",
+    phonePattern: phonePatterns.FR,
+    phoneLength: [9, 10],
+  },
+  {
+    name: "Gabon",
+    code: "+241",
+    short_name: "GA",
+    phonePattern: phonePatterns.global,
+    phoneLength: [8],
+  },
+  {
+    name: "Gambia",
+    code: "+220",
+    short_name: "GM",
+    phonePattern: phonePatterns.global,
+    phoneLength: [7],
+  },
+  {
+    name: "Georgia",
+    code: "+995",
+    short_name: "GE",
+    phonePattern: phonePatterns.global,
+    phoneLength: [9],
+  },
+  {
+    name: "Germany",
+    code: "+49",
+    short_name: "DE",
+    phonePattern: phonePatterns.DE,
+    phoneLength: [10, 11],
+  },
+  {
+    name: "Ghana",
+    code: "+233",
+    short_name: "GH",
+    phonePattern: phonePatterns.global,
+    phoneLength: [9],
+  },
+  {
+    name: "Greece",
+    code: "+30",
+    short_name: "GR",
+    phonePattern: phonePatterns.global,
+    phoneLength: [10],
+  },
+  {
+    name: "Grenada",
+    code: "+1-473",
+    short_name: "GD",
+    phonePattern: phonePatterns.US,
+    phoneLength: [10],
+  },
+  {
+    name: "Guatemala",
+    code: "+502",
+    short_name: "GT",
+    phonePattern: phonePatterns.global,
+    phoneLength: [8],
+  },
+  {
+    name: "Guinea",
+    code: "+224",
+    short_name: "GN",
+    phonePattern: phonePatterns.global,
+    phoneLength: [9],
+  },
+  {
+    name: "Guinea-Bissau",
+    code: "+245",
+    short_name: "GW",
+    phonePattern: phonePatterns.global,
+    phoneLength: [7],
+  },
+  {
+    name: "Guyana",
+    code: "+592",
+    short_name: "GY",
+    phonePattern: phonePatterns.global,
+    phoneLength: [7],
+  },
+  {
+    name: "Haiti",
+    code: "+509",
+    short_name: "HT",
+    phonePattern: phonePatterns.global,
+    phoneLength: [8],
+  },
+  {
+    name: "Honduras",
+    code: "+504",
+    short_name: "HN",
+    phonePattern: phonePatterns.global,
+    phoneLength: [8],
+  },
+  {
+    name: "Hungary",
+    code: "+36",
+    short_name: "HU",
+    phonePattern: phonePatterns.global,
+    phoneLength: [9],
+  },
+  {
+    name: "Iceland",
+    code: "+354",
+    short_name: "IS",
+    phonePattern: phonePatterns.global,
+    phoneLength: [7],
+  },
+  {
+    name: "India",
+    code: "+91",
+    short_name: "IN",
+    phonePattern: phonePatterns.IN,
+    phoneLength: [10],
+  },
+  {
+    name: "Indonesia",
+    code: "+62",
+    short_name: "ID",
+    phonePattern: phonePatterns.global,
+    phoneLength: [10, 11],
+  },
+  {
+    name: "Iran",
+    code: "+98",
+    short_name: "IR",
+    phonePattern: phonePatterns.global,
+    phoneLength: [10],
+  },
+  {
+    name: "Iraq",
+    code: "+964",
+    short_name: "IQ",
+    phonePattern: phonePatterns.global,
+    phoneLength: [10],
+  },
+  {
+    name: "Ireland",
+    code: "+353",
+    short_name: "IE",
+    phonePattern: phonePatterns.global,
+    phoneLength: [9],
+  },
+  {
+    name: "Israel",
+    code: "+972",
+    short_name: "IL",
+    phonePattern: phonePatterns.global,
+    phoneLength: [9],
+  },
+  {
+    name: "Italy",
+    code: "+39",
+    short_name: "IT",
+    phonePattern: phonePatterns.IT,
+    phoneLength: [9, 10],
+  },
+  {
+    name: "Jamaica",
+    code: "+1-876",
+    short_name: "JM",
+    phonePattern: phonePatterns.US,
+    phoneLength: [10],
+  },
+  {
+    name: "Japan",
+    code: "+81",
+    short_name: "JP",
+    phonePattern: phonePatterns.JP,
+    phoneLength: [10, 11],
+  },
+  {
+    name: "Jordan",
+    code: "+962",
+    short_name: "JO",
+    phonePattern: phonePatterns.global,
+    phoneLength: [9],
+  },
+  {
+    name: "Kazakhstan",
+    code: "+7",
+    short_name: "KZ",
+    phonePattern: phonePatterns.global,
+    phoneLength: [10],
+  },
+  {
+    name: "Kenya",
+    code: "+254",
+    short_name: "KE",
+    phonePattern: phonePatterns.global,
+    phoneLength: [9],
+  },
+  {
+    name: "Kiribati",
+    code: "+686",
+    short_name: "KI",
+    phonePattern: phonePatterns.global,
+    phoneLength: [8],
+  },
+  {
+    name: "Korea (North)",
+    code: "+850",
+    short_name: "KP",
+    phonePattern: phonePatterns.global,
+    phoneLength: [10],
+  },
+  {
+    name: "Korea (South)",
+    code: "+82",
+    short_name: "KR",
+    phonePattern: phonePatterns.global,
+    phoneLength: [10, 11],
+  },
+  {
+    name: "Kuwait",
+    code: "+965",
+    short_name: "KW",
+    phonePattern: phonePatterns.global,
+    phoneLength: [8],
+  },
+  {
+    name: "Kyrgyzstan",
+    code: "+996",
+    short_name: "KG",
+    phonePattern: phonePatterns.global,
+    phoneLength: [9],
+  },
+  {
+    name: "Laos",
+    code: "+856",
+    short_name: "LA",
+    phonePattern: phonePatterns.global,
+    phoneLength: [10],
+  },
+  {
+    name: "Latvia",
+    code: "+371",
+    short_name: "LV",
+    phonePattern: phonePatterns.global,
+    phoneLength: [8],
+  },
+  {
+    name: "Lebanon",
+    code: "+961",
+    short_name: "LB",
+    phonePattern: phonePatterns.global,
+    phoneLength: [8],
+  },
+  {
+    name: "Lesotho",
+    code: "+266",
+    short_name: "LS",
+    phonePattern: phonePatterns.global,
+    phoneLength: [8],
+  },
+  {
+    name: "Liberia",
+    code: "+231",
+    short_name: "LR",
+    phonePattern: phonePatterns.global,
+    phoneLength: [8],
+  },
+  {
+    name: "Libya",
+    code: "+218",
+    short_name: "LY",
+    phonePattern: phonePatterns.global,
+    phoneLength: [9],
+  },
+  {
+    name: "Liechtenstein",
+    code: "+423",
+    short_name: "LI",
+    phonePattern: phonePatterns.global,
+    phoneLength: [7],
+  },
+  {
+    name: "Lithuania",
+    code: "+370",
+    short_name: "LT",
+    phonePattern: phonePatterns.global,
+    phoneLength: [8],
+  },
+  {
+    name: "Luxembourg",
+    code: "+352",
+    short_name: "LU",
+    phonePattern: phonePatterns.global,
+    phoneLength: [9],
+  },
+  {
+    name: "Madagascar",
+    code: "+261",
+    short_name: "MG",
+    phonePattern: phonePatterns.global,
+    phoneLength: [9],
+  },
+  {
+    name: "Malawi",
+    code: "+265",
+    short_name: "MW",
+    phonePattern: phonePatterns.global,
+    phoneLength: [9],
+  },
+  {
+    name: "Malaysia",
+    code: "+60",
+    short_name: "MY",
+    phonePattern: phonePatterns.global,
+    phoneLength: [9, 10],
+  },
+  {
+    name: "Maldives",
+    code: "+960",
+    short_name: "MV",
+    phonePattern: phonePatterns.global,
+    phoneLength: [7],
+  },
+  {
+    name: "Mali",
+    code: "+223",
+    short_name: "ML",
+    phonePattern: phonePatterns.global,
+    phoneLength: [8],
+  },
+  {
+    name: "Malta",
+    code: "+356",
+    short_name: "MT",
+    phonePattern: phonePatterns.global,
+    phoneLength: [8],
+  },
+  {
+    name: "Marshall Islands",
+    code: "+692",
+    short_name: "MH",
+    phonePattern: phonePatterns.global,
+    phoneLength: [7],
+  },
+  {
+    name: "Mauritania",
+    code: "+222",
+    short_name: "MR",
+    phonePattern: phonePatterns.global,
+    phoneLength: [8],
+  },
+  {
+    name: "Mauritius",
+    code: "+230",
+    short_name: "MU",
+    phonePattern: phonePatterns.global,
+    phoneLength: [8],
+  },
+  {
+    name: "Mexico",
+    code: "+52",
+    short_name: "MX",
+    phonePattern: phonePatterns.MX,
+    phoneLength: [10],
+  },
+  {
+    name: "Micronesia",
+    code: "+691",
+    short_name: "FM",
+    phonePattern: phonePatterns.global,
+    phoneLength: [7],
+  },
+  {
+    name: "Moldova",
+    code: "+373",
+    short_name: "MD",
+    phonePattern: phonePatterns.global,
+    phoneLength: [8],
+  },
+  {
+    name: "Monaco",
+    code: "+377",
+    short_name: "MC",
+    phonePattern: phonePatterns.global,
+    phoneLength: [8],
+  },
+  {
+    name: "Mongolia",
+    code: "+976",
+    short_name: "MN",
+    phonePattern: phonePatterns.global,
+    phoneLength: [8],
+  },
+  {
+    name: "Montenegro",
+    code: "+382",
+    short_name: "ME",
+    phonePattern: phonePatterns.global,
+    phoneLength: [8],
+  },
+  {
+    name: "Morocco",
+    code: "+212",
+    short_name: "MA",
+    phonePattern: phonePatterns.global,
+    phoneLength: [9],
+  },
+  {
+    name: "Mozambique",
+    code: "+258",
+    short_name: "MZ",
+    phonePattern: phonePatterns.global,
+    phoneLength: [9],
+  },
+  {
+    name: "Myanmar",
+    code: "+95",
+    short_name: "MM",
+    phonePattern: phonePatterns.global,
+    phoneLength: [9, 10],
+  },
+  {
+    name: "Namibia",
+    code: "+264",
+    short_name: "NA",
+    phonePattern: phonePatterns.global,
+    phoneLength: [9],
+  },
+  {
+    name: "Nauru",
+    code: "+674",
+    short_name: "NR",
+    phonePattern: phonePatterns.global,
+    phoneLength: [7],
+  },
+  {
+    name: "Nepal",
+    code: "+977",
+    short_name: "NP",
+    phonePattern: phonePatterns.global,
+    phoneLength: [10],
+  },
+  {
+    name: "Netherlands",
+    code: "+31",
+    short_name: "NL",
+    phonePattern: phonePatterns.global,
+    phoneLength: [9],
+  },
+  {
+    name: "New Zealand",
+    code: "+64",
+    short_name: "NZ",
+    phonePattern: phonePatterns.global,
+    phoneLength: [8, 9],
+  },
+  {
+    name: "Nicaragua",
+    code: "+505",
+    short_name: "NI",
+    phonePattern: phonePatterns.global,
+    phoneLength: [8],
+  },
+  {
+    name: "Niger",
+    code: "+227",
+    short_name: "NE",
+    phonePattern: phonePatterns.global,
+    phoneLength: [8],
+  },
+  {
+    name: "Nigeria",
+    code: "+234",
+    short_name: "NG",
+    phonePattern: phonePatterns.global,
+    phoneLength: [10, 11],
+  },
+  {
+    name: "North Macedonia",
+    code: "+389",
+    short_name: "MK",
+    phonePattern: phonePatterns.global,
+    phoneLength: [8],
+  },
+  {
+    name: "Norway",
+    code: "+47",
+    short_name: "NO",
+    phonePattern: phonePatterns.global,
+    phoneLength: [8],
+  },
+  {
+    name: "Oman",
+    code: "+968",
+    short_name: "OM",
+    phonePattern: phonePatterns.global,
+    phoneLength: [8],
+  },
+  {
+    name: "Pakistan",
+    code: "+92",
+    short_name: "PK",
+    phonePattern: phonePatterns.global,
+    phoneLength: [10],
+  },
+  {
+    name: "Palau",
+    code: "+680",
+    short_name: "PW",
+    phonePattern: phonePatterns.global,
+    phoneLength: [7],
+  },
+  {
+    name: "Panama",
+    code: "+507",
+    short_name: "PA",
+    phonePattern: phonePatterns.global,
+    phoneLength: [8],
+  },
+  {
+    name: "Papua New Guinea",
+    code: "+675",
+    short_name: "PG",
+    phonePattern: phonePatterns.global,
+    phoneLength: [8],
+  },
+  {
+    name: "Paraguay",
+    code: "+595",
+    short_name: "PY",
+    phonePattern: phonePatterns.global,
+    phoneLength: [9],
+  },
+  {
+    name: "Peru",
+    code: "+51",
+    short_name: "PE",
+    phonePattern: phonePatterns.global,
+    phoneLength: [9],
+  },
+  {
+    name: "Philippines",
+    code: "+63",
+    short_name: "PH",
+    phonePattern: phonePatterns.global,
+    phoneLength: [10],
+  },
+  {
+    name: "Poland",
+    code: "+48",
+    short_name: "PL",
+    phonePattern: phonePatterns.global,
+    phoneLength: [9],
+  },
+  {
+    name: "Portugal",
+    code: "+351",
+    short_name: "PT",
+    phonePattern: phonePatterns.global,
+    phoneLength: [9],
+  },
+  {
+    name: "Qatar",
+    code: "+974",
+    short_name: "QA",
+    phonePattern: phonePatterns.global,
+    phoneLength: [8],
+  },
+  {
+    name: "Romania",
+    code: "+40",
+    short_name: "RO",
+    phonePattern: phonePatterns.global,
+    phoneLength: [9],
+  },
+  {
+    name: "Russia",
+    code: "+7",
+    short_name: "RU",
+    phonePattern: phonePatterns.RU,
+    phoneLength: [10],
+  },
+  {
+    name: "Rwanda",
+    code: "+250",
+    short_name: "RW",
+    phonePattern: phonePatterns.global,
+    phoneLength: [9],
+  },
+  {
+    name: "Saint Kitts and Nevis",
+    code: "+1-869",
+    short_name: "KN",
+    phonePattern: phonePatterns.US,
+    phoneLength: [10],
+  },
+  {
+    name: "Saint Lucia",
+    code: "+1-758",
+    short_name: "LC",
+    phonePattern: phonePatterns.US,
+    phoneLength: [10],
+  },
+  {
+    name: "Saint Vincent and the Grenadines",
+    code: "+1-784",
+    short_name: "VC",
+    phonePattern: phonePatterns.US,
+    phoneLength: [10],
+  },
+  {
+    name: "Samoa",
+    code: "+685",
+    short_name: "WS",
+    phonePattern: phonePatterns.global,
+    phoneLength: [7],
+  },
+  {
+    name: "San Marino",
+    code: "+378",
+    short_name: "SM",
+    phonePattern: phonePatterns.global,
+    phoneLength: [10],
+  },
+  {
+    name: "Sao Tome and Principe",
+    code: "+239",
+    short_name: "ST",
+    phonePattern: phonePatterns.global,
+    phoneLength: [7],
+  },
+  {
+    name: "Saudi Arabia",
+    code: "+966",
+    short_name: "SA",
+    phonePattern: phonePatterns.global,
+    phoneLength: [9],
+  },
+  {
+    name: "Senegal",
+    code: "+221",
+    short_name: "SN",
+    phonePattern: phonePatterns.global,
+    phoneLength: [9],
+  },
+  {
+    name: "Serbia",
+    code: "+381",
+    short_name: "RS",
+    phonePattern: phonePatterns.global,
+    phoneLength: [8, 9],
+  },
+  {
+    name: "Seychelles",
+    code: "+248",
+    short_name: "SC",
+    phonePattern: phonePatterns.global,
+    phoneLength: [7],
+  },
+  {
+    name: "Sierra Leone",
+    code: "+232",
+    short_name: "SL",
+    phonePattern: phonePatterns.global,
+    phoneLength: [8],
+  },
+  {
+    name: "Singapore",
+    code: "+65",
+    short_name: "SG",
+    phonePattern: phonePatterns.global,
+    phoneLength: [8],
+  },
+  {
+    name: "Slovakia",
+    code: "+421",
+    short_name: "SK",
+    phonePattern: phonePatterns.global,
+    phoneLength: [9],
+  },
+  {
+    name: "Slovenia",
+    code: "+386",
+    short_name: "SI",
+    phonePattern: phonePatterns.global,
+    phoneLength: [8],
+  },
+  {
+    name: "Solomon Islands",
+    code: "+677",
+    short_name: "SB",
+    phonePattern: phonePatterns.global,
+    phoneLength: [7],
+  },
+  {
+    name: "Somalia",
+    code: "+252",
+    short_name: "SO",
+    phonePattern: phonePatterns.global,
+    phoneLength: [8],
+  },
+  {
+    name: "South Africa",
+    code: "+27",
+    short_name: "ZA",
+    phonePattern: phonePatterns.global,
+    phoneLength: [9],
+  },
+  {
+    name: "South Sudan",
+    code: "+211",
+    short_name: "SS",
+    phonePattern: phonePatterns.global,
+    phoneLength: [9],
+  },
+  {
+    name: "Spain",
+    code: "+34",
+    short_name: "ES",
+    phonePattern: phonePatterns.ES,
+    phoneLength: [9],
+  },
+  {
+    name: "Sri Lanka",
+    code: "+94",
+    short_name: "LK",
+    phonePattern: phonePatterns.global,
+    phoneLength: [9],
+  },
+  {
+    name: "Sudan",
+    code: "+249",
+    short_name: "SD",
+    phonePattern: phonePatterns.global,
+    phoneLength: [9],
+  },
+  {
+    name: "Suriname",
+    code: "+597",
+    short_name: "SR",
+    phonePattern: phonePatterns.global,
+    phoneLength: [7],
+  },
+  {
+    name: "Sweden",
+    code: "+46",
+    short_name: "SE",
+    phonePattern: phonePatterns.global,
+    phoneLength: [9],
+  },
+  {
+    name: "Switzerland",
+    code: "+41",
+    short_name: "CH",
+    phonePattern: phonePatterns.global,
+    phoneLength: [9],
+  },
+  {
+    name: "Syria",
+    code: "+963",
+    short_name: "SY",
+    phonePattern: phonePatterns.global,
+    phoneLength: [9],
+  },
+  {
+    name: "Taiwan",
+    code: "+886",
+    short_name: "TW",
+    phonePattern: phonePatterns.global,
+    phoneLength: [9],
+  },
+  {
+    name: "Tajikistan",
+    code: "+992",
+    short_name: "TJ",
+    phonePattern: phonePatterns.global,
+    phoneLength: [9],
+  },
+  {
+    name: "Tanzania",
+    code: "+255",
+    short_name: "TZ",
+    phonePattern: phonePatterns.global,
+    phoneLength: [9],
+  },
+  {
+    name: "Thailand",
+    code: "+66",
+    short_name: "TH",
+    phonePattern: phonePatterns.global,
+    phoneLength: [9],
+  },
+  {
+    name: "Timor-Leste",
+    code: "+670",
+    short_name: "TL",
+    phonePattern: phonePatterns.global,
+    phoneLength: [8],
+  },
+  {
+    name: "Togo",
+    code: "+228",
+    short_name: "TG",
+    phonePattern: phonePatterns.global,
+    phoneLength: [8],
+  },
+  {
+    name: "Tonga",
+    code: "+676",
+    short_name: "TO",
+    phonePattern: phonePatterns.global,
+    phoneLength: [7],
+  },
+  {
+    name: "Trinidad and Tobago",
+    code: "+1-868",
+    short_name: "TT",
+    phonePattern: phonePatterns.US,
+    phoneLength: [10],
+  },
+  {
+    name: "Tunisia",
+    code: "+216",
+    short_name: "TN",
+    phonePattern: phonePatterns.global,
+    phoneLength: [8],
+  },
+  {
+    name: "Turkey",
+    code: "+90",
+    short_name: "TR",
+    phonePattern: phonePatterns.global,
+    phoneLength: [10],
+  },
+  {
+    name: "Turkmenistan",
+    code: "+993",
+    short_name: "TM",
+    phonePattern: phonePatterns.global,
+    phoneLength: [8],
+  },
+  {
+    name: "Tuvalu",
+    code: "+688",
+    short_name: "TV",
+    phonePattern: phonePatterns.global,
+    phoneLength: [7],
+  },
+  {
+    name: "Uganda",
+    code: "+256",
+    short_name: "UG",
+    phonePattern: phonePatterns.global,
+    phoneLength: [9],
+  },
+  {
+    name: "Ukraine",
+    code: "+380",
+    short_name: "UA",
+    phonePattern: phonePatterns.global,
+    phoneLength: [9],
+  },
+  {
+    name: "United Arab Emirates",
+    code: "+971",
+    short_name: "AE",
+    phonePattern: phonePatterns.global,
+    phoneLength: [9],
+  },
+  {
+    name: "United Kingdom",
+    code: "+44",
+    short_name: "GB",
+    phonePattern: phonePatterns.GB,
+    phoneLength: [10, 11],
+  },
+  {
+    name: "United States",
+    code: "+1",
+    short_name: "US",
+    phonePattern: phonePatterns.US,
+    phoneLength: [10],
+  },
+  {
+    name: "Uruguay",
+    code: "+598",
+    short_name: "UY",
+    phonePattern: phonePatterns.global,
+    phoneLength: [8],
+  },
+  {
+    name: "Uzbekistan",
+    code: "+998",
+    short_name: "UZ",
+    phonePattern: phonePatterns.global,
+    phoneLength: [9],
+  },
+  {
+    name: "Vanuatu",
+    code: "+678",
+    short_name: "VU",
+    phonePattern: phonePatterns.global,
+    phoneLength: [7],
+  },
+  {
+    name: "Vatican City",
+    code: "+379",
+    short_name: "VA",
+    phonePattern: phonePatterns.global,
+    phoneLength: [10],
+  },
+  {
+    name: "Venezuela",
+    code: "+58",
+    short_name: "VE",
+    phonePattern: phonePatterns.global,
+    phoneLength: [10],
+  },
+  {
+    name: "Vietnam",
+    code: "+84",
+    short_name: "VN",
+    phonePattern: phonePatterns.global,
+    phoneLength: [9, 10],
+  },
+  {
+    name: "Yemen",
+    code: "+967",
+    short_name: "YE",
+    phonePattern: phonePatterns.global,
+    phoneLength: [9],
+  },
+  {
+    name: "Zambia",
+    code: "+260",
+    short_name: "ZM",
+    phonePattern: phonePatterns.global,
+    phoneLength: [9],
+  },
+  {
+    name: "Zimbabwe",
+    code: "+263",
+    short_name: "ZW",
+    phonePattern: phonePatterns.global,
+    phoneLength: [9],
+  },
+];
 
 export default function AuthModal() {
   const { isAuthOpen, closeAuth, authMode, switchToOtp, openAuth } = useAuth();
@@ -75,9 +1446,7 @@ export default function AuthModal() {
     );
 
     const nextQuery = params.toString();
-    const nextUrl = `${window.location.pathname}${
-      nextQuery ? `?${nextQuery}` : ""
-    }${window.location.hash || ""}`;
+    const nextUrl = `${window.location.pathname}${nextQuery ? `?${nextQuery}` : ""}${window.location.hash || ""}`;
     window.history.replaceState(null, "", nextUrl);
   }, [openAuth]);
 
@@ -93,23 +1462,18 @@ export default function AuthModal() {
   const [firstNameError, setFirstNameError] = useState("");
   const [lastNameError, setLastNameError] = useState("");
   const [emailMobileError, setEmailMobileError] = useState("");
-  const [selectedCountry, setSelectedCountry] = useState(() => {
-    const inCountry = (countries || []).find((c) => c.short_name === "IN");
-    return (
-      inCountry ||
-      (countries || [])[0] || {
-        short_name: "IN",
-        code: "+91",
-        name: "India",
-        phonePattern: /^\d{10}$/,
-        phoneLength: [10],
-      }
-    );
+  const [selectedCountry, setSelectedCountry] = useState({
+    short_name: "IN",
+    code: "+91",
+    name: "India",
+    phonePattern: phonePatterns.IN,
+    phoneLength: [10],
   });
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const inputRef = useRef(null);
   const firstNameRef = useRef(null);
   const lastNameRef = useRef(null);
+  const prevInputModeRef = useRef("");
   const isModeChangingRef = useRef(false);
 
   const isValidEmail = useCallback((email) => {
@@ -185,13 +1549,16 @@ export default function AuthModal() {
     // If mode changed and input was focused, ensure it stays focused after re-render
     if (previousMode !== newMode && wasFocused) {
       isModeChangingRef.current = true;
+      // Use multiple animation frames to ensure DOM is updated
       requestAnimationFrame(() => {
         requestAnimationFrame(() => {
           if (inputRef.current) {
             inputRef.current.focus();
+            // Restore cursor position
             const newCursorPos = Math.min(cursorPosition, rawValue.length);
             inputRef.current.setSelectionRange(newCursorPos, newCursorPos);
           }
+          // Reset flag after focus is restored
           setTimeout(() => {
             isModeChangingRef.current = false;
           }, 100);
@@ -201,6 +1568,7 @@ export default function AuthModal() {
   };
 
   const handleInputBlur = (e) => {
+    // If we're in the middle of a mode change, prevent blur and refocus
     if (isModeChangingRef.current && inputRef.current) {
       e.preventDefault();
       setTimeout(() => {
@@ -216,17 +1584,20 @@ export default function AuthModal() {
   const selectCountry = (country) => {
     setSelectedCountry(country);
     setIsDropdownOpen(false);
+    // Clear error when country changes
     if (error && inputMode === "mobile") setError("");
   };
 
   const validateInput = () => {
     let isValid = true;
 
+    // Clear all errors first
     setFirstNameError("");
     setLastNameError("");
     setEmailMobileError("");
     setError("");
 
+    // For register mode, validate first name and last name
     if (authMode === "register") {
       if (!firstName.trim()) {
         setFirstNameError("Please enter your first name.");
@@ -267,6 +1638,7 @@ export default function AuthModal() {
         type: "email",
       };
     } else {
+      // 🧼 Clean mobile number: remove any spaces
       const cleanedMobile = `${selectedCountry.code}${inputValue.replace(/\s+/g, "")}`;
       payload = {
         mobile: cleanedMobile,
@@ -274,6 +1646,8 @@ export default function AuthModal() {
       };
     }
 
+    // Add first name and last name for register mode
+    // Note: Backend expects firstName and lastName (camelCase)
     if (authMode === "register") {
       payload.firstName = firstName.trim();
       payload.lastName = lastName.trim();
@@ -286,9 +1660,17 @@ export default function AuthModal() {
     setEmailMobileError("");
 
     try {
+      // Use different endpoint based on authMode
+      // Note: Make sure your Strapi backend has these routes configured:
+      // POST /api/register-user (for registration)
+      // POST /api/login-user (for login)
       const endpoint = authMode === "register" ? "register-user" : "login-user";
 
-      const response = await strapiPost(endpoint, payload, themeConfig.TOKEN);
+      const response = await strapiPost(
+        endpoint,
+        payload,
+        themeConfig.TOKEN
+      );
 
       if (response?.message) {
         setSuccessMessage("Code has been sent.");
@@ -300,56 +1682,50 @@ export default function AuthModal() {
         setError("Something went wrong. Please try again.");
       }
     } catch (error) {
+      // Extract error message from various possible locations
+      // Strapi error structure: error.response.data.error.message
       const errorMsg =
         error?.response?.data?.error?.message ||
         error?.response?.data?.message ||
         (error?.response?.data?.data && Array.isArray(error.response.data.data)
-          ? error.response.data.data
-              .map((err) => err.messages?.[0]?.message || err.message)
-              .join(", ")
+          ? error.response.data.data.map(err => err.messages?.[0]?.message || err.message).join(", ")
           : null) ||
         error?.message ||
         "An error occurred. Please try again.";
 
+      // Clear all previous errors first
       setError("");
       setEmailMobileError("");
 
-      if (
-        errorMsg.includes("already exists") ||
+      // Set the error message - if it's about existing user or login issues, show it as email/mobile error
+      if (errorMsg.includes("already exists") ||
         errorMsg.includes("does not exist") ||
         errorMsg.includes("Please login") ||
-        errorMsg.includes("Please register")
-      ) {
+        errorMsg.includes("Please register")) {
         setEmailMobileError(errorMsg);
       } else {
         setError(errorMsg);
       }
 
+      // Also set field-specific errors if available
       if (error?.response?.data?.data) {
         const errorData = error.response.data.data;
         if (Array.isArray(errorData)) {
           errorData.forEach((err) => {
             if (err.path && err.path.includes("firstName")) {
-              setFirstNameError(
-                err.messages?.[0]?.message || "Invalid first name"
-              );
+              setFirstNameError(err.messages?.[0]?.message || "Invalid first name");
             }
             if (err.path && err.path.includes("lastName")) {
-              setLastNameError(
-                err.messages?.[0]?.message || "Invalid last name"
-              );
+              setLastNameError(err.messages?.[0]?.message || "Invalid last name");
             }
-            if (
-              err.path &&
-              (err.path.includes("email") || err.path.includes("mobile"))
-            ) {
-              setEmailMobileError(
-                err.messages?.[0]?.message || "Invalid email or mobile"
-              );
+            if (err.path && (err.path.includes("email") || err.path.includes("mobile"))) {
+              setEmailMobileError(err.messages?.[0]?.message || "Invalid email or mobile");
             }
           });
         }
       }
+
+      // Error is handled and displayed to user - no need to log to console
     } finally {
       setIsSubmitting(false);
     }
@@ -359,6 +1735,8 @@ export default function AuthModal() {
     if (e.key === "Enter") {
       handleSubmit();
     }
+    // Allow letters and @ symbol to enable switching from mobile to email mode
+    // Only prevent special characters (not letters, digits, or @)
     if (
       inputMode === "mobile" &&
       !/[\d@a-zA-Z]|Backspace|Delete|ArrowLeft|ArrowRight|Tab/.test(e.key)
@@ -367,13 +1745,17 @@ export default function AuthModal() {
     }
   };
 
+
+  // Clear all errors and reset form when modal closes
   useEffect(() => {
     if (!isAuthOpen) {
+      // Clear all errors
       setError("");
       setFirstNameError("");
       setLastNameError("");
       setEmailMobileError("");
       setSuccessMessage("");
+      // Reset form fields
       setInputValue("");
       setFirstName("");
       setLastName("");
@@ -381,28 +1763,35 @@ export default function AuthModal() {
     }
   }, [isAuthOpen]);
 
+  // Reset form fields when switching between login and register modes
   useEffect(() => {
     if (isAuthOpen) {
       if (authMode === "login") {
+        // Reset register fields when switching to login
         setFirstName("");
         setLastName("");
         setFirstNameError("");
         setLastNameError("");
       } else if (authMode === "register") {
+        // Keep email/mobile input but clear errors
         setError("");
         setEmailMobileError("");
       }
     }
   }, [authMode, isAuthOpen]);
 
+  // Focus input when modal opens
   useEffect(() => {
     if (isAuthOpen) {
+      // Small delay to ensure modal is fully rendered
       const timeoutId = setTimeout(() => {
         if (authMode === "register") {
+          // Focus first name field in register mode
           if (firstNameRef.current) {
             firstNameRef.current.focus();
           }
         } else if (inputRef.current) {
+          // Focus email/mobile input in login mode
           inputRef.current.focus();
         }
       }, 100);
@@ -410,6 +1799,7 @@ export default function AuthModal() {
     }
   }, [isAuthOpen, authMode]);
 
+  // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (isDropdownOpen && !event.target.closest(".country-dropdown")) {
@@ -469,16 +1859,13 @@ export default function AuthModal() {
               </button>
             </ModalHeader>
             <ModalBody className="p-0 gap-0 relative">
-              <p
-                className={`text-gray-600 ${
-                  authMode === "register" ? "sm:mb-4 mb-3" : "sm:mb-[20px] mb-5"
-                }`}
-              >
+              <p className={`text-gray-600 ${authMode === "register" ? "sm:mb-4 mb-3" : "sm:mb-[20px] mb-5"}`}>
                 {authMode === "register"
                   ? "Seamless shopping starts with a simple create account."
                   : "Seamless shopping starts with a simple login."}
               </p>
 
+              {/* Register form fields */}
               {authMode === "register" && (
                 <>
                   <div className="mb-3 grid grid-cols-2 gap-4">
@@ -487,9 +1874,8 @@ export default function AuthModal() {
                         First Name
                       </label>
                       <div
-                        className={`flex items-center border ${
-                          firstNameError ? "border-red-500" : "border-gray-200"
-                        } rounded-md py-[11px] px-2`}
+                        className={`flex items-center border ${firstNameError ? "border-red-500" : "border-gray-200"
+                          } rounded-md px-2`}
                       >
                         <input
                           ref={firstNameRef}
@@ -500,15 +1886,12 @@ export default function AuthModal() {
                             setFirstName(e.target.value);
                             if (firstNameError) setFirstNameError("");
                           }}
-                          className="h-full w-full text-sm text-black placeholder:text-gray-400 px-2 mb-0.5 rounded-[5px] outline-none"
+                          className="h-full w-full text-sm text-black placeholder:text-gray-400 py-[11px] px-2 mb-0.5 rounded-[5px] outline-none"
                           aria-label="First name"
                         />
                       </div>
                       {firstNameError && (
-                        <div
-                          className="mt-1 text-red-500 text-sm flex items-center gap-2"
-                          role="alert"
-                        >
+                        <div className="mt-1 text-red-500 text-sm flex items-center gap-2" role="alert">
                           <svg
                             xmlns="http://www.w3.org/2000/svg"
                             className="h-4 w-4 flex-shrink-0"
@@ -531,9 +1914,8 @@ export default function AuthModal() {
                         Last Name
                       </label>
                       <div
-                        className={`flex items-center border ${
-                          lastNameError ? "border-red-500" : "border-gray-200"
-                        } rounded-md py-[11px] px-2`}
+                        className={`flex items-center border ${lastNameError ? "border-red-500" : "border-gray-200"
+                          } rounded-md py-[11px] px-2`}
                       >
                         <input
                           ref={lastNameRef}
@@ -549,10 +1931,7 @@ export default function AuthModal() {
                         />
                       </div>
                       {lastNameError && (
-                        <div
-                          className="mt-1 text-red-500 text-sm flex items-center gap-2"
-                          role="alert"
-                        >
+                        <div className="mt-1 text-red-500 text-sm flex items-center gap-2" role="alert">
                           <svg
                             xmlns="http://www.w3.org/2000/svg"
                             className="h-4 w-4 flex-shrink-0"
@@ -573,6 +1952,7 @@ export default function AuthModal() {
                 </>
               )}
 
+              {/* Email/Mobile field with label */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Mobile Number or Email
@@ -581,9 +1961,8 @@ export default function AuthModal() {
 
               {inputMode === "mobile" ? (
                 <div
-                  className={`flex items-center border ${
-                    emailMobileError || error ? "border-red-500" : "border-gray-200"
-                  } rounded-md py-[11px] px-2 relative country-dropdown`}
+                  className={`flex items-center border ${emailMobileError || error ? "border-red-500" : "border-gray-200"
+                    } rounded-md px-2 relative country-dropdown`}
                 >
                   <div className="z-10">
                     <button
@@ -602,9 +1981,8 @@ export default function AuthModal() {
                         height="11"
                         viewBox="0 0 9 11"
                         fill="none"
-                        className={`ml-2 transition-transform duration-300 flex-shrink-0 ${
-                          isDropdownOpen ? "rotate-0" : "rotate-180"
-                        }`}
+                        className={`ml-2 transition-transform duration-300 flex-shrink-0 ${isDropdownOpen ? "rotate-0" : "rotate-180"
+                          }`}
                       >
                         <path
                           d="M4.1612 2.31217C4.35263 2.13578 4.64737 2.13578 4.8388 2.31217L8.8388 5.9977C8.94155 6.09237 9 6.22571 9 6.36541V6.85679C9 7.29285 8.48076 7.51995 8.16057 7.22393L4.83943 4.15343C4.64781 3.97628 4.35219 3.97628 4.16057 4.15343L0.839427 7.22393C0.519237 7.51995 0 7.29285 0 6.85679V6.36541C0 6.22571 0.0584515 6.09237 0.161196 5.9977L4.1612 2.31217Z"
@@ -618,11 +1996,10 @@ export default function AuthModal() {
                           <li
                             key={country.short_name}
                             onClick={() => selectCountry(country)}
-                            className={`cursor-pointer px-4 py-2 text-sm font-normal text-[#505050] hover:bg-gray-100 transition-colors ${
-                              selectedCountry.code === country.code
-                                ? "bg-primary text-white hover:bg-primary"
-                                : ""
-                            }`}
+                            className={`cursor-pointer px-4 py-2 text-sm font-normal text-[#505050] hover:bg-gray-100 transition-colors ${selectedCountry.code === country.code
+                              ? "bg-primary text-white hover:bg-primary"
+                              : ""
+                              }`}
                           >
                             {country.name} {country.code}
                           </li>
@@ -640,15 +2017,14 @@ export default function AuthModal() {
                     onKeyDown={handleKeyDown}
                     onBlur={handleInputBlur}
                     onFocus={(e) => e.target.focus()}
-                    className="h-full w-full text-sm text-black placeholder:text-gray-400 px-2 mb-0.5 rounded-[5px] outline-none"
+                    className="h-full w-full text-sm text-black placeholder:text-gray-400 py-[11px] px-2 mb-0.5 rounded-[5px] outline-none"
                     aria-label="Mobile number"
                   />
                 </div>
               ) : (
                 <div
-                  className={`flex items-center border ${
-                    emailMobileError || error ? "border-red-500" : "border-gray-200"
-                  } rounded-md py-[11px] px-2`}
+                  className={`flex items-center border ${emailMobileError || error ? "border-red-500" : "border-gray-200"
+                    } rounded-md py-0 px-2`}
                 >
                   <input
                     ref={inputRef}
@@ -659,12 +2035,13 @@ export default function AuthModal() {
                     onKeyDown={handleKeyDown}
                     onBlur={handleInputBlur}
                     onFocus={(e) => e.target.focus()}
-                    className="h-full w-full text-sm text-black placeholder:text-gray-400 px-2 mb-0.5 rounded-[5px] outline-none"
+                    className="py-[13px] h-full w-full text-sm text-black placeholder:text-gray-400 px-2 mb-0.5 rounded-[5px] outline-none"
                     aria-label="Email or mobile number"
                   />
                 </div>
               )}
 
+              {/* Show email/mobile error below the input field */}
               {(emailMobileError || (error && authMode === "login")) && (
                 <div className="mt-2 text-red-500 text-sm flex items-center gap-2" role="alert">
                   <svg
@@ -689,6 +2066,7 @@ export default function AuthModal() {
                 </div>
               )}
 
+              {/* Toggle between login and register */}
               <div className="mt-3 mb-2">
                 <p className="text-sm text-gray-600">
                   {authMode === "register" ? (
@@ -737,7 +2115,7 @@ export default function AuthModal() {
                 By continuing, you agree to WebbyTemplate’s{" "}
                 <Link
                   target="_blank"
-                  rel="noopener noreferrer"
+                  rel="noopener noreferrer" // ✅ security/best practice
                   href="/terms-and-conditions"
                   className="text-blue-600 underline hover:text-blue-800"
                 >
@@ -745,7 +2123,7 @@ export default function AuthModal() {
                 </Link>{" "}
                 <Link
                   target="_blank"
-                  rel="noopener noreferrer"
+                  rel="noopener noreferrer" // ✅ security/best practice
                   href="/privacy-policy"
                   className="text-blue-600 underline hover:text-blue-800"
                 >
@@ -754,7 +2132,7 @@ export default function AuthModal() {
                 and{" "}
                 <Link
                   target="_blank"
-                  rel="noopener noreferrer"
+                  rel="noopener noreferrer" // ✅ security/best practice
                   href="/author-terms-and-policy"
                   className="text-blue-600 underline hover:text-blue-800"
                 >
@@ -806,6 +2184,7 @@ function CodeModal({ isOpen, onClose, identifier, type }) {
   const hasAutoSubmittedRef = useRef(false);
   const lastSubmittedCodeRef = useRef("");
 
+  // Focus first input when modal opens and reset auto-submit flag
   useEffect(() => {
     if (isOpen) {
       hasAutoSubmittedRef.current = false;
@@ -816,6 +2195,7 @@ function CodeModal({ isOpen, onClose, identifier, type }) {
     }
   }, [isOpen]);
 
+  // Handle resend cooldown timer
   useEffect(() => {
     if (resendCooldown === 0) return;
 
@@ -832,17 +2212,24 @@ function CodeModal({ isOpen, onClose, identifier, type }) {
     return () => clearInterval(timer);
   }, [resendCooldown]);
 
+  // Auto-submit when all 6 digits are filled and valid
   useEffect(() => {
     const isComplete = codeValues.every((val) => val && /^\d$/.test(val));
     const allFilled = codeValues.length === 6 && isComplete;
     const currentCode = codeValues.join("");
 
+    // Reset auto-submit flag when code values are cleared (e.g., on resend)
     if (codeValues.every((val) => !val)) {
       hasAutoSubmittedRef.current = false;
       lastSubmittedCodeRef.current = "";
       return;
     }
 
+    // Only auto-submit if:
+    // 1. All 6 digits are filled and valid
+    // 2. Not currently submitting
+    // 3. Haven't already auto-submitted this exact code
+    // 4. The current code is different from the last submitted one
     if (
       allFilled &&
       !isSubmitting &&
@@ -851,7 +2238,9 @@ function CodeModal({ isOpen, onClose, identifier, type }) {
     ) {
       hasAutoSubmittedRef.current = true;
       lastSubmittedCodeRef.current = currentCode;
+      // Small delay to ensure UI updates
       setTimeout(() => {
+        // Double-check the code is still valid before submitting
         const codeString = codeValues.join("");
         if (
           codeString.length === 6 &&
@@ -868,19 +2257,23 @@ function CodeModal({ isOpen, onClose, identifier, type }) {
   }, [codeValues, isSubmitting]);
 
   const handleCodeChange = (index, value) => {
+    // Only allow digits
     if (value && !/^\d$/.test(value)) return;
 
     const newCodeValues = [...codeValues];
     newCodeValues[index] = value;
     setCodeValues(newCodeValues);
 
+    // Clear error when user starts typing
     if (codeError) setCodeError("");
 
+    // Reset auto-submit flag when user edits code (allows re-submission of new code)
     const newCode = newCodeValues.join("");
     if (newCode !== lastSubmittedCodeRef.current) {
       hasAutoSubmittedRef.current = false;
     }
 
+    // Auto-focus next input
     if (value && index < 5) {
       const nextInput = document.querySelector(`input[name=code-${index + 1}]`);
       if (nextInput) nextInput.focus();
@@ -911,11 +2304,13 @@ function CodeModal({ isOpen, onClose, identifier, type }) {
     }
     setCodeValues(newCodeValues);
 
+    // Reset auto-submit flag when user pastes new code
     const newCode = newCodeValues.join("");
     if (newCode !== lastSubmittedCodeRef.current) {
       hasAutoSubmittedRef.current = false;
     }
 
+    // Focus next empty input or last input
     const nextEmptyIndex = newCodeValues.findIndex((val) => !val);
     const targetIndex = nextEmptyIndex !== -1 ? nextEmptyIndex : 5;
     const target = document.querySelector(`input[name=code-${targetIndex}]`);
@@ -939,6 +2334,8 @@ function CodeModal({ isOpen, onClose, identifier, type }) {
   const handleSubmit = async () => {
     setResendMessage("");
     if (!validateCode()) {
+      // Don't reset hasAutoSubmittedRef here - let it stay true to prevent re-submission
+      // The flag will be reset when user changes the code
       return;
     }
 
@@ -991,12 +2388,16 @@ function CodeModal({ isOpen, onClose, identifier, type }) {
         }
       } else {
         setCodeError("Invalid code. Please try again.");
+        // Don't reset hasAutoSubmittedRef on error - prevents re-submission of same invalid code
+        // User must change the code to trigger a new submission
       }
     } catch (error) {
       setCodeError(
         error?.response?.data?.error?.message ||
-          "An error occurred. Please try again later."
+        "An error occurred. Please try again later."
       );
+      // Don't reset hasAutoSubmittedRef on error - prevents re-submission of same invalid code
+      // User must change the code to trigger a new submission
     } finally {
       setIsSubmitting(false);
     }
@@ -1016,11 +2417,14 @@ function CodeModal({ isOpen, onClose, identifier, type }) {
           ? { email: identifier, type: "email" }
           : { mobile: identifier, type: "mobile" };
 
+      // For resend, use login endpoint since user already exists at this point
       await strapiPost("login-user", payload, themeConfig.TOKEN);
 
+      // setResendMessage("Code has been resent successfully.");
       setCodeError("");
-      setResendCooldown(30);
+      setResendCooldown(30); // 30 second cooldown
 
+      // Focus the first OTP input box after resending
       setTimeout(() => {
         if (firstInputRef.current) {
           firstInputRef.current.focus();
@@ -1038,6 +2442,7 @@ function CodeModal({ isOpen, onClose, identifier, type }) {
 
   const maskIdentifier = (identifier) => {
     if (identifier.includes("@")) {
+      // Email masking
       const [username, domain] = identifier.split("@");
       const maskedUsername =
         username.length > 2
@@ -1045,6 +2450,7 @@ function CodeModal({ isOpen, onClose, identifier, type }) {
           : username;
       return `${maskedUsername}@${domain}`;
     } else {
+      // Mobile masking - show first 2 and last 2 digits
       const cleanNumber = identifier.replace(/\D/g, "");
       if (cleanNumber.length > 4) {
         return (
@@ -1071,7 +2477,7 @@ function CodeModal({ isOpen, onClose, identifier, type }) {
               Welcome to WebbyTemplate
               <button
                 onClick={onClose}
-                className="cursor-pointer p-1 hover:bg-gray-100 rounded-full transition-colors"
+                className="cursor-pointer p-1 hover:bg-gray-1 00 rounded-full transition-colors"
                 aria-label="Close modal"
               >
                 <svg
@@ -1095,9 +2501,7 @@ function CodeModal({ isOpen, onClose, identifier, type }) {
                   <>
                     Enter the code sent to{" "}
                     <span className="font-bold">
-                      {isNaN(identifier)
-                        ? maskIdentifier(identifier)
-                        : `+${maskIdentifier(identifier)}`}
+                      {isNaN(identifier) ? maskIdentifier(identifier) : `+${maskIdentifier(identifier)}`}
                     </span>
                   </>
                 ) : (
@@ -1118,9 +2522,8 @@ function CodeModal({ isOpen, onClose, identifier, type }) {
                       onKeyDown={(e) => handleKeyDown(index, e)}
                       onPaste={index === 0 ? handlePaste : undefined}
                       ref={index === 0 ? firstInputRef : null}
-                      className={`2xl:w-[60px] 2xl:h-[60px] xl:w-[55px] xl:h-[55px] md:w-[50px] md:h-[50px] w-[45px] h-[45px] text-center text-lg font-medium border ${
-                        codeError ? "border-red-500" : "border-gray-200"
-                      } text-black placeholder:text-gray-400 rounded-[5px] focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent transition-all`}
+                      className={`2xl:w-[60px] 2xl:h-[60px] xl:w-[55px] xl:h-[55px] md:w-[50px] md:h-[50px] w-[45px] h-[45px] text-center text-lg font-medium border ${codeError ? "border-red-500" : "border-gray-200"
+                        } text-black placeholder:text-gray-400 rounded-[5px] focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent transition-all`}
                       aria-label={`Code digit ${index + 1}`}
                     />
                   ))}
@@ -1128,10 +2531,7 @@ function CodeModal({ isOpen, onClose, identifier, type }) {
 
                 {codeError && (
                   <div className="flex justify-center mb-2">
-                    <div
-                      className="text-red-500 text-sm flex items-center gap-2 w-full max-w-[330px] md:max-w-[384px] xl:max-w-[423px] 2xl:max-w-[468px] justify-start"
-                      role="alert"
-                    >
+                    <div className="text-red-500 text-sm flex items-center gap-2 w-full max-w-[330px] md:max-w-[384px] xl:max-w-[423px] 2xl:max-w-[468px] justify-start" role="alert">
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
                         className="h-5 w-5 flex-shrink-0"
@@ -1160,11 +2560,10 @@ function CodeModal({ isOpen, onClose, identifier, type }) {
                 <p className="text-sm text-gray-500">
                   {"Didn't receive the code? "}
                   <button
-                    className={`font-medium transition-colors ${
-                      resendCooldown > 0
-                        ? "text-gray-400 cursor-not-allowed"
-                        : "text-blue-600 hover:text-blue-800 hover:underline"
-                    }`}
+                    className={`font-medium transition-colors ${resendCooldown > 0
+                      ? "text-gray-400 cursor-not-allowed"
+                      : "text-blue-600 hover:text-blue-800 hover:underline"
+                      }`}
                     onClick={handleResendCode}
                     disabled={resendCooldown > 0}
                   >
@@ -1187,4 +2586,3 @@ function CodeModal({ isOpen, onClose, identifier, type }) {
     </Modal>
   );
 }
-

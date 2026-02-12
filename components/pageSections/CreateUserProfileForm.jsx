@@ -42,9 +42,9 @@ const CreateUserProfileForm = ({
         !Number.isNaN(parsedAvatarMax) && parsedAvatarMax > 0 ? parsedAvatarMax : 2;
     const avatarInfoText =
         avtar_info ||
-        `We recommend uploading a square JPG image of at least 400 × 400 px (max ${avatarMaxSizeMb} MB).`;
+        `We recommend uploading a square JPG image of at least 400x400 px (max ${avatarMaxSizeMb} MB).`;
     const showAvatarSection = avtar !== false;
-    const defaultButton = { label: "Save changes", link: "submit" };
+    const defaultButton = { label: "Save Profile", link: "submit" };
     const buttonConfig = button === false ? null : { ...defaultButton, ...button };
     const profileDisplayName =
         formValues.profile_name ||
@@ -172,7 +172,7 @@ const CreateUserProfileForm = ({
 
     const validateUsernameFormat = (username) => {
         if (!username) return { isValid: false, message: "" };
-        
+
         // Check length
         if (username.length < 4) {
             return { isValid: false, message: "Username must be at least 4 characters" };
@@ -180,13 +180,13 @@ const CreateUserProfileForm = ({
         if (username.length > 15) {
             return { isValid: false, message: "Username must be at most 15 characters" };
         }
-        
+
         // Check pattern: only lowercase a-z and numbers 0-9
         const usernamePattern = /^[a-z0-9]+$/;
         if (!usernamePattern.test(username)) {
             return { isValid: false, message: "Username can only contain lowercase letters (a-z) and numbers (0-9)" };
         }
-        
+
         return { isValid: true, message: "" };
     };
 
@@ -195,21 +195,21 @@ const CreateUserProfileForm = ({
         if (name === "username") {
             // Convert to lowercase automatically
             value = value.toLowerCase();
-            
+
             // Filter out invalid characters (only allow a-z and 0-9)
             value = value.replace(/[^a-z0-9]/g, '');
-            
+
             // Limit to 15 characters
             if (value.length > 15) {
                 value = value.substring(0, 15);
             }
-            
+
             // Clear validation errors - the useEffect will handle validation and API calls
             setValidationErrors((prevErrors) => ({
                 ...prevErrors,
                 [name]: "",
             }));
-            
+
             // Set typing status - useEffect will handle the actual validation
             if (value.length > 0) {
                 setUsernameCheck({ status: "typing", message: "" });
@@ -222,7 +222,7 @@ const CreateUserProfileForm = ({
                 [name]: "",
             }));
         }
-        
+
         setFormValues((prevValues) => ({
             ...prevValues,
             [name]: value,
@@ -290,7 +290,7 @@ const CreateUserProfileForm = ({
 
         // Step 1: Validate format FIRST before making any API call
         const formatValidation = validateUsernameFormat(username);
-        
+
         if (!formatValidation.isValid) {
             // Format is invalid - show validation error and DO NOT call API
             setUsernameCheck({ status: "error", message: formatValidation.message });
@@ -354,31 +354,37 @@ const CreateUserProfileForm = ({
             html: "input",
             description: "Your public name shown on the marketplace.",
             validation: { required: "Profile name is required" },
-            rules: [],
+            rules: ["required"],
             class: "w-full sm:w-full md:w-1/2 xl:w-1/2 !p-[5px]",
         },
         {
             position: 2,
             name: "username",
             label: "Username",
-            placeholder: "Enter your username",
+            placeholder: "Enter your Username",
             type: "text",
             html: "input",
+            prefix: "https://www.webbytemplate.com/author/",
             description:
-                "4-15 characters, lowercase letters (a-z) and numbers (0-9) only. Your unique identifier used in your WebbyTemplate profile URL.",
+                "4-15 characters, lowercase letters (a-z) and numbers (0-9) only. This will be used in your public profile URL.",
             validation: { required: "Username is required" },
             rules: ["required"],
-            class: "w-full sm:w-full md:w-1/2 xl:w-1/2 !p-[5px]",
+            classNames: {
+                inputWrapper: "!p-0 h-full",
+                innerWrapper: "!items-stretch",
+                label: "!mb-0 !pb-0"
+            },
+            class: "w-full sm:w-full md:w-1/2 xl:w-1/2 p-0",
         },
         {
             position: 3,
             name: "bio",
             label: "Bio",
-            placeholder: "Write a brief bio...",
+            placeholder: "Write a brief bio about yourself and your work...",
             type: "textarea",
             html: "textarea",
             description:
-                "A brief description about you and your work. Optional but recommended.",
+                "A short description about you and your expertise. Optional, but highly recommended.",
             validation: {},
             rules: [],
             class: "w-full !p-[5px]",
@@ -578,7 +584,7 @@ const CreateUserProfileForm = ({
                                                         document.getElementById("fileInput").click();
                                                     }}
                                                     htmlFor="fileInput"
-                                                    className="btn btn-primary flex items-center justify-center gap-[10px]"
+                                                    className="btn btn-primary flex items-center justify-center gap-[10px] !py-[10px] !px-[20px] !h-[45px]"
                                                 >
                                                     {imageLoading ? (
                                                         <svg
@@ -792,181 +798,183 @@ const CreateUserProfileForm = ({
                                     </div>
 
                                     {buttonConfig && (
-                                        <Button
-                                            type={buttonConfig.link || "submit"}
-                                            disabled={fromSaveLoading}
-                                            className="group btn btn-primary flex items-center justify-center gap-[10px] w-[220px] xl:!py-[11px] py-[10px] h-auto sm:mt-5 mt-3"
-                                        >
-                                            {fromSaveLoading && (
-                                                <svg
-                                                    xmlns="http://www.w3.org/2000/svg"
-                                                    width="30"
-                                                    height="30"
-                                                    viewBox="0 0 50 50"
-                                                    fill="none"
-                                                >
-                                                    <circle cx="40" cy="25" r="3" fill="currentColor">
-                                                        <animate
-                                                            attributeName="opacity"
-                                                            values="1;0.2;1"
-                                                            dur="1.2s"
-                                                            begin="0s"
-                                                            repeatCount="indefinite"
-                                                        />
-                                                    </circle>
-                                                    <circle
-                                                        cx="37.99038105676658"
-                                                        cy="32.5"
-                                                        r="3"
-                                                        fill="currentColor"
+                                        <div className="w-full flex justify-end">
+                                            <Button
+                                                type={buttonConfig.link || "submit"}
+                                                disabled={fromSaveLoading}
+                                                className="group btn btn-primary flex items-center justify-center gap-[10px] w-[220px] xl:!py-[11px] py-[10px] h-auto sm:mt-5 mt-3"
+                                            >
+                                                {fromSaveLoading && (
+                                                    <svg
+                                                        xmlns="http://www.w3.org/2000/svg"
+                                                        width="30"
+                                                        height="30"
+                                                        viewBox="0 0 50 50"
+                                                        fill="none"
                                                     >
-                                                        <animate
-                                                            attributeName="opacity"
-                                                            values="1;0.2;1"
-                                                            dur="1.2s"
-                                                            begin="0.1s"
-                                                            repeatCount="indefinite"
-                                                        />
-                                                    </circle>
-                                                    <circle
-                                                        cx="32.5"
-                                                        cy="37.99038105676658"
-                                                        r="3"
-                                                        fill="currentColor"
-                                                    >
-                                                        <animate
-                                                            attributeName="opacity"
-                                                            values="1;0.2;1"
-                                                            dur="1.2s"
-                                                            begin="0.2s"
-                                                            repeatCount="indefinite"
-                                                        />
-                                                    </circle>
-                                                    <circle cx="25" cy="40" r="3" fill="currentColor">
-                                                        <animate
-                                                            attributeName="opacity"
-                                                            values="1;0.2;1"
-                                                            dur="1.2s"
-                                                            begin="0.30000000000000004s"
-                                                            repeatCount="indefinite"
-                                                        />
-                                                    </circle>
-                                                    <circle
-                                                        cx="17.500000000000004"
-                                                        cy="37.99038105676658"
-                                                        r="3"
-                                                        fill="currentColor"
-                                                    >
-                                                        <animate
-                                                            attributeName="opacity"
-                                                            values="1;0.2;1"
-                                                            dur="1.2s"
-                                                            begin="0.4s"
-                                                            repeatCount="indefinite"
-                                                        />
-                                                    </circle>
-                                                    <circle
-                                                        cx="12.00961894323342"
-                                                        cy="32.5"
-                                                        r="3"
-                                                        fill="currentColor"
-                                                    >
-                                                        <animate
-                                                            attributeName="opacity"
-                                                            values="1;0.2;1"
-                                                            dur="1.2s"
-                                                            begin="0.5s"
-                                                            repeatCount="indefinite"
-                                                        />
-                                                    </circle>
-                                                    <circle
-                                                        cx="10"
-                                                        cy="25.000000000000004"
-                                                        r="3"
-                                                        fill="currentColor"
-                                                    >
-                                                        <animate
-                                                            attributeName="opacity"
-                                                            values="1;0.2;1"
-                                                            dur="1.2s"
-                                                            begin="0.6000000000000001s"
-                                                            repeatCount="indefinite"
-                                                        />
-                                                    </circle>
-                                                    <circle
-                                                        cx="12.009618943233418"
-                                                        cy="17.500000000000004"
-                                                        r="3"
-                                                        fill="currentColor"
-                                                    >
-                                                        <animate
-                                                            attributeName="opacity"
-                                                            values="1;0.2;1"
-                                                            dur="1.2s"
-                                                            begin="0.7000000000000001s"
-                                                            repeatCount="indefinite"
-                                                        />
-                                                    </circle>
-                                                    <circle
-                                                        cx="17.499999999999993"
-                                                        cy="12.009618943233423"
-                                                        r="3"
-                                                        fill="currentColor"
-                                                    >
-                                                        <animate
-                                                            attributeName="opacity"
-                                                            values="1;0.2;1"
-                                                            dur="1.2s"
-                                                            begin="0.8s"
-                                                            repeatCount="indefinite"
-                                                        />
-                                                    </circle>
-                                                    <circle
-                                                        cx="24.999999999999996"
-                                                        cy="10"
-                                                        r="3"
-                                                        fill="currentColor"
-                                                    >
-                                                        <animate
-                                                            attributeName="opacity"
-                                                            values="1;0.2;1"
-                                                            dur="1.2s"
-                                                            begin="0.9s"
-                                                            repeatCount="indefinite"
-                                                        />
-                                                    </circle>
-                                                    <circle
-                                                        cx="32.5"
-                                                        cy="12.009618943233422"
-                                                        r="3"
-                                                        fill="currentColor"
-                                                    >
-                                                        <animate
-                                                            attributeName="opacity"
-                                                            values="1;0.2;1"
-                                                            dur="1.2s"
-                                                            begin="1s"
-                                                            repeatCount="indefinite"
-                                                        />
-                                                    </circle>
-                                                    <circle
-                                                        cx="37.99038105676658"
-                                                        cy="17.499999999999993"
-                                                        r="3"
-                                                        fill="currentColor"
-                                                    >
-                                                        <animate
-                                                            attributeName="opacity"
-                                                            values="1;0.2;1"
-                                                            dur="1.2s"
-                                                            begin="1.1s"
-                                                            repeatCount="indefinite"
-                                                        />
-                                                    </circle>
-                                                </svg>
-                                            )}
-                                            {buttonConfig.label}
-                                        </Button>
+                                                        <circle cx="40" cy="25" r="3" fill="currentColor">
+                                                            <animate
+                                                                attributeName="opacity"
+                                                                values="1;0.2;1"
+                                                                dur="1.2s"
+                                                                begin="0s"
+                                                                repeatCount="indefinite"
+                                                            />
+                                                        </circle>
+                                                        <circle
+                                                            cx="37.99038105676658"
+                                                            cy="32.5"
+                                                            r="3"
+                                                            fill="currentColor"
+                                                        >
+                                                            <animate
+                                                                attributeName="opacity"
+                                                                values="1;0.2;1"
+                                                                dur="1.2s"
+                                                                begin="0.1s"
+                                                                repeatCount="indefinite"
+                                                            />
+                                                        </circle>
+                                                        <circle
+                                                            cx="32.5"
+                                                            cy="37.99038105676658"
+                                                            r="3"
+                                                            fill="currentColor"
+                                                        >
+                                                            <animate
+                                                                attributeName="opacity"
+                                                                values="1;0.2;1"
+                                                                dur="1.2s"
+                                                                begin="0.2s"
+                                                                repeatCount="indefinite"
+                                                            />
+                                                        </circle>
+                                                        <circle cx="25" cy="40" r="3" fill="currentColor">
+                                                            <animate
+                                                                attributeName="opacity"
+                                                                values="1;0.2;1"
+                                                                dur="1.2s"
+                                                                begin="0.30000000000000004s"
+                                                                repeatCount="indefinite"
+                                                            />
+                                                        </circle>
+                                                        <circle
+                                                            cx="17.500000000000004"
+                                                            cy="37.99038105676658"
+                                                            r="3"
+                                                            fill="currentColor"
+                                                        >
+                                                            <animate
+                                                                attributeName="opacity"
+                                                                values="1;0.2;1"
+                                                                dur="1.2s"
+                                                                begin="0.4s"
+                                                                repeatCount="indefinite"
+                                                            />
+                                                        </circle>
+                                                        <circle
+                                                            cx="12.00961894323342"
+                                                            cy="32.5"
+                                                            r="3"
+                                                            fill="currentColor"
+                                                        >
+                                                            <animate
+                                                                attributeName="opacity"
+                                                                values="1;0.2;1"
+                                                                dur="1.2s"
+                                                                begin="0.5s"
+                                                                repeatCount="indefinite"
+                                                            />
+                                                        </circle>
+                                                        <circle
+                                                            cx="10"
+                                                            cy="25.000000000000004"
+                                                            r="3"
+                                                            fill="currentColor"
+                                                        >
+                                                            <animate
+                                                                attributeName="opacity"
+                                                                values="1;0.2;1"
+                                                                dur="1.2s"
+                                                                begin="0.6000000000000001s"
+                                                                repeatCount="indefinite"
+                                                            />
+                                                        </circle>
+                                                        <circle
+                                                            cx="12.009618943233418"
+                                                            cy="17.500000000000004"
+                                                            r="3"
+                                                            fill="currentColor"
+                                                        >
+                                                            <animate
+                                                                attributeName="opacity"
+                                                                values="1;0.2;1"
+                                                                dur="1.2s"
+                                                                begin="0.7000000000000001s"
+                                                                repeatCount="indefinite"
+                                                            />
+                                                        </circle>
+                                                        <circle
+                                                            cx="17.499999999999993"
+                                                            cy="12.009618943233423"
+                                                            r="3"
+                                                            fill="currentColor"
+                                                        >
+                                                            <animate
+                                                                attributeName="opacity"
+                                                                values="1;0.2;1"
+                                                                dur="1.2s"
+                                                                begin="0.8s"
+                                                                repeatCount="indefinite"
+                                                            />
+                                                        </circle>
+                                                        <circle
+                                                            cx="24.999999999999996"
+                                                            cy="10"
+                                                            r="3"
+                                                            fill="currentColor"
+                                                        >
+                                                            <animate
+                                                                attributeName="opacity"
+                                                                values="1;0.2;1"
+                                                                dur="1.2s"
+                                                                begin="0.9s"
+                                                                repeatCount="indefinite"
+                                                            />
+                                                        </circle>
+                                                        <circle
+                                                            cx="32.5"
+                                                            cy="12.009618943233422"
+                                                            r="3"
+                                                            fill="currentColor"
+                                                        >
+                                                            <animate
+                                                                attributeName="opacity"
+                                                                values="1;0.2;1"
+                                                                dur="1.2s"
+                                                                begin="1s"
+                                                                repeatCount="indefinite"
+                                                            />
+                                                        </circle>
+                                                        <circle
+                                                            cx="37.99038105676658"
+                                                            cy="17.499999999999993"
+                                                            r="3"
+                                                            fill="currentColor"
+                                                        >
+                                                            <animate
+                                                                attributeName="opacity"
+                                                                values="1;0.2;1"
+                                                                dur="1.2s"
+                                                                begin="1.1s"
+                                                                repeatCount="indefinite"
+                                                            />
+                                                        </circle>
+                                                    </svg>
+                                                )}
+                                                {buttonConfig.label}
+                                            </Button>
+                                        </div>
                                     )}
                                 </form>
                             )}

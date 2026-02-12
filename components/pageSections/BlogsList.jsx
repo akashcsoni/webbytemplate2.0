@@ -231,7 +231,7 @@ export default function BlogsList(props) {
                     key={i}
                     className="relative overflow-hidden lg:mb-[22px] md:mb-[18px] mb-[14px] transition-transform duration-300"
                   >
-                    <Skeleton className="rounded-[3px] w-full 2xl:h-[260px] xl:h-[195px] lg:h-[230px] md:h-[188px] h-[165px] flex-shrink-0 relative rounded-lg overflow-hidden lg:mb-[22px] md:mb-[18px] mb-[14px]" />
+                    <Skeleton className="w-full 2xl:h-[260px] xl:h-[195px] lg:h-[230px] md:h-[188px] h-[165px] flex-shrink-0 relative rounded-sm overflow-hidden lg:mb-[22px] md:mb-[18px] mb-[14px]" />
 
                     <div className="flex items-start flex-col">
                       <div className="flex flex-wrap justify-start md:gap-[10px] gap-[8px] lg:mb-4 md:mb-[14px] mb-2 w-full">

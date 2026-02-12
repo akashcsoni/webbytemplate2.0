@@ -2,22 +2,54 @@
 
 import { themeConfig } from "@/config/theamConfig";
 import { useAuth } from "@/contexts/AuthContext";
-import { strapiPut } from "@/lib/api/strapiClient";
+import { strapiGet, strapiPost } from "@/lib/api/strapiClient";
 import {
   Button,
   Checkbox,
   Image,
   Link,
 } from "@heroui/react";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { toast } from "react-hot-toast";
 import { useRouter } from "next/navigation";
+import AuthorOnboardingWizard from "@/components/pageSections/AuthorOnboardingWizard";
+import PageLoader from "../../loading";
 
 const page = () => {
   const router = useRouter();
   const [isChecked, setIsChecked] = useState(false);
   const [loading, setLoading] = useState(false);
-  const { authUser } = useAuth();
+  const [showWizard, setShowWizard] = useState(false);
+  const [checkingResume, setCheckingResume] = useState(true);
+  const [sessionReady, setSessionReady] = useState(false);
+  const { authUser, authToken } = useAuth();
+
+  // Allow session/auth to hydrate before deciding; after delay, treat "no auth" as not logged in
+  useEffect(() => {
+    const t = setTimeout(() => setSessionReady(true), 1500);
+    return () => clearTimeout(t);
+  }, []);
+
+  useEffect(() => {
+    const checkResume = async () => {
+      if (!authUser || !authToken) {
+        if (sessionReady) setCheckingResume(false);
+        return;
+      }
+      setCheckingResume(true);
+      try {
+        const status = await strapiGet("author/onboarding/status", { token: authToken });
+        if (status?.step >= 1) {
+          setShowWizard(true);
+        }
+      } catch (e) {
+        /* ignore - user may not have started */
+      } finally {
+        setCheckingResume(false);
+      }
+    };
+    checkResume();
+  }, [authUser, authToken, sessionReady]);
 
   const handleCheckboxChange = (checked) => {
     setIsChecked(checked);
@@ -25,26 +57,29 @@ const page = () => {
 
   const handleBecomeAuthor = async () => {
     if (!isChecked) return;
-    
+
     setLoading(true);
     try {
-      const response = await strapiPut(`users/${authUser?.id}`, { author: true }, themeConfig.TOKEN)
-      if (response) {
-        toast.success("Profile Updated Successfully!");
-        setIsChecked(false);
-        // Redirect to profile page with full page refresh
-        setTimeout(() => {
-          window.location.href = `/user/${authUser?.documentId}/profile`;
-        }, 500);
-      } else {
-        toast.error("Failed to update profile. Please try again.");
-      }
+      const token = authToken || themeConfig.TOKEN;
+      await strapiPost("author/onboarding/start", {}, token);
+      setShowWizard(true);
     } catch (error) {
-      toast.error("An error occurred. Please try again later.");
+      const errMsg = error?.response?.data?.error?.message || error?.message || "An error occurred. Please try again.";
+      toast.error(errMsg);
     } finally {
       setLoading(false);
     }
   };
+
+  const hasAuth = Boolean(authUser && authToken);
+  const showLoader = !sessionReady || (hasAuth && checkingResume);
+  if (showLoader) {
+    return <PageLoader />;
+  }
+
+  if (showWizard) {
+    return <AuthorOnboardingWizard />;
+  }
 
   return (
     <>
@@ -268,7 +303,7 @@ const page = () => {
               </Checkbox>
             </div>
             <Button className="btn btn-primary" onPress={handleBecomeAuthor} isDisabled={!isChecked || loading}>
-              {loading ? "Processing..." : "Keep Going"}
+              {loading ? "Processing..." : "Start Onboarding"}
             </Button>
           </div>
           <div className="lg:w-1/2">
