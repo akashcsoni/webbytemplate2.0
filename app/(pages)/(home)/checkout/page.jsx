@@ -106,8 +106,9 @@ export default function CheckoutPage() {
         });
 
         if (userData) {
-          // Handle phone number and country detection
-          let phoneNumber = userData.phone_no || "";
+          // Use billing fields for checkout form; fallback to profile fields
+          const billingPhone = userData.billing_phone_no || userData.phone_no || "";
+          let phoneNumber = billingPhone;
           let detectedCountry = null;
 
           // Try to detect country from phone number
@@ -136,10 +137,28 @@ export default function CheckoutPage() {
             phoneNumber = phoneNumber.replace(/\D/g, "");
           }
 
-          // Set country based on detection or default to India
+          // Set country: from phone dial code, then billing_country, then default India
           if (detectedCountry) {
             setSelectedCountry(detectedCountry.name);
             setSelectedCountryCode(detectedCountry);
+          } else if (userData.billing_country) {
+            const billingCountryObj = countries.find(
+              (c) => c.name === userData.billing_country
+            );
+            if (billingCountryObj) {
+              setSelectedCountry(billingCountryObj.name);
+              setSelectedCountryCode(billingCountryObj);
+              detectedCountry = billingCountryObj;
+            } else {
+              const indiaCountry = countries.find((c) => c.name === "India");
+              if (indiaCountry) {
+                setSelectedCountry("India");
+                setSelectedCountryCode(indiaCountry);
+              } else if (countries[0]) {
+                setSelectedCountry(countries[0].name);
+                setSelectedCountryCode(countries[0]);
+              }
+            }
           } else {
             // Default to India
             const indiaCountry = countries.find((c) => c.name === "India");
@@ -148,7 +167,6 @@ export default function CheckoutPage() {
               setSelectedCountryCode(indiaCountry);
             } else {
               console.error("India country data not found in countries list");
-              // Fallback to first country in the list
               const firstCountry = countries[0];
               if (firstCountry) {
                 setSelectedCountry(firstCountry.name);
@@ -157,17 +175,22 @@ export default function CheckoutPage() {
             }
           }
 
-          // Set form data with proper validation
+          const formCountry =
+            detectedCountry?.name ||
+            userData.billing_country ||
+            "India";
+
+          // Set form data with proper validation (billing_email, billing_phone_no, billing_country)
           setForm({
             first_name: userData.first_name || "",
             last_name: userData.last_name || "",
             company_name: userData.company_name || "",
-            email: userData.email || "",
+            email: userData.billing_email || userData.email || "",
             address: userData.address || "",
             city: userData.city || "",
             pincode: userData.pincode || "",
             state: userData.state || "",
-            country: detectedCountry?.name || "India",
+            country: formCountry,
             phone_no: phoneNumber || "",
             gst_number: userData.gst_number || "",
             agreed: false,
