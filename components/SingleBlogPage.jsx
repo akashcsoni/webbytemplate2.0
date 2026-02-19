@@ -575,7 +575,8 @@ const SingleBlogPage = ({ data, breadcrumb = [] }) => {
                   {data?.author?.full_name || "Anonymous"}
                 </h3>
                 <div className="p2 text-gray-500">
-                  {formatDate(data?.publishedAt || data?.createdAt)} •{" "}
+                  {/* {console.log(data)} */}
+                  {formatDate(data?.publishedAt || data?.updatedAt)} •{" "}
                   {calculateReadingTime(data?.components)}
                 </div>
               </div>
