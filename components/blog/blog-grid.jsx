@@ -138,7 +138,7 @@ const BlogGrid = ({ blog }) => {
                             />
                         </div>
                         <p className="p2">
-                            {getAuthorName()} - {formatDate(blogData?.createdAt)}
+                            {getAuthorName()} - {formatDate(blogData?.publishedAt || blogData?.updatedAt)}
                         </p>
                     </div>
                 </div>
