@@ -13,9 +13,13 @@ module.exports = {
         '0%, 100%': { transform: 'scale(1)' },
         '50%': { transform: 'scale(1.2)' },
       },
+      spin: {
+        to: { transform: 'rotate(360deg)' },
+      },
     },
     animation: {
       zoom: 'zoom 2s ease-in-out infinite',
+      spin: 'spin 1s linear infinite',
     },
     container: {
       center: true,
