@@ -1399,6 +1399,34 @@ const countries = [
 export default function AuthModal() {
   const { isAuthOpen, closeAuth, authMode, switchToOtp, openAuth } = useAuth();
   const hasHandledAuthQueryRef = useRef(false);
+  const [currentSearch, setCurrentSearch] = useState(typeof window !== "undefined" ? window.location.search : "");
+
+  // Listen for URL changes (for redirects like from google-auth)
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const handlePopState = () => {
+      setCurrentSearch(window.location.search);
+      hasHandledAuthQueryRef.current = false; // Reset so we can handle new URL params
+    };
+
+    window.addEventListener('popstate', handlePopState);
+
+    // Also check for programmatic navigation (like router.replace)
+    const originalReplaceState = window.history.replaceState;
+    window.history.replaceState = function(...args) {
+      originalReplaceState.apply(this, args);
+      setTimeout(() => {
+        setCurrentSearch(window.location.search);
+        hasHandledAuthQueryRef.current = false;
+      }, 0);
+    };
+
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+      window.history.replaceState = originalReplaceState;
+    };
+  }, []);
 
   // Auto-open auth modal when a special URL query is present (useful for email deep-links)
   // Supported examples:
@@ -1406,6 +1434,7 @@ export default function AuthModal() {
   // - "/?auth=register"
   // - "/?login=true"
   // - "/?register=1"
+  // - "/?authError=some error message" (opens login modal with error)
   useEffect(() => {
     if (hasHandledAuthQueryRef.current) return;
     if (typeof window === "undefined") return;
@@ -1413,7 +1442,7 @@ export default function AuthModal() {
     const truthy = (v) =>
       v === "1" || v === "true" || v === "yes" || v === "y" || v === "on";
 
-    const searchParams = new URLSearchParams(window.location.search);
+    const searchParams = new URLSearchParams(currentSearch);
     const authParam =
       searchParams.get("auth") ||
       searchParams.get("authMode") ||
@@ -1422,6 +1451,7 @@ export default function AuthModal() {
 
     const loginParam = searchParams.get("login");
     const registerParam = searchParams.get("register");
+    const authErrorParam = searchParams.get("authError");
 
     let mode = null;
     if (authParam) {
@@ -1434,21 +1464,28 @@ export default function AuthModal() {
       mode = "register";
     }
 
-    if (!mode) return;
-
-    hasHandledAuthQueryRef.current = true;
-    openAuth(mode);
+    // If there's an authError, open the login modal and set the error
+    if (authErrorParam) {
+      hasHandledAuthQueryRef.current = true;
+      setError(decodeURIComponent(authErrorParam));
+      openAuth("login");
+    } else if (mode) {
+      hasHandledAuthQueryRef.current = true;
+      openAuth(mode);
+    } else {
+      return;
+    }
 
     // Clean the URL so refresh/back doesn't keep re-opening the modal
     const params = new URLSearchParams(searchParams.toString());
-    ["auth", "authMode", "modal", "openAuth", "login", "register"].forEach((k) =>
+    ["auth", "authMode", "modal", "openAuth", "login", "register", "authError"].forEach((k) =>
       params.delete(k)
     );
 
     const nextQuery = params.toString();
     const nextUrl = `${window.location.pathname}${nextQuery ? `?${nextQuery}` : ""}${window.location.hash || ""}`;
     window.history.replaceState(null, "", nextUrl);
-  }, [openAuth]);
+  }, [openAuth, currentSearch]);
 
   const [inputValue, setInputValue] = useState("");
   const [inputMode, setInputMode] = useState("");
