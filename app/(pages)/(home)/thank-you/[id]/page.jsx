@@ -55,6 +55,50 @@ export default function CheckoutPage({ params }) {
   };
 
   const productdownload = async (id, license_key) => {
+    try {
+      const authUserStr = Cookies.get("authUser");
+      const user = authUserStr ? JSON.parse(authUserStr) : null;
+
+      const payload = {
+        user_id: user?.id,
+        license_key,
+        product_id: id,
+        order_id: order?.id,
+      };
+
+      const response = await fetch(
+        "https://studio.webbytemplate.com/api/orders/productdownload",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(payload),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to request product download");
+      }
+
+      const data = await response.json();
+
+      if (data?.result && data?.url) {
+        const link = document.createElement("a");
+        link.href = data.url;
+        if (data.filename) {
+          link.download = data.filename;
+        }
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+      } else {
+        toast.error("Download link not available. Please try again.");
+      }
+    } catch (error) {
+      console.error("Error downloading product:", error);
+      toast.error("Download failed. Please try again.");
+    }
   };
 
   useEffect(() => {
@@ -613,7 +657,12 @@ export default function CheckoutPage({ params }) {
                             <p className="text-primary">
                               ${item?.total?.toFixed(2)}
                             </p>
-                            <button className="!border-[#00193E1A] btn btn-outline-primary !py-[2px] !px-3 gap-2 h-fit my-auto sm:!hidden !flex">
+                            <button
+                              className="!border-[#00193E1A] btn btn-outline-primary !py-[2px] !px-3 gap-2 h-fit my-auto sm:!hidden !flex"
+                              onClick={() =>
+                                productdownload(item?.id, item?.license_key)
+                              }
+                            >
                               <svg
                                 xmlns="http://www.w3.org/2000/svg"
                                 width="14"
