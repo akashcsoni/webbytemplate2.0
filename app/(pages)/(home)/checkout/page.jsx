@@ -604,9 +604,9 @@ export default function CheckoutPage() {
               },
             },
             prefill: {
-              name: "Webby Template",
-              email: "webby@example.com",
-              contact: "9876543210",
+              name: `${shippingAddress.first_name} ${shippingAddress.last_name}`.trim(),
+              email: shippingAddress.email,
+              contact: fullPhone,
             },
             theme: {
               color: "#3399cc",
