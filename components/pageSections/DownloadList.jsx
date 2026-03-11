@@ -367,7 +367,8 @@ const DownloadPage = ({ title }) => {
 
   const handleProductDownload = async (item) => {
     const userDocumentId = authUser?.documentId;
-    const productDocumentId = item.product_document_id || item.product?.documentId;
+    const productDocumentId =
+      item.product_document_id || item.product?.documentId;
     const licenseKey = item.license_key;
     const orderId = item.order_id;
 
@@ -393,23 +394,7 @@ const DownloadPage = ({ title }) => {
         }),
       });
 
-      if (res.ok) {
-        const blob = await res.blob();
-        const disposition = res.headers.get("Content-Disposition");
-        const filenameMatch = disposition?.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/);
-        const filename = filenameMatch
-          ? filenameMatch[1].replace(/['"]/g, "")
-          : `product-${item.product_id || "download"}.zip`;
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = filename;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-        toast.success("Download started!");
-      } else {
+      if (!res.ok) {
         const text = await res.text();
         let msg = "Download failed. Please try again.";
         try {
@@ -419,6 +404,23 @@ const DownloadPage = ({ title }) => {
           if (text) msg = text;
         }
         toast.error(msg);
+        return;
+      }
+
+      const data = await res.json();
+
+      if (data?.result && data?.url) {
+        const a = document.createElement("a");
+        a.href = data.url;
+        if (data.filename) {
+          a.download = data.filename;
+        }
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        toast.success("Download started!");
+      } else {
+        toast.error("Download link not available. Please try again.");
       }
     } catch (err) {
       console.error("Download error:", err);
