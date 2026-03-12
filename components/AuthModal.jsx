@@ -1400,6 +1400,7 @@ export default function AuthModal() {
   const { isAuthOpen, closeAuth, authMode, switchToOtp, openAuth } = useAuth();
   const hasHandledAuthQueryRef = useRef(false);
   const [currentSearch, setCurrentSearch] = useState(typeof window !== "undefined" ? window.location.search : "");
+  // const [authMode, setAuthMode] = useState("login");
 
   // Listen for URL changes (for redirects like from google-auth)
   useEffect(() => {
@@ -1414,7 +1415,7 @@ export default function AuthModal() {
 
     // Also check for programmatic navigation (like router.replace)
     const originalReplaceState = window.history.replaceState;
-    window.history.replaceState = function(...args) {
+    window.history.replaceState = function (...args) {
       originalReplaceState.apply(this, args);
       setTimeout(() => {
         setCurrentSearch(window.location.search);
@@ -1867,12 +1868,15 @@ export default function AuthModal() {
       hideCloseButton={true}
       isOpen={isAuthOpen}
       onOpenChange={(open) => !open && closeAuth()}
-      classNames={{ backdrop: "bg-black/50" }}
+      classNames={{
+        backdrop: "bg-black/50",
+        wrapper: "flex items-center justify-center"
+      }}
     >
-      <ModalContent className="sm:p-[30px] p-5 xl:max-w-[510px] sm:max-w-[474px] w-full">
+      <ModalContent className="sm:p-[30px] p-5 xl:max-w-[510px] sm:max-w-[474px] w-[calc(100%-20px)]">
         {(onClose) => (
           <>
-            <ModalHeader className="p-0 text-2xl font-bold gap-1 flex items-center justify-between w-full mb-[10px]">
+            <ModalHeader className="p-0 md:text-2xl text-xl font-bold gap-1 flex items-center justify-between w-full mb-[10px]">
               {authMode === "register" ? "Create account" : "Login"}
               <button
                 onClick={onClose}
@@ -1905,7 +1909,7 @@ export default function AuthModal() {
               {/* Register form fields */}
               {authMode === "register" && (
                 <>
-                  <div className="mb-3 grid grid-cols-2 gap-4">
+                  <div className="mb-3 grid sm:grid-cols-2 grid-cols-1 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
                         First Name
@@ -2060,8 +2064,8 @@ export default function AuthModal() {
                 </div>
               ) : (
                 <div
-                  className={`flex items-center border ${emailMobileError || error ? "border-red-500" : "border-gray-200"
-                    } rounded-md py-0 px-2`}
+                  className={`flex items-center border mb-0.5 ${emailMobileError || error ? "border-red-500" : "border-gray-200"
+                    } rounded-md py-0 px-2 `}
                 >
                   <input
                     ref={inputRef}
@@ -2072,7 +2076,7 @@ export default function AuthModal() {
                     onKeyDown={handleKeyDown}
                     onBlur={handleInputBlur}
                     onFocus={(e) => e.target.focus()}
-                    className="py-[13px] h-full w-full text-sm text-black placeholder:text-gray-400 px-2 mb-0.5 rounded-[5px] outline-none"
+                    className="py-[13px] h-full w-full text-sm text-black placeholder:text-gray-400 px-2 rounded-[5px] outline-none"
                     aria-label="Email or mobile number"
                   />
                 </div>
@@ -2103,9 +2107,69 @@ export default function AuthModal() {
                 </div>
               )}
 
+
+{authMode === "register" && (
+  <p className="text-sm text-gray-600 2xl:mt-4 mt-3">
+    By continuing, you agree to WebbyTemplate’s{" "}
+    <Link
+      target="_blank"
+      rel="noopener noreferrer"
+      href="/terms-and-conditions"
+      className="text-blue-600 underline hover:text-blue-800"
+    >
+      Terms & Conditions,
+    </Link>{" "}
+    <Link
+      target="_blank"
+      rel="noopener noreferrer"
+      href="/privacy-policy"
+      className="text-blue-600 underline hover:text-blue-800"
+    >
+      Privacy Policy
+    </Link>{" "}
+    and{" "}
+    <Link
+      target="_blank"
+      rel="noopener noreferrer"
+      href="/author-terms-and-policy"
+      className="text-blue-600 underline hover:text-blue-800"
+    >
+      Author Policy
+    </Link>
+    .
+  </p>
+)}
+
+
+
+              <Button
+                className="mt-[22px] w-full btn-primary hover:bg-blue-700 text-white hover:text-white font-medium py-3 px-4 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                color="primary"
+                onClick={handleSubmit}
+                isLoading={isSubmitting}
+                disabled={isSubmitting}
+              >
+                {isSubmitting
+                  ? "Processing..."
+                  : authMode === "register"
+                    ? "Create account"
+                    : "Send Code"}
+              </Button>
+
+              <div className="mt-[10px]">
+                <button
+                  type="button"
+                  onClick={() => signIn("google", { callbackUrl: "/google-auth" })}
+                  className="w-full inline-flex items-center justify-center gap-3 py-[9px] px-4 border rounded-md hover:bg-gray-100 transition-colors"
+                >
+                  <img src="/assets/images/google-logo.svg" alt="Google" className="w-5 h-5" />
+                  <span className="text-sm font-medium">Continue with Google</span>
+                </button>
+              </div>
+
               {/* Toggle between login and register */}
-              <div className="mt-3 mb-2">
-                <p className="text-sm text-gray-600">
+              <div className="mt-3">
+                <p className="text-sm text-center text-gray-600">
                   {authMode === "register" ? (
                     <>
                       Already have an account?{" "}
@@ -2147,61 +2211,6 @@ export default function AuthModal() {
                   )}
                 </p>
               </div>
-
-              <p className="text-sm text-gray-600 my-4">
-                By continuing, you agree to WebbyTemplate’s{" "}
-                <Link
-                  target="_blank"
-                  rel="noopener noreferrer" // ✅ security/best practice
-                  href="/terms-and-conditions"
-                  className="text-blue-600 underline hover:text-blue-800"
-                >
-                  Terms & Conditions,
-                </Link>{" "}
-                <Link
-                  target="_blank"
-                  rel="noopener noreferrer" // ✅ security/best practice
-                  href="/privacy-policy"
-                  className="text-blue-600 underline hover:text-blue-800"
-                >
-                  Privacy Policy
-                </Link>{" "}
-                and{" "}
-                <Link
-                  target="_blank"
-                  rel="noopener noreferrer" // ✅ security/best practice
-                  href="/author-terms-and-policy"
-                  className="text-blue-600 underline hover:text-blue-800"
-                >
-                  Author Policy
-                </Link>
-                .
-              </p>
-
-              <div className="mb-4">
-                <button
-                  type="button"
-                  onClick={() => signIn("google", { callbackUrl: "/google-auth" })}
-                  className="w-full inline-flex items-center justify-center gap-3 py-3 px-4 border rounded-md hover:bg-gray-100 transition-colors"
-                >
-                  <img src="/assets/images/google-logo.svg" alt="Google" className="w-5 h-5" />
-                  <span className="text-sm font-medium">Continue with Google</span>
-                </button>
-              </div>
-
-              <Button
-                className="w-full btn-primary hover:bg-blue-700 text-white hover:text-white font-medium py-3 px-4 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                color="primary"
-                onClick={handleSubmit}
-                isLoading={isSubmitting}
-                disabled={isSubmitting}
-              >
-                {isSubmitting
-                  ? "Processing..."
-                  : authMode === "register"
-                    ? "Create account"
-                    : "Send Code"}
-              </Button>
             </ModalBody>
           </>
         )}
@@ -2505,16 +2514,19 @@ function CodeModal({ isOpen, onClose, identifier, type }) {
       hideCloseButton={true}
       isOpen={isOpen}
       onOpenChange={(open) => !open && onClose()}
-      classNames={{ backdrop: "bg-black/50" }}
+      classNames={{
+        backdrop: "bg-black/50",
+        wrapper: "flex items-center justify-center"
+      }}
     >
       <ModalContent className="sm:p-[30px] p-5 xl:max-w-[510px] sm:max-w-[474px] w-full">
         {(onClose) => (
           <>
-            <ModalHeader className="p-0 text-2xl font-bold gap-1 flex items-center justify-between w-full mb-[10px]">
+            <ModalHeader className="p-0 md:text-2xl text-xl font-bold gap-1 flex items-center justify-between w-full mb-[10px]">
               Welcome to WebbyTemplate
               <button
                 onClick={onClose}
-                className="cursor-pointer p-1 hover:bg-gray-1 00 rounded-full transition-colors"
+                className="cursor-pointer p-1 hover:bg-gray-100 rounded-full transition-colors"
                 aria-label="Close modal"
               >
                 <svg
@@ -2547,7 +2559,7 @@ function CodeModal({ isOpen, onClose, identifier, type }) {
               </p>
 
               <div>
-                <div className="flex justify-center md:space-x-[18px] space-x-3 mb-[18px]">
+                <div className="flex justify-center md:space-x-[18px] space-x-3">
                   {codeValues.map((value, index) => (
                     <input
                       key={index}
@@ -2559,7 +2571,7 @@ function CodeModal({ isOpen, onClose, identifier, type }) {
                       onKeyDown={(e) => handleKeyDown(index, e)}
                       onPaste={index === 0 ? handlePaste : undefined}
                       ref={index === 0 ? firstInputRef : null}
-                      className={`2xl:w-[60px] 2xl:h-[60px] xl:w-[55px] xl:h-[55px] md:w-[50px] md:h-[50px] w-[45px] h-[45px] text-center text-lg font-medium border ${codeError ? "border-red-500" : "border-gray-200"
+                      className={`2xl:w-[60px] 2xl:h-[60px] xl:w-[55px] xl:h-[55px] md:w-[50px] md:h-[50px] sm:w-[45px] sm:h-[45px] w-[40px] h-[40px] text-center text-lg font-medium border ${codeError ? "border-red-500" : "border-gray-200"
                         } text-black placeholder:text-gray-400 rounded-[5px] focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent transition-all`}
                       aria-label={`Code digit ${index + 1}`}
                     />
@@ -2593,7 +2605,7 @@ function CodeModal({ isOpen, onClose, identifier, type }) {
                 </div>
               )}
 
-              <div className="text-center mb-5">
+              <div className="text-center mt-3">
                 <p className="text-sm text-gray-500">
                   {"Didn't receive the code? "}
                   <button
