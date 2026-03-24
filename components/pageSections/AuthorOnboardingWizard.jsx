@@ -13,7 +13,6 @@ import toast from "react-hot-toast";
 import { debounce } from "lodash";
 import { countries, stripDialCode } from "@/lib/data/countries";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
 import PageLoader from "@/app/(pages)/(author)/user/loading";
 
 const AuthorOnboardingWizard = () => {
@@ -40,9 +39,6 @@ const AuthorOnboardingWizard = () => {
     const [hasNewImage, setHasNewImage] = useState(false);
     const [fromSetLoading, setFromSetLoading] = useState(true);
     const [initialUsername, setInitialUsername] = useState("");
-
-    // Step 1 (agreement)
-    const [agreedToPolicies, setAgreedToPolicies] = useState(false);
 
     // Step 2 (email/mobile verification - user must verify the contact they did NOT register with)
     const [isEditingEmail, setIsEditingEmail] = useState(false);
@@ -427,12 +423,23 @@ const AuthorOnboardingWizard = () => {
                             };
                         }
                     } catch (_) { /* ignore */ }
-                    setFormData(mergedData);
+                    setFormData((prev) => ({
+                        ...prev,
+                        ...mergedData,
+                        // Keep user's in-progress Step 2 values if backend returns empty during OTP/session refresh.
+                        phone_no:
+                            (mergedData.phone_no != null && mergedData.phone_no !== "")
+                                ? mergedData.phone_no
+                                : (prev.phone_no ?? ""),
+                        country:
+                            (mergedData.country != null && mergedData.country !== "")
+                                ? mergedData.country
+                                : (prev.country ?? ""),
+                    }));
                     setInitialUsername(userData.username || "");
-                    setSelectedCountry(restoredCountry || mergedData.country || userData.country || "");
+                    setSelectedCountry((prev) => restoredCountry || mergedData.country || userData.country || prev || "");
                     setProfileImage(userData?.image?.url ? userData.image.url : "/images/no-image.svg");
                     setImageId(userData?.image?.id || null);
-                    setAgreedToPolicies(Boolean(userData?.agreed_to_author_policies));
                     setIsEditingEmail(false);
                     setPayoutMethod(userData.payout_method || "");
                     setOpenPayoutPanel(userData.payout_method || "");
@@ -1017,10 +1024,6 @@ const AuthorOnboardingWizard = () => {
                 isValid = false;
             }
 
-            if (!agreedToPolicies) {
-                errors.agreed_to_author_policies = ["You must agree to the Terms & Conditions, Privacy Policy, and Author Policy"];
-                isValid = false;
-            }
         } else if (step === 2) {
             // Validate account fields
             if (!formData.first_name?.trim()) {
@@ -1425,29 +1428,6 @@ const AuthorOnboardingWizard = () => {
                                     </div>
                                 ))}
                         </div>
-
-                        {/* Terms & Conditions */}
-                        <div className="flex items-center gap-2 mt-2">
-                            <input
-                                id="agree-policies"
-                                type="checkbox"
-                                className="lg:w-[18px] lg:h-[18px] w-4 h-4 accent-primary cursor-pointer"
-                                checked={agreedToPolicies}
-                                onChange={(e) => {
-                                    setAgreedToPolicies(e.target.checked);
-                                    setValidationErrors((prev) => ({ ...prev, agreed_to_author_policies: "" }));
-                                }}
-                            />
-                            <label htmlFor="agree-policies" className="p2 cursor-pointer flex-1">
-                                By continuing, I agree to WebbyTemplate's{" "}
-                                <Link className="text-primary" href="/terms-and-conditions/">Terms & Conditions</Link>,{" "}
-                                <Link className="text-primary" href="/privacy-policy/">Privacy Policy</Link>, and{" "}
-                                <Link className="text-primary" href="/author-terms-and-policy/">Author Policy</Link>.
-                            </label>
-                        </div>
-                        {validationErrors.agreed_to_author_policies && (
-                            <p className="text-red-500 text-xs mt-1">{validationErrors.agreed_to_author_policies[0]}</p>
-                        )}
 
                         {/* Note Box */}
                         <div className="bg-blue-300/50 border border-blue-300 rounded-[5px] overflow-hidden 1xl:mt-5 mt-4">

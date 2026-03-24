@@ -118,6 +118,23 @@ export async function middleware(request) {
   // Get cookies
   const accessToken = request.cookies.get("authToken")?.value || null;
   const userData = request.cookies.get("authUser")?.value || null;
+  const isPublicBecomeAuthorPath =
+    pathname === "/become-an-author" || pathname === "/become-an-author/";
+
+  // If already logged in, never show public become-author page; jump directly to onboarding step 1.
+  if (isPublicBecomeAuthorPath && accessToken && userData) {
+    try {
+      const parsedUser = JSON.parse(userData);
+      const cookieDocumentId = parsedUser?.documentId || parsedUser?.id || null;
+      if (cookieDocumentId) {
+        return NextResponse.redirect(
+          new URL(`/user/${cookieDocumentId}/become-an-author/?step=1`, request.url)
+        );
+      }
+    } catch (err) {
+      // Ignore malformed cookie and continue normal flow.
+    }
+  }
 
   let documentId = null;
   let isLogin = false;
@@ -245,11 +262,19 @@ export async function middleware(request) {
     // Handle both with and without trailing slash, and check if user is already an author
     const isBecomeAuthorPath = pathname.includes('/become-an-author');
     const isAuthorTryingToBecomeAuthor = position === true && isBecomeAuthorPath;
+    const stepParam = request.nextUrl.searchParams.get("step");
 
     if (isAuthorTryingToBecomeAuthor && documentId) {
       // Redirect to authenticated user's dashboard
       return NextResponse.redirect(
         new URL(`/user/${documentId}/dashboard`, request.url)
+      );
+    }
+
+    // Force onboarding entry through step URL and avoid base become-an-author page
+    if (isBecomeAuthorPath && documentId && stepParam !== "1") {
+      return NextResponse.redirect(
+        new URL(`/user/${documentId}/become-an-author/?step=1`, request.url)
       );
     }
   }

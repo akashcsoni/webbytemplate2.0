@@ -11,18 +11,20 @@ import {
 } from "@heroui/react";
 import React, { useState, useEffect } from "react";
 import { toast } from "react-hot-toast";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import AuthorOnboardingWizard from "@/components/pageSections/AuthorOnboardingWizard";
 import PageLoader from "../../loading";
 
 const page = () => {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [isChecked, setIsChecked] = useState(false);
   const [loading, setLoading] = useState(false);
   const [showWizard, setShowWizard] = useState(false);
   const [checkingResume, setCheckingResume] = useState(true);
   const [sessionReady, setSessionReady] = useState(false);
   const { authUser, authToken } = useAuth();
+  const forceStepOneFlow = searchParams.get("step") === "1";
 
   // Allow session/auth to hydrate before deciding; after delay, treat "no auth" as not logged in
   useEffect(() => {
@@ -51,6 +53,33 @@ const page = () => {
     checkResume();
   }, [authUser, authToken, sessionReady]);
 
+  useEffect(() => {
+    const step = searchParams.get("step");
+    if (step !== "1") return;
+    if (!sessionReady || !authUser || !authToken) return;
+
+    const ensureOnboardingStarted = async () => {
+      setCheckingResume(true);
+      try {
+        const status = await strapiGet("author/onboarding/status", { token: authToken });
+        if (!(status?.step >= 1)) {
+          await strapiPost("author/onboarding/start", {}, authToken);
+        }
+        setShowWizard(true);
+      } catch (error) {
+        const errMsg =
+          error?.response?.data?.error?.message ||
+          error?.message ||
+          "Failed to start onboarding.";
+        toast.error(errMsg);
+      } finally {
+        setCheckingResume(false);
+      }
+    };
+
+    ensureOnboardingStarted();
+  }, [searchParams, sessionReady, authUser, authToken]);
+
   const handleCheckboxChange = (checked) => {
     setIsChecked(checked);
   };
@@ -73,7 +102,8 @@ const page = () => {
 
   const hasAuth = Boolean(authUser && authToken);
   const showLoader = !sessionReady || (hasAuth && checkingResume);
-  if (showLoader) {
+  const shouldBlockIntroScreen = forceStepOneFlow && !showWizard;
+  if (showLoader || shouldBlockIntroScreen) {
     return <PageLoader />;
   }
 
