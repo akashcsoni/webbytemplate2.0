@@ -1,19 +1,9 @@
 'use client'
 
 import Image from "next/image";
-import Link from "next/link";
 import React, { useEffect } from "react";
 
 const SomethingWrong = ({ message }) => {
-  const normalizedMessage = String(message || "").toLowerCase();
-  const isServerError =
-    normalizedMessage.includes("status code 500") ||
-    normalizedMessage.includes("status 500") ||
-    normalizedMessage.includes("request failed with status code 500");
-
-  const friendlyMessage = isServerError
-    ? "Sorry, something went wrong on our side. Please try again after a few minutes."
-    : message || "Something went wrong. Please try again.";
 
   useEffect(() => {
     // Used by global header to hide login/wishlist/cart for this error screen.
@@ -34,11 +24,11 @@ const SomethingWrong = ({ message }) => {
           className="2xl:mb-[35px] lg:mb-[25px] md:mb-4 sm:mb-3 mb-2 2xl:w-[400px] 2xl:h-[400px] lg:w-[350px] lg:h-[350px] md:w-[300px] md:h-[300px] sm:w-[250px] sm:h-[250px] w-[200px] h-[200px]"
         />
         <h2 className="2xl:mb-[18px] lg:mb-[10px] md:mb-2 mb-1.5">
-          Something Went Wrong
+          Sorry, something went wrong on our side. Please try again after a few minutes.
         </h2>
-        <p className="2xl:mb-[38px] mb-[20px] w-[484px] max-w-full">
+        {/* <p className="2xl:mb-[38px] mb-[20px] w-[484px] max-w-full">
           {friendlyMessage}
-        </p>
+        </p> */}
       </div>
     </div>
   );
