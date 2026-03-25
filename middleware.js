@@ -121,14 +121,14 @@ export async function middleware(request) {
   const isPublicBecomeAuthorPath =
     pathname === "/become-an-author" || pathname === "/become-an-author/";
 
-  // If already logged in, never show public become-author page; jump directly to onboarding step 1.
+  // If already logged in, never show public become-author page; jump directly to onboarding.
   if (isPublicBecomeAuthorPath && accessToken && userData) {
     try {
       const parsedUser = JSON.parse(userData);
       const cookieDocumentId = parsedUser?.documentId || parsedUser?.id || null;
       if (cookieDocumentId) {
         return NextResponse.redirect(
-          new URL(`/user/${cookieDocumentId}/become-an-author/?step=1`, request.url)
+          new URL(`/user/${cookieDocumentId}/become-an-author/`, request.url)
         );
       }
     } catch (err) {
@@ -262,7 +262,6 @@ export async function middleware(request) {
     // Handle both with and without trailing slash, and check if user is already an author
     const isBecomeAuthorPath = pathname.includes('/become-an-author');
     const isAuthorTryingToBecomeAuthor = position === true && isBecomeAuthorPath;
-    const stepParam = request.nextUrl.searchParams.get("step");
 
     if (isAuthorTryingToBecomeAuthor && documentId) {
       // Redirect to authenticated user's dashboard
@@ -271,10 +270,10 @@ export async function middleware(request) {
       );
     }
 
-    // Force onboarding entry through step URL and avoid base become-an-author page
-    if (isBecomeAuthorPath && documentId && stepParam !== "1") {
+    // Legacy ?step= query URLs: send to public become-an-author (clean onboarding is path-only).
+    if (isBecomeAuthorPath && request.nextUrl.searchParams.has("step")) {
       return NextResponse.redirect(
-        new URL(`/user/${documentId}/become-an-author/?step=1`, request.url)
+        new URL(`/become-an-author/`, request.url)
       );
     }
   }

@@ -13,14 +13,6 @@ export default function FormInput({
   const [value, setValue] = useState(defaultValueData || "");
   const [options, setOptions] = useState([]);
 
-  const handleChange = () => {
-    onChange(data.name, value);
-  };
-
-  useEffect(() => {
-    handleChange();
-  }, [value]);
-
   useEffect(() => {
     setValue(defaultValueData ?? "");
   }, [defaultValueData]);
@@ -80,7 +72,11 @@ export default function FormInput({
           startContent: "pl-2",
         }}
         onChange={(e) => {
-          setValue(e.target.value);
+          const next = e.target.value;
+          setValue(next);
+          // Notify parent immediately on user input.
+          // (Avoids an effect->setState loop caused by value-driven useEffect.)
+          onChange(data.name, next);
         }}
         description={
           data?.description && (

@@ -13,14 +13,6 @@ export default function FormTextArea({
   const [localError, setlocalError] = useState("");
   const [value, setValue] = useState(defaultValueData || "");
 
-  const handleChange = () => {
-    onChange(data.name, value);
-  };
-
-  useEffect(() => {
-    handleChange(); // Call handleChange whenever the value changes
-  }, [value]);
-
   useEffect(() => {
     setValue(defaultValueData ?? "");
   }, [defaultValueData]);
@@ -83,7 +75,10 @@ export default function FormTextArea({
         )
       }
       onChange={(e) => {
-        setValue(e.target.value);
+        const next = e.target.value;
+        setValue(next);
+        // Notify parent immediately on user input.
+        onChange(data.name, next);
       }}
       value={value}
       // label={`${data?.label}${getRules(data.rules)} `}
