@@ -78,6 +78,8 @@ export default function Header() {
   const { toggleCart, cartItems } = useCart();
   const { wishlistItems } = useWishlist(); // wishlist count state
 
+  const [hideHeaderActions, setHideHeaderActions] = useState(false);
+
   // Get documentId from authUser (documentId || id)
   const getDocumentId = () => {
     return authUser?.documentId || authUser?.id || "";
@@ -132,6 +134,29 @@ export default function Header() {
     };
 
     fetchMenuData();
+  }, []);
+
+  // When the "Something Went Wrong" page is rendered, it sets a data-attribute
+  // so we can hide Login/Wishlist/Cart in the header for that specific view.
+  useEffect(() => {
+    const readFlag = () => {
+      if (typeof document === "undefined") return;
+      const v = document.documentElement?.dataset?.hideHeaderActions;
+      setHideHeaderActions(v === "true");
+    };
+
+    readFlag();
+
+    const observer = new MutationObserver(() => {
+      readFlag();
+    });
+
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["data-hide-header-actions"],
+    });
+
+    return () => observer.disconnect();
   }, []);
 
   // Close menu when clicking outside
@@ -633,7 +658,8 @@ strokeLinejoin="round"
               )
             )}
 
-            {!authLoading &&
+            {!hideHeaderActions &&
+              !authLoading &&
               (isAuthenticated ? (
                 <div className="login">
                   {isSettingsLoading ? (
@@ -813,7 +839,8 @@ before:shadow-md before:rounded-sm"
                 </button>
               ))}
 
-            <div className="right-last-icon">
+            {!hideHeaderActions && (
+              <div className="right-last-icon">
               {isSettingsLoading ? (
                 <Skeleton className="rounded-full sm:w-6 sm:h-6 w-4 h-4 mr-2 wishlist-svg " />
               ) : (
@@ -866,12 +893,17 @@ before:shadow-md before:rounded-sm"
                   <span className="badge">{cartItems?.length || 0}</span>
                 </button>
               )}
-            </div>
+              </div>
+            )}
           </div>
 
           {/* Include the modals and cart components */}
-          <AuthModal />
-          <SideCart />
+          {!hideHeaderActions && (
+            <>
+              <AuthModal />
+              <SideCart />
+            </>
+          )}
         </div>
       </div>
 
@@ -915,12 +947,14 @@ ${isCurrentPage ? "underline" : ""}
               {headerSettingData?.right_menu?.label}
             </Link>
 
-            <span
-              onClick={() => openAuth("login")}
-              className="links !text-black cursor-pointer"
-            >
-              Login / Sign up
-            </span>
+            {!hideHeaderActions && (
+              <span
+                onClick={() => openAuth("login")}
+                className="links !text-black cursor-pointer"
+              >
+                Login / Sign up
+              </span>
+            )}
           </div>
         </div>
       )}
