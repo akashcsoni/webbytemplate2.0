@@ -5,6 +5,16 @@ import Link from "next/link";
 import React, { useEffect } from "react";
 
 const SomethingWrong = ({ message }) => {
+  const normalizedMessage = String(message || "").toLowerCase();
+  const isServerError =
+    normalizedMessage.includes("status code 500") ||
+    normalizedMessage.includes("status 500") ||
+    normalizedMessage.includes("request failed with status code 500");
+
+  const friendlyMessage = isServerError
+    ? "Sorry, something went wrong on our side. Please try again after a few minutes."
+    : message || "Something went wrong. Please try again.";
+
   useEffect(() => {
     // Used by global header to hide login/wishlist/cart for this error screen.
     document.documentElement.dataset.hideHeaderActions = "true";
@@ -27,7 +37,7 @@ const SomethingWrong = ({ message }) => {
           Something Went Wrong
         </h2>
         <p className="2xl:mb-[38px] mb-[20px] w-[484px] max-w-full">
-          {message}
+          {friendlyMessage}
         </p>
       </div>
     </div>
