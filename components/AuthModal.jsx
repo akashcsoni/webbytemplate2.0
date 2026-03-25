@@ -2424,7 +2424,7 @@ function CodeModal({ isOpen, onClose, identifier, type }) {
 
           setTimeout(() => {
             if (hasAuthorQuery && documentId) {
-              window.location.href = `/user/${documentId}/become-an-author/?step=1`;
+              window.location.href = `/user/${documentId}/become-an-author/`;
             } else {
               window.location.reload();
             }

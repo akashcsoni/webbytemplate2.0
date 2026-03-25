@@ -17,6 +17,7 @@ export default function Layout({ children }) {
   const pathname = usePathname();
 
   const normalizePath = (path) => (path ? path.replace(/\/+$/, "") : "");
+  const isBecomeAuthorPage = pathname?.includes("/become-an-author");
 
   const isActive = (path) => {
     const current = normalizePath(pathname);
@@ -80,11 +81,12 @@ export default function Layout({ children }) {
           fontSans.variable
         )}
       >
-        <AuthorHeader authUser={authUser} />
+        {!isBecomeAuthorPage && <AuthorHeader authUser={authUser} />}
         <section className="2xl:pb-20 lg:pb-[70px] md:pb-[60px] sm:pb-[50px] pb-10">
             <div className="">
-              {/* Sidebar: when !mounted use same list for server/client to avoid hydration mismatch */}
-              {(!mounted || authUser?.author !== true) ? (
+              {/* Sidebar tabs: hidden on become-an-author onboarding (full-bleed wizard) */}
+              {!isBecomeAuthorPage &&
+                ((!mounted || authUser?.author !== true) ? (
                 <div className="bg-white border-y border-primary/10 shadow-sm w-full flex items-center">
                   <div className="container">
                     <ul className="flex items-center lg:justify-start justify-between overflow-auto h-full">
@@ -154,7 +156,7 @@ export default function Layout({ children }) {
                     </ul>
                   </div>
                 </div>
-              )}
+              ))}
 
               {/* Main Content */}
               <div className="container">
@@ -164,7 +166,7 @@ export default function Layout({ children }) {
               </div>
             </div>
           </section>
-        <AuthorFooter />
+        {!isBecomeAuthorPage && <AuthorFooter />}
       </div>
       <script
         type="text/javascript"

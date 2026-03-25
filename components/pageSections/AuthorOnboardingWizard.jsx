@@ -19,7 +19,6 @@ const AuthorOnboardingWizard = () => {
     const { authUser, authToken, login } = useAuth();
     const router = useRouter();
     const [currentStep, setCurrentStep] = useState(1);
-    const [requestedStepFromUrl, setRequestedStepFromUrl] = useState(null); // number | null
     const [onboardingProgress, setOnboardingProgress] = useState({
         step1Done: false,
         step2Done: false,
@@ -211,19 +210,6 @@ const AuthorOnboardingWizard = () => {
         return asInt;
     };
 
-    const getStepFromUrl = () => {
-        if (typeof window === "undefined") return null;
-        const params = new URLSearchParams(window.location.search);
-        return clampStep(params.get("step"));
-    };
-
-    const syncStepToUrl = (step) => {
-        if (typeof window === "undefined") return;
-        const url = new URL(window.location.href);
-        url.searchParams.set("step", String(step));
-        window.history.replaceState(null, "", `${url.pathname}${url.search}${url.hash}`);
-    };
-
     const computeOnboardingProgressFromUser = (userData) => {
         // If you add these fields in Strapi, they become the source of truth:
         // - author_onboarding_step: 1..4
@@ -294,25 +280,7 @@ const AuthorOnboardingWizard = () => {
         const clamped = clampStep(nextStep);
         if (!clamped) return;
         setCurrentStep(clamped);
-        syncStepToUrl(clamped);
     };
-
-    useEffect(() => {
-        // Initialize from URL (supports back/forward too)
-        const initial = getStepFromUrl();
-        if (initial != null) {
-            setRequestedStepFromUrl(initial);
-            setCurrentStep(initial);
-        }
-
-        const onPopState = () => {
-            const step = getStepFromUrl();
-            if (step != null) setCurrentStep(step);
-        };
-        window.addEventListener("popstate", onPopState);
-        return () => window.removeEventListener("popstate", onPopState);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
 
     useEffect(() => {
         getUserData();
@@ -446,14 +414,10 @@ const AuthorOnboardingWizard = () => {
                     setEmailVerified(Boolean(userData?.email_verified || userData?.confirmed));
                     setPhoneVerified(Boolean(userData?.phone_no_verified));
 
-                    // Auto-resume step based on saved data (but also respect URL if present, without allowing skipping ahead).
+                    // Auto-resume step from user / backend progress (single URL; step is client-only).
                     const progress = computeOnboardingProgressFromUser(userData);
                     setOnboardingProgress(progress);
-                    const desired =
-                        requestedStepFromUrl != null
-                            ? Math.min(requestedStepFromUrl, progress.maxAllowedStep)
-                            : progress.maxAllowedStep;
-                    setStepAndSync(desired);
+                    setStepAndSync(progress.maxAllowedStep);
                     setFromSetLoading(false);
                 } else {
                     tryRestorePreservedForm();
